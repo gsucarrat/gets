@@ -10,5 +10,11 @@ To install the development version from Github, first download the tarball (i.e.
 
     system("R CMD INSTALL --build gets")
 
+# Resources
+* An introduction (PDF): [https://doi.org/10.18637/jss.v086.i03](https://doi.org/10.18637/jss.v086.i03)
+* Webpage: [http://www.sucarrat.net/R/gets](http://www.sucarrat.net/R/gets)
+* CRAN webpage: [https://CRAN.R-project.org/package=gets]( https://CRAN.R-project.org/package=gets)
+* [https://felixpretis.climateeconometrics.org/software/](https://felixpretis.climateeconometrics.org/software/)
+
 # License
 This package is free and open source software, licensed under GPL (>= 2)
