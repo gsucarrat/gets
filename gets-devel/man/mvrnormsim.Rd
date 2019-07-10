@@ -3,7 +3,10 @@
 
 \title{Simulate from a Multivariate Normal Distribution}
 
-\description{Produces one or more samples from the specified multivariate normal distribution. Used in \code{\link{outlierscaletest}}.}
+\description{
+  Produces one or more samples from the specified multivariate normal distribution. Used
+  in \code{\link{outlierscaletest}}.
+}
 
 \usage{
 mvrnormsim(n = 1, mu, Sigma, tol = 1e-6, empirical = FALSE)

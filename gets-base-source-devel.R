@@ -18,7 +18,7 @@
 ##
 ## print startup message
 ## load required packages
-## create new S3 methods
+## create new S3 generics/methods
 ##
 ####################################################
 ##2 BASE FUNCTIONS
@@ -32,7 +32,6 @@
 ## leqwma
 ## ols
 ## getsFun
-## periodicdummies #move to "CONVENIENCE FUNCTIONS" section?
 ##
 ####################################################
 ## 3 ARX FUNCTIONS
@@ -76,6 +75,7 @@
 ## 5 ADDITIONAL CONVENIENCE FUNCTIONS
 ####################################################
 ##
+## periodicdummies #use regular times series to make periodic dummies
 ## eviews     #export function
 ## stata      #export function
 ## printtex   #print latex-code (equation-form)
@@ -1149,34 +1149,6 @@ if( gumDiagnosticsOK && delete.n>1 ){
 
 } #close getsFun function
 
-##==================================================
-##make periodicity (e.g. seasonal) dummies for
-##regular time series
-periodicdummies <- function(x, values=1)
-{
-  ##prepare:
-  if(!is.regular(x, strict=TRUE)) stop("Vector/matrix not strictly regular")
-  iFreq <- frequency(x)
-  if(iFreq==1) stop("Frequency must be greater than 1")
-  if(!is.zoo(x)){ x <- as.zooreg(x) }
-  vCycle <- as.numeric(cycle(x))
-
-  ##values argument:
-  if(length(values)==1){ values <- rep(1,iFreq) }
-  if(length(values)!=iFreq) stop("length(values) must be 1 or equal to frequency")
-
-  ##make dummies:
-  mDums <- matrix(0,NROW(x),iFreq)
-  colnames(mDums) <- paste("dum", 1:iFreq, sep="")
-  for(i in 1:NCOL(mDums)){
-    whereIs <- which(vCycle==i)
-    mDums[whereIs,i] <- values[i]
-  }
-
-  ##out:
-  mDums <- zoo(mDums, order.by=index(x), frequency=iFreq)
-  return(mDums)
-} #close periodicdummies
 
 ####################################################
 ##2 ARX FUNCTIONS
@@ -4097,6 +4069,36 @@ vcov.gets <- function(object, spec=NULL,  ...)
 ####################################################
 ## 6 ADDITIONAL CONVENIENCE FUNCTIONS
 ####################################################
+
+##==================================================
+##make periodicity (e.g. seasonal) dummies for
+##regular time series
+periodicdummies <- function(x, values=1)
+{
+  ##prepare:
+  if(!is.regular(x, strict=TRUE)) stop("Vector/matrix not strictly regular")
+  iFreq <- frequency(x)
+  if(iFreq==1) stop("Frequency must be greater than 1")
+  if(!is.zoo(x)){ x <- as.zooreg(x) }
+  vCycle <- as.numeric(cycle(x))
+
+  ##values argument:
+  if(length(values)==1){ values <- rep(1,iFreq) }
+  if(length(values)!=iFreq) stop("length(values) must be 1 or equal to frequency")
+
+  ##make dummies:
+  mDums <- matrix(0,NROW(x),iFreq)
+  colnames(mDums) <- paste("dum", 1:iFreq, sep="")
+  for(i in 1:NCOL(mDums)){
+    whereIs <- which(vCycle==i)
+    mDums[whereIs,i] <- values[i]
+  }
+
+  ##out:
+  mDums <- zoo(mDums, order.by=index(x), frequency=iFreq)
+  return(mDums)
+} #close periodicdummies
+
 
 ##==================================================
 ## export to EViews
