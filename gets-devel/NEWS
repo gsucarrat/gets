@@ -1,6 +1,25 @@
-Version 0.19 (?? Month 20??):
-=============================
+Version 0.19-devel:
+===================
 
+* new functions:
+
+- isatdates: convenience function that extracts the breakdates from an isat object.
+
+- isatvarcorrect: applies the Johansen and Nielsen (2016) consistency and efficiency correction to the estimated variance of an isat object when using impulse indicator saturation.
+
+- outliertest: test whether the proportion of detected outliers using impulse indicator saturation is different than expected under the null (see Jiao and Pretis, 2019: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3217213)
+
+- outlierscaletest: test whether the proportion of detected outliers using impulse indicator saturation scales with the level of significance under the null (see Jiao and Pretis, 2019: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3217213). To run outlierscaletest, first "isatloop" has to be run.
+
+- isatloop: repeatedly runs isat at different levels of significance of selection. Output is used in the new outlierscaletest function.
+
+- vargaugeiis: computes the variance of the gauge. This is used in the new outliertest function.
+
+* fix: the S3 method 'gets' is now correctly registered in the NAMESPACE file
+
+* minor changes:
+
+- print.isat: now reports the outliertest automatically if iis=TRUE, also reports the corrected variance if isatvarcorrect is used
 - printtex: minor stylistic changes to the LaTeX-output and to the help-page
 
 

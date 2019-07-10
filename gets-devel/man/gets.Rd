@@ -1,16 +1,12 @@
 \name{gets}
 \alias{gets}
-\alias{gets.default}
 
 \title{General-to-Specific (GETS) Modelling}
 
-\description{Generic function that enables new GETS methods for new classes}
+\description{Generic function that enables new GETS and ISAT methods for new classes}
 
 \usage{
 gets(x, ...)
-
-## Default S3 method:
-gets.default(x, ...)
 }
 
 \arguments{

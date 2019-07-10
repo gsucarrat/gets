@@ -18,7 +18,7 @@
 ##
 ## print startup message
 ## load required packages
-## create S3 methods
+## create new S3 methods
 ##
 ####################################################
 ##2 BASE FUNCTIONS
@@ -133,29 +133,15 @@ gets <- function(x, ...){ UseMethod("gets") }
 #gets.Arima <- function(x){ print("It works - cool!") }
 #gets(mod01)
 
-##==================================================
-##default gets method:
-gets.default <- function(x, ...){
-  warning(paste("The 'gets' method does not know how to handle objects of class '",
-    class(x), "'", sep=""))
-}
-
-##TO DO!!!:
+##for the future?:
 ##==================================================
 ##create S3 method 'isat':
-#gets <- function(x, ...){ UseMethod("isat") }
+#isat <- function(x, ...){ UseMethod("isat") }
 ###test the method:
 #set.seed(123); y <- arima.sim(list(ar=0.4, ma=0.1), 100)
 #mod01 <- arima(y, order=c(1,0,1))
 #isat.Arima <- function(x){ print("Cool!") }
 #isat(mod01)
-
-###==================================================
-###default isat method:
-#isat.default <- function(x, ...){
-#  warning(paste("The 'isat' method does not know how to handle objects of class '",
-#    class(x), "'", sep=""))
-#}
 
 
 ####################################################

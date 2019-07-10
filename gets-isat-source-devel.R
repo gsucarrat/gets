@@ -589,6 +589,7 @@ coef.isat <- function(object, ...)
   coef.arx(object, spec="mean")
 } #close coef.isat
 
+
 ##==================================================
 ## fitted values
 fitted.isat <- function(object, spec=NULL, ...)
@@ -885,137 +886,137 @@ predict.isat <- function(object, n.ahead=12,
 } #close predict.isat
 
 ##==================================================
-## print isat results
-print.isat <- function(x, ...)
-{
-  ##specification type:
-  specType <- "mean"
-
-  ##header:
-  cat("\n")
-  cat("Date:", x$date, "\n")
-  cat("Dependent var.:", x$aux$y.name, "\n")
-  cat("Method: Ordinary Least Squares (OLS)\n")
-  cat("Variance-Covariance:", switch(x$aux$vcov.type,
-    ordinary = "Ordinary", white = "White (1980)",
-    "newey-west" = "Newey and West (1987)"), "\n")
-
-  ##header - sample info:
-  cat("No. of observations (mean eq.):", x$aux$y.n, "\n")
-  tmp <- zoo(x$aux$y, order.by=x$aux$y.index)
-
-  indexTrimmed <- index(na.trim(tmp))
-  isRegular <- is.regular(tmp, strict=TRUE)
-  isCyclical <- frequency(tmp) > 1
-  if(isRegular && isCyclical){
-    cycleTrimmed <- cycle(na.trim(tmp))
-    startYear <- floor(as.numeric(indexTrimmed[1]))
-    startAsChar <- paste(startYear,
-      "(", cycleTrimmed[1], ")", sep="")
-    endYear <- floor(as.numeric(indexTrimmed[length(indexTrimmed)]))
-    endAsChar <- paste(endYear,
-      "(", cycleTrimmed[length(indexTrimmed)], ")", sep="")
-  }else{
-    startAsChar <- as.character(indexTrimmed[1])
-    endAsChar <- as.character(indexTrimmed[length(indexTrimmed)])
-  }
-  cat("Sample:", startAsChar, "to", endAsChar, "\n")
-
-  ##gum:
-  if(specType=="mean"){
-    cat("\n")
-    cat("GUM mean equation:\n")
-    cat("\n")
-    printCoefmat(x$gum.mean, dig.tst=0, tst.ind=c(1,2),
-      signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
-  }
-  if(!is.null(x$gum.variance)){
-    cat("\n")
-    cat("GUM log-variance equation:\n")
-    cat("\n")
-    printCoefmat(x$gum.variance, signif.stars=FALSE)
-  }
-  cat("\n")
-  cat("Diagnostics and fit:\n")
-  cat("\n")
-  printCoefmat(x$gum.diagnostics, dig.tst=0, tst.ind=2,
-    signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
-
-  ##paths:
-  cat("\n")
-  cat("Paths searched: \n")
-  cat("\n")
-  if(is.null(x$paths)){
-    print(NULL)
-  }else{
-    for(i in 1:length(x$paths)){
-      cat("path",i,":",x$paths[[i]],"\n")
-    }
-  } #end if(is.null(x$paths))
-
-  ##terminal models and results:
-  if(!is.null(x$terminals)){
-    cat("\n")
-    cat("Terminal models: \n")
-    cat("\n")
-    for(i in 1:length(x$terminals)){
-      cat("spec",i,":",x$terminals[[i]],"\n")
-    }
-  }
-  if(!is.null(x$terminals.results)){
-    cat("\n")
-    printCoefmat(x$terminals.results, dig.tst=0, tst.ind=c(3,4),
-      signif.stars=FALSE)
-  }
-
-  ##specific model:
-  if(specType=="mean" && !is.null(x$specific.spec)){
-    cat("\n")
-    cat("SPECIFIC mean equation:\n")
-    cat("\n")
-    if(!is.null(x$mean.results)){
-      print(x$mean.results)
-#OLD: DOES NOT WORK IN A PREDICTABLE WAY!
-#      printCoefmat(x$mean.results, signif.stars=FALSE,
-#        P.values=FALSE, has.Pvalues=FALSE)
-    }
-    if(x$specific.spec[1]==0){
-      cat("empty\n")
-    }
-##in the future: use estimate.specific=FALSE more directly?
-    if(x$specific.spec[1]!=0 && is.null(x$mean.results)){
-      cat("Not estimated\n")
-    }
-  }
-
-  ##diagnostics and fit:
-  if(!is.null(x$specific.diagnostics)){
-
-    #fit-measures:
-    mGOF <- matrix(NA, 3, 1)
-    rownames(mGOF) <- c("SE of regression", "R-squared",
-      paste("Log-lik.(n=", length(na.trim(x$std.residuals)), ")", sep=""))
-    colnames(mGOF) <- ""
-    mGOF[1,1] <- sigma.isat(x) #OLD: sqrt( RSS/(nobs-DFs) )
-    mGOF[2,1] <- rsquared(x) #OLD: x$specific.diagnostics[4,1]
-    mGOF[3,1] <- as.numeric(logLik.arx(x))
-
-    cat("\n")
-    cat("Diagnostics and fit:\n")
-    cat("\n")
-    printCoefmat(x$specific.diagnostics, dig.tst=0, tst.ind=2,
-      signif.stars=FALSE)
-    printCoefmat(mGOF, digits=6, signif.stars=FALSE)
-
-  }
-
-  ##messages:
-  if(!is.null(x$messages)){
-    message("\n", appendLF=FALSE)
-    message(x$messages)
-  }
-
-} #end print.isat
+# ## print isat results
+# print.isat <- function(x, ...)
+# {
+#   ##specification type:
+#   specType <- "mean"
+# 
+#   ##header:
+#   cat("\n")
+#   cat("Date:", x$date, "\n")
+#   cat("Dependent var.:", x$aux$y.name, "\n")
+#   cat("Method: Ordinary Least Squares (OLS)\n")
+#   cat("Variance-Covariance:", switch(x$aux$vcov.type,
+#     ordinary = "Ordinary", white = "White (1980)",
+#     "newey-west" = "Newey and West (1987)"), "\n")
+# 
+#   ##header - sample info:
+#   cat("No. of observations (mean eq.):", x$aux$y.n, "\n")
+#   tmp <- zoo(x$aux$y, order.by=x$aux$y.index)
+# 
+#   indexTrimmed <- index(na.trim(tmp))
+#   isRegular <- is.regular(tmp, strict=TRUE)
+#   isCyclical <- frequency(tmp) > 1
+#   if(isRegular && isCyclical){
+#     cycleTrimmed <- cycle(na.trim(tmp))
+#     startYear <- floor(as.numeric(indexTrimmed[1]))
+#     startAsChar <- paste(startYear,
+#       "(", cycleTrimmed[1], ")", sep="")
+#     endYear <- floor(as.numeric(indexTrimmed[length(indexTrimmed)]))
+#     endAsChar <- paste(endYear,
+#       "(", cycleTrimmed[length(indexTrimmed)], ")", sep="")
+#   }else{
+#     startAsChar <- as.character(indexTrimmed[1])
+#     endAsChar <- as.character(indexTrimmed[length(indexTrimmed)])
+#   }
+#   cat("Sample:", startAsChar, "to", endAsChar, "\n")
+# 
+#   ##gum:
+#   if(specType=="mean"){
+#     cat("\n")
+#     cat("GUM mean equation:\n")
+#     cat("\n")
+#     printCoefmat(x$gum.mean, dig.tst=0, tst.ind=c(1,2),
+#       signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
+#   }
+#   if(!is.null(x$gum.variance)){
+#     cat("\n")
+#     cat("GUM log-variance equation:\n")
+#     cat("\n")
+#     printCoefmat(x$gum.variance, signif.stars=FALSE)
+#   }
+#   cat("\n")
+#   cat("Diagnostics and fit:\n")
+#   cat("\n")
+#   printCoefmat(x$gum.diagnostics, dig.tst=0, tst.ind=2,
+#     signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
+# 
+#   ##paths:
+#   cat("\n")
+#   cat("Paths searched: \n")
+#   cat("\n")
+#   if(is.null(x$paths)){
+#     print(NULL)
+#   }else{
+#     for(i in 1:length(x$paths)){
+#       cat("path",i,":",x$paths[[i]],"\n")
+#     }
+#   } #end if(is.null(x$paths))
+# 
+#   ##terminal models and results:
+#   if(!is.null(x$terminals)){
+#     cat("\n")
+#     cat("Terminal models: \n")
+#     cat("\n")
+#     for(i in 1:length(x$terminals)){
+#       cat("spec",i,":",x$terminals[[i]],"\n")
+#     }
+#   }
+#   if(!is.null(x$terminals.results)){
+#     cat("\n")
+#     printCoefmat(x$terminals.results, dig.tst=0, tst.ind=c(3,4),
+#       signif.stars=FALSE)
+#   }
+# 
+#   ##specific model:
+#   if(specType=="mean" && !is.null(x$specific.spec)){
+#     cat("\n")
+#     cat("SPECIFIC mean equation:\n")
+#     cat("\n")
+#     if(!is.null(x$mean.results)){
+#       print(x$mean.results)
+# #OLD: DOES NOT WORK IN A PREDICTABLE WAY!
+# #      printCoefmat(x$mean.results, signif.stars=FALSE,
+# #        P.values=FALSE, has.Pvalues=FALSE)
+#     }
+#     if(x$specific.spec[1]==0){
+#       cat("empty\n")
+#     }
+# ##in the future: use estimate.specific=FALSE more directly?
+#     if(x$specific.spec[1]!=0 && is.null(x$mean.results)){
+#       cat("Not estimated\n")
+#     }
+#   }
+# 
+#   ##diagnostics and fit:
+#   if(!is.null(x$specific.diagnostics)){
+# 
+#     #fit-measures:
+#     mGOF <- matrix(NA, 3, 1)
+#     rownames(mGOF) <- c("SE of regression", "R-squared",
+#       paste("Log-lik.(n=", length(na.trim(x$std.residuals)), ")", sep=""))
+#     colnames(mGOF) <- ""
+#     mGOF[1,1] <- sigma.isat(x) #OLD: sqrt( RSS/(nobs-DFs) )
+#     mGOF[2,1] <- rsquared(x) #OLD: x$specific.diagnostics[4,1]
+#     mGOF[3,1] <- as.numeric(logLik.arx(x))
+# 
+#     cat("\n")
+#     cat("Diagnostics and fit:\n")
+#     cat("\n")
+#     printCoefmat(x$specific.diagnostics, dig.tst=0, tst.ind=2,
+#       signif.stars=FALSE)
+#     printCoefmat(mGOF, digits=6, signif.stars=FALSE)
+# 
+#   }
+# 
+#   ##messages:
+#   if(!is.null(x$messages)){
+#     message("\n", appendLF=FALSE)
+#     message(x$messages)
+#   }
+# 
+# } #end print.isat
 
 ##==================================================
 residuals.isat <- function(object, std=FALSE, ...)
@@ -2216,3 +2217,573 @@ tim <- function(x, which.ones=NULL, log.trend=FALSE)
   }
   return(mTIS)
 } #close tim
+
+
+################################
+################# New Functions July 2019
+##############################
+
+##############
+### isatdates
+#############
+
+## Extract breakdates from isat object (based on first break index):
+
+isatdates <- function(x){
+  
+  mxbreak_iis <- "iis"
+  mxbreak_sis <- "sis"
+  mxbreak_tis <- "tis"
+  
+  iis.names <- c(x$ISnames[grep(mxbreak_iis, x$ISnames)])
+  sis.names <- c(x$ISnames[grep(mxbreak_sis, x$ISnames)])
+  tis.names <- c(x$ISnames[grep(mxbreak_tis, x$ISnames)])
+  
+  ##### iis
+  if(length(iis.names) != 0){
+    iis.breaks <- data.frame(matrix(NA, nrow=NROW(iis.names), ncol=1))
+    names(iis.breaks) <- c("breaks")  
+    is.m <- as.matrix(x$aux$mX[,iis.names])
+    is.index <- which(x$aux$mXnames %in% iis.names)
+    colnames(is.m) <- iis.names
+    iis.date <- apply(is.m,2, function(x) (which(x>0))[1])  
+    iis.date.index <- iis.date
+    iis.date <- x$aux$y.index[iis.date]
+    
+    iis.breaks$breaks <- iis.names
+    iis.breaks$date <- iis.date
+    iis.breaks$index <- iis.date.index
+    iis.breaks$coef <- x$mean.results$coef[is.index]
+    iis.breaks$coef.se <- x$mean.results$std.error[is.index]
+    iis.breaks$coef.t <- x$mean.results$`t-stat`[is.index]
+    iis.breaks$coef.p <- x$mean.results$`p-value`[is.index]
+    
+  } else {
+    iis.breaks <- NULL 
+  }
+  
+  ##### sis
+  if(length(sis.names) != 0){
+    sis.breaks <- data.frame(matrix(NA, nrow=NROW(sis.names), ncol=1))
+    names(sis.breaks) <- c("breaks")  
+    sis.m <- as.matrix(x$aux$mX[,sis.names])
+    sis.index <- which(x$aux$mXnames %in% sis.names)
+    colnames(sis.m) <- sis.names
+    sis.date <- apply(sis.m,2, function(x) (which(x>0))[1])  
+    sis.date.index <- sis.date
+    sis.date <- x$aux$y.index[sis.date]
+    
+    sis.breaks$breaks <- sis.names
+    sis.breaks$date <- sis.date
+    sis.breaks$index <- sis.date.index
+    sis.breaks$coef <- x$mean.results$coef[sis.index]
+    sis.breaks$coef.se <- x$mean.results$std.error[sis.index]
+    sis.breaks$coef.t <- x$mean.results$`t-stat`[sis.index]
+    sis.breaks$coef.p <- x$mean.results$`p-value`[sis.index]
+    
+  } else {
+    sis.breaks <- NULL 
+  }
+  
+  ##### tis
+  if(length(tis.names) != 0){
+    tis.breaks <- data.frame(matrix(NA, nrow=NROW(tis.names), ncol=1))
+    names(tis.breaks) <- c("breaks")  
+    tis.m <- as.matrix(x$aux$mX[,tis.names])
+    tis.index <- which(x$aux$mXnames %in% tis.names)
+    colnames(tis.m) <- tis.names
+    tis.date <- apply(tis.m,2, function(x) (which(x>0))[1])  
+    tis.date.index <- tis.date
+    tis.date <- x$aux$y.index[tis.date]
+    
+    tis.breaks$breaks <- tis.names
+    tis.breaks$date <- tis.date
+    tis.breaks$index <- tis.date.index
+    tis.breaks$coef <- x$mean.results$coef[tis.index]
+    tis.breaks$coef.se <- x$mean.results$std.error[tis.index]
+    tis.breaks$coef.t <- x$mean.results$`t-stat`[tis.index]
+    tis.breaks$coef.p <- x$mean.results$`p-value`[tis.index]
+    
+  } else {
+    tis.breaks <- NULL 
+  }
+  
+  out <- list(iis.breaks, sis.breaks, tis.breaks)
+  names(out) <- c("iis", "sis", "tis")
+  return(out)
+  
+} #end function
+
+
+
+
+
+####################
+### isatvarcorrect
+#####################
+#### Function to correct variance estimates when using IIS
+
+isatvarcorrect <- function(x,   mcor = 1){
+  
+  if (class(x)=="isat"){
+    if (x$call$iis==TRUE) 
+    {
+      x$vcov.mean <- x$vcov.mean * as.numeric(isvarcor(x$aux$t.pval, 1)[2]^2)
+      x$vcov.mean[x$keep, x$keep] <- x$vcov.mean[x$keep, x$keep] * as.numeric(isvareffcor(x$aux$t.pval, 1, mcor)[2]^2)
+      
+      x$mean.results$std.error <- sqrt(diag(x$vcov.mean))
+      x$mean.results$`t-stat` <- x$mean.results$coef/x$mean.results$std.error
+      x$mean.results$`p-value` <-  pt(abs(x$mean.results$`t-stat`), x$df, lower.tail=FALSE)*2   
+      
+      x$sigma2 <- x$sigma2*as.numeric(isvarcor(x$aux$t.pval, 1)[2]^2)
+      x$logl <- -x$n*log(2*x$sigma2*pi)/2 - x$rss/(2*x$sigma2)
+      
+      return(x)
+    } else {
+      stop("iis not TRUE")
+    }
+  } else {
+    stop("x must be an isat object")
+  }  
+  
+} #function closed
+
+
+##==================================================
+print.isat <- function(x, ...)
+{
+  ##specification type:
+  specType <- "mean"
+  
+  ##header:
+  cat("\n")
+  cat("Date:", x$date, "\n")
+  cat("Dependent var.:", x$aux$y.name, "\n")
+  cat("Method: Ordinary Least Squares (OLS)\n")
+  cat("Variance-Covariance:", switch(x$aux$vcov.type,
+                                     ordinary = "Ordinary", white = "White (1980)",
+                                     "newey-west" = "Newey and West (1987)"), "\n")
+  
+  ##header - sample info:
+  cat("No. of observations (mean eq.):", x$aux$y.n, "\n")
+  tmp <- zoo(x$aux$y, order.by=x$aux$y.index)
+  
+  indexTrimmed <- index(na.trim(tmp))
+  isRegular <- is.regular(tmp, strict=TRUE)
+  isCyclical <- frequency(tmp) > 1
+  if(isRegular && isCyclical){
+    cycleTrimmed <- cycle(na.trim(tmp))
+    startYear <- floor(as.numeric(indexTrimmed[1]))
+    startAsChar <- paste(startYear,
+                         "(", cycleTrimmed[1], ")", sep="")
+    endYear <- floor(as.numeric(indexTrimmed[length(indexTrimmed)]))
+    endAsChar <- paste(endYear,
+                       "(", cycleTrimmed[length(indexTrimmed)], ")", sep="")
+  }else{
+    startAsChar <- as.character(indexTrimmed[1])
+    endAsChar <- as.character(indexTrimmed[length(indexTrimmed)])
+  }
+  cat("Sample:", startAsChar, "to", endAsChar, "\n")
+  
+  ##gum:
+  if(specType=="mean"){
+    cat("\n")
+    cat("GUM mean equation:\n")
+    cat("\n")
+    printCoefmat(x$gum.mean, dig.tst=0, tst.ind=c(1,2),
+                 signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
+  }
+  if(!is.null(x$gum.variance)){
+    cat("\n")
+    cat("GUM log-variance equation:\n")
+    cat("\n")
+    printCoefmat(x$gum.variance, signif.stars=FALSE)
+  }
+  cat("\n")
+  cat("Diagnostics and fit:\n")
+  cat("\n")
+  printCoefmat(x$gum.diagnostics, dig.tst=0, tst.ind=2,
+               signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
+  
+  ##paths:
+  cat("\n")
+  cat("Paths searched: \n")
+  cat("\n")
+  if(is.null(x$paths)){
+    print(NULL)
+  }else{
+    for(i in 1:length(x$paths)){
+      cat("path",i,":",x$paths[[i]],"\n")
+    }
+  } #end if(is.null(x$paths))
+  
+  ##terminal models and results:
+  if(!is.null(x$terminals)){
+    cat("\n")
+    cat("Terminal models: \n")
+    cat("\n")
+    for(i in 1:length(x$terminals)){
+      cat("spec",i,":",x$terminals[[i]],"\n")
+    }
+  }
+  if(!is.null(x$terminals.results)){
+    cat("\n")
+    printCoefmat(x$terminals.results, dig.tst=0, tst.ind=c(3,4),
+                 signif.stars=FALSE)
+  }
+  
+  ##specific model:
+  if(specType=="mean" && !is.null(x$specific.spec)){
+    cat("\n")
+    cat("SPECIFIC mean equation:\n")
+    cat("\n")
+    if(!is.null(x$mean.results)){
+      print(x$mean.results)
+      #OLD: DOES NOT WORK IN A PREDICTABLE WAY!
+      #      printCoefmat(x$mean.results, signif.stars=FALSE,
+      #        P.values=FALSE, has.Pvalues=FALSE)
+    }
+    if(x$specific.spec[1]==0){
+      cat("empty\n")
+    }
+    ##in the future: use estimate.specific=FALSE more directly?
+    if(x$specific.spec[1]!=0 && is.null(x$mean.results)){
+      cat("Not estimated\n")
+    }
+  }
+  
+  ##diagnostics and fit:
+  if(!is.null(x$specific.diagnostics)){
+    
+    #fit-measures:
+    mGOF <- matrix(NA, 3, 1)
+    rownames(mGOF) <- c("SE of regression", "R-squared",
+                        paste("Log-lik.(n=", length(na.trim(x$std.residuals)), ")", sep=""))
+    colnames(mGOF) <- ""
+    mGOF[1,1] <- sqrt(x$sigma2) #OLD: sigma.isat(x) #OLD: sqrt( RSS/(nobs-DFs) )
+    mGOF[2,1] <- rsquared(x) #OLD: x$specific.diagnostics[4,1]
+    mGOF[3,1] <- x$logl #OLD: as.numeric(logLik.arx(x))
+    #mGOF[4,1] <- outliertest(x)$#x$logl #OLD: as.numeric(logLik.arx(x))
+    
+    cat("\n")
+    cat("Diagnostics and fit:\n")
+    cat("\n")
+    printCoefmat(x$specific.diagnostics, dig.tst=0, tst.ind=2,
+                 signif.stars=FALSE)
+    if(!is.null(x$call$iis)){
+      if (x$call$iis==TRUE){
+        outltest <- outliertest(x)
+        mOutl <- matrix(NA, 2, 2)
+        colnames(mOutl) <- c("Stat.", "p-value")
+        rownames(mOutl) <- c("Jiao-Pretis Prop.", "Jiao-Pretis Count")
+        mOutl[1,] <- c(outltest$prop$statistic, outltest$prop$p.value)
+        mOutl[2,] <- c(outltest$count$statistic, outltest$count$p.value)
+        cat("\n")
+        printCoefmat(mOutl, digits=6, signif.stars = FALSE) 
+        #cat("\n")
+      }
+    }
+    printCoefmat(mGOF, digits=6, signif.stars=FALSE)
+    
+  }
+  
+  ##messages:
+  if(!is.null(x$messages)){
+    message("\n", appendLF=FALSE)
+    message(x$messages)
+  }
+  
+} #end print.isat
+
+
+###################
+####### vargaugeiis
+###################
+
+##### Function to Compute Variance of the gauge (for use in outliertest)
+
+vargaugeiis <- function(t.pval, T, infty=FALSE, m=1){
+  
+  alpha <- t.pval
+  c <- abs(qnorm(alpha/2))
+  fc <- dnorm(c)
+  psi <- pnorm(c) - pnorm(-c) 
+  tau <- psi - 2*c*dnorm(c)
+  chi <- 3*psi - 2*c*(c^2+3)*fc
+  rho_sig <- (c^2 - tau/psi)*c*fc/tau
+  k <- 3
+  
+  ###m iterations
+  m_min1 <- m-1
+  eta_sigma_m_min1 <- ( ((1-rho_sig^m_min1)/((1-rho_sig)*tau))^2 + 2* ((1-rho_sig^m_min1)/((1-rho_sig)*tau)  )*rho_sig^m_min1  ) *(chi-tau^2/psi)/(k-1)+rho_sig^(2*m_min1)
+  eta_gamma_m <- (c*fc)^2*eta_sigma_m_min1*(k-1) + 2*c*fc*rho_sig^(m-1)*(tau-psi)
+  
+  ###infinite iterations
+  eta_infty <- (chi-tau^2/psi)*(c*fc)^2/((1-rho_sig)*tau)^2
+  
+  if (infty==TRUE){
+    viis <- psi*(1-psi) + eta_infty  
+  } else {
+    viis <- psi*(1-psi) + eta_gamma_m
+  }
+  
+  sdiis <- sqrt(viis)
+  viis_T <- viis/T
+  sdiis_T <- sqrt(viis/T)
+  
+  out <- data.frame(cbind(viis_T, sdiis_T, viis, sdiis))
+  names(out) <- c("var_iisgauge", "sd_iisgauge", "asy_var_iisgauge", "asy_sd_iisgauge")
+  return(out)
+}  
+
+################
+#### outliertest
+################
+
+#### Outlier proportion and count tests from Jiao and Pretis (2019)
+
+
+outliertest <- function(x=NULL, noutl=NULL, t.pval=NULL, T=NULL,  m=1, infty=FALSE, alternative="two.sided"){
+  
+  # noutl=x$obs.gauge$obs.num[i]
+  # t.pval=x$obs.gauge$t.pval[i]
+  # T=x$n
+  # 
+  
+  if (!is.null(x)){
+    
+    if (class(x)=="isat"){
+      
+      if (any(x$call$sis, x$call$tis, x$call$uis)==TRUE){
+        stop("Test only valid for iis")
+      } else {
+        if (  x$call$iis == TRUE){
+          ISnames <- c(x$ISnames[grep("iis", x$ISnames)])
+          noutl= length(ISnames) 
+          t.pval <- x$aux$t.pval
+          T <- x$n
+        } else {
+          stop("iis must be TRUE")
+        }
+      }
+      
+      
+    } else {
+      stop("x must be an isat object")
+    }
+  } #x null closed
+  
+  gauge.null <- t.pval
+  gauge <- noutl/T
+  
+  #### Standard Normal Test
+  gauge.sd <- vargaugeiis(t.pval=gauge.null, T=T, infty=infty, m=m)$sd_iisgauge 
+  gaugetestval <- (gauge - gauge.null)/gauge.sd
+  
+  if (alternative=="two.sided"){
+    pval <- 2*(pnorm(-abs(gaugetestval)))
+  }
+  if (alternative=="less"){
+    pval <- pnorm(gaugetestval)  
+  }
+  if (alternative=="greater"){
+    pval <- 1-  pnorm(gaugetestval) 
+  }
+  
+  ### Poisson Test
+  gauge_n <- noutl
+  gauge_null_n <- gauge.null*T
+  poistestval <- poisson.test(gauge_n, r=gauge_null_n, alternative=alternative)
+  
+  rval_norm <- list(statistic = gaugetestval, p.value = pval, estimate=gauge, null.value = gauge.null, alternative = alternative, method="Jiao-Pretis Outlier Proportion Test", data.name="Proportion of detected outliers")
+  attr(rval_norm, "class") <- "htest"
+  rval_pois <- list(statistic = gauge_n, p.value = poistestval$p.value, estimate=gauge_n, null.value = gauge_null_n, alternative = alternative, method="Jiao-Pretis Outlier Count Test", data.name="Number of detected outliers")
+  attr(rval_pois, "class") <- "htest"
+  out <- list(rval_norm, rval_pois)
+  names(out) <- c("proportion", "count")
+  
+  return(out)
+}
+
+#######################
+###mvrnormsim: reproduced from MASS
+#######################
+
+mvrnormsim <- function(n = 1, mu, Sigma, tol = 1e-06, empirical = FALSE){
+  
+  p <- length(mu)
+  eS <- eigen(Sigma, symmetric = TRUE)
+  ev <- eS$values
+  X <- matrix(rnorm(p * n), n)
+  if (empirical) {
+    X <- scale(X, TRUE, FALSE)
+    X <- X %*% svd(X, nu = 0)$v
+    X <- scale(X, FALSE, TRUE)
+  }
+  X <- drop(mu) + eS$vectors %*% diag(sqrt(pmax(ev, 0)), p) %*% t(X)
+  nm <- names(mu)
+  if (is.null(nm) && !is.null(dn <- dimnames(Sigma))) {
+    nm <- dn[[1L]]  
+  }
+  dimnames(X) <- list(nm, NULL)
+  if (n == 1) {
+    drop(X) } else {
+      t(X)   
+    } 
+  #return(X)
+}
+
+
+####################################
+############# isatloop
+####################################
+
+##### Looping over isat iterations for different p-values of selection to be used in outlierscaletest
+isatloop <- function(num=c(seq(from=20, to=1, by=-1)), t.pval.spec = FALSE, print=FALSE, y, ar=NULL, iis=TRUE,  sis=FALSE,  ...){
+  
+  
+  initialm <- arx(y=y, ar=ar) 
+  n <- initialm$n
+  num <- num[rev(order(num))]
+  
+  if (t.pval.spec == FALSE){
+    p.num <- num/n # scaling significance levels
+  } else { #if p-values are pre-specified
+    p.num <- num
+  }
+  
+  K <- length(p.num)
+  obs.gauge <- data.frame(matrix(NA, nrow=K, ncol=4)) # record significance p value, sample gauge, expected number and sample number of outliers
+  names(obs.gauge) <- c("t.pval", "obs.prop", "p.num", "obs.num")
+  for (k in 1:K) 
+  {
+    pval <- p.num[k]
+    if (print==TRUE)
+    {
+      print(paste("k:", k, "/", K, ", p:", pval, sep=""))
+    }
+    x <- isat(y=y, iis=iis, sis=sis, t.pval=pval, ar=ar, ...) 
+    
+    #mxreg=mxreg, mc=mc, 
+    if (!is.null(x$ISnames)) {
+      ISnames <- c(x$ISnames[grep("iis", x$ISnames)])
+      noutl= length(ISnames) 
+      is.gauge <- noutl/n
+      is.num <- noutl
+    }  else   {
+      is.gauge <- 0
+      is.num <- 0
+    }
+    if (print==TRUE)
+    {
+      print(paste("gauge k:", is.gauge, ", number k:", "is.num", sep=""))     
+    }
+    obs.gauge$t.pval[k] <- pval 
+    obs.gauge$obs.prop[k] <- is.gauge
+    obs.gauge$p.num[k] <- pval*n
+    obs.gauge$obs.num[k] <- is.num    
+  }
+  
+  out <- list(n, obs.gauge)
+  names(out) <- c("n", "obs.gauge")
+  return(out)
+}
+
+#######################
+##### outlierscaletest
+########################
+
+#### Scaling outlier tests from Jiao and Pretis (2019)
+
+outlierscaletest <- function(x, nsim = 10000){
+  ###################
+  
+  obs.gauge <- x$obs.gauge
+  n <- x$n ##need to extract n
+  p.num <- obs.gauge$t.pval
+  c <- qnorm(1 - p.num/2) # corresponding cut-offs # assume standardised error follows standard normal
+  fc <- dnorm(c) 
+  psi <- 1 - p.num
+  tau_2_c <- psi - 2*c*fc
+  tau_4 <- 3
+  K <- length(p.num)
+  
+  #######################
+  ##### Scale Sum Test
+  ######################
+  
+  stand.obs.gauge <- n^(1/2)*(obs.gauge$obs.prop - obs.gauge$t.pval) # standardise gauge
+  scalesum.stat <- sum(stand.obs.gauge) # scaling sum statistic
+  
+  if (K == 1) # covariance structure between test statistics of different significance levels
+  {
+    covar <- 0
+  }  else  {
+    covar <- 0 
+    for (k in 1:(K - 1)) 
+    {
+      for (l in (k + 1):K)
+      {
+        covar <- covar + obs.gauge$t.pval[l] - obs.gauge$t.pval[k]*obs.gauge$t.pval[l]
+      }
+    }
+  }
+  var.scalesum.stat <- sum(obs.gauge$t.pval*(1 - obs.gauge$t.pval)) + 2*covar + sum(c*fc)^(2)*(tau_4 - 1) + 2*sum(c*fc)*sum(tau_2_c + obs.gauge$t.pval - 1) # variance for scaling sum test statistic
+  sd.scalesum.stat <- sqrt(var.scalesum.stat)
+  
+  #### Sum Test Output
+  stand.scalesum.stat <- scalesum.stat/sd.scalesum.stat
+  scalesum.pval <- 2*(pnorm(-abs(stand.scalesum.stat)))
+  
+  #######################
+  ##### Scale Sup Test
+  ######################
+  
+  scalesup.stat <- max(abs(stand.obs.gauge)) # scaling sup statistic
+  
+  N <- nsim # sample size used to simulate the limiting distribution (could also be added as the argument of function)
+  mu <- matrix(0, K, 1) # mean of GP
+  Sigma <- matrix(NA, K, K) # covariance of GP
+  for (s in 1:K)
+  {
+    for (t in 1:K)
+    {
+      if (s <= t)
+      {
+        Sigma[s, t] <- obs.gauge$t.pval[t]*(1 - obs.gauge$t.pval[s]) + c[s]*fc[s]*(tau_2_c[t] + obs.gauge$t.pval[t] - 1) + c[t]*fc[t]*(tau_2_c[s] + obs.gauge$t.pval[s] - 1) + c[s]*c[t]*fc[s]*fc[t]*(tau_4 - 1)
+      }
+      else
+      {
+        Sigma[s, t] <- Sigma[t, s]
+      }
+    }
+  }
+  GPsample <- mvrnormsim(N, mu, Sigma) # generate multivariate normal and dim of object is N by K
+  Limitsample <- apply(abs(GPsample), 1, max) # find largest value over rows of absolute of GPsample
+  
+  pvalsample <- Limitsample # use empirical distribution to draw p value
+  pvalsample[Limitsample <= scalesup.stat] <- 0
+  pvalsample[Limitsample > scalesup.stat] <- 1
+  scalesup.pval <- mean(pvalsample)
+  
+
+  ##################################
+  ##### Output of Sum and Sup Tests
+  
+  rval_sum <- list(statistic = stand.scalesum.stat, p.value = scalesum.pval, estimate=NULL, null.value = NULL, alternative = NULL, method="Jiao-Pretis Outlier Scaling Sum Test", data.name="Scaling proportion of detected outliers (Sum)")
+  attr(rval_sum, "class") <- "htest"
+  rval_sup <- list(statistic = scalesup.stat, p.value = scalesup.pval, estimate=NULL, null.value = NULL, alternative = NULL, method="Jiao-Pretis Outlier Scaling Sup Test", data.name="Scaling proportion of detected outliers (Sup)")
+  attr(rval_sup, "class") <- "htest"
+  
+  out <- list(rval_sum, rval_sup)
+  names(out) <- c("sum", "sup")
+  
+  return(out)
+  
+} ###function closed
+
+
+
+
+
+
