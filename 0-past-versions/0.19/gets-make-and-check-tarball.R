@@ -17,18 +17,18 @@
 ##initiate:
 ##=========
  
-##set working directory:
+##clean workspace:
+rm(list = ls())
+
+##Set working directory:
 setwd(choose.dir())
 #Examples in Windows:
 #setwd("C:/Program files/R/R-devel/bin/")
 #setwd("C:/Program files/R/R-3.5.3/bin/")
 
-##clean workspace:
-rm(list = ls())
-
-##load sources
-source("gets-base-source.R")
-source("gets-isat-source.R")
+##Load sources
+source("gets-base-source-devel.R")
+source("gets-isat-source-devel.R")
 
 ##Note: On Windows, make sure you have writing and modifying
 ##permission in the working directory: First (right-click
@@ -82,7 +82,7 @@ system( paste0("R CMD check ", tarballName, " --as-cran") )
 ##==============================
 
 system( paste0("R CMD INSTALL ", tarballName) )
-#system("R CMD INSTALL gets_0.20.tar.gz")
+#system("R CMD INSTALL gets_0.19.tar.gz")
 #system("R CMD INSTALL --build gets")
 
 ##Upload to CRAN:

@@ -1,0 +1,21 @@
+bibentry(bibtype = "Article",
+  title        = "Automated General-to-Specific ({GETS}) Regression Modeling and Indicator Saturation for Outliers and Structural Breaks",
+  author       = c(person(given = "Felix",
+                          family = "Pretis",
+                          email = "felix.pretis@nuffield.ox.ac.uk"),
+                   person(given = c("J.", "James"),
+                          family = "Reade",
+                          email = "j.j.reade@reading.ac.uk"),
+                   person(given = "Genaro",
+                          family = "Sucarrat",
+                          email = "genaro.sucarrat@bi.no")),
+  journal      = "Journal of Statistical Software",
+  year         = "2018",
+  volume       = "86",
+  number       = "3",
+  pages        = "1--44",
+  doi          = "10.18637/jss.v086.i03",
+
+  header       = "To cite gets in publications use:"
+)
+

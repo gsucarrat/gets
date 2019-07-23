@@ -2,9 +2,9 @@
 {
   ##set start-up message:
   txt <- c("\n",
-    paste(sQuote("gets"), "version 0.20\n"),
+    paste(sQuote("gets"), "version 0.19\n"),
     "\n",
-    paste0("General-to-Specific (GETS) and Indicator Saturation (ISAT) methods, type help(", sQuote("gets-package"), ") for details"),
+    paste("General-to-Specific (GETS) and indicator saturation methods, see", sQuote("help(gets)"), "for details"),
     "\n",
     paste("CRAN website: https://CRAN.R-project.org/package=gets"),
     paste("An introduction (PDF): https://www.jstatsoft.org/article/view/v086i03"),

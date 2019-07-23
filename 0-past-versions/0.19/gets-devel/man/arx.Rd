@@ -12,8 +12,8 @@ The AR-X mean specification can contain an intercept, AR-terms, lagged moving av
 arx(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL, vc=FALSE,
   arch=NULL, asym=NULL, log.ewma=NULL, vxreg=NULL, zero.adj=0.1,
   vc.adj=TRUE, vcov.type=c("ordinary", "white", "newey-west"),
-  qstat.options=NULL, normality.JarqueB=FALSE, user.estimator=NULL,
-  user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, plot=NULL)
+  qstat.options=NULL, user.estimator=NULL, user.diagnostics=NULL,
+  tol=1e-07, LAPACK=FALSE, plot=NULL)
 }
 
 \arguments{
@@ -31,7 +31,6 @@ arx(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL, vc=FALSE,
   \item{vc.adj}{logical. If \code{TRUE} (default), then the log-variance intercept is adjusted by the estimate of E[ln(z^2)], where z is the standardised error. This adjustment is needed for the conditional scale to be equal to the conditional standard deviation. If \code{FALSE}, then the log-variance intercept is not adjusted}
   \item{vcov.type}{character vector, "ordinary" (default), "white" or "newey-west". If "ordinary", then the ordinary variance-covariance matrix is used for inference. If "white", then the White (1980) heteroscedasticity-robust matrix is used. If "newey-west", then the Newey and West (1987) heteroscedasticity and autocorrelation-robust matrix is used}
   \item{qstat.options}{\code{NULL} (default) or an integer vector of length two, say, \code{c(1,1)}. The first value sets the lag-order of the AR diagnostic test, whereas the second value sets the lag-order of the ARCH diagnostic test. If \code{NULL}, then the two values of the vector are set automatically}
-  \item{normality.JarqueB}{\code{FALSE} (default) or \code{TRUE}. If \code{TRUE}, then the results of the Jarque and Bera (1980) test for non-normality in the residuals are included in the estimation results. }
   \item{user.estimator}{\code{NULL} (default) or a \code{\link{list}} with one entry, \code{name}, containing the name of the user-defined estimator }
   \item{user.diagnostics}{\code{NULL} (default) or a \code{\link{list}} with two entries, \code{name} and \code{pval}, see the \code{user.fun} argument in \code{\link{diagnostics}} }
   \item{tol}{numeric value (\code{default = 1e-07}). The tolerance for detecting linear dependencies in the columns of the regressors (see \code{\link{qr}} function). Only used if \code{LAPACK} is \code{FALSE} (default)}
@@ -44,8 +43,6 @@ arx(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL, vc=FALSE,
 \value{A list of class 'arx'}
 
 \references{
-C. Jarque and A. Bera (1980): 'Efficient Tests for Normality, Homoscedasticity and Serial Independence'. Economics Letters 6, pp. 255-259
-
 Pretis, Felix, Reade, James and Sucarrat, Genaro (2018): 'Automated General-to-Specific (GETS) Regression Modeling and Indicator Saturation for Outliers and Structural Breaks'. Journal of Statistical Software 86, Number 3, pp. 1-44
 
 Halbert White (1980): 'A Heteroskedasticity-Consistent Covariance Matrix Estimator and a Direct Test for Heteroskedasticity', Econometrica 48, pp. 817-838

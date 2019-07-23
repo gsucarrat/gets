@@ -10,12 +10,11 @@
 \usage{
 paths(object, ...)
 terminals(object, ...)
-rsquared(object, adjusted=FALSE, ...)
+rsquared(object, ...)
 }
 
 \arguments{
   \item{object}{an object of class 'arx', 'gets' or 'isat'}
-  \item{adjusted}{\code{logical}. If \code{TRUE} the adjusted R-squared is returned }
   \item{\dots}{additional arguments}
 }
 
@@ -26,7 +25,7 @@ rsquared(object, adjusted=FALSE, ...)
 \value{
   \item{\code{paths}:}{a \code{\link{list}} with the paths searched (each number refers to a regressor in the GUM)}
   \item{\code{terminals}:}{a \code{\link{list}} with the terminal models (each number refers to a regressor in the GUM)}
-  \item{\code{rsquared}:}{a \code{\link{numeric}}, the R-squared of the regression, or adjusted R-squared if \code{adjusted} is set to \code{TRUE} }
+  \item{\code{rsquared}:}{a \code{\link{numeric}}, the R-squared of the regression}
 }
 
 \author{
@@ -47,12 +46,10 @@ xregs <- matrix(rnorm(4*50), 50, 4)
 ##regressors in the mean:
 mymod <- arx(y, mc=TRUE, ar=1:2, mxreg=xregs)
 rsquared(mymod)
-rsquared(mymod, adjusted=TRUE)
 
 ##General-to-Specific (GETS) modelling of the mean:
 meanmod <- getsm(mymod)
 rsquared(meanmod)
-rsquared(meanmod, adjusted=TRUE)
 
 ##extract the paths searched:
 paths(meanmod)

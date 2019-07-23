@@ -1,39 +1,3 @@
-Version 0.20-devel:
-===================
-
-* diagnostics() function: the argument user.fun now accepts lists with an arbitrary number of entries. In particular, the user-defined diagnostics function needs not reside in the global environment. This improved flexibility carries over to the user.diagnostics arguments in the arx(), getsm(), getsv(), getsFun() and isat() functions, since they all invoke the diagnostics() function
-
-* isat() function:
-
-- new arguments: user.estimator, gof.function and gof.method. This is to enable user-defined estimators and user-defined goodness-of-fit functions, as in getsFun() 
-
-* new function: regressorsMean(): creates the regressors of the mean equation of an arx-model
-
-* arx() function:
-
-- new argument: normality.JarqueB w/default FALSE. If TRUE, then a Jarque-Bera test for non-normality in the standardised residuals is included in the diagnostics of the print
-
-- improvements related to the user.diagnostics and user.estimator arguments
-
-* minor changes:
-
-- rsquared() function: new argument 'adjusted' with default FALSE
-
-- logLik.arx(): a warning is now returned if object$logl is NULL
-
-- print.isat(): less information is printed, minor style-changes
-
-- summary.arx/gets/isat(): now returns more info (same as summary.default())
-
-- ols() function: arguments user.fun and user.options deprecated
-
-- VaR(), ES(): not applicable to isat objects anymore
-
-- help pages: minor improvements and changes throughout
-
-- BugReports in DESCRIPTION file changed to https://github.com/gsucarrat/gets/issues
-
-
 Version 0.19 (10 July 2019):
 ============================
 
@@ -56,7 +20,6 @@ Version 0.19 (10 July 2019):
 * minor changes:
 
 - print.isat: now reports the outliertest automatically if iis=TRUE, also reports the corrected variance if isatvarcorrect is used
-
 - printtex: minor stylistic changes to the LaTeX-output and to the help-page
 
 

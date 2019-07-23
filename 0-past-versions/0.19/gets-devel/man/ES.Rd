@@ -14,7 +14,7 @@ VaR(object, level=0.99, type=7, ...)
 }
 
 \arguments{
-  \item{object}{an \code{\link{arx}} or \code{gets} object}
+  \item{object}{an \code{\link{arx}}, \code{gets} or \code{isat} object}
   \item{level}{the risk level(s), must be between 0 and 1}
   \item{type}{the method used to compute the empirical quantiles of the standardised residuals}
   \item{...}{arguments passed on (currently not used)}
@@ -26,7 +26,7 @@ A vector or matrix containing either the conditional Value-at-Risk (VaR) or the 
 
 \author{Genaro Sucarrat, \url{http://www.sucarrat.net/}}
 
-\seealso{\code{\link{arx}}, \code{\link{getsm}}, \code{\link{getsv}} }
+\seealso{\code{\link{arx}}, \code{\link{getsm}}, \code{\link{getsv}}, \code{\link{isat}} }
 
 \examples{
 ##generate random variates, estimate model:

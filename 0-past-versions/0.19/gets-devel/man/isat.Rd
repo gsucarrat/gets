@@ -12,9 +12,8 @@ isat(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL, iis=FALSE, sis=TRUE,
   tis=FALSE, uis=FALSE, blocks=NULL, ratio.threshold=0.8, max.block.size=30,
   t.pval=0.001, wald.pval=t.pval,
   vcov.type= c("ordinary","white","newey-west"), do.pet=FALSE, ar.LjungB=NULL,
-  arch.LjungB=NULL, normality.JarqueB=NULL, info.method=c("sc","aic","hq"),
-  user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL,
-  gof.method = c("min", "max"), include.gum=NULL, include.1cut=FALSE,
+  arch.LjungB=NULL, normality.JarqueB=NULL, user.diagnostics=NULL,
+  info.method=c("sc","aic","hq"), include.gum=NULL, include.1cut=FALSE,
   include.empty=FALSE, max.paths=NULL, parallel.options=NULL, turbo=FALSE,
   tol=1e-07, LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE, plot=NULL,
   alarm=FALSE)
@@ -39,12 +38,9 @@ isat(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL, iis=FALSE, sis=TRUE,
   \item{do.pet}{logical. If \code{TRUE}, then a Parsimonious Encompassing Test (PET) against the GUM is undertaken at each regressor removal for the joint significance of all the deleted regressors along the current path. If FALSE (default), then a PET is not undertaken at each regressor removal. By default, the numeric value is the same as that of \code{t.pval}}
   \item{ar.LjungB}{a two-item list with names \code{lag} and \code{pval}, or NULL (default). In the former case \code{lag} contains the order of the Ljung and Box (1979) test for serial correlation in the standardised residuals, and \code{pval} contains the significance level. If \code{lag=NULL} (default), then the order used is that of the estimated 'arx' object. If \code{ar.Ljungb=NULL}, then the standardised residuals are not checked for serial correlation}
   \item{arch.LjungB}{a two-item list with names \code{lag} and \code{pval}, or NULL (default). In the former case, \code{lag} contains the order of the Ljung and Box (1979) test for serial correlation in the squared standardised residuals, and \code{pval} contains the significance level. If \code{lag=NULL} (default), then the order used is that of the estimated 'arx' object. If \code{arch.Ljungb=NULL}, then the standardised residuals are not checked for ARCH}
-  \item{normality.JarqueB}{\code{NULL} (the default) or a value between 0 and 1. In the latter case, a test for non-normality is conducted using a significance level equal to \code{normality.JarqueB}. If \code{NULL}, then no test for non-normality is conducted}
-  \item{info.method}{character string, "sc" (default), "aic" or "hq", which determines the information criterion to be used when selecting among terminal models. The abbreviations are short for the Schwarz or Bayesian information criterion (sc), the Akaike information criterion (aic) and the Hannan-Quinn (hq) information criterion}
+  \item{normality.JarqueB}{a value between 0 and 1, or \code{NULL}. In the former case, a test for non-normality is conducted using a significance level equal to the numeric value. If \code{NULL}, then no test for non-normality is undertaken}
   \item{user.diagnostics}{\code{NULL} or a \code{\link{list}} with two entries, \code{name} and \code{pval}, see the \code{user.fun} argument in \code{\link{diagnostics}} }
-  \item{user.estimator}{\code{NULL} or a \code{\link{list}} with at least one entry, \code{name}, see the \code{user.estimator} argument in \code{\link{getsFun}} }
-  \item{gof.function}{\code{NULL} or a \code{\link{list}} with at least one entry, \code{name}, see the \code{user.estimator} argument in \code{\link{getsFun}} }
-  \item{gof.method}{\code{NULL} or a \code{character} that determines whether the best Goodness-of-Fit is a minimum or maximum }
+  \item{info.method}{character string, "sc" (default), "aic" or "hq", which determines the information criterion to be used when selecting among terminal models. The abbreviations are short for the Schwarz or Bayesian information criterion (sc), the Akaike information criterion (aic) and the Hannan-Quinn (hq) information criterion}
   \item{include.gum}{ignored (temporarily deprecated)}
   \item{include.1cut}{logical. If \code{TRUE}, then the 1-cut model is included among the terminal models, if it passes the diagnostic tests, even if it is not equal to one of the terminals. If FALSE (default), then the 1-cut model is not included (unless it is one of the terminals)}
   \item{include.empty}{logical. If \code{TRUE}, then an empty model is included among the terminal models, if it passes the diagnostic tests, even if it is not equal to one of the terminals. If FALSE (default), then the empty model is not included (unless it is one of the terminals)}

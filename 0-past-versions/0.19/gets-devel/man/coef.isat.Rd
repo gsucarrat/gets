@@ -16,7 +16,7 @@
 
 \usage{
   \method{coef}{isat}(object, ...)
-  \method{fitted}{isat}(object, ...)
+  \method{fitted}{isat}(object, spec=NULL, ...)
   \method{logLik}{isat}(object, ...)
   \method{plot}{isat}(x, col=c("red","blue"), lty=c("solid","solid"),
     lwd=c(1,1), coef.path=TRUE, ...)
@@ -32,6 +32,7 @@
 \arguments{
   \item{object}{an object of class 'isat'}
   \item{x}{an object of class 'isat'}
+  \item{spec}{'mean' or 'variance'}
   \item{std}{logical. If FALSE (default), then the mean residuals are returned. If TRUE, then the standardised residuals are returned}
   \item{n.ahead}{generate forecasts up to n steps ahead (the default is 12)}
   \item{newmxreg}{a matrix (\code{n.ahead} rows and NCOL(mxregs) columns) with the out-of-sample values of the \code{mxreg} regressors}
@@ -117,7 +118,7 @@ plot(zhat)
 
 ##generate forecasts with the simplified
 ##(specific) model:
-##predict(isatmod)
+predict(isatmod)
 
 }
 
