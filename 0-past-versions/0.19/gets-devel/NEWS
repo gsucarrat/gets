@@ -1,0 +1,424 @@
+Version 0.19 (10 July 2019):
+============================
+
+* new functions:
+
+- isatdates: convenience function that extracts the breakdates from an isat object.
+
+- isatvarcorrect: applies the Johansen and Nielsen (2016) consistency and efficiency correction to the estimated variance of an isat object when using impulse indicator saturation.
+
+- outliertest: test whether the proportion of detected outliers using impulse indicator saturation is different than expected under the null (see Jiao and Pretis, 2019: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3217213)
+
+- outlierscaletest: test whether the proportion of detected outliers using impulse indicator saturation scales with the level of significance under the null (see Jiao and Pretis, 2019: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3217213). To run outlierscaletest, first "isatloop" has to be run.
+
+- isatloop: repeatedly runs isat at different levels of significance of selection. Output is used in the new outlierscaletest function.
+
+- vargaugeiis: computes the variance of the gauge. This is used in the new outliertest function.
+
+* fix: the S3 method 'gets' is now correctly registered in the NAMESPACE file
+
+* minor changes:
+
+- print.isat: now reports the outliertest automatically if iis=TRUE, also reports the corrected variance if isatvarcorrect is used
+- printtex: minor stylistic changes to the LaTeX-output and to the help-page
+
+
+Version 0.18 (25 February 2019):
+================================
+
+* fixes:
+
+- predict.arx/predict.gets/predict.isat: backcasted values are now actual rather than fitted when spec="mean"; the argument fitted=TRUE in plot.options now also applies when spec="variance"; new allowable argument in the plot.options argument: newvactual; several minor improvements in the plotting; the errors.only argument in plot.options deprecated
+
+
+Version 0.17 (25 December 2018):
+================================
+
+* new function: printtex. Convenience function that generates LaTeX-code of an estimation result (e.g. an arx-object, gets-object or isat-object). The function can, in principle, be applied to any object for which coef, vcov and logLik methods exist
+
+
+Version 0.16 (28 August 2018):
+==============================
+
+* CITATION added
+
+* Minor changes to documentation
+
+
+Version 0.15 (4 April 2018):
+============================
+
+* isat:
+
+- temporarily deprecated argument: include.gum
+
+* fix:
+
+- isat: it is not necessary to set include.gum=TRUE for impulses to be retained (this bug was introduced in version 0.14)
+
+
+Version 0.14 (25 December 2017):
+================================
+
+* isat:
+
+- new arguments: include.1cut, turbo
+- gets-search is now undertaken by the getsFun() function (rather than arx + getsm)
+
+* fix:
+
+- isat: the max.paths argument now works
+
+
+Version 0.13 (5 October 2017):
+==============================
+
+* new package dependency: 'parallel'
+ 
+* isat: 
+
+- new argument, parallel.options, for parallel computation in the block search
+- new argument, max.paths, that controls the number of backwards elimination paths. If NULL (the default), then there is no maximum
+- improved block composition algorithm (sometimes NCOL(uis) > length(y) resulted in too few blocks, so that isat() crashed, whenever uis was a matrix)
+- isattest: the default of plot argument changed to NULL
+- some of the values in the returned list have been renamed (e.g. resids changed to residuals), and some new values have been added
+
+* getsm:
+
+- new argument, max.paths, that controls the maximum number of backwards elimination paths. If NULL (the default), then there is no maximum
+- now works if the user.estimator is not NULL in the arx-object it is applied to
+- some of the values in the returned list have been renamed (e.g. resids changed to residuals), and some new values have been added
+
+* new function: getsFun. Computationally efficient GETS-modelling with - optionally - user-defined estimation, and - optionally - user-defined diagnostics. In the future, getsm() and isat() will be re-written so that they call and rely on getsFun()
+
+* new function: infocrit. Essentially equal to info.crit, but the main argument is a list (typically an estimation object, e.g. produced by ols())
+
+* new S3 method: gets
+
+* getsv:
+
+- has been re-written in order to call and rely on the new getsFun() function (see above)
+- new arguments: include.1cut (default FALSE), max.paths (default NULL, i.e. no maximum), turbo (default FALSE)
+- some of the values in the returned list have been renamed (e.g. resids changed to residuals), and some new values have been added
+
+* diagnostics:
+
+- the main argument, x, is now expected to be a list containing estimation results, e.g. from ols()
+- deleted arguments: s2, y, xreg
+
+* ols:
+
+- method=3: new default
+- methods 3, 4 and 5 now accept empty regressor matrices
+- re-naming of some of the items in the returned value (e.g. resids changed to residuals)
+- new estimation method (method=6): estimation of log-variance model
+- new argument: untransformed.residuals (default NULL), which is needed when method=6
+
+* fixes:
+
+- getsv: if the gum has a mean-specification, then the fitted values of the mean (i.e. the mean.fit entry) are now the fitted values of the gum-mean (i.e. not zeros, as previously)
+- logLik.arx: fix of a bug that occurred whenever the estimator was user-defined (i.e. whenever user.estimator argument was not NULL in the arx-call)
+- rsquared: cannot be applied anymore on the specific model obtained by getsv() (an NA value will be returned)
+
+* numerous minor changes have been made throughout the code, which should not be noticeable for the average user. Also, numerous minor changes have been made throughout the documentation
+
+
+Version 0.12 (18 February 2017):
+================================
+
+* the R version dependency changed to >= 3.3.0
+
+* fix of minor issue in print.gets, which occurred when no search was undertaken
+
+
+Version 0.11 (17 February 2017):
+================================
+
+* ES, VaR: new extraction functions for arx, gets and isat objects. The former extracts the conditional Expected Shortfall (ES) for the chosen risk level(s), whereas the latter extracts the conditional Value-at-Risk (VaR).
+ 
+* arx:
+
+- new argument: user.estimator
+- deleted argument: verbose
+
+* fitted.isat: new argument, spec, which works in the same way as for arx and gets objects
+
+* predict.isat: when applied to isat-objects with retained indicators (impulse, step, trend), it is not necessary anymore to include indicator-values in the newmxreg argument (the out-of-sample indicator-values are automatically generated)
+
+* eviews, stata: their messages can now also be suppressed with the suppressMessages() command, in addition to print=FALSE
+
+
+Version 0.10 (16 January 2017):
+===============================
+
+* diagnostics: several new arguments in order to accommodate user-defined diagnostics
+
+* arx, getsm, getsv and isat: now accepts user-defined diagnostics via a new argument, user.diagnostics, see help(diagnostics)
+
+* ols, arx, getsm, getsv, isat, recursive: the way ols-estimation is implemented via the qr-decomposition has been modified for greater numerical stability
+
+* recursive, getsm, getsv, isat: messages and search-info during search can now be suppressed with the suppressMessages() function
+
+* plot.arx: now returns a warning if applied to an arx-object with no estimation results
+
+* new S3-method: sigma, i.e. the standard error of regression, which can be applied to arx, gets and isat objects
+
+* new extraction function: rsquared. The function returns the R-squared of the regression, and the function can be applied to arx, gets and isat objects
+
+* print.arx: now also returns the standard error of regression
+
+* print.gets, print.isat:
+
+- now also returns the standard error of regression, R-squared and log-likelihood of the specific model
+
+* isat:
+
+- regressors that enters via mxreg can now be perfectly colinear with indicators, as superflous indicators are detected and removed before search
+- the verbose argument is deprecated and thus not used anymore
+
+* getsv: the argument 'verbose' was deleted
+
+* stata: a fix in the variable-naming
+
+* Deleted function: jb.test
+
+
+Version 0.9 (3 October 2016):
+=============================
+
+* New functions:
+
+- predict.gets, predict.isat
+
+- isvarcor, isvareffcor
+
+* isatvar, isattest:
+
+- now possible to use consistency correction (for the variance estimate) as well as the efficiency correction (for fixed regressors) when using IIS (see Johansen and Nielsen 2016)
+
+- isatvar can now compute the (approximate variance and) coefficient path of user-specified variables
+
+* biascorr: improved/new feature
+
+* arx:
+
+- predict.arx: new arguments (return and plot.options), improved plotting and improved handling of regular zoo-indices
+
+- arguments ar, mxreg, arch, asym and vxreg, whose defaults are NULL, now also accepts FALSE as argument value (does the same as NULL)
+
+- print.arx: new argument, signif.stars, with default value FALSE
+
+* getsm, getsv, isat: minor changes to the printing during search (in particular, search-paths now printed sideways)
+
+* iim, sim, tim: prettier index-handling of the column/regressor-names whenever the argument is a strictly regular time series with frequency equal to 1, e.g. a yearly time-series
+
+Fixes:
+
+* isat:
+
+- several issues related to the use of the uis argument (most of the issues occurred in situations where uis contained few regressors)
+
+- minor change to the algorithm determining the number of blocks (in order to avoid very small blocks)
+
+
+
+Version 0.8 (28 June 2016):
+===========================
+
+* print.arx, print.gets, print.isat: minor stylistic changes
+
+* info.criterion: improved help-manual
+
+
+Version 0.7 (11 April 2016):
+============================
+
+* arx: the log.ewma argument can now either be a vector containing the lengths, or a list with an entry named length (that contains the vector of lengths). The lag entry lag, which was previously available when log.ewma is a list, has been deprecated (lag is always equal to 1).
+
+* predict.arx:
+
+- can now be applied on arx-objects where log.ewam is not NULL
+
+- n.ahead: new default value, 12
+
+- new argument: newindex
+
+* print.arx: improved handling of regular time-indices
+
+* isat: t.pval can now be extracted using aux$t.pval on an isat object
+
+* Fixes:
+
+- predict.arx: now works when a log-arch specification has been fitted with arch=NULL
+
+- a zoo-object x is considered to be regular if is.regular(x, strict=TRUE) is TRUE. Previously, x was considered regular if is.regular(x, strict=FALSE) was TRUE.
+
+- isattest: bias-correction (biascorr=TRUE) now works when t.pval is specified as a variable in the initial isat model.
+
+
+Version 0.6 (9 March 2016):
+===========================
+
+* Minor change in the object returned by isat: The entry aux$mX now has column-names equal to aux$mXnames (in version 0.5 colnames(aux$mX) was NULL)
+
+* Fixes:
+
+- paths, terminals: documentation and help-files for these functions are now included (the help-files were inadvertedly excluded in version 0.5 due to an error in the paths.Rd file)
+
+- DESCRIPTION file: The BugReports field was changed to http://stackoverflow.com/questions/tagged/r
+
+
+Version 0.5 (29 February 2016):
+===============================
+
+* isat: isat-objects are now formally established as a separate class (formerly they were of class 'gets'). The S3-methods available for gets-objects are also available for isat-objects (i.e. coef, fitted, logLik, plot, print, residuals, summary and vcov). The gets-extraction functions paths and terminals, and the arx-extraction function recursive, can also be applied on isat-objects.
+
+* predict: new extraction function (S3-method) for arx-objects
+
+* logLik: new extraction function (S3-method) for gets and isat objects
+
+* periodicdummies: new auxiliary function that creates a matrix with periodicity dummies (e.g. seasonals) for regular time series. The function is similar to - but more general than - the seasonaldummy function in the forecast package.
+
+* sim, iim, tim, recursive: improved handling of the time index when a time-series is regular
+
+* getsm, getsv, isat: the default value of the wald.pval argument was changed to t.pval
+
+* eviews, stata: minor stylistic changes in the printing whenever file is not NULL
+
+* Fixes:
+
+- arx: regressors in mxreg can now contain fewer non-NA observations than the regressand (this is automatically adjusted for) at the beginning and at the end of the series
+
+- recursive: the value of vconst (the intercept in a log-arch model) is now correctly computed. Earlier, the adjustment value E(ln z^2) was added rather than subtracted
+
+- getsm: now correctly computes the number of non-NA observations for the log-likelihood when a log-arch is fitted. The error did not affect the comparison between terminal models nor the logLik.gets function
+
+- plot.gets: now returns a plot when no mean-specification is fitted (it did not do so in versions 0.3 and 0.4)
+
+- logLik.arx: now correctly specifies the conditional variance to compute the log-likelihood. The error did not affect the getsv, getsm nor isat functions, only the log-likelihood value reported when printing the results via print.arx.
+
+
+Version 0.4 (18 December 2015):
+===============================
+
+* recursive: new exctraction function for arx-objects. The function returns the recursive coefficient estimates together with their standard errors, and plots the recursive estimates. The function can also be applied to gets and isat objects, as long as a final model is estimated
+
+* eviews, stata: new utility functions that can be applied on arx, gets and isat objects. Provides utilities and generates code that facilitates exporting the estimation results to EViews and Stata, respectively.
+
+* ols: four new estimation methods have been added. Three of them correspond to different variance-covariance matrices, whereas the fourth can be user-specified.
+
+* isat: step-indicator saturation is now the default. That is, the default value of iis was changed to FALSE, and the default value of sis was changed to TRUE.
+
+* Fixes:
+
+- getsm, getsv: ar.LjungB=NULL and arch.LjungB=NULL did not work in version 0.3 (but they did in versions 0.2 and 0.1)
+
+
+Version 0.3 (25 November 2015):
+===============================
+
+* arx, getsm, isat:
+
+- logLik.arx: new extraction function (S3 method) for arx objects
+
+- vcov.type accepts a new option, "newey-west", i.e. the covariance matrix of Newey and West (1987)
+
+- plot.arx: the order of the arguments have been changed (spec is now the second argument)
+
+* isat:
+
+- The default block-determining rule, i.e. when blocks=NULL, has been changed in order to avoid large blocks in large samples (the change speeds up selection notably)
+
+- The argument tis, with default FALSE, has been added. If TRUE, then search over trend-indicators is undertaken.
+
+- The argument uis, with default FALSE, has been added. It permits the user to provide a user-specified matrix, or list of matrices, to search over.
+
+- The argument blocks, whose default value is NULL, now also accepts a user-specified list of the blocks to search over
+
+* iim, sim, tim: new utility functions. The first creates a matrix of impulse indicators, the second a matrix of step indicators and the third a matrix of trend indicators.
+
+* isatvar: 
+
+- Now reports the coefficient path (against the full sample coefficient and the intercept path itself)
+
+- Reports the long-run mean with its variance and standard deviation if specified and the input includes AR terms
+
+* biascorr, isattest: new auxiliary functions; called when the output from an isat object is plotted
+
+* deleted function: skewness.test. This function was required by AutoSEARCH (i.e. the predecessor of gets), but is not used by gets. As of April 2015, AutoSEARCH does not depend on gets anymore, so the function is redundant.
+
+
+Version 0.2 (22 December 2014):
+===============================
+
+The main change to version 0.2 is the addition of the isat function, which is a result of an initiative from Felix Pretis and James Reade. The isat function provides indicator saturation methods (impulses, steps) and is a major new feature of the gets package. To accommodate the new feature numerous minor and major changes have been made throughout. Some of these are:
+
+* plot.arx, plot.gets: new S3 functions
+
+* isatvar: new auxiliary function called by plot.gets when applied to a gets object resulting from isat
+
+* dropvar: new function. The function removes the regressors in a regressor matrix that cause exact multicolinearity. The code is based on the drop.coef function from the ordinal package by Rune Haubo Bojesen Christensen.
+
+* diagnostics: new function
+
+* deleted functions: glog.ep, regs.mean, regs.var
+
+* broken dependency: the gets package does not depend on lgarch anymore (regs.mean and regs.var called functions in the lgarch package)
+
+* getsm: major speed improvements when the log-variance specification is empty
+
+* getsm/getsv/arx: new arguments, including plot for all three, and print.searchinfo and include.gum for the first two
+
+Fixes:
+
+* arx: bugfix of mxreg and vxreg arguments. The bug consisted in erroneous regressor labelling whenever mxreg and/or vxreg were 1-column matrices (or vectors). The bug also affected the getsm and getsv functions.
+
+* getsm:
+
+- bugfix in vcov.type argument which occurred for shortened versions of "ordinary" and "white", e.g. "o" or "w"
+
+- bugfix in do.pet argument, which occurred when it was set to FALSE
+
+
+Version 0.1 (14 October 2014):
+==============================
+
+All versions until 1.0 should be considered Beta-versions.
+
+The package is based on code from AutoSEARCH (also available on the CRAN), but entails a shift in the underlying development principles. The main motivation behind gets is improved user-friendliness, faster and simpler code, and a package that is easier to extend. The most important differences are:
+ 
+* the sm function has been replaced with the arx function:
+
+- creator of objects of class 'arx'
+
+- extraction functions (S3 methods) have been added
+
+- several arguments have been changed and/or removed
+
+- numerous minor (and some major) changes throughout the code
+
+* gets.mean and gets.vol have been replaced with the getsm and getsv functions, respectively:
+
+- both return objects of class 'gets'
+
+- the main argument is an object of class arx (this improves user-friendliness considerably compared with AutoSEARCH)
+
+- extraction functions (some of them S3 methods) have been added
+
+- several arguments have been changed and/or removed
+
+- numerous minor (and some major) changes throughout the code
+
+* gedlogl and gedestp functions deleted
+ 
+* all model comparisons are now in terms of the normal log-likelihood made up of the residuals and the fitted variance
+
+* gLag has been deleted; instead, glag from the lgarch package is used
+
+* ols.fit1 and ols.fit2 have been deleted and replaced with the function ols
+
+* regs.mean.sm and regs.vol.sm have changed names to regs.mean and regs.var, respectively
+
+* bug fix in eqwma and leqwma (ocurred when p=1)
+
+* numerous minor, and some major, changes have been made throughout the code
