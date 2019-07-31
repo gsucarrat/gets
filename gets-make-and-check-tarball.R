@@ -6,44 +6,75 @@
 ##
 ## Requirements:
 ##
-## - reading and writing permissions to the working
-##   directory that is used
-## - that the work directory contains the gets-devel
-##   folder, and the gets-base-source-devel.R and
-##   gets-isat-source-devel.R files
+## - Reading and writing permissions to the working
+##   directory that is used. On Windows: First
+##   (right-click mouse in folder, choose properties
+##    -> security ...etc.).
+##
+## - That the work directory contains the gets-devel
+##   folder, and the gets-base-source.R and gets-
+##   isat-source.R files
 ##
 ####################################################
 
-##initiate:
-##=========
+
+####################################################
+## 1 INITIATE
+####################################################
  
-##set working directory:
+##Set working directory:
 setwd(choose.dir())
 #Examples in Windows:
 #setwd("C:/Program files/R/R-devel/bin/")
 #setwd("C:/Program files/R/R-3.5.3/bin/")
 
+##delete files and folders from previous builds?
+deleteFiles <- FALSE #TRUE or FALSE?
+
+##clean:
+if(deleteFiles){
+
+  ##files and folders of work-directory:
+  fileNames <- dir()
+  
+  ##delete tarball, if it already exists:
+  toBeDeleted <- fileNames[ grep(".tar.gz", fileNames) ] 
+  if(length(toBeDeleted)>0){ file.remove(toBeDeleted) }
+  
+  ##delete folders "gets", "gets-skeleton" and "gets.Rcheck"
+  ##if they exist:
+  toBeDeleted <- intersect(c("gets","gets-skeleton","gets.Rcheck"),
+    fileNames)
+  if(length(toBeDeleted)>0){
+    for(i in toBeDeleted){
+      unlink(i, recursive=TRUE) #delete folder+its content
+    }
+  }
+
+} #end if(deleteFiles)
+
 ##clean workspace:
 rm(list = ls())
 
-##load sources
+##Load sources:
 source("gets-base-source.R")
 source("gets-isat-source.R")
 
-##Note: On Windows, make sure you have writing and modifying
-##permission in the working directory: First (right-click
-##mouse in folder, choose properties -> security ...etc.).
-##Subsequent steps will not work withoug writing and modyfing
-##permissions.
 
-##gets, gets-devel, gets-skeleton:
-##================================
+####################################################
+## 2 ..
+####################################################
 
 ##make skeleton (i.e. folder structure w/files):
 package.skeleton(name="gets")
 
-##copy files, make gets folder, etc.:
+##rename skeleton:
 file.rename("gets", "gets-skeleton")
+
+##gets, gets-devel, gets-skeleton:
+##================================
+
+##copy files, make gets folder, etc.:
 dir.create("gets")
 fileNames <- dir("./gets-devel/")
 for(i in 1:length(fileNames)){
@@ -81,6 +112,10 @@ system( paste0("R CMD check ", tarballName, " --as-cran") )
 ##If desirable, install package:
 ##==============================
 
+##remove old version first?:
+remove.packages("gets")
+
+##install package:
 system( paste0("R CMD INSTALL ", tarballName) )
 #system("R CMD INSTALL gets_0.20.tar.gz")
 #system("R CMD INSTALL --build gets")
