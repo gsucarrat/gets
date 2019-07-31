@@ -572,7 +572,9 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   if(is.null(getsis$specific.spec)){
     mXis <- NULL
   }else{
-    mXis <- mXis[,getsis$specific.spec]
+    mXisNames <- colnames(mXis)[getsis$specific.spec]
+    mXis <- cbind(mXis[,getsis$specific.spec])
+    colnames(mXis) <- mXisNames
     mXis <- zoo(mXis, order.by=y.index)
   }
   if(is.null(normality.JarqueB)){
@@ -812,109 +814,107 @@ plot.isat <- function(x, col=c("red","blue"),
 
 ##==================================================
 ## forecast up to n.ahead
-predict.isat <- function(object, n.ahead=12,
-  newmxreg=NULL, newindex=NULL, return=TRUE, plot=NULL,
-  plot.options=list(), ...)
+predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
+  newindex=NULL, n.sim=2000, innov=NULL, probs=NULL,
+  ci.levels=NULL, quantile.type=7, return=TRUE, verbose=FALSE,
+  plot=NULL, plot.options=list(), ...)
+
 {
 
   ##create new object to add stuff to in order to use predict.arx()
-  object.new <- object
+  objectNew <- object
 
-  ##------------
-  ## arguments:
-  ##------------
+  ##-----------------------------------
+  ## arguments mean-equation:
+  ##-----------------------------------
 
-  if("mX" %in% names(object$aux)) {
+  ##coefficients of mean spec in final model:
+  coefsMean <- coef.arx(objectNew, spec="mean")
 
-    ##check if constant is retained:
-    if("mconst" %in% object$aux$mXnames){
-      object.new$call$mc <- TRUE
-    }else{
-      object.new$call$mc <- NULL
-    }
+  ##there is no mean equation:
+  if( length(coefsMean)==0 ){
 
-    ##what dynamics specified in gum?
-    gum.ar <- eval(object$call$ar)
-    ##what dynamics remain in specific?
-    spec.ar <- as.numeric(gsub("ar(\\d+)","\\1",object$aux$mXnames[grep("^ar\\d+$",object$aux$mXnames)]))
-    if(NROW(spec.ar)==0) {
-      object.new$call$ar <- NULL
-    } else { ##check that dynamics in specific are subset of those in gum
-      object.new$call$ar <- spec.ar[spec.ar %in% gum.ar]
-    }
-
-    ##"mxreg" argument:
-    mc.and.ar.length <- length(object.new$call$mc)+length(object.new$call$ar)
-    if(NCOL(object$aux$mX) > mc.and.ar.length){
-      object.new$call$mxreg <- "mxreg"
-    }else{
-      object.new$call$mxreg <- NULL
-    }
-
-    ##if sis and tis terms retained need to adapt mxreg call ...
-    if(!is.null(object$ISnames)) {
-
-      ##J-dog, add your code here??
-      if(is.null(object$call$mxreg)) { #need to ensure predict.arx knows there are mx variables
-        object.new$call$mxreg <- "mXis"
-      }
-
-      ##... and need to specify newmxreg of right dimension:
-      ##if we're here it means the isat call did not specify any mxregs
-      ##hence what is in mX in the object are terms retained by isat
-      ##we can automatically create isat terms into sample period (exception uis)
-      if(is.null(newmxreg)) {
-        ##if no newmxreg specified we add iis/sis/tis from scratch
-
-        ##first check that there shouldn't be something in newmxreg...
-        if(!is.null(object$call$mxreg)){ stop("'newmxreg' is NULL") }
-
-        ##assuming not, then we start from scratch adding the indicators...
-        newmxreg <- c()
-      }
-
-      if(any(regexpr("^iis",object$ISnames)>-1)){##isat retained some iis terms
-        for(i in object$ISnames[grep("^iis",object$ISnames)]) {
-          newmxreg <- cbind(newmxreg,rep(0,n.ahead))
-        }
-      }
-      if(any(regexpr("^sis",object$ISnames)>-1)){##isat retained some sis terms
-        for(i in object$ISnames[grep("^sis",object$ISnames)]) {
-          newmxreg <- cbind(newmxreg,rep(1,n.ahead))
-        }
-      }
-      if(any(regexpr("^tis",object$ISnames)>-1)){##isat retained some tis terms
-        for(i in object$ISnames[grep("^tis",object$ISnames)]) {
-          newmxreg <- cbind(newmxreg,
-                            seq(1,n.ahead)+object$aux$mX[NROW(object$aux$mX),i])
-        }
-      }
-
-    }
-
-  } else {
-
-    object.new$call$mc <- NULL
-    object.new$call$ar <- NULL
-    ##to do: log.ewma
-    object.new$call$mxreg <- NULL
+    objectNew$call$mc <- NULL
+    objectNew$call$ar <- NULL
+    objectNew$call$ewma <- NULL
+    objectNew$call$mxreg <- NULL
 
   }
 
+  ##there is a mean equation:
+  if( length(coefsMean)>0 ){
 
-  ##-----------------------------------
-  ## pass on arguments to predict.arx:
-  ##-----------------------------------
+    ##initiate index counter (used for mxreg):
+    indxCounter <- 0
 
-  out <- predict.arx(object.new, spec="mean", n.ahead=n.ahead,
+    ##mc argument:
+    mconstRetained <- "mconst" %in% names(coefsMean)
+    if( mconstRetained ){
+      objectNew$call$mc <- TRUE
+      indxCounter <- indxCounter + 1
+    }else{
+      objectNew$call$mc <- NULL
+    }
+
+    ##ar argument:
+    gumTerms <- eval(object$call$ar)
+#OLD:
+#    gumTerms <- eval(object$aux$call.gum$ar)
+    gumNamesAr <- paste0("ar", gumTerms)
+    whichRetained <- which( gumNamesAr %in% names(coefsMean) )
+    if( length(whichRetained)==0 ){
+      objectNew$call$ar <- NULL
+    }else{
+      objectNew$call$ar <- gumTerms[ whichRetained ]
+      indxCounter <- indxCounter + length(whichRetained)
+    }
+
+    ##ewma argument:
+    gumTerms <- eval(object$call$ewma)
+#OLD:
+#    gumTerms <- eval(object$aux$call.gum$ewma)
+    gumNamesEwma <- paste0("EqWMA(", gumTerms$length, ")")
+    whichRetained <- which( gumNamesEwma %in% names(coefsMean) )
+    if( length(whichRetained)==0 ){
+      objectNew$call$ewma <- NULL
+    }else{
+      objectNew$call$ewma <-
+        list( length=gumTerms$length[ whichRetained ] )
+      indxCounter <- indxCounter + length(whichRetained)
+    }
+
+    ##mxreg argument:
+    if(indxCounter==0){ whichRetainedCoefs <- coefsMean }
+    if(indxCounter>0){ whichRetainedCoefs <- coefsMean[ -c(1:indxCounter) ] }
+    if( length(whichRetainedCoefs)==0 ){
+      objectNew$call$mxreg <- NULL
+    }else{
+      whichRetainedNames <- names(whichRetainedCoefs)
+      objectNew$call$mxreg <- whichRetainedNames
+#more correct (but not needed, since mxreg only needs to be non-NULL)?:
+#      whichRetained <- which( object$aux$mXnames %in% whichRetainedNames )
+#      mxreg <- cbind(object$aux$mX[, whichRetained ])
+#      colnames(mxreg) <- whichRetainedNames
+#      objectNew$call$mxreg <- xreg
+    }
+
+  } #end if( length(coefsMean)>0 )
+
+  ##----------------------------------
+  ## pass arguments on to predict.arx:
+  ##----------------------------------
+
+  result <- predict.arx(objectNew, spec="mean", n.ahead=n.ahead,
     newmxreg=newmxreg, newvxreg=NULL, newindex=newindex,
-    return=return, plot=plot, plot.options=plot.options)
+    n.sim=n.sim, innov=innov, probs=probs, ci.levels=ci.levels,
+    quantile.type=quantile.type, return=return, verbose=verbose,
+    plot=plot, plot.options=plot.options)
 
   ##-------------------
   ## return forecasts:
   ##-------------------
 
-  if(return){ return(out) }
+  if(return){ return(result) }
 
 } #close predict.isat
 

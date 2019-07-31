@@ -2,7 +2,7 @@
 ## This file contains the base-source of the gets
 ## package.
 ##
-## Current version: 0.20
+## Current version: 0.20      
 ##
 ## CONTENTS:
 ##
@@ -11,7 +11,7 @@
 ## 3 ARX FUNCTIONS
 ## 4 GETS FUNCTIONS
 ## 5 ADDITIONAL CONVENIENCE FUNCTIONS
-##
+##                       
 ####################################################
 ##1 INITIATE
 ####################################################
@@ -87,7 +87,7 @@
 ####################################################
 ## 1 INITIATE
 ####################################################
-
+                                                       
 ##==================================================
 ## print startup message/code contained in the
 ## gets-internal.R file (./gets-devel/R folder):
@@ -309,68 +309,63 @@ dropvar <- function(x, tol=1e-7, LAPACK=FALSE, silent=FALSE)
 
 ##==================================================
 ##generate eqwma regressors
-eqwma <- function(x, length=5, lag=1, start=1, p=1,
-  log=FALSE, abs=FALSE, as.vector=TRUE)
+eqwma <- function(x, length=5, k=1, p=1, abs=FALSE, log=FALSE,
+  as.vector=FALSE, lag=NULL, start=NULL)
 {
-#zoo related:
-if(is.zoo(x)){
-  xindex <- index(x)
-  x <- coredata(as.vector(x))
-  zoochk <- TRUE
-}else{
-  x <- coredata(as.vector(x))
-  zoochk <- FALSE
-}
+  ##deprecated arguments:
+  if(!is.null(start)){ stop("'start' has been deprecated") }
+  if(!is.null(lag)){ stop("'lag' has been deprecated, use 'k' instead") }
 
-#compute eqwma:
-xn <- length(x)
-x <- na.trim(x, sides="left")
-xnadj <- length(x)
-if(xn > xnadj){nachk <- TRUE}else{nachk <- FALSE}
-if(abs){xabs <- abs(x)}else{xabs <- x}
-if(p!=1){xabsp <- xabs^p}else{xabsp <- xabs}
-
-out <- NULL
-for(j in 1:length(length)){
-  movavg <- rollmean(xabsp, length[j], na.pad=TRUE, align="r")
-  if(start <= I(length[j]-1)){
-    for(i in start:I(length[j]-1)){
-      movavg[i] <- sum(xabsp[1:i])/i
-    }
+  ##zoo related:
+  if(is.zoo(x)){
+    isZoo <- TRUE
+    xindex <- index(x)
+    x <- coredata(x)
+  }else{
+    isZoo <- FALSE
   }
-  movavg <- c(rep(NA,lag), as.vector(movavg[1:I(length(movavg)-lag)]))
-  out <- cbind(out, movavg)
-}
 
-##alternative/future/more efficient approach:
-#out <- NULL
-#for(j in 1:length(length)){
-#  movavg <- rollmean(xabsp, length[j], na.pad=TRUE, align="r")
-#  if(length[j] > 1){
-#    movavgmean <- mean(movavg, na.rm=TRUE)
-#    xabsp.pre <- c( rep(movavgmean, I(length[j]-1)), xabsp[1:I(length[j]-1)] )
-#    movavg.pre <- rollmean(xabsp.pre, length[j], na.pad=FALSE, align="r")
-#    movavg[1:I(length[j]-1)] <- movavg.pre
-#  }
-#  movavg <- c(rep(NA,lag), as.vector(movavg[1:I(length(movavg)-lag)]))
-#  out <- cbind(out, movavg)
-#}
+  ##is x a matrix?
+  if(NCOL(x)>1){
+    stop("'x' must be one-dimensional")
+  }else{
+    x <- as.vector(x)
+  }
 
-#apply log?:
-if(log){
-  out <- log(out)
-  colnames(out) <- paste("logEqWMA(", length, ")", sep="")
-}else{
-  colnames(out) <- paste("EqWMA(", length, ")", sep="")
-}
-if(nachk) out <- rbind( matrix(NA, I(xn-xnadj), dim(out)[2]), out)
-if(as.vector){
-  if( dim(out)[2]==1 ){ out <- as.vector(out) }
-}
-if(zoochk){ out <- zoo(out, order.by=xindex) }
+  ##na's, power p, absolute value:
+  xn <- length(x)
+  x <- na.trim(x, sides="left")
+  xnadj <- length(x)
+  if(xn > xnadj){nachk <- TRUE}else{nachk <- FALSE}
+  if(abs){xabs <- abs(x)}else{xabs <- x}
+  if(p!=1){xabsp <- xabs^p}else{xabsp <- xabs}
 
-return(out)
-} #end eqwma
+  ##compute eqwma:
+  result <- NULL
+  for(i in 1:length(length)){
+    movavg <- rollmean(xabsp, length[i], fill=NA, align="r")
+    result <- cbind(result,movavg)
+  }
+
+  ##lag?:
+  if(k>0){
+    result <- cbind(result[ 1:c(NROW(result)-k), ]) #lag
+    result <- rbind( matrix(NA,k,NCOL(result)), result) #add NAs
+  }
+  
+  #apply log?:
+  if(log){
+    result <- log(result)
+    colnames(result) <- paste0("logEqWMA(", length, ")")
+  }else{
+    colnames(result) <- paste0("EqWMA(", length, ")")
+  }
+  if(nachk){ result <- rbind( matrix(NA,c(xn-xnadj),NCOL(result)), result) }
+  if(as.vector && NCOL(result)==1 ){ result <- as.vector(result) }
+  if(isZoo){ result <- zoo(result, order.by=xindex) }
+
+  return(result)
+} #close eqwma
 
 ##==================================================
 ##Compute information criterion:
@@ -430,12 +425,13 @@ return(out)
 } #end info.criterion
 
 ##==================================================
-##Estimate log(EqWMA) model
-leqwma <- function(x, length=5, lag=1, start=1, p=2, as.vector=FALSE)
+##make log(EqWMA) terms
+leqwma <- function(x, length=5, k=1, p=2, as.vector=FALSE,
+  lag=NULL, start=NULL)
 {
-  eqwma(x, length=length, lag=lag, start=start, p=p,
-    log=TRUE, abs=TRUE, as.vector=as.vector)
-} #end leqwma
+  eqwma(x, length=length, k=k, p=p, log=TRUE, abs=TRUE,
+    as.vector=as.vector, lag=lag, start=start)
+} #close leqwma
 
 ##==================================================
 ##OLS estimation using the QR decomposition
@@ -1214,6 +1210,7 @@ regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
 
   ##ewma term:
   if(!is.null(ewma)){
+    ewma$as.vector <- FALSE #force result to be a matrix
     tmp <- do.call(eqwma, c(list(y),ewma) )
     mXnames <- c(mXnames, colnames(tmp))
     colnames(tmp) <- NULL
@@ -1343,6 +1340,7 @@ arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
 
   ##ewma term:
   if(!is.null(ewma)){
+    ewma$as.vector <- FALSE #force result to be a matrix
     tmp <- do.call(eqwma, c(list(y),ewma) )
     mXnames <- c(mXnames, colnames(tmp))
     colnames(tmp) <- NULL
@@ -1583,7 +1581,7 @@ arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
     ##log.ewma term:
     if(!is.null(log.ewma)){
       if(is.list(log.ewma)){
-        log.ewma$lag <- 1
+        log.ewma$k <- 1
       }else{
         log.ewma <- list(length=log.ewma)
       }
@@ -1882,11 +1880,11 @@ plot.arx <- function(x, spec=NULL, col=c("red","blue"),
   doPlot <- TRUE #default
   if( is.null(x$mean.results) && is.null(x$variance.results) ){
     doPlot <- FALSE
-    warning("No estimated model, so no plot produced")
+    message("No estimated model, so no plot produced")
   }
   if(doPlot && !is.null(x$aux$user.estimator) ){
     doPlot <- FALSE
-    warning("User defined estimation, so no plot produced")
+    message("User defined estimation, so no plot produced")
   }
 
   ##proceed with plotting:
@@ -2081,21 +2079,32 @@ plot.arx <- function(x, spec=NULL, col=c("red","blue"),
 ## forecast up to n.ahead
 predict.arx <- function(object, spec=NULL, n.ahead=12,
   newmxreg=NULL, newvxreg=NULL, newindex=NULL,
-  n.sim=1000, innov=NULL, return=TRUE, plot=NULL,
+  n.sim=2000, innov=NULL, probs=NULL, ci.levels=NULL,
+  quantile.type=7, return=TRUE, verbose=FALSE, plot=NULL,
   plot.options=list(), ...)
 {
 
   ## contents:
   ## 0 initialise
-  ## 1 if mean spec
-  ## 2 if variance spec
-  ## 3 if plot=TRUE
-  ## 4 if return=TRUE
+  ## 1 simulate innov
+  ## 2 variance predictions
+  ## 3 mean predictions
+  ## 4 probs (quantiles)
+  ## 5 newindex
+  ## 6 if plot=TRUE
+  ## 7 if return=TRUE
 
-  ##n.ahead:
+  ##-----------------------
+  ## 0 initialise
+  ##-----------------------
+
+  ##name of object:
+  objectName <- deparse(substitute(object))
+
+  ##check n.ahead:
   if(n.ahead < 1){ stop("n.ahead must be 1 or greater") }
 
-  ##spec:
+  ##determine spec argument:
   if(is.null(spec)){
     if(!is.null(object$mean.results)) spec <- "mean"
     if(is.null(object$mean.results)
@@ -2106,10 +2115,422 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
     spec <- spec.type[which.type]
   } #end if(..)else(..)
   if(is.null(spec)){ stop("No estimated model") }
+  
+  ##what needs to be predicted?
+  predictMean <- switch(spec, "mean"=TRUE, "both"=TRUE,
+    "variance"=FALSE)
+  predictVariance <- switch(spec, "mean"=FALSE, "both"=TRUE,
+    "variance"=TRUE)
+  
+  ##is there a mean spec?
+  coefs <- as.numeric(coef.arx(object, spec="mean"))
+  if(length(coefs)>0){ specMean <- TRUE }else{ specMean <- FALSE }
 
-  ##newindex:
+  ##is there a variance spec?
+  coefs <- as.numeric(coef.arx(object, spec="variance"))
+  if(length(coefs)>0){ specVar <- TRUE }else{ specVar <- FALSE }
+
+  ##determine plot-argument:
+  plotArg <- plot
+  if( is.null(plotArg) ){
+    plotArg <- getOption("plot")
+    if( is.null(plotArg) ){ plotArg <- FALSE }
+  }
+
+  ##probs argument:
+  if( !is.null(probs) ){
+    if( any(probs <= 0) || any(probs >= 1) ){
+      stop("the values of 'probs' must be between 0 and 1")
+    }
+    probs <- union(probs,probs) #ensure values are distinct/not repeated
+    probs <- probs[order(probs, decreasing=FALSE)] #re-order to increasing
+  }
+  probsArg <- probs
+
+  ##ci.levels argument:
+  if( is.null(ci.levels) && plotArg==TRUE ){
+    ciLevelsArg <- c(0.5,0.95)
+  }else{
+    ciLevelsArg <- ci.levels
+  }
+  if( !is.null(ciLevelsArg) ){
+    if( any(ciLevelsArg <= 0) || any(ciLevelsArg >= 1) ){
+      stop("the values of 'ci.levels' must be between 0 and 1")
+    }
+    ciLevelsArg <- union(ciLevelsArg, ciLevelsArg) #ensure levels are distinct/not repeated
+    ciLevelsArg <- ciLevelsArg[order(ciLevelsArg, decreasing=FALSE)] #ensure levels are increasing
+    ciLower <- (1-ciLevelsArg)/2
+    ciLower <- ciLower[order(ciLower, decreasing=FALSE)]    
+    ciUpper <- ciLevelsArg + (1-ciLevelsArg)/2
+    ciUpper <- ciUpper[order(ciUpper, decreasing=TRUE)]    
+    probsArg <- union(probsArg, c(ciLower,ciUpper) ) #add to probsArg
+    probsArg <- probsArg[order(probsArg, decreasing=FALSE)] #ascending
+  }
+  
+  ##are simulations of innov needed?
+  doSimulations <- FALSE
+  if( !is.null(probsArg) ){ doSimulations <- predictVariance <- TRUE }
+  if( predictVariance && specVar ){ doSimulations <- TRUE }
+
+
+  ##-----------------------
+  ## 1 simulate innov
+  ##-----------------------
+
+  ##simulate:
+  mZhat <- NULL
+  if(doSimulations){
+
+    ##bootstrap (innov not user-provided):
+    if(is.null(innov)){
+      zhat <- coredata(na.trim(object$std.residuals))
+      if(specVar){
+        where.zeros <- which(zhat==0)
+        if(length(where.zeros)>0){ zhat <- zhat[-where.zeros] }
+      }
+      draws <- runif(n.ahead*n.sim, min=0.5+.Machine$double.eps,
+                     max=length(zhat)+0.5+.Machine$double.eps)
+      draws <- round(draws, digits=0)
+      zhat <- zhat[draws]
+    }
+    
+    ##user-provided innov:
+    if(!is.null(innov)){
+      if(length(innov)!=n.ahead*n.sim){ stop("length(innov) must equal n.ahead*n.sim") }
+      if(specVar){
+        if(any(innov==0)){ stop("innov cannot contain zeros") }
+      }
+      zhat <- as.numeric(innov)
+    }
+
+    ##matrix of innovations:
+    mZhat <- matrix(zhat,n.ahead,n.sim)
+    colnames(mZhat) <- paste0("mZhat.", seq(1,n.sim))
+  
+  } #end if(doSimulations)
+  
+  
+  ##-----------------------
+  ## 2 variance predictions
+  ##-----------------------
+
+  sd2hat <- NULL #variance predictions
+  mEpsilon <- NULL #matrix of simulated errors
+  if(predictVariance){
+    
+    ##there is no variance specification:
+    if(specVar==FALSE){
+      sigmahat <- sigma.arx(object)
+      sd2hat <- rep(sigmahat^2, n.ahead)
+    }
+
+    ##there is a variance specification:
+    if(specVar==TRUE){
+
+      ##record coef estimates:
+      coefs <- as.numeric(coef.arx(object, spec="variance"))
+      Elnz2hat <- coefs[length(coefs)]
+      coefs <- coefs[-length(coefs)]
+  
+      ##vc:
+      vconst <- as.numeric(coefs[1])
+  
+      ##arch:
+      archMax <- 0
+      archIndx <- 1
+      if(!is.null(object$call$arch)){
+        archEval <- eval(object$call$arch)
+        archIndx <- 1:length(archEval) + 1
+        archMax <- max(archEval)
+        archCoefs <- rep(0,archMax)
+        archCoefs[archEval] <- as.numeric(coefs[archIndx])
+      }
+  
+      ##asym:
+      asymMax <- 0
+      asymIndx <- max(archIndx)
+      if(!is.null(object$call$asym)){
+        asymEval <- eval(object$call$asym)
+        asymIndx <- 1:length(asymEval) + max(archIndx)
+        asymMax <- max(asymEval)
+        asymCoefs <- rep(0,asymMax)
+        asymCoefs[asymEval] <- as.numeric(coefs[asymIndx])
+      }
+  
+      ##log.ewma:
+      logewmaMax <- 0
+      logewmaIndx <- max(asymIndx)
+      if(!is.null(object$call$log.ewma)){
+        logewmaEval <- eval(object$call$log.ewma)
+        if(is.list(logewmaEval)){ logewmaEval <- logewmaEval$length }
+        logewmaIndx <- 1:length(logewmaEval) + max(asymIndx)
+        logewmaMax <- max(logewmaEval)
+        logewmaCoefs <- as.numeric(coefs[logewmaIndx])
+      }
+  
+      ##backcast length:
+      backcastMax <- max(archMax,asymMax,logewmaMax)
+  
+      ##vxreg:
+      vxreghat <- rep(0, n.ahead + backcastMax)
+      if(!is.null(object$call$vxreg)){
+  
+        ##check newvxreg:
+        if(is.null(newvxreg)){ stop("'newvxreg' is NULL") }
+        if(NROW(newvxreg)!=n.ahead){ stop("NROW(newvxreg) must equal n.ahead") }
+  
+        ##newmxreg:
+        newvxreg <- coredata(cbind(as.zoo(newvxreg)))
+        colnames(newvxreg) <- NULL
+  
+        ##vxreghat:
+        vxregIndx <- c(max(logewmaIndx)+1):length(coefs)
+        vxreghat <-  newvxreg %*% coefs[vxregIndx]
+        vxreghat <- c(rep(0,backcastMax),vxreghat)
+  
+      } #end vxreg
+  
+      ##prepare lnsd2:
+      lnsd2hat <- rep(NA, n.ahead + backcastMax)
+      lnsd2hat.n <- length(lnsd2hat)
+      lnsd2Fit <- log(coredata(fitted.arx(object, spec="variance")))
+      if(backcastMax>0){
+        lnsd2hat[1:backcastMax] <- 
+          lnsd2Fit[c(length(lnsd2Fit)-backcastMax+1):length(lnsd2Fit)]
+      }
+      mLnsd2Hat <- matrix(NA, lnsd2hat.n, n.sim) #matrix of lnsd2 predictions
+      mLnsd2Hat[,1:NCOL(mLnsd2Hat)] <- lnsd2hat  #fill with backcast values
+  
+      ##prepare lnz2:
+      lnz2hat <- rep(NA, n.ahead + backcastMax)
+      lnz2hat.n <- length(lnz2hat)
+      lnz2Fit <- coredata(object$ustar.residuals) + Elnz2hat
+      if(backcastMax>0){
+        lnz2hat[1:backcastMax] <- lnz2Fit[c(length(lnz2Fit)-backcastMax+1):length(lnz2Fit)]
+      }
+      mLnz2Hat <- matrix(NA, lnz2hat.n, n.sim)
+      mLnz2Hat[,1:NCOL(mLnz2Hat)] <- lnz2hat
+      mZhat2 <- mZhat^2 #mZhat from section 1
+      mLnz2Hat[c(backcastMax+1):NROW(mLnz2Hat),] <- log(mZhat2)
+      vEpsilon2 <- rep(NA, n.ahead+backcastMax) #needed for log(ewma) term(s)
+      if(backcastMax>0){
+        vEpsilon2[1:backcastMax] <- as.numeric(object$residuals[c(length(object$residuals)-backcastMax+1):length(object$residuals)]^2)
+        mZhat2 <- rbind(matrix(NA,backcastMax,NCOL(mZhat2)),mZhat2)
+      }
+   
+      ##prepare asym:
+      if(asymMax>0){
+        zhatIneg <- rep(NA, n.ahead + backcastMax)
+        zhatIneg.n <- length(zhatIneg)
+        zhatFit <- coredata(object$std.residuals)
+        zhatIneg[1:backcastMax] <- zhatFit[c(length(zhatFit)-backcastMax+1):length(zhatFit)]
+        zhatIneg <- as.numeric(zhatIneg<0)
+        mZhatIneg <- matrix(NA, zhatIneg.n, n.sim)
+        mZhatIneg[,1:NCOL(mZhatIneg)] <- zhatIneg
+        mZhatIneg[c(backcastMax+1):NROW(mZhatIneg),] <- matrix(as.numeric(zhat<0),NROW(zhat),NCOL(zhat))
+      }
+  
+      ##prepare log.ewma:
+      if(logewmaMax>0){
+        mLogEwmaHat <- matrix(NA, n.ahead+backcastMax, length(logewmaCoefs))
+        colnames(mLogEwmaHat) <- object$aux$vXnames[logewmaIndx]
+        mLogEwmaHat[1:backcastMax,] <- object$aux$vX[c(NROW(object$aux$vX)-backcastMax+1):NROW(object$aux$vX),logewmaIndx]
+        mLogEwmaHat <- as.matrix(mLogEwmaHat)
+      }
+  
+      ##predict:
+      archTerm <- 0
+      lnz2Term <- 0
+      asymTerm <- 0
+      logewmaTerm <- 0
+      for(j in 1:NCOL(mLnsd2Hat)){
+        for(i in c(backcastMax+1):NROW(mLnsd2Hat)){
+          if(archMax>0){
+            archTerm <- sum( archCoefs*mLnsd2Hat[c(i-1):c(i-archMax),j] )
+            lnz2Term <- sum( archCoefs*mLnz2Hat[c(i-1):c(i-archMax),j] )
+          }
+          if(asymMax>0){
+            asymTermSd2 <- sum( asymCoefs*mLnsd2Hat[c(i-1):c(i-asymMax),j]*mZhatIneg[c(i-1):c(i-asymMax),j] )
+            asymTermLnz2 <- sum( asymCoefs*mLnz2Hat[c(i-1):c(i-asymMax),j]*mZhatIneg[c(i-1):c(i-asymMax),j] )
+            asymTerm <- asymTermSd2 + asymTermLnz2
+          }
+          if(logewmaMax>0){
+            for(k in 1:NCOL(mLogEwmaHat)){
+              mLogEwmaHat[i,k] <- log( mean(vEpsilon2[c(i-logewmaEval[k]):c(i-1)]) )
+            }
+            logewmaTerm <- sum( coefs[logewmaIndx] * mLogEwmaHat[i,] )
+          }
+          mLnsd2Hat[i,j] <- vconst + archTerm + lnz2Term + asymTerm + logewmaTerm + vxreghat[i]
+          vEpsilon2[i] <- exp(mLnsd2Hat[i,j])*mZhat2[i,j]
+        } ##end for(i)
+      } ##end for(j)
+  
+      ##out:
+      mSd2Hat <- exp( mLnsd2Hat[c(lnsd2hat.n-n.ahead+1):lnsd2hat.n,] )
+      if(n.ahead==1){ mSd2Hat <- rbind(mSd2Hat) } #rbind() needed when n.ahead=1
+      sd2hat <- as.vector(rowMeans(mSd2Hat))
+  
+    } #end if(specVar==TRUE)
+
+    ##matrix of errors:
+    if(!is.null(mZhat)){
+      mEpsilon <- sqrt(sd2hat)*mZhat
+      colnames(mEpsilon) <- paste0("mEpsilon.", seq(1,n.sim))
+    }
+
+  } #end if(predictVariance)
+
+
+  ##-----------------------
+  ## 3 mean predictions
+  ##-----------------------
+
+  yhat <- NULL #mean predictions
+  mY <- NULL #matrix of simulated y's
+  if(predictMean){
+    
+    ##there is no mean specification:
+    if(specMean==FALSE){
+      yhat <- rep(0, n.ahead)
+    }
+
+    ##there is a mean specification:
+    if(specMean==TRUE){
+
+      coefs <- coef.arx(object, spec="mean")
+  
+      ##mc:
+      if(!is.null(object$call$mc)){
+        mconst <- as.numeric(coefs[1])
+        mconstIndx <- 1
+      }else{
+        mconst <- 0
+        mconstIndx <- 0
+      }
+  
+      ##ar:
+      arMax <- 0
+      arIndx <- max(mconstIndx)
+      if(!is.null(object$call$ar)){
+        arEval <- eval(object$call$ar)
+        arIndx <- 1:length(arEval) + max(mconstIndx)
+        arMax <- max(arEval)
+        arCoefs <- rep(0,arMax)
+        arCoefs[arEval] <- as.numeric(coefs[arIndx])
+      }
+  
+      ##ewma:
+      ewmaMax <- 0
+      ewmaIndx <- max(arIndx)
+      if( !is.null(object$call$ewma) ){
+        ewmaEval <- eval(object$call$ewma)
+        if(is.list(ewmaEval)){ ewmaEval <- ewmaEval$length }
+        ewmaIndx <- 1:length(ewmaEval) + max(arIndx)
+        ewmaMax <- max(ewmaEval)
+        ewmaCoefs <- as.numeric(coefs[ewmaIndx])
+      }
+  
+      ##backcast length:
+      backcastMax <- max(arMax,ewmaMax)
+
+      ##mxreg:
+      mxreghat <- rep(0, n.ahead + backcastMax)
+      if(!is.null(object$call$mxreg)){
+
+        ##check newmxreg:
+        if(is.null(newmxreg)){ stop("'newmxreg' is NULL") }
+        if(NROW(newmxreg)!=n.ahead){ stop("NROW(newmxreg) must equal n.ahead") }
+  
+        ##newmxreg:
+        newmxreg <- coredata(cbind(as.zoo(newmxreg)))
+        colnames(newmxreg) <- NULL
+  
+        ##mxreghat:
+        mxregIndx <- c(max(ewmaIndx)+1):length(coefs) ##J-dog change
+        mxreghat <-  newmxreg %*% as.numeric(coefs[mxregIndx])
+        mxreghat <- c(rep(0,backcastMax),mxreghat)
+  
+      } ##end mxreg
+  
+      ##prepare prediction:
+      yhat <- rep(NA, n.ahead + backcastMax)
+      yhat.n <- length(yhat)
+      if(backcastMax>0) {
+        ##actual y-values:
+        yhat[1:backcastMax] <- tail(object$aux$y, n=backcastMax)
+      }
+
+      ##prepare ewma:
+      if(ewmaMax>0){
+        mEwmaHat <- matrix(NA, n.ahead+backcastMax, length(ewmaCoefs))
+        colnames(mEwmaHat) <- object$aux$mXnames[ewmaIndx]
+        mEwmaHat[1:backcastMax,] <- object$aux$mX[c(NROW(object$aux$mX)-backcastMax+1):NROW(object$aux$mX),ewmaIndx]
+        mEwmaHat <- as.matrix(mEwmaHat)
+      }
+
+      ##predict:
+      arTerm <- 0
+      ewmaTerm <- 0
+      for(i in c(backcastMax+1):yhat.n){
+        if( arMax>0 ){ arTerm <- sum(arCoefs*yhat[c(i-1):c(i-arMax)]) }
+        if( ewmaMax>0 ){
+          for(k in 1:NCOL(mEwmaHat)){
+            mEwmaHat[i,k] <- mean( yhat[c(i-ewmaEval[k]):c(i-1)] )
+          }
+          ewmaTerm <- sum( coefs[ewmaIndx] * mEwmaHat[i,] )
+        }
+        yhat[i] <- mconst + arTerm + ewmaTerm + mxreghat[i]
+      } #end loop
+  
+      ##out:
+      yhat <- yhat[c(yhat.n-n.ahead+1):yhat.n]
+  
+    } #end if(specMean==TRUE)
+
+    ##matrix of y-simulations:
+    if(!is.null(mEpsilon)){
+      mY <- yhat + mEpsilon
+      colnames(mY) <- paste0("mY.", seq(1,n.sim))
+    }
+
+  } #end if(predictMean)
+
+
+  ##-----------------------
+  ## 4 probs (quantiles)
+  ##-----------------------
+
+  ##mean:
+  mMeanQs <- NULL
+  if( predictMean && !is.null(probsArg) ){
+    mMeanQs <- matrix(NA, n.ahead, length(probsArg))
+    for(i in 1:NROW(mY)){
+      mMeanQs[i,] <- quantile(mY[i,], probs=probsArg, type=quantile.type)
+    }
+    colnames(mMeanQs) <- paste0(probsArg)
+#    colnames(mMeanQs) <- paste0("y",probsArg)
+  }
+   
+  ##variance:
+  mVarianceQs <- NULL
+  if( predictVariance && specVar && !is.null(probsArg) ){
+    mVarianceQs <- matrix(NA, n.ahead, length(probsArg))
+    for(i in 1:NROW(mSd2Hat)){
+      mVarianceQs[i,] <- quantile(mSd2Hat[i,], probs=probsArg, type=quantile.type)
+    }
+    colnames(mVarianceQs) <- paste0(probsArg)
+#    colnames(mVarianceQs) <- paste0("sd2",probsArg)
+  }
+
+
+  ##-----------------------
+  ## 5 newindex
+  ##-----------------------
+  
+  ##in-sample:
   yInSample <- zoo(object$aux$y, order.by=object$aux$y.index)
 
+  #new index user-provided:
   if(!is.null(newindex)){
     yAsRegular <- FALSE
     if( n.ahead!=length(newindex) ){
@@ -2117,7 +2538,8 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
     }
   }
 
-  if( is.null(newindex) && is.regular(yInSample, strict=TRUE) ){
+  #in-sample index regular:
+  if( is.null(newindex) && is.regular(yInSample, strict=TRUE) ){ #not user-provided, but index is regular
     endCycle <- cycle(yInSample)
     endCycle <- as.numeric(endCycle[length(endCycle)])
     endYear <- floor(as.numeric(object$aux$y.index[object$aux$y.n]))
@@ -2137,503 +2559,404 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
     newindex <- index(yhataux)
   }
 
-  if(is.null(newindex)){ newindex <- 1:n.ahead }
+  ##neither user-provided nor regular:
+  if(is.null(newindex)){ newindex <- 1:n.ahead } #neither user-provided nor regular
 
-  ##----------------
-  ## 1 if mean spec
-  ##----------------
+  ##add index to results:
+  if(!is.null(mZhat)){ mZhat <- zoo(mZhat, order.by=newindex) }
+  if(!is.null(sd2hat)){ sd2hat <- zoo(sd2hat, order.by=newindex) }
+  if(!is.null(mEpsilon)){ mEpsilon <- zoo(mEpsilon, order.by=newindex) }
+  if(!is.null(yhat)){ yhat <- zoo(yhat, order.by=newindex) }
+  if(!is.null(mY)){ mY <- zoo(mY, order.by=newindex) }
+  if(!is.null(mMeanQs)){ mMeanQs <- zoo(mMeanQs, order.by=newindex) }
+  if(!is.null(mVarianceQs)){ mVarianceQs <- zoo(mVarianceQs, order.by=newindex) }
 
-  outMean <- NULL
-  if(spec=="mean" || spec=="both"){
-    coefs <- coef.arx(object, spec="mean")
+  
+  ##-----------------------
+  ## 6 if plot=TRUE
+  ##-----------------------
 
-    ##mc:
-    if(!is.null(object$call$mc)){
-      mconst <- as.numeric(coefs[1])
-      mconstIndx <- 1
-    }else{
-      mconst <- 0
-      mconstIndx <- 0
-    }
-
-    ##ar:
-    arMax <- 0
-    arIndx <- max(mconstIndx)
-    arCoefs <- NULL ##J-dog change
-    if(!is.null(object$call$ar)){
-      arEval <- eval(object$call$ar)
-      arIndx <- 1:length(arEval) + max(mconstIndx)
-      arMax <- max(arEval)
-      arCoefs <- rep(0,arMax)
-      arCoefs[arEval] <- as.numeric(coefs[arIndx])
-    }
-
-    ##ewma:
-    ewmaMax <- 0
-    ewmaIndx <- max(arIndx)
-    if(!is.null(object$call$ewma)) stop("Sorry, 'ewma' not implemented yet")
-    #    if(!is.null(object$call$ewma)){
-    #      modify arEval
-    #      modify arIndx
-    #      modify arMax
-    #      modify arCoefs
-    #    }
-
-    ##backcast length:
-    backcastMax <- max(arMax,ewmaMax)
-
-    ##mxreg:
-    mxreghat <- rep(0, n.ahead + backcastMax)
-
-    if(!is.null(object$call$mxreg)){
-
-      ##check newmxreg:
-      if(is.null(newmxreg)){ stop("'newmxreg' is NULL") }
-      if(NROW(newmxreg)!=n.ahead){ stop("NROW(newmxreg) must equal n.ahead") }
-      #      if(NROW(newmxreg)!=n.ahead
-      #        && NROW(newmxreg)!=1){ stop("NROW(newmxreg) must equal 1 or n.ahead") }
-      #      if(NROW(newmxreg)!=n.ahead
-      #        && NROW(newmxreg)==1){
-      #          newmxreg <- coredata(rbind(as.zoo(newmxreg)))
-      #          tmp <- matrix(NA,n.ahead,NCOL(newmxreg))
-      #          tmp[1:NROW(tmp),] <- newmxreg
-      #          newmxreg <- tmp
-      #      }
-
-      ##newmxreg:
-      newmxreg <- coredata(cbind(as.zoo(newmxreg)))
-      colnames(newmxreg) <- NULL
-
-      ##mxreghat:
-      mxregIndx <- c(max(ewmaIndx)+1):length(coefs) ##J-dog change
-
-      mxreghat <-  newmxreg %*% as.numeric(coefs[mxregIndx])
-      mxreghat <- c(rep(0,backcastMax),mxreghat)
-
-    } ##end mxreg
-
-    ##prepare prediction:
-    yhat <- rep(NA, n.ahead + backcastMax)
-    yhat.n <- length(yhat)
-#OLD:
-#    meanFit <- coredata(fitted.arx(object, spec="mean"))
-    if(backcastMax>0) {
-      ##actual y-values:
-      yhat[1:backcastMax] <- tail(object$aux$y, n=backcastMax)
-#        OR:
-#        object$aux$y[c(length(object$aux$y)-backcastMax+1):length(object$aux$y)]
-#        OLD (fitted y-values); this was erroneous!:
-#        meanFit[c(length(meanFit)-backcastMax+1):length(meanFit)]
-    }
-
-    ##predict:
-    for(i in c(backcastMax+1):yhat.n){
-      yhat[i] <- mconst + sum(arCoefs*yhat[c(i-1):c(i-arMax)]) + mxreghat[i]
-    }
-
-    ##out:
-    outMean <- yhat[c(yhat.n-n.ahead+1):yhat.n]
-    #outMean <- as.zoo(outMean)
-
-  } #end mean spec
-
-
-  ##--------------------
-  ## 2 if variance spec
-  ##--------------------
-
-  outVariance <- NULL
-  if(spec=="variance" || spec=="both"){ # || !is.null(plot.options$errors.only)
-
-    ##record coef estimates:
-    coefs <- as.numeric(coef.arx(object, spec="variance"))
-    Elnz2hat <- coefs[length(coefs)]
-    coefs <- coefs[-length(coefs)]
-
-    ##vc:
-    vconst <- as.numeric(coefs[1])
-
-    ##arch:
-    archMax <- 0
-    archIndx <- 1
-    if(!is.null(object$call$arch)){
-      archEval <- eval(object$call$arch)
-      archIndx <- 1:length(archEval) + 1
-      archMax <- max(archEval)
-      archCoefs <- rep(0,archMax)
-      archCoefs[archEval] <- as.numeric(coefs[archIndx])
-    }
-
-    ##asym:
-    asymMax <- 0
-    asymIndx <- max(archIndx)
-    if(!is.null(object$call$asym)){
-      asymEval <- eval(object$call$asym)
-      asymIndx <- 1:length(asymEval) + max(archIndx)
-      asymMax <- max(asymEval)
-      asymCoefs <- rep(0,asymMax)
-      asymCoefs[asymEval] <- as.numeric(coefs[asymIndx])
-    }
-
-    ##log.ewma:
-    logewmaMax <- 0
-    logewmaIndx <- max(asymIndx)
-    if(!is.null(object$call$log.ewma)){
-      logewmaEval <- eval(object$call$log.ewma)
-      if(is.list(logewmaEval)){ logewmaEval <- logewmaEval$length }
-      logewmaIndx <- 1:length(logewmaEval) + max(asymIndx)
-      logewmaMax <- max(logewmaEval)
-      logewmaCoefs <- as.numeric(coefs[logewmaIndx])
-    }
-
-    ##backcast length:
-    backcastMax <- max(archMax,asymMax,logewmaMax)
-
-    ##vxreg:
-    vxreghat <- rep(0, n.ahead + backcastMax)
-    if(!is.null(object$call$vxreg)){
-
-      ##check newvxreg:
-      if(is.null(newvxreg)){ stop("'newvxreg' is NULL") }
-      if(NROW(newvxreg)!=n.ahead){ stop("NROW(newvxreg) must equal n.ahead") }
-
-      ##newmxreg:
-      newvxreg <- coredata(cbind(as.zoo(newvxreg)))
-      colnames(newvxreg) <- NULL
-
-      ##vxreghat:
-      vxregIndx <- c(max(logewmaIndx)+1):length(coefs)
-      vxreghat <-  newvxreg %*% coefs[vxregIndx]
-      vxreghat <- c(rep(0,backcastMax),vxreghat)
-
-    } #end vxreg
-
-    ##prepare lnsd2:
-    lnsd2hat <- rep(NA, n.ahead + backcastMax)
-    lnsd2hat.n <- length(lnsd2hat)
-    lnsd2Fit <- log(coredata(fitted.arx(object, spec="variance")))
-    lnsd2hat[1:backcastMax] <- lnsd2Fit[c(length(lnsd2Fit)-backcastMax+1):length(lnsd2Fit)]
-    mLnsd2Hat <- matrix(NA, lnsd2hat.n, n.sim)
-    mLnsd2Hat[,1:NCOL(mLnsd2Hat)] <- lnsd2hat
-
-    ##prepare lnz2:
-    if(backcastMax>0){
-      lnz2hat <- rep(NA, n.ahead + backcastMax)
-      lnz2hat.n <- length(lnz2hat)
-      lnz2Fit <- coredata(object$ustar.residuals + Elnz2hat)
-      lnz2hat[1:backcastMax] <- lnz2Fit[c(length(lnz2Fit)-backcastMax+1):length(lnz2Fit)]
-      mLnz2Hat <- matrix(NA, lnz2hat.n, n.sim)
-      mLnz2Hat[,1:NCOL(mLnz2Hat)] <- lnz2hat
-    }
-
-    ##zhat:
-    ##-----
-
-    ##bootstrap innov (not user-provided):
-    if(is.null(innov)){
-      zhat <- coredata(na.trim(object$std.residuals))
-      where.zeros <- which(zhat==0)
-      if(length(where.zeros)>0){ zhat <- zhat[-where.zeros] }
-      draws <- runif(n.ahead*n.sim, min=0.5+.Machine$double.eps,
-                     max=length(zhat)+0.5+.Machine$double.eps)
-      draws <- round(draws, digits=0)
-      zhat <- zhat[draws]
-    }
-
-    ##user-provided innov:
-    if(!is.null(innov)){
-      if(length(innov)!=n.ahead*n.sim){ stop("length(innov) must equal n.ahead*n.sim") }
-      if(any(innov==0)){ stop("innov cannot contain zeros") }
-      zhat <- as.numeric(innov)
-    }
-
-    zhat <- matrix(zhat,n.ahead,n.sim)
-    mZhat2 <- zhat^2
-    mLnz2Hat[c(backcastMax+1):NROW(mLnz2Hat),] <- log(mZhat2)
-
-    vEpsilon2 <- rep(NA, n.ahead+backcastMax)
-    vEpsilon2[1:backcastMax] <- as.numeric(object$residuals[c(length(object$residuals)-backcastMax+1):length(object$residuals)]^2)
-    mZhat2 <- rbind(matrix(NA,backcastMax,NCOL(mZhat2)),mZhat2)
-
-
-    ##prepare asym:
-    if(asymMax>0){
-      zhatIneg <- rep(NA, n.ahead + backcastMax)
-      zhatIneg.n <- length(zhatIneg)
-      zhatFit <- coredata(object$std.residuals)
-      zhatIneg[1:backcastMax] <- zhatFit[c(length(zhatFit)-backcastMax+1):length(zhatFit)]
-      zhatIneg <- as.numeric(zhatIneg<0)
-      mZhatIneg <- matrix(NA, zhatIneg.n, n.sim)
-      mZhatIneg[,1:NCOL(mZhatIneg)] <- zhatIneg
-      mZhatIneg[c(backcastMax+1):NROW(mZhatIneg),] <- matrix(as.numeric(zhat<0),NROW(zhat),NCOL(zhat))
-    }
-
-    ##prepare log.ewma:
-    if(logewmaMax>0){
-      mLogEwmaHat <- matrix(NA, n.ahead+backcastMax, length(logewmaCoefs))
-      colnames(mLogEwmaHat) <- object$aux$vXnames[logewmaIndx]
-      mLogEwmaHat[1:backcastMax,] <- object$aux$vX[c(NROW(object$aux$vX)-backcastMax+1):NROW(object$aux$vX),logewmaIndx]
-      mLogEwmaHat <- as.matrix(mLogEwmaHat)
-    }
-
-    ##predict:
-    archTerm <- 0
-    lnz2Term <- 0
-    asymTerm <- 0
-    logewmaTerm <- 0
-    for(j in 1:NCOL(mLnsd2Hat)){
-      for(i in c(backcastMax+1):NROW(mLnsd2Hat)){
-        if(archMax>0){
-          archTerm <- sum( archCoefs*mLnsd2Hat[c(i-1):c(i-archMax),j] )
-          lnz2Term <- sum( archCoefs*mLnz2Hat[c(i-1):c(i-archMax),j] )
-        }
-        if(asymMax>0){
-          asymTermSd2 <- sum( asymCoefs*mLnsd2Hat[c(i-1):c(i-asymMax),j]*mZhatIneg[c(i-1):c(i-asymMax),j] )
-          asymTermLnz2 <- sum( asymCoefs*mLnz2Hat[c(i-1):c(i-asymMax),j]*mZhatIneg[c(i-1):c(i-asymMax),j] )
-          asymTerm <- asymTermSd2 + asymTermLnz2
-        }
-        if(logewmaMax>0){
-          for(k in 1:NCOL(mLogEwmaHat)){
-            mLogEwmaHat[i,k] <- log( mean(vEpsilon2[c(i-logewmaEval[k]):c(i-1)]) )
-          }
-          logewmaTerm <- sum( coefs[logewmaIndx] * mLogEwmaHat[i,] )
-        }
-        mLnsd2Hat[i,j] <- vconst + archTerm + lnz2Term + asymTerm + logewmaTerm + vxreghat[i]
-        vEpsilon2[i] <- exp(mLnsd2Hat[i,j])*mZhat2[i,j]
-      } ##end for(i)
-    } ##end for(j)
-
-    ##out:
-    outVariance <- mLnsd2Hat[c(lnsd2hat.n-n.ahead+1):lnsd2hat.n,]
-    outVariance <- rowMeans(rbind(exp(outVariance)))
-
-  } #end variance spec
-
-
-  ##--------------------
-  ## 3 out object
-  ##--------------------
-
-  ##out:
-  if(spec=="mean"){ out <- outMean }
-  if(spec=="variance"){ out <- outVariance }
-  if(spec=="both"){
-    out <- cbind(outMean,outVariance)
-    colnames(out) <- c("mean","variance")
+  ##check special case:
+  if( plotArg && spec=="variance" && specVar==FALSE ){
+    message("Set 'vc=TRUE' to plot the variance predictions")
+    plotArg <- FALSE
   }
-  if(yAsRegular){
-    startYear <- floor(as.numeric(index(yhataux))[1])
-    startCycle <- cycle(yhataux)[1]
-    out <- zooreg(out, start=c(startYear, startCycle),
-      frequency=yFreq)
-  }else{
-    out <- zoo(out, order.by=newindex)
-  }
-
-
-  ##----------------
-  ## 4 if plot=TRUE
-  ##----------------
-
-  ##determine plot-argument:
-  plotArg <- plot
-  if( is.null(plotArg) ){
-    plotArg <- getOption("plot")
-    if( is.null(plotArg) ){ plotArg <- FALSE }
-  }
-
-  ##if plot=TRUE:
+  
+  ##plot?:
   if(plotArg){
 
+    ##some of the plot.options:
+    ##-------------------------
+        
     ##how many observations to retain?:
-    if(is.null(plot.options$keep)) {
-      plot.options$keep=12L
+    if(is.null(plot.options$keep)){ plot.options$keep <- 9L } #old: 12L
+    if( plot.options$keep < 1 ){
+      plot.options$keep <- 1L
+      message("'plot.options$keep' changed to 1")
     }
+    
+    ##linetype (solid=1, dashed=2, etc.). Order: lty=c(Forecast,Actual)
+    if(is.null(plot.options$lty)){ plot.options$lty <- c(1,1) }
 
-    ##include retained fitted?
-    if(is.null(plot.options$fitted)) {
-      plot.options$fitted <- FALSE
+    ##linewidth:
+    if(is.null(plot.options$lwd)){ plot.options$lwd <- 1 }
+    
+    ##the colours of forecast and actual:
+    if(is.null(plot.options$col)){ plot.options$col <- c("red","blue") }
+    
+    ##points or lines?:
+    plotTypeForecast <- "l" #l=lines
+    plotTypeRetained <- "l"
+#OLD:
+#    plotTypeForecast <- ifelse(n.ahead==1, "p", "l") #p=points, l=lines, see help(plot)
+#    plotTypeRetained <- ifelse(plot.options$keep > 1, "l", "p")
+
+    ##whether to include retained fitted or not:
+    if(is.null(plot.options$fitted)){ plot.options$fitted <- FALSE }
+
+    ##start preparing:
+    ##----------------
+    
+    ##select the shades of grey for the ci's:
+    if(is.null(plot.options$shades.of.grey)){
+      shadesOfGrey <- 40:90 #1 to 100 is possible
+      shadesOfGrey <- quantile(shadesOfGrey, probs=ciLevelsArg) 
+      shadesOfGrey <- shadesOfGrey[length(shadesOfGrey):1] #invert, i.e. last to first
+      plot.options$shades.of.grey <- round(as.numeric(shadesOfGrey))
     }
-
-#    ##WHAT DOES THIS DO???:
-#    ##errors only?
-#    if(!is.null(plot.options$errors.only)) {
-##      plot.options$errors.only <- TRUE
-#      if((spec=="mean")){
-#        print("Cannot plot estimated error bars when mean specified")
-#      }
-#    }
-
-    ##location of legend:
-    if(is.null(plot.options$legend.loc)) {
-      plot.options$legend.loc <- "topleft"
-    }
-
-    ##xlab:
-    xlabArg <- ifelse(is.null(newindex), "Step ahead", "")
-
+    greySelection <- paste0("grey", plot.options$shades.of.grey)
+    
     ##make dataForPlot:
-    dataForPlot <- matrix(NA, NROW(out), 6)
+    dataForPlot <- matrix(NA, n.ahead, 6)
     colnames(dataForPlot) <- c("MeanActual", "MeanFitted",
-      "MeanPrediction", "VarianceActual", "VarianceFitted",
+      "MeanPrediction", "ResidualsSquared", "VarianceFitted",
       "VariancePrediction")
     if(!is.null(plot.options$newmactual)){
       dataForPlot[1:length(plot.options$newmactual),"MeanActual"] <-
         plot.options$newmactual
     }
-    if(!is.null(outMean)){ dataForPlot[,"MeanPrediction"] <- outMean }
     if(!is.null(plot.options$newvactual)){
-      dataForPlot[1:length(plot.options$newvactual),"VarianceActual"] <-
+      dataForPlot[1:length(plot.options$newvactual),"ResidualsSquared"] <-
         plot.options$newvactual
     }
-    if(is.null(outVariance)){
-      dataForPlot[,"VariancePrediction"] <- sigma.arx(object)^2
-    }else{
-      dataForPlot[,"VariancePrediction"] <- outVariance
+    if(!is.null(yhat)){
+      dataForPlot[,"MeanPrediction"] <- coredata(yhat)
     }
-    if(plot.options$keep > 0){
-      retainedData <- matrix(NA, plot.options$keep, NCOL(dataForPlot))
-      colnames(retainedData) <- c("MeanActual", "MeanFitted",
-        "MeanPrediction", "VarianceActual", "VarianceFitted",
-        "VariancePrediction")
-      retainedData[,"MeanActual"] <-
-        tail(coredata(yInSample), n=plot.options$keep)
-      retainedData[,"MeanFitted"] <-
-        tail(coredata(object$mean.fit), n=plot.options$keep)
-      retainedData[,"VarianceActual"] <-
-        tail(coredata(object$residuals^2), n=plot.options$keep)
-      retainedData[,"VarianceFitted"] <-
-        tail(coredata(object$var.fit), n=plot.options$keep)
-      dataForPlot <- rbind(retainedData, dataForPlot)
-      tmpIndx <- c(tail(index(yInSample), n=plot.options$keep),
-        index(out))
-      dataForPlot <- zoo(dataForPlot, order.by=tmpIndx)
-    }else{
-      dataForPlot <- zoo(dataForPlot, order.by=index(out))
+    if(!is.null(sd2hat)){
+      dataForPlot[,"VariancePrediction"] <- coredata(sd2hat)
     }
-
-    ##get current par-values:
-    def.par <- par(no.readonly=TRUE)
-
-    ##prepare plotting:
-    if(xlabArg=="") { #plot margins?
-      par(mar = c(2,3,0.5,0.5) + 0.1) #b,l,t,r
-    }else{
-      par(mar = c(3,3,0.5,0.5) + 0.1) #b,l,t,r
-    }
-    plotTypeForecast <- ifelse(n.ahead==1, "p", "l")
-    plotTypeRetained <- ifelse(plot.options$keep > 1, "l", "p")
-
+    retainedData <- matrix(NA, plot.options$keep, NCOL(dataForPlot))
+    colnames(retainedData) <- colnames(dataForPlot)
+    retainedData[,"MeanActual"] <-
+      tail(coredata(yInSample), n=plot.options$keep)
+    retainedData[,"ResidualsSquared"] <-
+      tail(coredata(object$residuals)^2, n=plot.options$keep)
+    retainedData[,"MeanFitted"] <-
+      tail(coredata(object$mean.fit), n=plot.options$keep)
+    retainedData[,"VarianceFitted"] <-
+      tail(coredata(object$var.fit), n=plot.options$keep)
+    ##let predictions start at forecast origin:      
+    retainedData[NROW(retainedData),"MeanPrediction"] <- 
+      retainedData[NROW(retainedData),"MeanActual"]
+    retainedData[NROW(retainedData),"VariancePrediction"] <- 
+      retainedData[NROW(retainedData),"VarianceFitted"]
+    dataForPlot <- rbind(retainedData, dataForPlot)
+    tmpIndx <- c(tail(index(yInSample), n=plot.options$keep), newindex)
+    dataForPlot <- zoo(dataForPlot, order.by=tmpIndx)
+        
     ##if spec="mean" or "both":
     ##-------------------------
 
-    if( spec=="mean" || spec=="both" ){
+    if( spec %in% c("mean","both") ){
+
+      ##create polygon index:    
+      polygonIndx <- c(NROW(dataForPlot)-n.ahead):NROW(dataForPlot)
+#OLD:
+#      polygonIndx <- c(NROW(dataForPlot)-n.ahead+1):NROW(dataForPlot)
+      polygonIndx <- c(polygonIndx, polygonIndx[c(length(polygonIndx):1)])
+      polygonIndx <- index(dataForPlot)[polygonIndx]
+
+      ##matrices with the ci's:
+      mCiLowerValsMean <- cbind(coredata(mMeanQs[,as.character(ciLower)]))
+      colnames(mCiLowerValsMean) <- as.character(ciLower)
+      mCiUpperValsMean <- cbind(coredata(mMeanQs[,as.character(ciUpper)]))
+      colnames(mCiUpperValsMean) <- as.character(ciUpper)
+      mCiUpperValsMean <-
+        mCiUpperValsMean[NROW(mCiUpperValsMean):1,] #invert (first to last, last to first)
+
+      ##add actual value at forecast origin to ci matrices:
+      actualValue <- retainedData[NROW(retainedData),"MeanActual"]  
+      mCiLowerValsMean <- rbind(actualValue,mCiLowerValsMean)
+      mCiUpperValsMean <- rbind(mCiUpperValsMean,actualValue)
 
       ##y-axis (limits):
-      ylimVals <- range( na.trim(dataForPlot[,"MeanActual"]),
-        na.trim(dataForPlot[,"MeanFitted"]),
-        na.trim(dataForPlot[,"MeanPrediction"]
-          + 2*sqrt(dataForPlot[,"VariancePrediction"])),
-        na.trim(dataForPlot[,"MeanPrediction"]
-          - 2*sqrt(dataForPlot[,"VariancePrediction"])) )
+      if(is.null(plot.options$ylim)){
 
-      ##plot the mean-predictions:
-      plot.zoo(dataForPlot[,"MeanPrediction"], xlab="", ylab="",
-        col="red", type=plotTypeForecast, ylim=ylimVals)
+        ylimArg <- c(coredata(mCiLowerValsMean[,1]),
+          coredata(mCiUpperValsMean[,1]))
+        if( plot.options$keep > 0 ){
+          ylimArg <- c(ylimArg,
+            tail(coredata(yInSample), n=plot.options$keep) )
+          if(plot.options$fitted){
+            ylimArg <- c(ylimArg,
+              tail(coredata(object$mean.fit), n=plot.options$keep))
+          }
+        }
+        if(!is.null(plot.options$newmactual)){
+          ylimArg <- c(ylimArg, coredata(plot.options$newmactual))
+        }
+        ylimArg <- range(ylimArg)
+        eps <- abs(ylimArg[2]-ylimArg[1])
+        ylimArg[2] <- ylimArg[2] + eps*0.15 #add more space at the top
+        ylimArg[1] <- ylimArg[1] - eps*0.05 #add more space at the bottom
 
-      ##add 2 x SEs:
-      SE <- sqrt(dataForPlot[,"VariancePrediction"])
-      lines(dataForPlot[,"MeanPrediction"] + 2*SE,
-        col="darkgreen", lty=2, type=plotTypeForecast)
-      lines(dataForPlot[,"MeanPrediction"] - 2*SE,
-        col="darkgreen", lty=2, type=plotTypeForecast)
-
-      ##add actuals (pre- and post-prediction):
-      if(plot.options$keep > 0){
-        lines(dataForPlot[,"MeanActual"], col="blue",
+      }else{ ylimArg <- plot.options$ylim }
+           
+      ##get current par-values:
+      def.par <- par(no.readonly=TRUE)
+  
+      ##margins:
+      par(mar = c(2,3,0.5,0.5) + 0.1) #bottom,left,top,right
+  
+      ##plot the actual values:
+      plot.zoo(dataForPlot[,"MeanActual"], xlab="", ylab="", 
+        lty=plot.options$lty[2], col=plot.options$col[2],
+        lwd=plot.options$lwd, type=plotTypeForecast, ylim=ylimArg)
+  
+      ##add ci's:
+      for(i in 1:length(ciLevelsArg)){
+        polygon( polygonIndx,
+          c(mCiLowerValsMean[,i],mCiUpperValsMean[,i]),
+          col=greySelection[i], border=greySelection[i] )  
+      }
+  
+      ##add prediction:
+      lines(dataForPlot[,"MeanPrediction"], lty=plot.options$lty[1],
+        col=plot.options$col[1], lwd=plot.options$lwd,
+        type=plotTypeForecast)
+    
+      ##add fitted (pre-prediction):
+      if( plot.options$keep > 0 && plot.options$fitted ){
+        lines(dataForPlot[,"MeanFitted"], lty=plot.options$lty[2],
+          col=plot.options$col[1], lwd=plot.options$lwd,
           type=plotTypeRetained)
       }
 
-      ##add fitted (pre-prediction):
-      if( plot.options$keep > 0 && plot.options$fitted ){
-        lines(dataForPlot[,"MeanFitted"], col="red",
+      ##add forecast origin as a point:
+      points(polygonIndx[1], actualValue, pch=19, col=plot.options$col[2],
+        lwd=plot.options$lwd)
+
+      ##add actual values out-of-sample:
+      if( !is.null(plot.options$newmactual) ){
+        lines(dataForPlot[,"MeanActual"], lty=plot.options$lty[2],
+          col=plot.options$col[2], lwd=plot.options$lwd,
           type=plotTypeRetained)
       }
 
       ##add text closer to plot than xlab or ylab would do
-      if(xlabArg!="") {
-        mtext(xlabArg, side=1, line=2)
-      }
       mtext("Mean", side=2, line=2)
+  
+      ##add plot-legend:
+      legend("top", lty=plot.options$lty, col=plot.options$col,
+        lwd=plot.options$lwd, legend=c("Forecast", "Actual"), bty="n")
+  
+      ##add ci-legend:
+      legendArg <- ciLevelsArg[length(ciLevelsArg):1]*100
+      legendArg <- paste0(legendArg, "% CI")      
+      legend("topright", lty=c(1,1), lwd=13, bty="n",
+        col=greySelection[c(1,length(ciLevelsArg))],
+        legend=legendArg[c(1,length(ciLevelsArg))])
+      
+      ##return to old par-values:
+      par(def.par)
 
-      ##add legend:
-      legend(plot.options$legend.loc, col=c("red","darkgreen","blue"),
-        lty=c(1,2,1),
-        legend=c("Forecast","+/- 2 x SE of regression","Actual"),
-        bty="n")
-
-    } #close if spec="mean" or "both"
+    } #end if(spec %in% c("mean","both"))
 
 
     ##if spec="variance":
     ##-------------------
 
-    if(spec=="variance"){
+    if( spec=="variance" ){
+
+      ##create polygon index:    
+      polygonIndx <- c(NROW(dataForPlot)-n.ahead):NROW(dataForPlot)
+#OLD:
+#      polygonIndx <- c(NROW(dataForPlot)-n.ahead+1):NROW(dataForPlot)
+      polygonIndx <- c(polygonIndx, polygonIndx[c(length(polygonIndx):1)])
+      polygonIndx <- index(dataForPlot)[polygonIndx]
+
+      ##matrices with the ci's:
+      mCiLowerValsVar <- cbind(coredata(mVarianceQs[,as.character(ciLower)]))
+      colnames(mCiLowerValsVar) <- as.character(ciLower)
+      mCiUpperValsVar <- cbind(coredata(mVarianceQs[,as.character(ciUpper)]))
+      colnames(mCiUpperValsVar) <- as.character(ciUpper)
+      mCiUpperValsVar <-
+        mCiUpperValsVar[NROW(mCiUpperValsVar):1,] #invert (first to last, last to first)
+
+      ##add fitted value to forecast origin to matrices:
+      fittedValue <- retainedData[NROW(retainedData),"VarianceFitted"]  
+      mCiLowerValsVar <- rbind(fittedValue,mCiLowerValsVar)
+      mCiUpperValsVar <- rbind(mCiUpperValsVar,fittedValue)
 
       ##y-axis (limits):
-      ylimVals <- range( na.trim(dataForPlot[,"VarianceActual"]),
-        na.trim(dataForPlot[,"VarianceFitted"]),
-        na.trim(dataForPlot[,"VariancePrediction"]) )
+      if(is.null(plot.options$ylim)){
 
-      ##plot the variance-predictions:
-      plot.zoo(dataForPlot[,"VariancePrediction"], xlab="", ylab="",
-        col="red", type=plotTypeForecast, ylim=ylimVals)
-
-      ##add fitted (pre-prediction):
+        ylimArg <- c(coredata(mCiLowerValsVar[,1]),
+          coredata(mCiUpperValsVar[,1]))
+        if( plot.options$keep > 0 ){
+          ylimArg <- c(ylimArg,
+            tail(coredata(object$residuals)^2, n=plot.options$keep) )
+          if(plot.options$fitted){
+            ylimArg <- c(ylimArg,
+              tail(coredata(object$var.fit), n=plot.options$keep))
+          }
+        }
+        if(!is.null(plot.options$newvactual)){
+          ylimArg <- c(ylimArg, coredata(plot.options$newvactual))
+        }
+        ylimArg <- range(ylimArg)
+        eps <- abs(ylimArg[2]-ylimArg[1])
+        ylimArg[2] <- ylimArg[2] + eps*0.15 #add more space at the top
+        ylimArg[1] <- ylimArg[1] - eps*0.05 #add more space at the bottom
+     
+      }else{ ylimArg <- plot.options$ylim }
+      
+      ##get current par-values:
+      def.par <- par(no.readonly=TRUE)
+  
+      ##margins:
+      par(mar = c(2,3,0.5,0.5) + 0.1) #bottom,left,top,right
+  
+      ##plot the actual values:
+      plot.zoo(dataForPlot[,"ResidualsSquared"], xlab="", ylab="",
+        lty=plot.options$lty[2], col=plot.options$col[2],
+        lwd=plot.options$lwd, type=plotTypeForecast, ylim=ylimArg)
+  
+      ##add ci's:
+      for(i in 1:length(ciLevelsArg)){
+        polygon( polygonIndx,
+          c(mCiLowerValsVar[,i],mCiUpperValsVar[,i]),
+          col=greySelection[i], border=greySelection[i] )  
+      }
+  
+      ##add prediction:
+      lines(dataForPlot[,"VariancePrediction"], lty=plot.options$lty[1],
+        col=plot.options$col[1], lwd=plot.options$lwd,
+        type=plotTypeForecast)
+    
+      ##add fitted (in-sample):
       if( plot.options$keep > 0 && plot.options$fitted ){
-        lines(dataForPlot[,"VarianceFitted"], col="red",
+        lines(dataForPlot[,"VarianceFitted"], lty=plot.options$lty[2],
+          lwd=plot.options$lwd, col=plot.options$col[1],
+          type=plotTypeRetained)
+      }
+  
+      ##add point at forecast origin:
+      points(polygonIndx[1], fittedValue, pch=19, col=plot.options$col[1],
+        lwd=plot.options$lwd)
+
+      ##add actual values of residuals squared out-of-sample:
+      if( !is.null(plot.options$newvactual) ){
+        lines(dataForPlot[,"ResidualsSquared"], lty=plot.options$lty[2],
+          col=plot.options$col[2], lwd=plot.options$lwd,
           type=plotTypeRetained)
       }
 
-      ##add actuals (pre- and post-prediction):
-      if(plot.options$keep > 0){
-        lines(dataForPlot[,"VarianceActual"], col="blue",
-          type=plotTypeRetained)
-      }
-
-      ##add text closer to plot than xlab or ylab would do
-      if(xlabArg!="") {
-        mtext(xlabArg, side=1, line=2)
-      }
+      ##add text closer to plot than xlab or ylab would do:
       mtext("Variance", side=2, line=2)
+  
+      ##add plot-legend:
+      legend("top", lty=plot.options$lty, col=plot.options$col,
+        lwd=plot.options$lwd, legend=c("Forecast", "Squared residuals"),
+        bty="n")
+  
+      ##add ci-legend:
+      legendArg <- ciLevelsArg[length(ciLevelsArg):1]*100
+      legendArg <- paste0(legendArg, "% CI")      
+      legend("topright", lty=c(1,1), lwd=13, bty="n",
+        col=greySelection[c(1,length(ciLevelsArg))],
+        legend=legendArg[c(1,length(ciLevelsArg))])
+      
+      ##return to old par-values:
+      par(def.par)
 
-      ##add legend:
-      legend(plot.options$legend.loc, col=c("red","blue"),
-        lty=c(1,1), legend=c("Forecast (conditional variance)", "Actual (residuals^2)"), bty="n")
+    } #end if(spec %in% c("mean","both"))
 
-    } #close if spec="variance"
+  } #end if(plotArg)
 
+      
+  ##-----------------------
+  ## 7 if return=TRUE
+  ##-----------------------
 
-    ##add vertical green line between last observation
-    ##and first forecast:
-    if(plot.options$keep > 0){
-      abline( v=( as.numeric(index(dataForPlot))[plot.options$keep] + as.numeric(index(dataForPlot))[plot.options$keep+1] )/2,
-        col="darkgreen", lty=3)
-    }
+  if(return){
 
-    ##return to old par-values:
-    par(def.par)
+    ##change colnames on quantiles:
+    if(!is.null(mMeanQs)){ colnames(mMeanQs) <- paste0("y",probsArg) }
+    if(!is.null(mVarianceQs)){ colnames(mVarianceQs) <- paste0("sd2",probsArg) }
+    
+    ##return everything:
+    if(verbose){
+      result <- NULL
+      if(!is.null(yhat)){ result <- cbind(yhat) }
+      if(!is.null(mMeanQs)){
+        if(is.null(result)){ result <- mMeanQs }else{ result <- cbind(result,mMeanQs) }
+      }
+      if(!is.null(mY)){
+        if(is.null(result)){ result <- mY }else{ result <- cbind(result,mY) }
+      }
+      if(!is.null(sd2hat)){
+        if(is.null(result)){ result <- sd2hat }else{ result <- cbind(result,sd2hat) }
+      }
+      if(!is.null(mVarianceQs)){
+        if(is.null(result)){ result <- mVarianceQs }else{ result <- cbind(result,mVarianceQs) }
+      }
+      if(!is.null(mEpsilon)){
+        if(is.null(result)){ result <- mEpsilon }else{ result <- cbind(result,mEpsilon) }
+      }
+      if(!is.null(mZhat)){
+        if(is.null(result)){ result <- mZhat }else{ result <- cbind(result, mZhat) }
+      }
+    } #end if(verbose)
+    
+    ##do not return everything:
+    if(!verbose){
 
-  } #end if(plot)
+      resultMean <- NULL
+      resultVariance <- NULL
+      
+      ##mean specification:
+      if( spec %in% c("mean","both" ) ){
+        resultMean <- yhat
+        if( !is.null(probs) || !is.null(ci.levels) ){
+          resultMean <- cbind(yhat,mMeanQs)
+        }
+      }
 
+      ##mean specification:
+      if( spec %in% c("variance","both" ) ){
+        resultVariance <- sd2hat
+        if( !is.null(probs) || !is.null(ci.levels) ){
+          resultVariance <- cbind(sd2hat,mVarianceQs)
+        }
+      }
 
-  ##------------------
-  ## 5 if return=TRUE
-  ##------------------
+      ##combine:
+      if(is.null(resultMean)){ result <- resultVariance }
+      if(is.null(resultVariance)){ result <- resultMean }
+      if(!is.null(resultMean) && !is.null(resultVariance) ){
+        result <- cbind(resultMean,resultVariance)
+        colnames(result) <- c("yhat", "sd2hat")
+      }
+          
+    } #end if(!verbose)
 
-  if(return){ return(out) }
+    ##return the result:
+    return(result)
 
-} ##close predict.arx
+  } #end if(return)
+  
+} #close predict.arx  
 
 ##==================================================
 ## print estimation result
@@ -2933,7 +3256,9 @@ rsquared <- function(object, adjusted=FALSE, ...)
       getsm="mean", getsv="variance")
   }
   if( class(object) == "gets" && specType=="variance" ){
-    Rsquared <- NA
+    result <- NA
+#OLD:
+#    Rsquared <- NA
   }else{
     TSS <- sum( (object$aux$y - mean(object$aux$y))^2 )
     residsTrimmed <- na.trim(object$residuals)
@@ -3644,6 +3969,7 @@ if( gum.chk && delete.n>1 ){
     out$aux$y.n <- object$aux$y.n
     out$aux$y.name <- object$aux$y.name
     out$aux$mXnames.gum <- object$aux$mXnames
+    out$aux$vXnames.gum <- object$aux$vXnames
     out$aux$call.gum <- object$call
     if(is.null(out$aux$vcov.type)){ out$aux$vcov.type <- vcov.type }
   }
@@ -3865,129 +4191,182 @@ plot.gets <- function(x, spec=NULL, col=c("red","blue"),
 ## forecast up to n.ahead
 predict.gets <- function(object, spec=NULL, n.ahead=12,
   newmxreg=NULL, newvxreg=NULL, newindex=NULL,
-  n.sim=1000, innov=NULL, return=TRUE, plot=NULL,
-  plot.options=list(), ...)
+  n.sim=2000, innov=NULL, probs=NULL, ci.levels=NULL, 
+  quantile.type=7, return=TRUE, verbose=FALSE, plot=NULL,
+  plot.options=list(), ...)  
 {
-  ##create new object to add stuff to in order to use predict.arx()
-  object.new <- object
 
-  ##spec:
-  if(is.null(spec)){
-    if(object$gets.type=="getsm"){ spec <- "mean" }
-    if(object$gets.type=="getsv"){ spec <- "variance" }
-  }else{
-    spec.type <- c("mean", "variance", "both")
-    which.type <- charmatch(spec, spec.type)
-    spec <- spec.type[which.type]
-  } #end if(..)else(..)
-  if( spec %in% c("variance","both") ){ stop("variance-forecasts with predict.gets not available yet") }
+  ##create new object to add stuff to in order to use predict.arx()
+  objectNew <- object
 
 
   ##-----------------------------------
   ## arguments mean-equation:
   ##-----------------------------------
 
-  if("mX" %in% names(object$aux)) {
-    ##what dynamics specified in gum?
-    gum.ar <- eval(object$aux$call.gum$ar)
-    ##what dynamics remain in spec?
-    spec.ar <- as.numeric(gsub("ar(\\d+)","\\1",object$aux$mXnames[grep("^ar\\d+$",object$aux$mXnames)]))
+  ##coefficients of mean spec in final model:
+  coefsMean <- coef.arx(objectNew, spec="mean")
 
-    if(NROW(spec.ar)==0) {
-      object.new$call$ar <- NULL
-    } else { ##check that dynamics in specific are subset of those in gum
-      object.new$call$ar <- spec.ar[spec.ar %in% gum.ar]
-    }
+  ##there is no mean equation:
+  if( length(coefsMean)==0 ){
 
-    ##need to check for constant
-    if(!is.null(object$aux$call.gum$mc)) {
-      ##but the constant needs to have been retained...
-      if ( "mconst" %in% object$aux$mXnames ) { object.new$call$mc <- TRUE }
-    }
-
-    if(is.null(object$aux$call.gum$mc) && "mconst" %in% object$aux$mXnames) {
-      ##ensure that when we call predict.arx we set mc=TRUE
-      object.new$call$mc <- !is.null(object$aux$call.gum$mc)
-      ##need to also get rid of mconst in mX
-      #object.new$mX <- object$aux$mX[,-grep("mconst",object$aux$mXnames)]
-    }
-
-    ##mxreg needs to be null if only thing in it is dynamics (i.e. ar variables)
-    if(NROW(grep("^ar\\d+$",object$aux$mXnames))==object$aux$mXncol) {
-      object.new$call$mxreg <- NULL
-    } else {
-      object.new$call$mxreg <- object$aux$call.gum$mxreg
-    } ##if there is non-arch variables in mXreg, user needs to specify newmxreg
-
-  } else {
-
-    object.new$call$mc <- NULL
-    object.new$call$ar <- NULL
-    ##to do: log.ewma
-    object.new$call$mxreg <- NULL
+    objectNew$call$mc <- NULL
+    objectNew$call$ar <- NULL
+    objectNew$call$ewma <- NULL
+    objectNew$call$mxreg <- NULL
 
   }
+
+  ##there is a mean equation:
+  if( length(coefsMean)>0 ){
+
+    ##initiate index counter (used for mxreg):
+    indxCounter <- 0
+
+    ##mc argument:
+    mconstRetained <- "mconst" %in% names(coefsMean)
+    if( mconstRetained ){
+      objectNew$call$mc <- TRUE
+      indxCounter <- indxCounter + 1
+    }else{
+      objectNew$call$mc <- NULL
+    }
+    
+    ##ar argument:
+    gumTerms <- eval(object$aux$call.gum$ar)
+    gumNamesAr <- paste0("ar", gumTerms)
+    whichRetained <- which( gumNamesAr %in% names(coefsMean) )
+    if( length(whichRetained)==0 ){
+      objectNew$call$ar <- NULL
+    }else{
+      objectNew$call$ar <- gumTerms[ whichRetained ]
+      indxCounter <- indxCounter + length(whichRetained)
+    }
+        
+    ##ewma argument:
+    gumTerms <- eval(object$aux$call.gum$ewma)
+    gumNamesEwma <- paste0("EqWMA(", gumTerms$length, ")")
+    whichRetained <- which( gumNamesEwma %in% names(coefsMean) )
+    if( length(whichRetained)==0 ){
+      objectNew$call$ewma <- NULL
+    }else{
+      objectNew$call$ewma <-
+        list( length=gumTerms$length[ whichRetained ] )
+      indxCounter <- indxCounter + length(whichRetained)
+    }
+
+    ##mxreg argument:
+    if(indxCounter==0){ whichRetainedCoefs <- coefsMean }
+    if(indxCounter>0){ whichRetainedCoefs <- coefsMean[ -c(1:indxCounter) ] }
+    if( length(whichRetainedCoefs)==0 ){
+      objectNew$call$mxreg <- NULL
+    }else{
+      whichRetainedNames <- names(whichRetainedCoefs)
+      objectNew$call$mxreg <- whichRetainedNames
+#more correct (but not needed, since mxreg only needs to be non-NULL)?:
+#      whichRetained <- which( object$aux$mXnames %in% whichRetainedNames )
+#      mxreg <- cbind(object$aux$mX[, whichRetained ])
+#      colnames(mxreg) <- whichRetainedNames
+#      objectNew$call$mxreg <- xreg
+    }
+
+  } #end if( length(coefsMean)>0 )
+  
 
   ##-----------------------------------
   ## arguments variance-equation:
   ##-----------------------------------
 
-#  if("vX" %in% names(object$aux)) {
-#
-#    ##what dynamics specified in gum?
-#    gum.arch <- eval(object$aux$call.gum$arch)
-#    ##what dynamics remain in spec?
-#    spec.arch <- as.numeric(gsub("arch(\\d+)","\\1",object$aux$vXnames[grep("^arch\\d+$",object$aux$vXnames)]))
-#    if(NROW(spec.arch)==0) {
-#      object.new$call$arch <- NULL
-#    } else { ##check that dynamics in specific are subset of those in gum
-#      object.new$call$arch <- spec.arch[spec.arch %in% gum.arch]
-#    }
-#
-#    ##which asyms specified in gum?
-#    gum.asym <- eval(object$aux$call.gum$asym)
-#    ##which asyms remain in spec?
-#    spec.asym <- as.numeric(gsub("asym(\\d+)","\\1",object$aux$vXnames[grep("^asym\\d+$",object$aux$vXnames)]))
-#    if(NROW(spec.asym)==0) {
-#      object.new$call$asym <- NULL
-#    } else { ##check that dynamics in specific are subset of those in gum
-#      object.new$call$asym <- spec.asym[spec.asym %in% gum.asym]
-#    }
-#
-#    ##which asyms specified in gum?
-#    gum.log.ewma <- eval(object$aux$call.gum$log.ewma)
-#    if(!is.null(gum.log.ewma)){ stop("'log.ewma' not available yet for 'predict.gets' ") }
-#
-#    ##vxreg needs to be null if only thing in it is dynamics (i.e. arch variables)
-#    if(NROW(grep("^arch\\d+$",object$aux$vXnames))==object$aux$vXncol) {
-#      object.new$call$vxreg <- NULL
-#    } else {
-#      object.new$call$vxreg <- object$aux$call.gum$vxreg
-#    } ##if there is non-arch variables in vXreg, user needs to specify newvxreg
-#
-#  } else {
+  ##coefficients of variance spec in final model:
+  coefsVar <- coef.arx(objectNew, spec="variance")
+  if( length(coefsVar)>0 ){ #remove Elnz2 estimate:
+    coefsVar <- coefsVar[ -length(coefsVar) ]  
+  }
 
-    object.new$call$arch <- NULL
-    object.new$call$asym <- NULL
-    object.new$call$log.ewma <- NULL
-    object.new$call$vxreg <- NULL
+  ##there is no variance equation:
+  if( length(coefsVar)==0 ){
 
-#  }
+    objectNew$call$vc <- NULL
+    objectNew$call$arch <- NULL
+    objectNew$call$asym <- NULL
+    objectNew$call$log.ewma <- NULL
+    objectNew$call$vxreg <- NULL
 
-  ##-----------------------------------
-  ## pass on arguments to predict.arx:
-  ##-----------------------------------
+  }
 
-  out <- predict.arx(object.new, spec=spec, n.ahead=n.ahead,
+  ##there is a variance equation:
+  if( length(coefsVar)>0 ){
+
+    ##vc argument (always present in variance equations):
+    objectNew$call$vc <- TRUE
+    indxCounter <- 1 #used for vxreg
+    
+    ##arch argument:
+    gumTerms <- eval(object$aux$call.gum$arch)
+    gumNamesArch <- paste0("arch", gumTerms)
+    whichRetained <- which( gumNamesArch %in% names(coefsVar) )
+    if( length(whichRetained)==0 ){
+      objectNew$call$arch <- NULL
+    }else{
+      objectNew$call$arch <- gumTerms[ whichRetained ]
+      indxCounter <- indxCounter + length(whichRetained)
+    }
+    
+    ##asym argument:
+    gumTerms <- eval(object$aux$call.gum$asym)
+    gumNamesAsym <- paste0("asym", gumTerms)
+    whichRetained <- which( gumNamesAsym %in% names(coefsVar) )
+    if( length(whichRetained)==0 ){
+      objectNew$call$asym <- NULL
+    }else{
+      objectNew$call$asym <- gumTerms[ whichRetained ]
+      indxCounter <- indxCounter + length(whichRetained)
+    }
+    
+    ##log.ewma argument:
+    gumTerms <- eval(object$aux$call.gum$log.ewma)
+    gumNamesLogEwma <- paste0("logEqWMA(", gumTerms$length, ")")
+    whichRetained <- which( gumNamesLogEwma %in% names(coefsVar) )
+    if( length(whichRetained)==0 ){
+      objectNew$call$log.ewma <- NULL
+    }else{
+      objectNew$call$log.ewma <-
+        list( length=gumTerms$length[ whichRetained ] )
+      indxCounter <- indxCounter + length(whichRetained)
+    }
+
+    ##vxreg argument:
+    whichRetainedCoefs <- coefsVar[ -c(1:indxCounter) ]
+    if( length(whichRetainedCoefs)==0 ){
+      objectNew$call$vxreg <- NULL
+    }else{
+      whichRetainedNames <- names(whichRetainedCoefs)
+      objectNew$call$vxreg <- whichRetainedNames
+#more correct (but not needed, since vxreg only needs to be non-NULL)?:
+#      whichRetained <- which( object$aux$vXnames %in% whichRetainedNames )
+#      vxreg <- cbind(object$aux$vX[, whichRetained ])
+#      colnames(vxreg) <- whichRetainedNames
+#      objectNew$call$vxreg <- vxreg
+    }
+
+  } #end if( length(coefsVar)>0 )
+
+
+  ##----------------------------------
+  ## pass arguments on to predict.arx:
+  ##----------------------------------
+
+  result <- predict.arx(objectNew, spec=spec, n.ahead=n.ahead,
     newmxreg=newmxreg, newvxreg=newvxreg, newindex=newindex,
-    n.sim=n.sim, innov=innov, return=return, plot=plot,
-    plot.options=plot.options)
+    n.sim=n.sim, innov=innov, probs=probs, ci.levels=ci.levels,
+    quantile.type=quantile.type, return=return, verbose=verbose,
+    plot=plot, plot.options=plot.options)
 
   ##-------------------
   ## return forecasts:
   ##-------------------
 
-  if(return){ return(out) }
+  if(return){ return(result) }
 
 } #close predict.gets
 
