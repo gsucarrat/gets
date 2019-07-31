@@ -21,8 +21,9 @@
   \method{plot}{gets}(x, spec=NULL, col=c("red","blue"),
     lty=c("solid","solid"), lwd=c(1,1), ...)
   \method{predict}{gets}(object, spec=NULL, n.ahead=12, newmxreg=NULL,
-    newvxreg=NULL, newindex=NULL, n.sim=1000, innov=NULL, return=TRUE,
-    plot=NULL, plot.options=list(), ...)
+    newvxreg=NULL, newindex=NULL, n.sim=2000, innov=NULL, probs=NULL,
+    ci.levels=NULL, quantile.type=7, return=TRUE, verbose=FALSE, plot=NULL,
+    plot.options=list(), ...)
   \method{print}{gets}(x, ...)
   \method{residuals}{gets}(object, std=NULL, ...)
   \method{sigma}{gets}(object, ...)
@@ -35,14 +36,18 @@
   \item{x}{an object of class 'gets'}
   \item{spec}{NULL, "mean", "variance" or, in some instances, "both". When \code{NULL} is a valid value, then it is automatically determined whether information pertaining to the mean or variance specification should be returned}
   \item{std}{logical. If FALSE (default), then the mean residuals are returned. If TRUE, then the standardised residuals are returned}
-  \item{n.ahead}{generate forecasts up to n steps ahead (the default is 12)}
-  \item{newmxreg}{a matrix (\code{n.ahead} rows and NCOL(mxregs) columns) with the out-of-sample values of the \code{mxreg} regressors}
-  \item{newvxreg}{a matrix (\code{n.ahead} rows and NCOL(vxregs) columns) with the out-of-sample values of the \code{vxreg} regressors}
-  \item{newindex}{date-index for the \code{zoo} object returned by \code{predict.arx}}
-  \item{n.sim}{integer, the number of bootstrap replications for the generation of the variance forecasts}
-  \item{innov}{\code{NULL} (default) or a vector of length \code{n.ahead * n.sim} containing the standardised errors (i.e. zero mean, unit variance) to bootstrap from}
-  \item{return}{logical. If \code{TRUE} (default), then the out-of-sample forecasts are returned}
-  \item{plot}{NULL or logical. If \code{TRUE} (default), then the out-of-sample forecasts are plotted. If NULL (default), then the value set by \code{\link{options}} determines whether a plot is produced or not.}
+  \item{n.ahead}{\code{integer} that determines how many steps ahead predictions should be generated (the default is 12)}
+  \item{newmxreg}{a \code{matrix} of \code{n.ahead} rows and \code{NCOL(mxreg)} columns with the out-of-sample values of the \code{mxreg} regressors}
+  \item{newvxreg}{a \code{matrix} of \code{n.ahead} rows and \code{NCOL(vxreg)} columns with the out-of-sample values of the \code{vxreg} regressors}
+  \item{newindex}{\code{NULL} (default) or the date-index for the \code{zoo} object returned by \code{predict.arx}. If \code{NULL}, then the function uses the in-sample \code{index} to generate the out-of-sample index}
+  \item{n.sim}{\code{integer}, the number of replications used for the generation of the forecasts}
+  \item{innov}{\code{NULL} (default) or a vector of length \code{n.ahead * n.sim} containing the standardised errors (that is, zero mean and unit variance) used for the forecast simulations. If \code{NULL}, then a classica bootstrap procedure is used to draw from the standardised in-sample residuals}
+  \item{probs}{\code{NULL} (default) or a \code{vector} with the quantile-levels (values strictly between 0 and 1) of the forecast distribution. If \code{NULL}, then no quantiles are returned unless \code{ci.levels} is non-\code{NULL}}
+  \item{ci.levels}{\code{NULL} (default) or a \code{vector} with the confidence levels (expressed as values strictly between 0 and 1) of the forecast distribution. The upper and lower values of the confidence interval(s) are returned as quantiles}
+  \item{quantile.type}{an integer between 1 and 9 that selects which algorithm to be used in computing the quantiles, see the argument \code{type} in \code{\link{quantile}} }
+  \item{return}{logical. If \code{TRUE} (default), then the out-of-sample predictions are returned. The value \code{FALSE}, which does not return the predictions, may be of interest if only a prediction plot is of interest}
+  \item{verbose}{logical with default \code{FALSE}. If \code{TRUE}, then additional information (typically the quantiles and/or the simulated series) used in the generation of forecasts is returned. If \code{FALSE}, then only the forecasts are returned}
+  \item{plot}{\code{NULL} (default) or logical. If \code{NULL}, then the value set by \code{options$plot} (see \code{\link{options}}) determines whether a plot is produced or not. If \code{TRUE}, then the out-of-sample forecasts are plotted.}
   \item{plot.options}{a \code{list} of options related to the plotting of forecasts, see 'Details'}
   \item{col}{colours of fitted (default=red) and actual (default=blue) lines}
   \item{lty}{types of fitted (default=solid) and actual (default=solid) lines}
@@ -51,14 +56,7 @@
 }
 
 \details{
-The \code{plot.options} argument is a list that can contain any of the following arguments:\cr
-
-\code{keep}: integer greater than zero (default is 12) that controls the number of in-sample actual values to plot\cr
-\code{fitted}: If \code{TRUE}, then the fitted values as well as actual values are plotted in-sample. The default is \code{FALSE}\cr
-\code{legend.loc}: character string (the default is "topleft"). Allows the location of the plot legend to be altered\cr
-\code{newmactual}: numeric vector or \code{NULL} (default). Enables the plotting of actual values out-of-sample in the mean in addition to the forecasts\cr
-\code{newvactual}: numeric vector or \code{NULL} (default). Enables the plotting of actual values out-of-sample in the variance addition to the forecasts\cr
-
+The \code{plot.options} argument is a \code{list} that controls the prediction plot, see 'Details' in \code{\link{predict.arx}}
 }
 
 \value{
@@ -66,7 +64,7 @@ The \code{plot.options} argument is a list that can contain any of the following
   \item{fitted:}{a \code{\link{zoo}} object with fitted values}
   \item{logLik:}{a numeric, the log-likelihood (normal density)}
   \item{plot:}{a plot of the fitted values and the residuals}
-  \item{predict}{a vector containing the out-of-sample forecasts}
+  \item{predict:}{a \code{vector} of class \code{\link{zoo}} containing the out-of-sample forecasts, or a \code{matrix} of class \code{\link{zoo}} containing the out-of-sample forecasts together with prediction-quantiles, or - if \code{return=FALSE} - \code{NULL} }
   \item{print:}{a print of the estimation results}
   \item{residuals:}{a \code{\link{zoo}} object with the residuals}
   \item{sigma:}{the regression standard error ('SE of regression')}
@@ -108,6 +106,9 @@ print(varmod)
 plot(meanmod)
 plot(varmod)
 
+##generate and plot predictions of the mean:
+predict(meanmod, plot=TRUE)
+
 ##print the entries of object 'gets':
 summary(meanmod)
 summary(varmod)
@@ -119,7 +120,7 @@ coef(varmod) #variance spec
 ##extract log-likelihood:
 logLik(mymod)
 
-##extract variance-covariance matrix of simplified
+##extract coefficient-covariance matrix of simplified
 ##(specific) model:
 vcov(meanmod) #mean spec
 vcov(varmod) #variance spec

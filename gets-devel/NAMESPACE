@@ -4,7 +4,7 @@ importFrom("stats", "poisson.test", "rnorm", "Box.test", "coef", "cycle",
   "printCoefmat", "pt", "qnorm", "qt", "quantile", "residuals", "runif",
   "sigma", "var", "vcov", "window")
 importFrom("graphics", "abline", "legend", "lines", "mtext", "par",
-  "plot", "text", "title")
+  "plot", "points", "polygon", "text", "title")
 importFrom("grDevices", "rgb")
 importFrom("utils", "tail", "write.csv")
 importFrom("parallel", "detectCores", "makeCluster", "clusterExport",
