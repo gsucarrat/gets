@@ -1,6 +1,6 @@
 ##################################################
-## Test file for gets package. First created
-## 25 July 2019.
+## Test file for predict.arx function. First
+## created 25 July 2019.
 ##
 ## 1 INITIATE
 ## 2 TESTS OF MEAN PREDICTIONS
@@ -248,27 +248,53 @@ predict(mymodel, spec="variance", n.ahead=3, newvxreg=matrix(1,3,1))
 ##============
 
 mymodel <- arx(vY, mc=TRUE, ar=1)
+predict(mymodel)
 predict(mymodel, plot.options=list(keep=1))
-predict(mymodel, plot.options=list(fitted=TRUE))
+predict(mymodel, plot.options=list(line.at.origin=TRUE))
+predict(mymodel, plot.options=list(start.at.origin=FALSE))
+predict(mymodel,
+  plot.options=list(start.at.origin=FALSE, fitted=TRUE))
+predict(mymodel, plot.options=list(dot.at.origin=FALSE))
+predict(mymodel, plot.options=list(hlines=c(-2,-1,0,1,2)))
+predict(mymodel, plot.options=list(col=c("darkred","green")))
 predict(mymodel, plot.options=list(lty=c(3,2)))
 predict(mymodel, plot.options=list(lwd=3))
-predict(mymodel, plot.options=list(col=c("darkred","green")))
-predict(mymodel, plot.options=list(shades.of.grey=c(80,60)))
-predict(mymodel, plot.options=list(newmactual=rep(0,6)))
 predict(mymodel, plot.options=list(ylim=c(-8,8)))
+predict(mymodel, plot.options=list(ylab="G-values"))
+predict(mymodel,
+  plot.options=list(main="Plot is slightly lower when 'main' is specified"))
+predict(mymodel,
+  plot.options=list(legend.text=c("Prognose","Faktisk")))
+predict(mymodel, plot.options=list(fitted=TRUE))
+predict(mymodel, plot.options=list(newmactual=rep(0,6)))
+predict(mymodel, plot.options=list(shades.of.grey=c(95,50)))
+predict(mymodel, plot.options=list(shades.of.grey=c(50,95))) #invert shades
 
 ##arch(1) model:
 ##==============
 
 mymodel <- arx(vY, vc=TRUE, arch=1)
+predict(mymodel)
 predict(mymodel, plot.options=list(keep=1))
-predict(mymodel, plot.options=list(fitted=TRUE))
+predict(mymodel, plot.options=list(line.at.origin=TRUE))
+predict(mymodel, plot.options=list(start.at.origin=FALSE))
+predict(mymodel,
+  plot.options=list(start.at.origin=FALSE, fitted=TRUE))
+predict(mymodel, plot.options=list(dot.at.origin=FALSE))
+predict(mymodel, plot.options=list(hlines=0:4))
+predict(mymodel, plot.options=list(col=c("darkred","green")))
 predict(mymodel, plot.options=list(lty=c(3,2)))
 predict(mymodel, plot.options=list(lwd=3))
-predict(mymodel, plot.options=list(col=c("darkred","green")))
-predict(mymodel, plot.options=list(shades.of.grey=c(60,40)))
+predict(mymodel, plot.options=list(ylim=c(-2,8)))
+predict(mymodel, plot.options=list(ylab="G-values"))
+predict(mymodel,
+  plot.options=list(main="Plot is slightly lower when 'main' is specified"))
+predict(mymodel,
+  plot.options=list(legend.text=c("Prognose","Residualene kvadrert")))
+predict(mymodel, plot.options=list(fitted=TRUE))
 predict(mymodel, plot.options=list(newvactual=rep(1,6)))
-predict(mymodel, plot.options=list(ylim=c(-8,8)))
+predict(mymodel, plot.options=list(shades.of.grey=c(95,50)))
+predict(mymodel, plot.options=list(shades.of.grey=c(50,95))) #invert shades
 
 
 ##################################################
@@ -300,3 +326,14 @@ y.actual <- 25+rnorm(12)
 preda <- predict(mymodel, n.ahead=20,
   plot.options=list(newmactual=y.actual))
 preda
+
+##used to yield error in the plotting:
+set.seed(123); dgp.n <- 50
+y <- rnorm(dgp.n) #or: y <- rt(dgp.n, df=4.1)
+mX <- matrix(rnorm(dgp.n*3),dgp.n,3)
+y[1:10] <- y[1:10] + 4 #step-shift
+arxmod <- arx(y, mc=TRUE, ar=1:2,
+  mxreg=cbind(mX, tim(y, which.ones=c(7,16)))) 
+predict(arxmod, n.ahead=1, newmxreg=matrix(0,1,5),
+  plot.options=list(start.at.origin=FALSE,
+  line.at.origin=TRUE, fitted=TRUE))

@@ -166,7 +166,7 @@ paths(mod01) #should return the error-message: object 'mod01' not found
 plot(isatmod)
 predict(isatmod) #should return the error-message: 'newmxreg' is NULL
 predict(isatmod, newmxreg=matrix(0,12,5))
-predict(isatmod, n.ahead=1, newmxreg=matrix(0,1,5))
+predict(isatmod, n.ahead=1, newmxreg=matrix(0,1,5)) #used to yield error
 predict(isatmod, newmxreg=matrix(0,12,5), newindex=13:24) #creates bug in plot, but not in predictions
 predict(isatmod, newmxreg=matrix(0,12,5), return=FALSE)
 predict(isatmod, newmxreg=matrix(0,12,5), plot=FALSE)
@@ -180,20 +180,40 @@ vcov(isatmod)
 
 predict(isatmod, newmxreg=matrix(0,12,5), ci.levels=seq(0.20,0.95,by=0.05),
   n.sim=20000)
-predict(isatmod, newmxreg=matrix(0,12,5), ci.levels=seq(0.20,0.95,by=0.05),
-  n.sim=20000, innov=rnorm(20000*12))
 predict(isatmod, newmxreg=matrix(0,12,5),
   plot.options=list(keep=1))
 predict(isatmod, newmxreg=matrix(0,12,5),
-  plot.options=list(fitted=TRUE))
+  plot.options=list(line.at.origin=FALSE))
+predict(isatmod, newmxreg=matrix(0,12,5),
+  plot.options=list(start.at.origin=TRUE))
+predict(isatmod, newmxreg=matrix(0,12,5),
+  plot.options=list(start.at.origin=TRUE, fitted=FALSE))
+predict(isatmod, newmxreg=matrix(0,12,5),
+  plot.options=list(dot.at.origin=FALSE))
+predict(isatmod, newmxreg=matrix(0,12,5),
+  plot.options=list(hlines=c(-2,0,2,4,6,8)))
+predict(isatmod, newmxreg=matrix(0,12,5),
+  plot.options=list(col=c("darkred","green")))
+predict(isatmod, newmxreg=matrix(0,12,5),
+  plot.options=list(lty=c(3,2)))
 predict(isatmod, newmxreg=matrix(0,12,5),
   plot.options=list(lwd=3))
 predict(isatmod, newmxreg=matrix(0,12,5),
-  plot.options=list(shades.of.grey=c(80,60)))
+  plot.options=list(ylim=c(-8,16)))
+predict(isatmod, newmxreg=matrix(0,12,5),
+  plot.options=list(ylab="G-values"))
+predict(isatmod, newmxreg=matrix(0,12,5),
+  plot.options=list(main="Plot is slightly lower when 'main' is specified"))
+predict(isatmod, newmxreg=matrix(0,12,5),
+  plot.options=list(legend.text=c("Prognose","Faktisk")))
+predict(isatmod, newmxreg=matrix(0,12,5),
+  plot.options=list(fitted=FALSE))
 predict(isatmod, newmxreg=matrix(0,12,5),
   plot.options=list(newmactual=rep(0,6)))
 predict(isatmod, newmxreg=matrix(0,12,5),
-  plot.options=list(ylim=c(-8,8)))
+  plot.options=list(shades.of.grey=c(95,50)))
+predict(isatmod, newmxreg=matrix(0,12,5),
+  plot.options=list(shades.of.grey=c(50,95))) #invert shades
 
 ##In the following model (isatmod), at one point the constant
 ##was not correctly named 'mconst'. Instead, it was named 'mxreg',
