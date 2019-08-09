@@ -2079,7 +2079,7 @@ plot.arx <- function(x, spec=NULL, col=c("red","blue"),
 ## forecast up to n.ahead
 predict.arx <- function(object, spec=NULL, n.ahead=12,
   newmxreg=NULL, newvxreg=NULL, newindex=NULL,
-  n.sim=2000, innov=NULL, probs=NULL, ci.levels=NULL,
+  n.sim=5000, innov=NULL, probs=NULL, ci.levels=NULL,
   quantile.type=7, return=TRUE, verbose=FALSE, plot=NULL,
   plot.options=list(), ...)
 {
@@ -2149,13 +2149,17 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
 
   ##ci.levels argument:
   if( is.null(ci.levels) && plotArg==TRUE ){
-    ciLevelsArg <- c(0.5,0.95)
+    if( class(object)=="isat" ){ ##if isat:
+      ciLevelsArg <- c(0.68,0.95)
+    }else{ ##if not isat:
+      ciLevelsArg <- c(0.5,0.9)    
+    }
   }else{
     ciLevelsArg <- ci.levels
   }
   if( !is.null(ciLevelsArg) ){
     if( any(ciLevelsArg <= 0) || any(ciLevelsArg >= 1) ){
-      stop("the values of 'ci.levels' must be between 0 and 1")
+      stop("'ci.levels' must be between 0 and 1")
     }
     ciLevelsArg <- union(ciLevelsArg, ciLevelsArg) #ensure levels are distinct/not repeated
     ciLevelsArg <- ciLevelsArg[order(ciLevelsArg, decreasing=FALSE)] #ensure levels are increasing
@@ -2446,7 +2450,7 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
         colnames(newmxreg) <- NULL
   
         ##mxreghat:
-        mxregIndx <- c(max(ewmaIndx)+1):length(coefs) ##J-dog change
+        mxregIndx <- c(max(ewmaIndx)+1):length(coefs)
         mxreghat <-  newmxreg %*% as.numeric(coefs[mxregIndx])
         mxreghat <- c(rep(0,backcastMax),mxreghat)
   
@@ -2508,7 +2512,6 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
       mMeanQs[i,] <- quantile(mY[i,], probs=probsArg, type=quantile.type)
     }
     colnames(mMeanQs) <- paste0(probsArg)
-#    colnames(mMeanQs) <- paste0("y",probsArg)
   }
    
   ##variance:
@@ -2519,7 +2522,6 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
       mVarianceQs[i,] <- quantile(mSd2Hat[i,], probs=probsArg, type=quantile.type)
     }
     colnames(mVarianceQs) <- paste0(probsArg)
-#    colnames(mVarianceQs) <- paste0("sd2",probsArg)
   }
 
 
@@ -2587,14 +2589,24 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
 
     ##some of the plot.options:
     ##-------------------------
-        
-    ##how many observations to retain?:
-    if(is.null(plot.options$keep)){ plot.options$keep <- 9L } #old: 12L
+
+    ##remember: both ylab and hlines argument can be specified,
+    ##even though they do not appear below
+                
+    ##how many in-sample observations to include in plot?:
+    if(is.null(plot.options$keep)){ plot.options$keep <- 12L }
     if( plot.options$keep < 1 ){
       plot.options$keep <- 1L
       message("'plot.options$keep' changed to 1")
     }
     
+    ##if "main" argument:
+    if(is.null(plot.options$main)){
+      parMarVals <- c(2.1,3.1,0.6,0.6) #bottom,left,top,right
+    }else{
+      parMarVals <- c(2.1,3.1,1.5,0.6) #bottom,left,top,right
+    }
+        
     ##linetype (solid=1, dashed=2, etc.). Order: lty=c(Forecast,Actual)
     if(is.null(plot.options$lty)){ plot.options$lty <- c(1,1) }
 
@@ -2604,16 +2616,33 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
     ##the colours of forecast and actual:
     if(is.null(plot.options$col)){ plot.options$col <- c("red","blue") }
     
-    ##points or lines?:
-    plotTypeForecast <- "l" #l=lines
-    plotTypeRetained <- "l"
-#OLD:
-#    plotTypeForecast <- ifelse(n.ahead==1, "p", "l") #p=points, l=lines, see help(plot)
-#    plotTypeRetained <- ifelse(plot.options$keep > 1, "l", "p")
-
+    ##text for legend:
+    if(is.null(plot.options$legend.text)){
+      if( spec == "variance" ){
+        plot.options$legend.text <- c("Forecast", "Squared residuals")
+      }else{
+        plot.options$legend.text <- c("Forecast", "Actual")
+      }
+    }
+    
     ##whether to include retained fitted or not:
     if(is.null(plot.options$fitted)){ plot.options$fitted <- FALSE }
 
+    ##should predictions start at origin?:
+    if(is.null(plot.options$start.at.origin)){
+      plot.options$start.at.origin <- TRUE
+    }
+
+    ##add dot at forecast origin?:
+    if(is.null(plot.options$dot.at.origin)){    
+      plot.options$dot.at.origin <- TRUE
+    }
+    
+    ##add vertical line at forecast origin?:
+    if(is.null(plot.options$line.at.origin)){
+      plot.options$line.at.origin <- FALSE
+    }
+      
     ##start preparing:
     ##----------------
     
@@ -2655,11 +2684,15 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
       tail(coredata(object$mean.fit), n=plot.options$keep)
     retainedData[,"VarianceFitted"] <-
       tail(coredata(object$var.fit), n=plot.options$keep)
-    ##let predictions start at forecast origin:      
-    retainedData[NROW(retainedData),"MeanPrediction"] <- 
-      retainedData[NROW(retainedData),"MeanActual"]
-    retainedData[NROW(retainedData),"VariancePrediction"] <- 
-      retainedData[NROW(retainedData),"VarianceFitted"]
+    if( plot.options$start.at.origin ){ ##let predictions start.at.origin:      
+      retainedData[NROW(retainedData),"MeanPrediction"] <- 
+        retainedData[NROW(retainedData),"MeanActual"]
+      retainedData[NROW(retainedData),"VariancePrediction"] <- 
+        retainedData[NROW(retainedData),"VarianceFitted"]
+    }
+    if( !plot.options$start.at.origin && plot.options$fitted ){
+      retainedData[,"MeanPrediction"] <- retainedData[,"MeanFitted"]
+    }
     dataForPlot <- rbind(retainedData, dataForPlot)
     tmpIndx <- c(tail(index(yInSample), n=plot.options$keep), newindex)
     dataForPlot <- zoo(dataForPlot, order.by=tmpIndx)
@@ -2669,10 +2702,9 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
 
     if( spec %in% c("mean","both") ){
 
-      ##create polygon index:    
-      polygonIndx <- c(NROW(dataForPlot)-n.ahead):NROW(dataForPlot)
-#OLD:
-#      polygonIndx <- c(NROW(dataForPlot)-n.ahead+1):NROW(dataForPlot)
+      ##create polygon index:
+      i1 <- ifelse(plot.options$start.at.origin, 0, 1)   
+      polygonIndx <- c(NROW(dataForPlot)-n.ahead+i1):NROW(dataForPlot)
       polygonIndx <- c(polygonIndx, polygonIndx[c(length(polygonIndx):1)])
       polygonIndx <- index(dataForPlot)[polygonIndx]
 
@@ -2683,12 +2715,18 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
       colnames(mCiUpperValsMean) <- as.character(ciUpper)
       mCiUpperValsMean <-
         mCiUpperValsMean[NROW(mCiUpperValsMean):1,] #invert (first to last, last to first)
-
-      ##add actual value at forecast origin to ci matrices:
-      actualValue <- retainedData[NROW(retainedData),"MeanActual"]  
-      mCiLowerValsMean <- rbind(actualValue,mCiLowerValsMean)
-      mCiUpperValsMean <- rbind(mCiUpperValsMean,actualValue)
-
+      if(n.ahead==1){ ##ensure they are still matrices:
+        mCiLowerValsMean <- rbind(mCiLowerValsMean)
+        mCiUpperValsMean <- rbind(mCiUpperValsMean)
+      }
+            
+      ##add actual value at forecast origin to ci matrices?:
+      if( plot.options$start.at.origin ){
+        actualValue <- retainedData[NROW(retainedData),"MeanActual"]  
+        mCiLowerValsMean <- rbind(actualValue,mCiLowerValsMean)
+        mCiUpperValsMean <- rbind(mCiUpperValsMean,actualValue)
+      }
+      
       ##y-axis (limits):
       if(is.null(plot.options$ylim)){
 
@@ -2716,53 +2754,85 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
       def.par <- par(no.readonly=TRUE)
   
       ##margins:
-      par(mar = c(2,3,0.5,0.5) + 0.1) #bottom,left,top,right
+      par(mar=parMarVals) 
   
       ##plot the actual values:
-      plot.zoo(dataForPlot[,"MeanActual"], xlab="", ylab="", 
-        lty=plot.options$lty[2], col=plot.options$col[2],
-        lwd=plot.options$lwd, type=plotTypeForecast, ylim=ylimArg)
-  
+      plot.zoo(dataForPlot[,"MeanActual"], xlab="", ylab="",
+        main=plot.options$main, lty=plot.options$lty[2],
+        col="white", lwd=plot.options$lwd, ylim=ylimArg)
+
+      ##add start line?:
+      if( plot.options$line.at.origin ){
+        startlineIndx <- rep( index(dataForPlot)[plot.options$keep], 2)
+        eps <- abs(ylimArg[2]-ylimArg[1])
+        startlineVals <- c(ylimArg[1]-eps*0.05, ylimArg[2]/1.2)
+        polygon(startlineIndx, startlineVals, col="grey",
+          border="grey", lwd=plot.options$lwd)
+      }
+      
       ##add ci's:
       for(i in 1:length(ciLevelsArg)){
         polygon( polygonIndx,
           c(mCiLowerValsMean[,i],mCiUpperValsMean[,i]),
           col=greySelection[i], border=greySelection[i] )  
       }
-  
+##idea for the future? currently there are some issues/bugs...
+#      for(i in 1:length(ciLevelsArg)){
+#        for(j in 1:NROW(mCiLowerValsMean)){
+#          polygon( rep(polygonIndx[j],2),
+#            c(mCiLowerValsMean[j,i], mCiUpperValsMean[j,i]),
+#            col=greySelection[i], border=greySelection[i],
+#            lwd=6) 
+#        }
+#      }
+                  
+      ##add horisontal lines?:
+      if(!is.null(plot.options$hlines)){
+        abline(h=plot.options$hlines, col="grey", lty=3)
+      }
+
       ##add prediction:
       lines(dataForPlot[,"MeanPrediction"], lty=plot.options$lty[1],
-        col=plot.options$col[1], lwd=plot.options$lwd,
-        type=plotTypeForecast)
+        col=plot.options$col[1], lwd=plot.options$lwd)
     
+      ##add actual:
+      lines(dataForPlot[,"MeanActual"], lty=plot.options$lty[2],
+        col=plot.options$col[2], lwd=plot.options$lwd, type="l")
+        
       ##add fitted (pre-prediction):
       if( plot.options$keep > 0 && plot.options$fitted ){
         lines(dataForPlot[,"MeanFitted"], lty=plot.options$lty[2],
           col=plot.options$col[1], lwd=plot.options$lwd,
-          type=plotTypeRetained)
+          type="l")
       }
 
-      ##add forecast origin as a point:
-      points(polygonIndx[1], actualValue, pch=19, col=plot.options$col[2],
-        lwd=plot.options$lwd)
-
+      ##add point at forecast origin?:
+      if(plot.options$dot.at.origin){
+        points(index(dataForPlot)[NROW(retainedData)],
+          retainedData[NROW(retainedData),"MeanActual"],
+          pch=19, col=plot.options$col[2], lwd=plot.options$lwd)
+      }
+      
       ##add actual values out-of-sample:
       if( !is.null(plot.options$newmactual) ){
         lines(dataForPlot[,"MeanActual"], lty=plot.options$lty[2],
           col=plot.options$col[2], lwd=plot.options$lwd,
-          type=plotTypeRetained)
+          type="l")
       }
 
       ##add text closer to plot than xlab or ylab would do
-      mtext("Mean", side=2, line=2)
+      mtextValue <- ifelse(is.null(plot.options$ylab),
+        "Mean", plot.options$ylab)
+      mtext(mtextValue, side=2, line=2)
   
       ##add plot-legend:
       legend("top", lty=plot.options$lty, col=plot.options$col,
-        lwd=plot.options$lwd, legend=c("Forecast", "Actual"), bty="n")
+        lwd=plot.options$lwd, legend=plot.options$legend.text,
+        bg="white", bty="n")
   
       ##add ci-legend:
       legendArg <- ciLevelsArg[length(ciLevelsArg):1]*100
-      legendArg <- paste0(legendArg, "% CI")      
+      legendArg <- paste0(legendArg, "%")      
       legend("topright", lty=c(1,1), lwd=13, bty="n",
         col=greySelection[c(1,length(ciLevelsArg))],
         legend=legendArg[c(1,length(ciLevelsArg))])
@@ -2778,10 +2848,9 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
 
     if( spec=="variance" ){
 
-      ##create polygon index:    
-      polygonIndx <- c(NROW(dataForPlot)-n.ahead):NROW(dataForPlot)
-#OLD:
-#      polygonIndx <- c(NROW(dataForPlot)-n.ahead+1):NROW(dataForPlot)
+      ##create polygon index:
+      i1 <- ifelse(plot.options$start.at.origin, 0, 1)   
+      polygonIndx <- c(NROW(dataForPlot)-n.ahead+i1):NROW(dataForPlot)
       polygonIndx <- c(polygonIndx, polygonIndx[c(length(polygonIndx):1)])
       polygonIndx <- index(dataForPlot)[polygonIndx]
 
@@ -2793,10 +2862,12 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
       mCiUpperValsVar <-
         mCiUpperValsVar[NROW(mCiUpperValsVar):1,] #invert (first to last, last to first)
 
-      ##add fitted value to forecast origin to matrices:
-      fittedValue <- retainedData[NROW(retainedData),"VarianceFitted"]  
-      mCiLowerValsVar <- rbind(fittedValue,mCiLowerValsVar)
-      mCiUpperValsVar <- rbind(mCiUpperValsVar,fittedValue)
+      ##add fitted value to forecast origin?:
+      if( plot.options$start.at.origin ){
+        fittedValue <- retainedData[NROW(retainedData),"VarianceFitted"]  
+        mCiLowerValsVar <- rbind(fittedValue,mCiLowerValsVar)
+        mCiUpperValsVar <- rbind(mCiUpperValsVar,fittedValue)
+      }
 
       ##y-axis (limits):
       if(is.null(plot.options$ylim)){
@@ -2825,12 +2896,22 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
       def.par <- par(no.readonly=TRUE)
   
       ##margins:
-      par(mar = c(2,3,0.5,0.5) + 0.1) #bottom,left,top,right
+      par(mar=parMarVals) 
   
       ##plot the actual values:
       plot.zoo(dataForPlot[,"ResidualsSquared"], xlab="", ylab="",
-        lty=plot.options$lty[2], col=plot.options$col[2],
-        lwd=plot.options$lwd, type=plotTypeForecast, ylim=ylimArg)
+        main=plot.options$main, lty=plot.options$lty[2],
+        col=plot.options$col[2], lwd=plot.options$lwd,
+        ylim=ylimArg)
+    
+      ##add start line?:
+      if( plot.options$line.at.origin ){
+        startlineIndx <- rep( index(dataForPlot)[plot.options$keep], 2)
+        eps <- abs(ylimArg[2]-ylimArg[1])
+        startlineVals <- c(ylimArg[1]-eps*0.05, ylimArg[2]/1.2)
+        polygon(startlineIndx, startlineVals, col="grey",
+          border="grey", lwd=plot.options$lwd)
+      }
   
       ##add ci's:
       for(i in 1:length(ciLevelsArg)){
@@ -2838,41 +2919,52 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
           c(mCiLowerValsVar[,i],mCiUpperValsVar[,i]),
           col=greySelection[i], border=greySelection[i] )  
       }
+
+      ##add horisontal lines?:
+      if(!is.null(plot.options$hlines)){
+        abline(h=plot.options$hlines, col="grey", lty=3)
+      }
   
       ##add prediction:
       lines(dataForPlot[,"VariancePrediction"], lty=plot.options$lty[1],
         col=plot.options$col[1], lwd=plot.options$lwd,
-        type=plotTypeForecast)
+        type="l")
     
       ##add fitted (in-sample):
       if( plot.options$keep > 0 && plot.options$fitted ){
         lines(dataForPlot[,"VarianceFitted"], lty=plot.options$lty[2],
           lwd=plot.options$lwd, col=plot.options$col[1],
-          type=plotTypeRetained)
+          type="l")
       }
   
-      ##add point at forecast origin:
-      points(polygonIndx[1], fittedValue, pch=19, col=plot.options$col[1],
-        lwd=plot.options$lwd)
+      ##add point at forecast origin?:
+      if(plot.options$dot.at.origin){
+        points(index(dataForPlot)[NROW(retainedData)],
+          retainedData[NROW(retainedData),"VarianceFitted"], 
+          #OLD: fittedValue,
+          pch=19, col=plot.options$col[1], lwd=plot.options$lwd)
+      }
 
       ##add actual values of residuals squared out-of-sample:
       if( !is.null(plot.options$newvactual) ){
         lines(dataForPlot[,"ResidualsSquared"], lty=plot.options$lty[2],
           col=plot.options$col[2], lwd=plot.options$lwd,
-          type=plotTypeRetained)
+          type="l")
       }
 
-      ##add text closer to plot than xlab or ylab would do:
-      mtext("Variance", side=2, line=2)
-  
+      ##add text closer to plot than xlab or ylab would do
+      mtextValue <- ifelse(is.null(plot.options$ylab),
+        "Variance", plot.options$ylab)
+      mtext(mtextValue, side=2, line=2)
+
       ##add plot-legend:
       legend("top", lty=plot.options$lty, col=plot.options$col,
-        lwd=plot.options$lwd, legend=c("Forecast", "Squared residuals"),
+        lwd=plot.options$lwd, legend=plot.options$legend.text,
         bty="n")
-  
+      
       ##add ci-legend:
       legendArg <- ciLevelsArg[length(ciLevelsArg):1]*100
-      legendArg <- paste0(legendArg, "% CI")      
+      legendArg <- paste0(legendArg, "%")      
       legend("topright", lty=c(1,1), lwd=13, bty="n",
         col=greySelection[c(1,length(ciLevelsArg))],
         legend=legendArg[c(1,length(ciLevelsArg))])

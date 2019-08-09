@@ -1,27 +1,27 @@
 Version 0.20-devel:
 ===================
 
-* eqwma()/leqwma() functions: start argument deprecated, lag argument fixed and renamed to k, the as.vector argument in eqwma changed its default to FALSE, the order of the arguments changed, and the backcasting procedure changed. These changes carry over to arx() and isat() as well, since the eqwma() function is called whenever the ewma argument is not NULL in arx() and isat()
-
-* predict.arx():
+* predict.arx()/predict.gets()/predict.isat():
 
 - new arguments: probs, ci.levels and quantile.type. These arguments control the generation of probability forecasts and, more generally, the quantiles of the n.step ahead predictive distribution
 
 - n.sim argument: the default changed to 2000
 
-- plot.options arguments: three new arguments, lwd, shades.of.grey and ylim, one deprecated argument, legend.loc, while the argument keep is now restricted to be 1 or higher
+- plot.options arguments: five new arguments (lty, lwd, col, shades.of.grey and ylim), one deprecated argument (legend.loc), while the argument keep is now restricted to be 1 or higher
 
-- can now be applied to arx-models where the ewma argument is not NULL
+- predict.arx() and predict.gets(): can now be applied to arx-models where the ewma argument is not NULL
+
+- spec="variance" is now possible
 
 * diagnostics() function: the argument user.fun now accepts a list with an arbitrary number of entries. In particular, the user-defined diagnostics function needs not reside in the global environment. The changes of the diagnostics() function carry over to the user.diagnostics arguments in the arx(), getsm(), getsv(), getsFun() and isat() functions, since they all invoke the diagnostics() function for the diagnostics
-
-* predict.gets()/predict.isat(): these rely upon and call predict.arx(), so the changes in predict.arx() apply to predict.gets() and predict.isat() too
  
 * isat() function:
 
 - new arguments: user.estimator, gof.function and gof.method. This is to enable user-defined estimators and user-defined goodness-of-fit functions, as in getsFun() 
 
 * new function: regressorsMean(): creates the regressors of the mean equation of an arx-model
+
+* eqwma()/leqwma() functions: start argument deprecated, lag argument fixed and renamed to k, the as.vector argument in eqwma changed its default to FALSE, the order of the arguments changed, and the backcasting procedure changed. These changes carry over to arx() and isat() as well, since the eqwma() function is called whenever the ewma argument is not NULL in arx() and isat()
 
 * arx() function:
 
@@ -42,8 +42,6 @@ Version 0.20-devel:
 - ols() function: arguments user.fun and user.options deprecated
 
 - VaR(), ES(): not applicable to isat objects anymore
-
-- help pages: minor improvements and changes throughout
 
 - BugReports in DESCRIPTION file changed to https://github.com/gsucarrat/gets/issues
 

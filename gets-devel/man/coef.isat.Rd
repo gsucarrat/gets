@@ -21,7 +21,7 @@
   \method{plot}{isat}(x, col=c("red","blue"), lty=c("solid","solid"),
     lwd=c(1,1), coef.path=TRUE, ...)
   \method{predict}{isat}(object, n.ahead=12, newmxreg=NULL, newindex=NULL,
-    n.sim=2000, innov=NULL, probs=NULL, ci.levels=NULL, quantile.type=7,
+    n.sim=2000, probs=NULL, ci.levels=NULL, quantile.type=7,
     return=TRUE, verbose=FALSE, plot=NULL, plot.options=list(), ...)
   \method{print}{isat}(x, ...)
   \method{residuals}{isat}(object, std=FALSE, ...)
@@ -38,7 +38,6 @@
   \item{newmxreg}{a \code{matrix} of \code{n.ahead} rows and \code{NCOL(mxreg)} columns with the out-of-sample values of the \code{mxreg} regressors}
   \item{newindex}{\code{NULL} (default) or the date-index for the \code{zoo} object returned by \code{predict.arx}. If \code{NULL}, then the function uses the in-sample \code{index} to generate the out-of-sample index}
   \item{n.sim}{\code{integer}, the number of replications used for the generation of the forecasts}
-  \item{innov}{\code{NULL} (default) or a vector of length \code{n.ahead * n.sim} containing the standardised errors (that is, zero mean and unit variance) used for the forecast simulations. If \code{NULL}, then a classica bootstrap procedure is used to draw from the standardised in-sample residuals}
   \item{probs}{\code{NULL} (default) or a \code{vector} with the quantile-levels (values strictly between 0 and 1) of the forecast distribution. If \code{NULL}, then no quantiles are returned unless \code{ci.levels} is non-\code{NULL}}
   \item{ci.levels}{\code{NULL} (default) or a \code{vector} with the confidence levels (expressed as values strictly between 0 and 1) of the forecast distribution. The upper and lower values of the confidence interval(s) are returned as quantiles}
   \item{quantile.type}{an integer between 1 and 9 that selects which algorithm to be used in computing the quantiles, see the argument \code{type} in \code{\link{quantile}} }
@@ -115,8 +114,7 @@ plot(epshat)
 zhat <- residuals(isatmod, std=TRUE)
 plot(zhat)
 
-##generate forecasts with the simplified
-##(specific) model:
+##generate forecasts of the simplified (specific) model:
 predict(isatmod, newmxreg=matrix(1,12,1), plot=TRUE)
 
 }

@@ -1,13 +1,13 @@
- \name{predict.arx}
+\name{predict.arx}
 \alias{predict.arx}
 
 \title{Forecasting with 'arx' models}
 
-\description{This function generates out-of-sample forecasts up to n steps ahead for objects of class \code{\link{arx}}. Optionally, by using the \code{ci.levels} and \code{probs} arguments, the function also returns the associated quantiles of the forecasts. The forecasts, confidence intervals and quantiles are obtained via simulations. By default, 2000 simulations is used, but this can be changed via the \code{n.sim} argument). Also by default, the simulations uses a classical bootstrap to sample from the standardised residuals. To use an alternative set of standardised innovations, say, draws from the standard normal, use the \code{innov} argument}
+\description{Generate out-of-sample forecasts up to n steps ahead for objects of class \code{\link{arx}}. Optionally, quantiles of the forecasts are also returned if any of the arguments \code{ci.levels} or \code{probs} are specified. The forecasts, confidence intervals and quantiles are obtained via simulation. By default, 5000 simulations is used, but this can be changed via the \code{n.sim} argument. Also by default, the simulations uses a classical bootstrap to sample from the standardised residuals. To use an alternative set of standardised innovations, for example the standard normal, use the \code{innov} argument. If \code{plot=TRUE}, then a plot of the forecast is created.}
 
 \usage{
   \method{predict}{arx}(object, spec=NULL, n.ahead=12, newmxreg=NULL,
-    newvxreg=NULL, newindex=NULL, n.sim=2000, innov=NULL, probs = NULL,
+    newvxreg=NULL, newindex=NULL, n.sim=5000, innov=NULL, probs = NULL,
     ci.levels = NULL, quantile.type = 7, return=TRUE, verbose = FALSE,
     plot=NULL, plot.options=list(), ...)
 }
@@ -32,21 +32,31 @@
 }
 
 \value{
-  \item{predict:}{a \code{vector} of class \code{\link{zoo}} containing the out-of-sample forecasts, a \code{matrix} of class \code{\link{zoo}} containing the out-of-sample forecasts together with prediction-quantiles, or - if \code{return=FALSE} - \code{NULL} }
+  \item{predict:}{a \code{vector} of class \code{\link{zoo}} containing the out-of-sample forecasts, or a \code{matrix} of class \code{\link{zoo}} containing the out-of-sample forecasts together with prediction-quantiles, or \code{NULL} if \code{return=FALSE} }
 }
 
 \details{
 The \code{plot.options} argument is a \code{list} that, optionally, can contain any of the following arguments:\cr
 
-\code{keep}: integer greater than zero (default is 12) that controls the number of in-sample actual values to plot\cr
-\code{fitted}: If \code{TRUE}, then the fitted values as well as actual values are plotted in-sample. The default is \code{FALSE}\cr
-\code{newmactual}: numeric vector or \code{NULL} (default). Enables the plotting of actual values out-of-sample in the mean in addition to the forecasts\cr
-\code{newvactual}: numeric vector or \code{NULL} (default). Enables the plotting of squared residuals ('actual values') out-of-sample in addition to the forecasts\cr
-\code{shades.of.grey}: numeric vector of length \code{length(ci.levels)} that contains the shades of grey associated with the confidence intervals in the prediction plot. The shades can range from \code{grey100} (white) to \code{grey0} (black)\cr
-\code{lty}: numeric vector of length two that controls the line type. The first value controls the line type of the forecast, whereas the second controls the line type of the actual and fitted values\cr
-\code{lwd}: an integer that controls the width of the plotted lines\cr
-\code{col}: numeric vector of length two that controls the colour of the plotted lines. The first value controls the colour of the forecasts and the fitted values, whereas the second controls the colour of the actual values\cr
-\code{ylim}: numeric vector of length two that contains the limits of the y-axis of the prediction plot\cr
+\itemize{
+  \item \code{keep}: integer greater than zero (the default is 12) that controls the number of in-sample actual values to plot\cr
+  \item \code{line.at.origin}: logical. If \code{TRUE}, then a vertical line is drawn at the forecast origin, that is, at the last in-sample observation\cr
+  \item \code{start.at.origin}: logical. If \code{TRUE}, then the drawing of the forecast line starts at the actual value of the forecast origin\cr
+  \item \code{dot.at.origin}: logical. If \code{TRUE}, then a dot is drawn at the forecast origin\cr
+  \item \code{hlines}: numeric vector that indicates where to draw grey horisontal grid lines\cr
+  \item \code{col}: numeric vector of length two that controls the colour of the plotted lines. The first value controls the colour of the forecasts and the fitted values, whereas the second controls the colour of the actual values\cr
+  \item \code{lty}: numeric vector of length two that controls the line type. The first value controls the line type of the forecast, whereas the second controls the line type of the actual and fitted values\cr
+  \item \code{lwd}: an integer that controls the width of the plotted lines (the default is 1)\cr
+  \item \code{ylim}: numeric vector of length two that contains the limits of the y-axis of the prediction plot\cr
+  \item \code{ylab}: a character that controls the text on the y-axis\cr
+  \item \code{main}: a character that controls the text in the overall title\cr
+  \item \code{legend.text}: a character vector of length two that controls how the forecast and actual lines should be named or referred to in the legend of the plot\cr
+  \item \code{fitted}: If \code{TRUE}, then the fitted values as well as actual values are plotted in-sample\cr
+  \item \code{newmactual}: numeric vector or \code{NULL} (default). Enables the plotting of actual values out-of-sample in the mean in addition to the forecasts\cr
+  \item \code{newvactual}: numeric vector or \code{NULL} (default). Enables the plotting of squared residuals ('actual values') out-of-sample in addition to the forecasts\cr
+  \item \code{shades.of.grey}: numeric vector of length \code{length(ci.levels)} that contains the shades of grey associated with the confidence intervals in the prediction plot. The shades can range from 100 (white) to 0 (black)\cr
+}
+
 }
 
 \author{

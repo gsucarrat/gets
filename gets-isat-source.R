@@ -586,6 +586,7 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     qstat.options=qstat.options, normality.JarqueB=normalityArg,
     user.estimator=userEstArgArx, user.diagnostics=user.diagnostics,
     tol=tol, LAPACK=LAPACK, plot=FALSE)
+  mod$call <- NULL
    
   ##complete the returned object (result):
   ISnames <- setdiff(getsis$aux$mXnames, mXnames) #names of retained impulses
@@ -815,17 +816,21 @@ plot.isat <- function(x, col=c("red","blue"),
 ##==================================================
 ## forecast up to n.ahead
 predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
-  newindex=NULL, n.sim=2000, innov=NULL, probs=NULL,
-  ci.levels=NULL, quantile.type=7, return=TRUE, verbose=FALSE,
-  plot=NULL, plot.options=list(), ...)
+  newindex=NULL, n.sim=2000, probs=NULL, ci.levels=NULL,
+  quantile.type=7, return=TRUE, verbose=FALSE, plot=NULL,
+  plot.options=list(), ...)
 
 {
+  ## 1 arguments of mean-equation
+  ## 2 make plot.options argument
+  ## 3 pass arguments on to predict.arx
+  ## 4 return forecasts
 
   ##create new object to add stuff to in order to use predict.arx()
   objectNew <- object
 
   ##-----------------------------------
-  ## arguments mean-equation:
+  ## 1 arguments of mean-equation:
   ##-----------------------------------
 
   ##coefficients of mean spec in final model:
@@ -895,24 +900,41 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
 #      whichRetained <- which( object$aux$mXnames %in% whichRetainedNames )
 #      mxreg <- cbind(object$aux$mX[, whichRetained ])
 #      colnames(mxreg) <- whichRetainedNames
-#      objectNew$call$mxreg <- xreg
+#      objectNew$call$mxreg <- mxreg
     }
 
   } #end if( length(coefsMean)>0 )
 
-  ##----------------------------------
-  ## pass arguments on to predict.arx:
-  ##----------------------------------
 
+  ##----------------------------------
+  ## 2 make plot.options argument:
+  ##----------------------------------
+  
+  if(is.null(plot.options$start.at.origin)){
+    plot.options$start.at.origin <- FALSE
+  }
+  if(is.null(plot.options$line.at.origin)){
+    plot.options$line.at.origin <- TRUE
+  }
+  if(is.null(plot.options$fitted)){
+    plot.options$fitted <- TRUE
+  }
+  
+  
+  ##-------------------------------------
+  ## 3 pass arguments on to predict.arx:
+  ##-------------------------------------
+
+  innov <- rnorm(n.ahead*n.sim) #force normal errors
   result <- predict.arx(objectNew, spec="mean", n.ahead=n.ahead,
     newmxreg=newmxreg, newvxreg=NULL, newindex=newindex,
     n.sim=n.sim, innov=innov, probs=probs, ci.levels=ci.levels,
     quantile.type=quantile.type, return=return, verbose=verbose,
     plot=plot, plot.options=plot.options)
 
-  ##-------------------
-  ## return forecasts:
-  ##-------------------
+  ##---------------------
+  ## 4 return forecasts:
+  ##---------------------
 
   if(return){ return(result) }
 
