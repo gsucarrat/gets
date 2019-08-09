@@ -21,7 +21,7 @@
   \method{plot}{gets}(x, spec=NULL, col=c("red","blue"),
     lty=c("solid","solid"), lwd=c(1,1), ...)
   \method{predict}{gets}(object, spec=NULL, n.ahead=12, newmxreg=NULL,
-    newvxreg=NULL, newindex=NULL, n.sim=2000, innov=NULL, probs=NULL,
+    newvxreg=NULL, newindex=NULL, n.sim=5000, innov=NULL, probs=NULL,
     ci.levels=NULL, quantile.type=7, return=TRUE, verbose=FALSE, plot=NULL,
     plot.options=list(), ...)
   \method{print}{gets}(x, ...)

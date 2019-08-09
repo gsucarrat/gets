@@ -32,7 +32,7 @@
 }
 
 \value{
-  \item{predict:}{a \code{vector} of class \code{\link{zoo}} containing the out-of-sample forecasts, or a \code{matrix} of class \code{\link{zoo}} containing the out-of-sample forecasts together with prediction-quantiles, or \code{NULL} if \code{return=FALSE} }
+a \code{vector} of class \code{\link{zoo}} containing the out-of-sample forecasts, or a \code{matrix} of class \code{\link{zoo}} containing the out-of-sample forecasts together with prediction-quantiles, or \code{NULL} if \code{return=FALSE}
 }
 
 \details{

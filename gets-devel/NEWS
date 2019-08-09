@@ -5,9 +5,11 @@ Version 0.20-devel:
 
 - new arguments: probs, ci.levels and quantile.type. These arguments control the generation of probability forecasts and, more generally, the quantiles of the n.step ahead predictive distribution
 
-- n.sim argument: the default changed to 2000
+- innov argument: removed from predict.isat(); the standardised innovations used in the simulations are henceforth restricted to be standard normal
 
-- plot.options arguments: five new arguments (lty, lwd, col, shades.of.grey and ylim), one deprecated argument (legend.loc), while the argument keep is now restricted to be 1 or higher
+- n.sim argument: the default changed to 5000 in predict.arx()/predict.gets() where the classical bootstrap is the default, and to 2000 in predict.isat() where rnorm() is used
+
+- plot.options arguments: several new arguments, one deprecated argument (legend.loc), while the argument keep is now restricted to be 1 or higher
 
 - predict.arx() and predict.gets(): can now be applied to arx-models where the ewma argument is not NULL
 
