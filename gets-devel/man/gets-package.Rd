@@ -16,7 +16,7 @@ For the advanced user, the package provides facilities for user-defined GETS and
 Package: \tab gets\cr
 Type: \tab Package\cr
 Version: \tab 0.20\cr
-Date: \tab 2019-07-10\cr
+Date: \tab 2019-08-11\cr
 License: \tab GPL-2\cr
 }
 The code originated in relation with G. Sucarrat and A. Escribano (2012). Subsequently, Felix Pretis and James Reade joined for the development of the \code{\link{isat}} code and related functions. For a recent introduction to the package, see Pretis, Reade and Sucarrat (2018).

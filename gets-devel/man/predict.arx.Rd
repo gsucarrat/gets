@@ -78,25 +78,25 @@ mymod <- arx(y, mc=TRUE, ar=c(1,2))
 ##generate out-of-sample forecasts:
 predict(mymod)
 
-##same, but plot in addition:
+##same, but plot the predictions in addition:
 predict(mymod, plot=TRUE)
 
 ##same, but return also the quantiles of the confidence intervals:
-predict(mymod, ci.levels=c(0.50,0.95), plot=TRUE)
+predict(mymod, ci.levels=c(0.50,0.90), plot=TRUE)
 
-##same, but with new levels on the confidence intervals:
-predict(mymod, ci.levels=c(0.30,0.80, 0.99), plot=TRUE)
+##same, but with non-default levels on the confidence intervals:
+predict(mymod, ci.levels=c(0.20,0.80, 0.99), plot=TRUE)
 
 ##same, but with more confidence intervals:
-predict(mymod, ci.levels=seq(0.30, 0.99, by=0.05), plot=TRUE)
+predict(mymod, ci.levels=seq(0.20, 0.95, by=0.05), plot=TRUE)
 
 ##same, but with less rugged ci's (achieved by increasing n.sim):
-predict(mymod, ci.levels=seq(0.30, 0.95, by=0.05), n.sim=5000, plot=TRUE)
+##predict(mymod, ci.levels=seq(0.20, 0.95, by=0.05), n.sim=50000, plot=TRUE)
 
 ##same, but using standard normals (instead of bootstrap) in the simulations:
 n.sim <- 5000
 n.ahead <- 12 #the default on n.ahead
-predict(mymod, ci.levels=seq(0.30, 0.95, by=0.05), n.sim=n.sim,
+predict(mymod, ci.levels=seq(0.20, 0.95, by=0.05), n.sim=n.sim,
   innov=rnorm(n.ahead*n.sim), plot=TRUE)
 
 ##make x-regressors:
@@ -122,16 +122,28 @@ predict(mymodel, spec="variance")
 ##same, but do also plot:
 predict(mymodel, spec="variance", plot=TRUE)
 
-##examples illustring the usage of plot.options:
-mymod <- arx(y, mc=TRUE, ar=1)
-predict(mymod, plot=TRUE, plot.options=list(keep=1))
-predict(mymod, plot=TRUE, plot.options=list(fitted=TRUE))
-predict(mymod, plot=TRUE, plot.options=list(lty=c(3,2)))
-predict(mymod, plot=TRUE, plot.options=list(lwd=3))
-predict(mymod, plot=TRUE, plot.options=list(col=c("darkred","green")))
-predict(mymod, plot=TRUE, plot.options=list(shades.of.grey=c(80,60)))
-predict(mymod, plot=TRUE, plot.options=list(newmactual=rep(0,6)))
-predict(mymod, plot=TRUE, plot.options=list(ylim=c(-8,8)))
+##illustrations of the usage of plot.options:
+mymodel <- arx(y, mc=TRUE, ar=1)
+predict(mymodel, plot=TRUE, plot.options=list(keep=1))
+predict(mymodel, plot=TRUE, plot.options=list(line.at.origin=TRUE))
+predict(mymodel, plot=TRUE, plot.options=list(start.at.origin=FALSE))
+predict(mymodel, plot=TRUE, 
+  plot.options=list(start.at.origin=FALSE, fitted=TRUE))
+predict(mymodel, plot=TRUE, plot.options=list(dot.at.origin=FALSE))
+predict(mymodel, plot=TRUE, plot.options=list(hlines=c(-2,-1,0,1,2)))
+predict(mymodel, plot=TRUE, plot.options=list(col=c("darkred","green")))
+predict(mymodel, plot=TRUE, plot.options=list(lty=c(3,2)))
+predict(mymodel, plot=TRUE, plot.options=list(lwd=3))
+predict(mymodel, plot=TRUE, plot.options=list(ylim=c(-8,8)))
+predict(mymodel, plot=TRUE, plot.options=list(ylab="User-specified y-axis"))
+predict(mymodel, plot=TRUE, 
+  plot.options=list(main="User-specified overall title"))
+predict(mymodel, plot=TRUE, 
+  plot.options=list(legend.text=c("User-specified 1","User-specified 2")))
+predict(mymodel, plot=TRUE, plot.options=list(fitted=TRUE))
+predict(mymodel, plot=TRUE, plot.options=list(newmactual=rep(0,6)))
+predict(mymodel, plot=TRUE, plot.options=list(shades.of.grey=c(95,50)))
+predict(mymodel, plot=TRUE, plot.options=list(shades.of.grey=c(50,95))) #invert shades
 
 }
 

@@ -2202,7 +2202,7 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
     if(!is.null(innov)){
       if(length(innov)!=n.ahead*n.sim){ stop("length(innov) must equal n.ahead*n.sim") }
       if(specVar){
-        if(any(innov==0)){ stop("innov cannot contain zeros") }
+        if(any(innov==0)){ stop("'innov' cannot contain zeros") }
       }
       zhat <- as.numeric(innov)
     }
@@ -2396,6 +2396,10 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
     ##there is no mean specification:
     if(specMean==FALSE){
       yhat <- rep(0, n.ahead)
+      if(!is.null(mEpsilon)){
+        mY <- yhat + mEpsilon
+        colnames(mY) <- paste0("mY.", seq(1,n.sim))
+      }
     }
 
     ##there is a mean specification:
@@ -2472,7 +2476,7 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
         mEwmaHat <- as.matrix(mEwmaHat)
       }
 
-      ##predict:
+      ##predict yhat:
       arTerm <- 0
       ewmaTerm <- 0
       for(i in c(backcastMax+1):yhat.n){
@@ -2489,13 +2493,54 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
       ##out:
       yhat <- yhat[c(yhat.n-n.ahead+1):yhat.n]
   
-    } #end if(specMean==TRUE)
+      ##simulate mY?:
+      if( !is.null(mEpsilon) ){
+        
+        ##loop on j:
+        mY <- matrix(NA, NROW(mEpsilon), NCOL(mEpsilon))
+        for(j in 1:NCOL(mEpsilon)){
 
-    ##matrix of y-simulations:
-    if(!is.null(mEpsilon)){
-      mY <- yhat + mEpsilon
-      colnames(mY) <- paste0("mY.", seq(1,n.sim))
-    }
+          ##prepare prediction no. j:
+          yhatadj <- rep(NA, n.ahead + backcastMax)
+          if(backcastMax>0) {
+            ##actual y-values:
+            yhatadj[1:backcastMax] <- tail(object$aux$y, n=backcastMax)
+          }
+
+          ##prepare ewma:
+          if(ewmaMax>0){
+            mEwmaHat <- matrix(NA, n.ahead+backcastMax, length(ewmaCoefs))
+            colnames(mEwmaHat) <- object$aux$mXnames[ewmaIndx]
+            mEwmaHat[1:backcastMax,] <- object$aux$mX[c(NROW(object$aux$mX)-backcastMax+1):NROW(object$aux$mX),ewmaIndx]
+            mEwmaHat <- as.matrix(mEwmaHat)
+          }
+
+          ##predict yhatadj:
+          arTerm <- 0
+          ewmaTerm <- 0
+          for(i in c(backcastMax+1):yhat.n){
+            if( arMax>0 ){ arTerm <- sum(arCoefs*yhatadj[c(i-1):c(i-arMax)]) }
+            if( ewmaMax>0 ){
+              for(k in 1:NCOL(mEwmaHat)){
+                mEwmaHat[i,k] <- mean( yhatadj[c(i-ewmaEval[k]):c(i-1)] )
+              }
+              ewmaTerm <- sum( coefs[ewmaIndx] * mEwmaHat[i,] )
+            }
+            yhatadj[i] <- mconst + arTerm + ewmaTerm +
+              mxreghat[i] + mEpsilon[c(i-backcastMax),j]
+          } #end loop
+  
+          ##store the simulation of yhatadj:
+          mY[,j] <- yhatadj[c(yhat.n-n.ahead+1):yhat.n]
+
+        } #end for(j)
+
+        ##add colnames:
+        colnames(mY) <- paste0("mY.", seq(1,n.sim))
+
+      } #end if( not null(mEpsilon) )
+    
+    } #end if(specMean==TRUE)
 
   } #end if(predictMean)
 
@@ -2776,15 +2821,6 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
           c(mCiLowerValsMean[,i],mCiUpperValsMean[,i]),
           col=greySelection[i], border=greySelection[i] )  
       }
-##idea for the future? currently there are some issues/bugs...
-#      for(i in 1:length(ciLevelsArg)){
-#        for(j in 1:NROW(mCiLowerValsMean)){
-#          polygon( rep(polygonIndx[j],2),
-#            c(mCiLowerValsMean[j,i], mCiUpperValsMean[j,i]),
-#            col=greySelection[i], border=greySelection[i],
-#            lwd=6) 
-#        }
-#      }
                   
       ##add horisontal lines?:
       if(!is.null(plot.options$hlines)){
@@ -4283,7 +4319,7 @@ plot.gets <- function(x, spec=NULL, col=c("red","blue"),
 ## forecast up to n.ahead
 predict.gets <- function(object, spec=NULL, n.ahead=12,
   newmxreg=NULL, newvxreg=NULL, newindex=NULL,
-  n.sim=2000, innov=NULL, probs=NULL, ci.levels=NULL, 
+  n.sim=5000, innov=NULL, probs=NULL, ci.levels=NULL, 
   quantile.type=7, return=TRUE, verbose=FALSE, plot=NULL,
   plot.options=list(), ...)  
 {
