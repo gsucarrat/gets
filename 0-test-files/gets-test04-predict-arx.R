@@ -78,14 +78,15 @@ all( functionVals == correctVals )
 mymodel <- arx(vY, mc=TRUE, ar=1)
 
 ##predictions of the mean:
-functionVals <- predict(mymodel, spec="mean", n.ahead=3)
+functionVals <- predict(mymodel, spec="mean", n.ahead=12)
 
 ##correct predictions:
-yhat0 <- vY[length(vY)] #actual value at forecast origin
-yhat1 <- coef(mymodel)[1] + coef(mymodel)[2]*yhat0
-yhat2 <- coef(mymodel)[1] + coef(mymodel)[2]*yhat1
-yhat3 <- coef(mymodel)[1] + coef(mymodel)[2]*yhat2
-correctVals <- c(yhat1,yhat2,yhat3)
+yhat <- rep(NA,13)
+yhat[1] <- vY[length(vY)] #actual value at forecast origin
+for(i in 2:13){
+  yhat[i] <- coef(mymodel)[1] + coef(mymodel)[2]*yhat[i-1]
+}
+correctVals <- yhat[-1]
 
 ##do they correspond?:
 all( functionVals == correctVals )
@@ -285,7 +286,7 @@ predict(mymodel, plot.options=list(hlines=0:4))
 predict(mymodel, plot.options=list(col=c("darkred","green")))
 predict(mymodel, plot.options=list(lty=c(3,2)))
 predict(mymodel, plot.options=list(lwd=3))
-predict(mymodel, plot.options=list(ylim=c(-2,8)))
+predict(mymodel, plot.options=list(ylim=c(-6,8)))
 predict(mymodel, plot.options=list(ylab="G-values"))
 predict(mymodel,
   plot.options=list(main="Plot is slightly lower when 'main' is specified"))
@@ -337,3 +338,31 @@ arxmod <- arx(y, mc=TRUE, ar=1:2,
 predict(arxmod, n.ahead=1, newmxreg=matrix(0,1,5),
   plot.options=list(start.at.origin=FALSE,
   line.at.origin=TRUE, fitted=TRUE))
+
+
+##################################################
+## 6 SIMULATIONS VS. ANALYTICAL FORMULA
+##################################################
+
+##TO DO: COMPARE THE SIMULATED QUANTILES AND THE 
+##ANALYTICAL ONES IN THE SPECIAL CASE OF 1-STEP
+##AHEAD, WHEN THE MODEL IS AN AR(1) AND THE ERROR
+##IS N(0,1).
+
+##true ar(1) parameter:
+phi1 <- 0.95
+
+##simulate:
+set.seed(123)
+y <- arima.sim(list(ar=phi1), 1000)
+
+##estimate ar(1):
+mymodel <- arx(y, ar=1)
+
+##predictions of the mean:
+predict(mymodel, plot=TRUE)
+predict(mymodel, n.ahead=24, plot=TRUE)
+predict(mymodel, n.ahead=24, n.sim=10000, plot=TRUE)
+predict(mymodel, n.ahead=24, n.sim=10000, plot=TRUE,
+  innov=rnorm(10000*24))
+
