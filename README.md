@@ -10,7 +10,7 @@ To install the development version available here at Github, first download the 
 
     system("R CMD INSTALL --build gets")
 
-Alternatively, you can try installing it directly from GitHub with the following command (remember to substitute x.xx for the current version):
+Alternatively, you can try installing directly from GitHub with the following code (remember to change x.xx):
 
     install.packages(
       "https://github.com/gsucarrat/gets/raw/master/gets_x.xx.tar.gz",
