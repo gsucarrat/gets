@@ -13,7 +13,7 @@ To install the development version available here at Github, first download the 
 Alternatively, you can try installing it directly from GitHub by means of the following command (remember to substitute x.xx for the current version):
 
     install.packages(
-      "https://github.com/gsucarrat/gets/raw/master/gets_0.20.tar.gz",
+      "https://github.com/gsucarrat/gets/raw/master/gets_x.xx.tar.gz",
       repos = NULL, type = "source"
     )
     
