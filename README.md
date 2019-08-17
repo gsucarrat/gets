@@ -10,6 +10,13 @@ To install the development version available here at Github, first download the 
 
     system("R CMD INSTALL --build gets")
 
+Alternatively, you can try installing it directly from GitHub by means of the following command (remember to substitute x.xx for the current version):
+
+    install.packages(
+      "https://github.com/gsucarrat/gets/raw/master/gets_0.20.tar.gz",
+      repos = NULL, type = "source"
+    )
+    
 # Resources
 * An introduction (PDF): [https://doi.org/10.18637/jss.v086.i03](https://doi.org/10.18637/jss.v086.i03)
 * Webpage: [http://www.sucarrat.net/R/gets](http://www.sucarrat.net/R/gets)
