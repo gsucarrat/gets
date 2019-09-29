@@ -15,7 +15,7 @@ For the advanced user, the package provides facilities for user-defined GETS and
 \tabular{ll}{
 Package: \tab gets\cr
 Type: \tab Package\cr
-Version: \tab 0.20\cr
+Version: \tab 0.21\cr
 Date: \tab 2019-09-18\cr
 License: \tab GPL-2\cr
 }

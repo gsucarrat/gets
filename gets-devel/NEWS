@@ -1,3 +1,13 @@
+Version 0.21-devel:
+===================
+
+* fixes:
+
+- isat(): ISnames now contains the names of the retained indicators (bug introduced in version 0.20)
+
+- print.isat(): minor fix
+
+
 Version 0.20 (18 September 2019):
 =================================
 

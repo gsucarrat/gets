@@ -2,7 +2,7 @@
 ## This file contains the isat-source of the gets
 ## package.
 ##
-## Current version: 0.20
+## Current version: 0.21-devel
 ##
 ## CONTENTS:
 ##
@@ -565,11 +565,14 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     max.regs=max.regs, print.searchinfo=print.searchinfo,
     alarm=FALSE)
   ##messages from final gets:
-  if( print.searchinfo && !is.null(getsis$messages)){ message(getsis$messages) }
+  if( print.searchinfo && !is.null(getsis$messages)){
+    message(getsis$messages)
+  }
        
   ##estimate final model:
   y <- zoo(y, order.by=y.index)
   if(is.null(getsis$specific.spec)){
+    mXisNames <- NULL
     mXis <- NULL
   }else{
     mXisNames <- colnames(mXis)[getsis$specific.spec]
@@ -589,13 +592,15 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   mod$call <- NULL
    
   ##complete the returned object (result):
-  ISnames <- setdiff(getsis$aux$mXnames, mXnames) #names of retained impulses
+  ISnames <- setdiff(mXisNames, mXnames) #names of retained impulses
+#OLD:
+#  ISnames <- setdiff(getsis$aux$mXnames, mXnames) #names of retained impulses
   if(length(ISnames)==0){ ISnames <- NULL }
   colnames(mod$aux$mX) <- mod$aux$mXnames #needed for predict.isat?
   getsis$gets.type <- "isat"
   getsis$call <- isat.call
-  getsis <- c(list(ISfinalmodels=ISfinalmodels,
-    ISnames=ISnames), getsis, mod)
+  getsis <-
+    c(list(ISfinalmodels=ISfinalmodels, ISnames=ISnames), getsis, mod)
   getsis$aux$t.pval <- t.pval #needed for biascorr
   class(getsis) <- "isat"
   if(alarm){ alarm() }
@@ -1071,8 +1076,9 @@ print.isat <- function(x, ...)
     printCoefmat(x$diagnostics, dig.tst=0, tst.ind=2,
                  signif.stars=FALSE)
     if(!is.null(x$call$iis)){
-      if (x$call$iis==TRUE){
-        outltest <- outliertest(x)
+#OLD:
+#      if (x$call$iis==TRUE){
+    if (x$call$iis==TRUE & !(any(x$call$sis, x$call$tis, x$call$uis) == TRUE)){        outltest <- outliertest(x)
         mOutl <- matrix(NA, 2, 2)
         colnames(mOutl) <- c("Stat.", "p-value")
         rownames(mOutl) <- c("Jiao-Pretis Prop.", "Jiao-Pretis Count")

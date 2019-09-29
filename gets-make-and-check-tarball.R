@@ -140,7 +140,7 @@ remove.packages("gets")
 
 ##install new version:
 system( paste0("R CMD INSTALL ", tarballName) )
-#system("R CMD INSTALL gets_0.20.tar.gz")
+#system("R CMD INSTALL gets_0.21.tar.gz")
 #system("R CMD INSTALL --build gets")
 
 

@@ -2,8 +2,6 @@
 ## This file contains the base-source of the gets
 ## package.
 ##
-## Current version: 0.20      
-##
 ## CONTENTS:
 ##
 ## 1 INITIATE
@@ -94,7 +92,7 @@
 
   ##set start-up message:
   txt <- c("\n",
-    paste(sQuote("gets"), "version 0.20\n"),
+    paste(sQuote("gets"), "version 0.21\n"),
     "\n",
     paste0("General-to-Specific (GETS) and Indicator Saturation (ISAT) methods, type help(", sQuote("gets-package"), ") for details"),
     "\n",
@@ -136,6 +134,9 @@ gets <- function(x, ...){ UseMethod("gets") }
 #gets(mod01)
 
 ##for the future?:
+#gets.default <- function(x, ...){ print("It works!") }
+
+##for the future?:
 ##==================================================
 ##create S3 method 'isat':
 #isat <- function(x, ...){ UseMethod("isat") }
@@ -144,6 +145,9 @@ gets <- function(x, ...){ UseMethod("gets") }
 #mod01 <- arima(y, order=c(1,0,1))
 #isat.Arima <- function(x){ print("Cool!") }
 #isat(mod01)
+
+##for the future?:
+#isat.default <- today's isat function
 
 
 ####################################################

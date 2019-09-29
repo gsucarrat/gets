@@ -2,7 +2,7 @@
 ## Test file for the 'isat' source of the 'gets'
 ## package. First created 23 September 2014, Oslo.
 ##
-## Current version: 0.20 (July 2019)
+## Current version: 0.21-devel
 ##
 ## 1 INITIATE
 ## 2 TEST iim(), sim() AND tim()
@@ -139,6 +139,18 @@ isat(y, iis=TRUE, sis=FALSE, t.pval=0.05, plot=TRUE)
 z <- rnorm(100, 0, 1)
 z[1:30] <- z[1:30] + 10
 isat(z, iis=TRUE,  sis=FALSE, t.pval=0.05, plot=TRUE)
+
+##issue reported by F-bear regarding version 0.20 (email 26/9-2019).
+## "...there seems to be a serious bug in the latest version of the package.
+## ISnames seems to be null, even if there are impulses retained. This
+## seems to break a lot of other functions building on the ISnames element.
+## For example, this does not work and returns null: [fixed by G in 0.21]"
+set.seed(123)
+y <- rnorm(100, 0, 1)
+my <- isat(y, iis=TRUE, sis=FALSE, t.pval=0.05)
+my
+my$ISnames
+
 
 ##test the extraction functions:
 ##==============================
@@ -312,6 +324,8 @@ isat(y, iis=FALSE, sis=TRUE, tis=FALSE, uis=FALSE,
   blocks=myblocks, max.paths=1)
 uis <- list(sim(dgp.n), tim(dgp.n))
 myblocks[[2]] <- list(7:19, 27:34, 40:45)
+##since version 0.21, the following return an error because of the changes
+##made to print.isat
 isat(y, iis=FALSE, sis=FALSE, tis=FALSE, uis=uis,
   blocks=myblocks)
 isat(y, iis=FALSE, sis=FALSE, tis=FALSE, uis=uis,
