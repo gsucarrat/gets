@@ -19,7 +19,7 @@ Alternatively, you can try installing directly from GitHub with the following co
     
 # Resources
 * An introduction (PDF): [https://doi.org/10.18637/jss.v086.i03](https://doi.org/10.18637/jss.v086.i03)
-* User-specified GETS and ISAT (PDF): [https://mpra.ub.uni-muenchen.de/96148/](https://mpra.ub.uni-muenchen.de/96148/)
+* User-specified GETS and ISAT (PDF): [https://mpra.ub.uni-muenchen.de/96653/](https://mpra.ub.uni-muenchen.de/96653/)
 * Webpage: [http://www.sucarrat.net/R/gets](http://www.sucarrat.net/R/gets)
 * CRAN webpage: [https://CRAN.R-project.org/package=gets]( https://CRAN.R-project.org/package=gets)
 * [https://felixpretis.climateeconometrics.org/software/](https://felixpretis.climateeconometrics.org/software/)
