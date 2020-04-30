@@ -6,14 +6,14 @@ The following R command installs the stable version from CRAN:
 
     install.packages('gets', dependencies = TRUE)
 
-To install the development version available here at Github, first download the tarball (i.e. the file named gets_x.xx.tar.gz). Next, run:
+To install the current development version available here at Github, first download the tarball (i.e. the file named gets_devel.tar.gz). Next, run:
 
     system("R CMD INSTALL --build gets")
 
-Alternatively, you can try installing directly from GitHub with the following code (remember to change x.xx):
+Alternatively, you can try installing the development version directly from GitHub with the following code:
 
     install.packages(
-      "https://github.com/gsucarrat/gets/raw/master/gets_x.xx.tar.gz",
+      "https://github.com/gsucarrat/gets/raw/master/gets_devel.tar.gz",
       repos = NULL, type = "source"
     )
     
