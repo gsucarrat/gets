@@ -2,7 +2,7 @@
 ## This file contains the base-source of the gets
 ## package.
 ##
-## Current version: 0.22-devel
+## Current version: 0.23-devel
 ##
 ## CONTENTS:
 ##
@@ -51,6 +51,7 @@
 ## sigma.arx
 ## rsquared
 ## summary.arx
+## toLatex.arx
 ## VaR
 ## vcov.arx
 ##
@@ -70,6 +71,7 @@
 ## residuals.gets
 ## summary.gets
 ## terminals
+## toLatex.gets
 ## vcov.gets
 ##
 ####################################################
@@ -94,7 +96,7 @@
 
   ##set start-up message:
   txt <- c("\n",
-    paste(sQuote("gets"), "version 0.22\n"),
+    paste(sQuote("gets"), "version 0.23\n"),
     "\n",
     paste0("General-to-Specific (GETS) and Indicator Saturation (ISAT) methods, type help(", sQuote("gets-package"), ") for details"),
     "\n",
@@ -451,7 +453,7 @@ ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
 
   ##user-specified:
   if(method==0){
-    stop("method=0 has been deprecated")
+    stop("method = 0 has been deprecated")
   }
 
   ##fastest (usually only for estimates):
@@ -2636,7 +2638,7 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
 
   ##check special case:
   if( plotArg && spec=="variance" && specVar==FALSE ){
-    message("Set 'vc=TRUE' to plot the variance predictions")
+    message("Set 'vc = TRUE' to enable a plot of the variance predictions")
     plotArg <- FALSE
   }
   
@@ -3418,6 +3420,13 @@ summary.arx <- function(object, ...)
 {
   summary.default(object)
 } #end summary.arx
+
+##==================================================
+## LaTeX code (equation form)
+toLatex.arx <- function(object, ...)
+{
+  printtex(object, ...)
+} #end toLatex.arx
 
 ##==================================================
 VaR <- function(object, level=0.99, type=7, ...)
@@ -4723,6 +4732,13 @@ terminals <- function(object, ...)
 } #end terminals
 
 ##==================================================
+## LaTeX code (equation form)
+toLatex.gets <- function(object, ...)
+{
+  printtex(object, ...)
+} #end toLatex.gets
+
+##==================================================
 vcov.gets <- function(object, spec=NULL,  ...)
 {
   vcov.arx(object, spec=spec)
@@ -4867,7 +4883,7 @@ stata <- function(object, file=NULL, print=TRUE,
   if(print && is.null(file)){
 
     ##Stata code to estimate the model:
-    message("Stata code to estimate the model:\n")
+    message("STATA code to estimate the model:\n")
     message(" ", out$regress, "\n")
 
     ##R code to export the data:
@@ -4883,7 +4899,7 @@ stata <- function(object, file=NULL, print=TRUE,
     if(print){
       message("Data saved in:\n")
       message("  ", file, "\n", sep="")
-      message("Stata code to estimate the model:\n")
+      message("STATA code to estimate the model:\n")
       message(" ", out$regress, "\n")
     }
   } #end if(!is.null(file))
@@ -4896,12 +4912,13 @@ stata <- function(object, file=NULL, print=TRUE,
 ##==================================================
 ##generate latex-code (equation form):
 printtex <- function(x, fitted.name=NULL, xreg.names=NULL,
-  digits=3, intercept=TRUE, gof=TRUE, diagnostics=TRUE)
+  digits=4, intercept=TRUE, gof=TRUE, diagnostics=TRUE, nonumber=FALSE,
+  nobs="T")
 {
 
   ##is class(x)="arx"/"gets"/"isat"?:
   ##---------------------------------
-  
+
   xName <- deparse(substitute(x))
   xClass <- class(x)
   if( xClass %in% c("arx","gets","isat") ){
@@ -4916,6 +4933,7 @@ printtex <- function(x, fitted.name=NULL, xreg.names=NULL,
   ##equation:
   ##---------
 
+  ##coef names:
   coefs <- coef(x)
   if(is.null(xreg.names)){
     coefsNames <- names(coefs)
@@ -4931,6 +4949,7 @@ printtex <- function(x, fitted.name=NULL, xreg.names=NULL,
   coefs <- as.numeric(coefs)
   stderrs <- as.numeric(sqrt(diag(vcov(x))))
 
+  ##equation (main part):
   eqtxt <- NULL
   if(length(coefs) > 0){
     for(i in 1:length(coefs) ){
@@ -4943,8 +4962,11 @@ printtex <- function(x, fitted.name=NULL, xreg.names=NULL,
     }
   }
 
+  ##equation (put parts together):
+  txtAddNonumber <- ifelse(nonumber, " \\nonumber ", "")
   txtAddEq <- ifelse(gof+diagnostics>0, " \\\\[2mm]", "")
-  eqtxt <- paste0("  ", yName, " &=& ", eqtxt, "", txtAddEq, " \n")
+  eqtxt <- paste0("  ", yName, " &=& ", eqtxt, "", txtAddNonumber,
+    txtAddEq, " \n")
 
   ##goodness of fit:
   ##----------------
@@ -4963,9 +4985,9 @@ printtex <- function(x, fitted.name=NULL, xreg.names=NULL,
     }
     goftxt <- paste(goftxt, " \\qquad LogL=",
       format(round(as.numeric(logLik(x)), digits=digits), nsmall=digits),
-        "\\qquad T = ", iT, " \\nonumber \\\\ \n", sep="")
+        " \\qquad ", nobs, " = ", iT, " \\nonumber \\\\ \n", sep="")
   }
-  
+
   ##diagnostics:
   ##------------
 
@@ -4988,7 +5010,7 @@ printtex <- function(x, fitted.name=NULL, xreg.names=NULL,
       format(round(dfDiags[3,1], digits=digits), nsmall=digits), "}",
       " \\nonumber \n", sep="")
   }
-  
+
   ##print code:
   ##-----------
 

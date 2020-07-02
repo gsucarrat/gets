@@ -2,7 +2,7 @@
 ## This file contains the isat-source of the gets
 ## package.
 ##
-## Current version: 0.22-devel
+## Current version: 0.23-devel
 ##
 ## CONTENTS:
 ##
