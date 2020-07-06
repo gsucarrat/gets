@@ -32,12 +32,13 @@
 ####################################################
   
 ##Set working directory:
-setwd(choose.dir())
+#setwd(choose.dir())
 #Examples in Windows:
 #setwd("C:/Program files/R/R-devel/bin/")
 #setwd("C:/Program files/R/R-3.5.3/bin/")
+#setwd("C:/Program files/R/R-3.6.3/bin/")
 #setwd("C:/Users/sucarrat/Documents/R/R-devel/bin")
-#setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
+setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
 
 
 ####################################################
@@ -141,7 +142,7 @@ remove.packages("gets")
 
 ##install new version:
 system( paste0("R CMD INSTALL ", tarballName) )
-#system("R CMD INSTALL gets_0.22.tar.gz")
+#system("R CMD INSTALL gets_0.23.tar.gz")
 #system("R CMD INSTALL --build gets")
 
 

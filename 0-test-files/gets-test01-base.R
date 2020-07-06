@@ -50,7 +50,7 @@ mCoefs[6,] <- lm(vY ~ mX-1)$coefficients #compare with lm
 rownames(mCoefs) <- paste("method ",1:NROW(mCoefs), ":", sep="")
 mCoefs
 
-##compare log-likelihoods:
+##compare log-likelihoods (should return TRUE):
 tmp <- ols(vY, mX, method=3)
 tmp$logl == sum(dnorm(tmp$residuals, sd=sqrt(tmp$sigma2), log=TRUE))
 
@@ -63,7 +63,7 @@ x <- rnorm(100, 0, 1)*10^8
 ols(y,cbind(1,x), method=2, LAPACK=FALSE)$coefficients
 ols(y,cbind(1,x), method=2, LAPACK=TRUE)$coefficients
 
-##check that method=0 yields error:
+##verify that method=0 yields error:
 ols(vY, mX, method=0)
 
 ##test tol argument (only used if LAPACK=FALSE):
@@ -96,15 +96,16 @@ mX <- matrix(rnorm(3*20), 20, 3)
 x <- ols(vY, mX, method=3)
 diagnostics(x)
 
-##add the Jarque-Bera normality test to the diagnostics:
-diagnostics(x, normality.JarqueB=TRUE)
-diagnostics(x, normality.JarqueB=0.9)
-diagnostics(x, normality.JarqueB=0.9, verbose=FALSE)
-
 ##check x for autocorrelation and ARCH, and indicate
 ##whether it passes the check:
 diagnostics(x, verbose=FALSE)
-diagnostics(x, normality.JarqueB=0.8, verbose=FALSE)
+diagnostics(x, ar.LjungB=c(1,0.96), verbose=FALSE)
+diagnostics(x, arch.LjungB=c(1,0.10), verbose=FALSE)
+
+##add the Jarque-Bera normality test to the diagnostics:
+diagnostics(x, normality.JarqueB=TRUE)
+diagnostics(x, normality.JarqueB=0.9) #should have no effect
+diagnostics(x, normality.JarqueB=0.9, verbose=FALSE)
 
 ##user-defined Shapiro-Wilks test for normality in the residuals:
 SWtest <- function(x, ...){
@@ -115,6 +116,8 @@ SWtest <- function(x, ...){
 SWtest(x)
 diagnostics(x, user.fun=list(name="SWtest", pval=0.025))
 diagnostics(x, user.fun=list(name="SWtest", pval=0.025),
+  verbose=FALSE)
+diagnostics(x, user.fun=list(name="SWtest", pval=0.85),
   verbose=FALSE)
 
 ##user-defined Shapiro-Wilks test for normality in the residuals,
@@ -128,6 +131,7 @@ SWtest <- function(x, ...){
 }
 diagnostics(x, user.fun=list(name="SWtest", pval=0.025))
 diagnostics(x, user.fun=list(name="SWtest", pval=0.025), verbose=FALSE)
+diagnostics(x, user.fun=list(name="SWtest", pval=0.85), verbose=FALSE)
 
 ##test the envir entry:
 rm("SWtest") #make sure SWtest is not defined in the global environment
@@ -164,8 +168,8 @@ eqwma(x, p=2)
 eqwma(x, abs=TRUE)
 eqwma(x, log=TRUE)
 eqwma(x, as.vector=TRUE)
-eqwma(x, start=1) #should stop()
-eqwma(x, lag=1) #should stop()
+eqwma(x, start=1) #should return error
+eqwma(x, lag=1) #should return error
 
 ##test leqwma:
 ##============
@@ -177,8 +181,8 @@ leqwma(x, length=c(2,3))
 leqwma(x, k=2 )
 leqwma(x, p=1)
 leqwma(x, as.vector=TRUE)
-leqwma(x, start=1) #should stop()
-leqwma(x, lag=1) #should stop()
+leqwma(x, start=1) #should return error
+leqwma(x, lag=1) #should return error
 
 
 ##################################################
@@ -248,3 +252,15 @@ regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),
 set.seed(123)
 vY <- rnorm(20)
 regressorsMean(vY, mc=TRUE, ar=1, ewma=list(length=2))
+
+
+##test 3:
+##=======
+
+##from 0.24: mxreg can be a data.frame
+set.seed(123)
+y <- rnorm(30)
+mxreg <- matrix(rnorm(30*5), 30, 5)
+mxreg <- as.data.frame(mxreg)
+
+regressorsMean(y, mxreg=mxreg)

@@ -130,6 +130,9 @@ isat(y, ar=1:2, mxreg=mX, iis=TRUE, tis=TRUE)
 isat(y, ar=1:2, mxreg=mX, iis=FALSE, sis=TRUE, tis=TRUE)
 isat(y, ar=1:2, mxreg=mX, iis=TRUE, sis=TRUE, tis=TRUE)
 
+##yielded error in version 0.9 to 0.23:
+isat(y, ar=1:2, mxreg=as.data.frame(mX))
+
 ##issue reported by F-bear regarding version 0.14 (email 30/3-2018).
 ##in version 0.14 the impulse dummies were not detected:
 set.seed(123); y <- rnorm(100, 0, 1)
@@ -227,8 +230,8 @@ predict(isatmod, newmxreg=matrix(0,12,5),
 predict(isatmod, newmxreg=matrix(0,12,5),
   plot.options=list(shades.of.grey=c(50,95))) #invert shades
 
-##In the following model (isatmod), at one point the constant
-##was not correctly named 'mconst'. Instead, it was named 'mxreg',
+##In the following model (isatmod), the constant was not correctly
+##named 'mconst' at one point. Instead, it was named 'mxreg',
 ##which created problems for predict.isat: predict(isatmod). Issue
 ##solved 31/7/2019.
 set.seed(123)
@@ -346,8 +349,9 @@ newmxreg  <- tail(na.trim(mxreg),12)
 new_index <- index(tail(na.trim(mxreg),12))
 ##as of 17 July 2019, does not work:
 prediction_isat <- predict.isat(isat_mod,newmxreg=newmxreg,
-  n.ahead=12,newindex = new_index,return = TRUE)
+  n.ahead=12,newindex = new_index, return = TRUE)
 prediction_isat
+
 
 ##tests of biascorr, isattest, isatvar, ...etc.:
 ##==============================================

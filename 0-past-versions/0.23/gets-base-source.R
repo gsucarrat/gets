@@ -2,7 +2,7 @@
 ## This file contains the base-source of the gets
 ## package.
 ##
-## Current version: 0.24-devel
+## Current version: 0.23-devel
 ##
 ## CONTENTS:
 ##
@@ -96,7 +96,7 @@
 
   ##set start-up message:
   txt <- c("\n",
-    paste(sQuote("gets"), "version 0.24\n"),
+    paste(sQuote("gets"), "version 0.23\n"),
     "\n",
     paste0("General-to-Specific (GETS) and Indicator Saturation (ISAT) methods, type help(", sQuote("gets-package"), ") for details"),
     "\n",
@@ -115,6 +115,13 @@
 ##remove txt from global environment:
 rm(txt) 
 
+
+##==================================================
+##load data :
+#hpdata <- read.csv("hpdata.csv")
+#so2data <- read.csv("so2.csv")
+#infldata <- read.csv("inflation-quarterly.csv")
+#sp500data <- read.csv("sp500.csv")
 
 ##==================================================
 ##required packages:
@@ -441,9 +448,6 @@ ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
 {
 
   ##for the future:
-  ## - new argument: options=NULL (default), to control how the
-  ## Newey and West (1987) coefficient-covariance is computed,
-  ## amongst other
   ## - rename ols to estFun? Split estFun into two functions,
   ## estFun and vcovFun?
 
@@ -452,7 +456,7 @@ ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
     stop("method = 0 has been deprecated")
   }
 
-  ##fastest, usually only for estimates:
+  ##fastest (usually only for estimates):
   if(method==1){
     out <- list()
     qx <- qr(x, tol, LAPACK=LAPACK)
@@ -496,7 +500,7 @@ ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
     out$logl <- -out$n*log(2*out$sigma2*pi)/2 - out$rss/(2*out$sigma2)
   }
 
-  ##White (1980) vcov:
+  ##white (1980) vcov:
   if(method==4){
     out <- list()
     out$n <- length(y)
@@ -522,7 +526,7 @@ ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
     out$logl <- -out$n*log(2*out$sigma2*pi)/2 - out$rss/(2*out$sigma2)
   }
 
-  ##Newey and West(1987) vcov:
+  ##newey-west(1987) vcov:
   if(method==5){
     out <- list()
     out$n <- length(y)
@@ -1244,9 +1248,7 @@ regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
   }
   
   ##mxreg:
-  if( !is.null(mxreg) ){
-#OLD:
-#  if( !is.null(mxreg) && !identical(as.numeric(mxreg),0) ){
+  if( !is.null(mxreg) && !identical(as.numeric(mxreg),0) ){
     mxreg <- as.zoo(cbind(mxreg))
     mxreg.names <- colnames(mxreg)
     if(is.null(mxreg.names)){
