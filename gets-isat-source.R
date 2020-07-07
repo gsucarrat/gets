@@ -1294,10 +1294,10 @@ biascorr <- function(b, b.se, p.alpha, T){
   #only correct if significant
 
   b_1step <- b
-  b_1step[abs(bt)>c_alpha] <- b*(1-(dr/bt))[abs(bt)>c_alpha]
+  b_1step[abs(bt)>c_alpha] <- b[abs(bt)>c_alpha]*(1-(dr/bt))[abs(bt)>c_alpha]
 
   b_2step <- b
-  b_2step[abs(bt)>c_alpha] <- b*(1-(drbar/bt))[abs(bt)>c_alpha]
+  b_2step[abs(bt)>c_alpha] <- b[abs(bt)>c_alpha]*(1-(drbar/bt))[abs(bt)>c_alpha]
 
   b_corr <- cbind(b, b_1step, b_2step)
   colnames(b_corr) <- c("beta", "beta.1step", "beta.2step")
