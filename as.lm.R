@@ -32,7 +32,8 @@ as.lm <- function(object)
     y <- object$aux$y
     x <- object$aux$mX
     colnames(x) <- object$aux$mXnames
-    result <- lm(y ~ x - 1)
+    yx <- data.frame(y, x)
+    result <- lm(formula = y ~ . - 1, data = yx)
   }
   
   ##return result:
