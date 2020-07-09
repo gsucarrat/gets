@@ -234,7 +234,7 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     if(any(uis.names == "")){
       missing.colnames <- which(uis.names == "")
       for(i in 1:length(missing.colnames)){
-       uis.names[i] <- paste0("uisxreg", missing.colnames[i])
+       uis.names[missing.colnames[i]] <- paste0("uisxreg", missing.colnames[i])
       }
     }
 
