@@ -777,7 +777,7 @@ plot.isat <- function(x, col=c("red","blue"),
       ###if tis is there and it is not null, then don't plot, else
 
 
-      if(!is.null(as.list(x$call)$tis) && as.list(x$call)$tis==TRUE){
+      if(!is.null(as.list(x$call)$tis) && as.logical(as.character(as.list(x$call)$tis))==TRUE){
         message("\n", appendLF=FALSE)
         message("NB: Because TIS selected, coefficient standard errors invalid hence not plotted",
           appendLF=TRUE)
