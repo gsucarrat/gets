@@ -1,5 +1,7 @@
 # gets
-The R Package *gets* provides General-to-Specific (GETS) modelling of the mean and variance of a regression, and Indicator Saturation (ISAT) methods for detecting and testing for structural breaks in the mean. Facilities for *user-specified* GETS and ISAT methods are also provided
+The R Package *gets* provides General-to-Specific (GETS) modelling of the mean and variance of a regression, and Indicator Saturation (ISAT) methods for detecting and testing for structural breaks in the mean. Facilities for *user-specified* GETS and ISAT methods are also provided.
+
+For an overview of the files and folders here at Github, see the file OVERVIEW.txt.
 
 # Installation
 The following R command installs the stable version from CRAN:
