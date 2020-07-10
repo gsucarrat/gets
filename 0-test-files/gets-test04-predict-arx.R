@@ -57,8 +57,8 @@ correctVals <- c(yhat1,yhat2,yhat3)
 ##do they correspond?:
 all( functionVals == correctVals )
 
-##ar(0) model:
-##============
+##ar(0) model w/constant:
+##=======================
 
 mymodel <- arx(vY, mc=TRUE)
 
@@ -365,4 +365,3 @@ predict(mymodel, n.ahead=24, plot=TRUE)
 predict(mymodel, n.ahead=24, n.sim=10000, plot=TRUE)
 predict(mymodel, n.ahead=24, n.sim=10000, plot=TRUE,
   innov=rnorm(10000*24))
-

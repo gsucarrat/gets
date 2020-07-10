@@ -2,7 +2,7 @@
 ## This file contains the base-source of the gets
 ## package.
 ##
-## Current version: 0.24-devel
+## Current version: 0.24
 ##
 ## CONTENTS:
 ##
@@ -698,6 +698,7 @@ getsFun <- function(y, x, untransformed.residuals=NULL,
   if( is.null(gum.result) ){
     est <- do.call(user.estimator$name,
       c(list(y,x), userEstArg), envir=user.estimator$envir)
+#OLD:
 #      c(list(y=y,x=x), userEstArg), envir=user.estimator$envir)
     out$no.of.estimations <- out$no.of.estimations + 1
   }else{ est <- gum.result }
@@ -1180,7 +1181,8 @@ if( gumDiagnosticsOK && delete.n>1 ){
 ##==================================================
 ##Create the mean regressors of an arx model:
 regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
-  return.regressand=TRUE, return.as.zoo=TRUE, na.trim=TRUE)
+  return.regressand=TRUE, return.as.zoo=TRUE, na.trim=TRUE,
+  na.omit=FALSE)
 {
 
   ##regressand:
@@ -1226,14 +1228,14 @@ regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
     mX <- cbind(mX, tmp)
   }
 
-  ##adjust for NAs:
+  ##trim for NAs:
   if(na.trim){
     tmp <- zoo(cbind(y,mX), order.by=y.index)
     tmp <- na.trim(tmp, sides="both", is.na="any")
     y.n <- NROW(tmp) #re-define y.n
     y.index <- index(tmp) #re-define y.index
-    t1 <- y.index[1]
-    t2 <- y.index[y.n]
+    t1 <- y.index[1] #re-define t1
+    t2 <- y.index[y.n] #re-define t2
     y <- coredata(tmp[,1]) #re-define y
     if(!is.null(mX)){ #re-define mX
       mX <- tmp[,2:NCOL(tmp)]
@@ -1245,7 +1247,7 @@ regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
   
   ##mxreg:
   if( !is.null(mxreg) ){
-#OLD:
+#OLD (until version 0.23):
 #  if( !is.null(mxreg) && !identical(as.numeric(mxreg),0) ){
     mxreg <- as.zoo(cbind(mxreg))
     mxreg.names <- colnames(mxreg)
@@ -1255,7 +1257,7 @@ regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
     if(any(mxreg.names == "")){
       missing.colnames <- which(mxreg.names == "")
       for(i in 1:length(missing.colnames)){
-        mxreg.names[i] <- paste("mxreg", i, sep="")
+        mxreg.names[missing.colnames[i]] <- paste0("mxreg", i)
       }
     }
     #mxreg.names <- make.names(mxreg.names)
@@ -1264,14 +1266,14 @@ regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
     mxreg <- cbind(coredata(mxreg))
     mX <- cbind(mX, mxreg)
 
-    ##re-adjust for NAs:
+    ##re-trim for NAs:
     if(na.trim){
       tmp <- zoo(cbind(y,mX), order.by=y.index)
       tmp <- na.trim(tmp, sides="both", is.na="any")
       y.n <- NROW(tmp) #re-define y.n
       y.index <- index(tmp) #re-define y.index
-      t1 <- y.index[1]
-      t2 <- y.index[y.n]
+      t1 <- y.index[1] #re-define t1
+      t2 <- y.index[y.n] #re-define t2
       y <- coredata(tmp[,1])
       mX <- tmp[,2:NCOL(tmp)]
       mX <- coredata(mX)
@@ -1281,6 +1283,22 @@ regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
 
   } #end if(!is.null(mxreg))
 
+  ##remove rows with NAs:
+  if(na.omit){
+    tmp <- zoo(cbind(y,mX), order.by=y.index)
+    tmp <- na.omit(tmp)
+    y.n <- NROW(tmp) #re-define y.n
+    y.index <- index(tmp) #re-define y.index
+    t1 <- y.index[1] #re-define t1
+    t2 <- y.index[y.n] #re-define t2
+    y <- coredata(tmp[,1]) #re-define y
+    if(!is.null(mX)){ #re-define mX
+      mX <- tmp[,2:NCOL(tmp)]
+      mX <- coredata(mX)
+      mX <- cbind(mX)
+      colnames(mX) <- NULL
+    }
+  }
 
   ### OUTPUT: ######################
 
@@ -1295,6 +1313,162 @@ regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
   return(result)
   
 } #close regressorsMean()
+
+##==================================================
+##Create the variance regressors of an arch-x model:
+regressorsVariance <- function(e, vc=TRUE, arch=NULL, asym=NULL,
+  log.ewma=NULL, vxreg=NULL, zero.adj=0.1, vc.adj=TRUE,
+  return.regressand=TRUE, return.as.zoo=TRUE, na.trim=TRUE,
+  na.omit=FALSE)
+{
+
+  ##regressand:
+  if(is.zoo(e)){ e <- cbind(e) }else{ e <- as.zoo(cbind(e)) }
+  if(NCOL(e) > 1) stop("Dependent variable not 1-dimensional")
+  e.n <- NROW(e)
+  loge2.index <- index(e)
+  e <- coredata(e)
+  t1 <- loge2.index[1]
+  t2 <- loge2.index[e.n]
+  zero.where <- which(e==0)
+  eabs <- abs(e)
+  if( length(zero.where)>0 ){
+    eabs[zero.where] <- quantile(eabs[-zero.where], zero.adj, na.rm=TRUE)
+  }
+  loge2 <- log(eabs^2)
+
+  ##create regressor matrix:
+  vX <- NULL
+  vXnames <- NULL
+
+  ##variance intercept:
+  if( identical(as.numeric(vc),1) ){
+    vX <- cbind(rep(1,e.n))
+    vXnames <- "vconst"
+  }
+
+  ##arch terms:
+  if(!is.null(arch) && !identical(as.numeric(arch),0) ){
+    tmp <- NULL
+    nas <- rep(NA, max(arch))
+    tmpfun <- function(i){
+      tmp <<- cbind(tmp, c(nas[1:i],loge2[1:c(e.n-i)]))
+    }
+    tmpfun <- sapply(arch,tmpfun)
+    vX <- cbind(vX, tmp)
+    vXnames <- c(vXnames, paste0("arch", arch))
+  }
+
+  ##asym terms:
+  if(!is.null(asym) && !identical(as.numeric(asym),0) ){
+    tmp <- NULL
+    nas <- rep(NA, max(asym))
+    tmpfun <- function(i){
+      tmp <<- cbind(tmp, c(nas[1:i],
+        loge2[1:c(e.n-i)]*as.numeric(e[1:c(e.n-i)]<0)))
+    }
+    tmpfun <- sapply(asym,tmpfun)
+    vX <- cbind(vX, tmp)
+    vXnames <- c(vXnames, paste0("asym", asym))
+  }
+
+  ##log.ewma term:
+  if(!is.null(log.ewma)){
+    if(is.list(log.ewma)){
+      log.ewma$k <- 1
+    }else{
+      log.ewma <- list(length=log.ewma)
+    }
+    tmp <- do.call(leqwma, c(list(e),log.ewma) )
+    vXnames <- c(vXnames, colnames(tmp))
+    colnames(tmp) <- NULL
+    vX <- cbind(vX, tmp)
+  }
+
+  ##trim for NAs:
+  if(na.trim){
+    tmp <- zoo(cbind(loge2,vX), order.by=loge2.index)
+    tmp <- na.trim(tmp, sides="both", is.na="any")
+    loge2.n <- NROW(tmp)
+    loge2.index <- index(tmp) #re-define index
+    t1 <- loge2.index[1] #re-define t1
+    t2 <- loge2.index[loge2.n] #re-define t2
+    loge2 <- tmp[,1]
+    loge2 <- coredata(loge2)
+    if(!is.null(vX)){ #re-define vX
+      vX <- tmp[,2:NCOL(tmp)]
+      vX <- coredata(vX)
+      vX <- cbind(vX)
+      colnames(vX) <- NULL
+    }
+  }
+
+  ##vxreg:
+  if(!is.null(vxreg)){
+    vxreg <- as.zoo(cbind(vxreg))
+    vxreg.names <- colnames(vxreg)
+    if(is.null(vxreg.names)){
+      vxreg.names <- paste0("vxreg", 1:NCOL(vxreg))
+    }
+    if(any(vxreg.names == "")){
+      missing.colnames <- which(vxreg.names == "")
+      for(i in 1:length(missing.colnames)){
+        vxreg.names[missing.colnames[i]] <- paste0("vxreg", i)
+      }
+    }
+    vXnames <- c(vXnames, vxreg.names)
+    vxreg <- window(vxreg, start=t1, end=t2)
+    vxreg <- cbind(coredata(vxreg))
+    vX <- cbind(vX, vxreg)
+    colnames(vxreg) <- NULL
+
+    ##re-trim for NAs:
+    if(na.trim){
+      tmp <- zoo(cbind(loge2,vX), order.by=loge2.index)
+      tmp <- na.trim(tmp, sides="both", is.na="any")
+      loge2.n <- NROW(tmp)
+      loge2.index <- index(tmp) #re-define index
+      t1 <- loge2.index[1] #re-define t1
+      t2 <- loge2.index[loge2.n] #re-define t2
+      loge2 <- coredata(tmp[,1])
+      vX <- tmp[,2:NCOL(tmp)]
+      vX <- coredata(vX)
+      vX <- cbind(vX)
+      colnames(vX) <- NULL
+    }
+
+  } #end if(!is.null(vxreg))
+
+  ##remove rows with NAs:
+  if(na.omit){
+    tmp <- zoo(cbind(loge2,vX), order.by=loge2.index)
+    tmp <- na.omit(tmp)
+    loge2.n <- NROW(tmp) #re-define
+    loge2.index <- index(tmp) #re-define
+    t1 <- loge2.index[1] #re-define t1
+    t2 <- loge2.index[loge2.n] #re-define t2
+    loge2 <- coredata(tmp[,1]) #re-define
+    if(!is.null(vX)){ #re-define vX
+      vX <- tmp[,2:NCOL(tmp)]
+      vX <- coredata(vX)
+      vX <- cbind(vX)
+      colnames(vX) <- NULL
+    }
+  }
+
+  ### OUTPUT: ######################
+
+  if(return.regressand){
+    result <- cbind(loge2, vX)
+    colnames(result) <- c("loge2", vXnames)
+  }else{
+    result <- vX
+    if(!is.null(result)){ colnames(result) <- vXnames }
+  }
+  if(return.as.zoo && !is.null(result) ){ result <- zoo(result, order.by=loge2.index) }
+  return(result)
+
+} #close regressorsVariance()
 
 
 ####################################################
@@ -1314,120 +1488,44 @@ arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
 
   vcov.type <- match.arg(vcov.type)
 
-  ##regressand:
-  y.name <- deparse(substitute(y))
-  #if(is.ts(y)){ y <- as.zooreg(y) }
-  if(is.zoo(y)){ y <- cbind(y) }else{ y <- as.zoo(cbind(y)) }
-  #OLD: y <- as.zoo(cbind(y))
-  y <- cbind(y)
-  if(NCOL(y) > 1) stop("Dependent variable not 1-dimensional")
-  if( is.null(y.name)){ y.name <- colnames(y)[1] }
-  if( y.name[1] =="" ){ y.name <- "y" }
-  y.n <- NROW(y)
-  y.index <- index(y)
-  y <- coredata(y)
-
-  ##regressors:
-  mX <- NULL
-  mXnames <- NULL
-
-  ##mean intercept:
-  if(identical(as.numeric(mc),1)){
-    mX <- cbind(rep(1,y.n))
-    mXnames  <- "mconst"
+  ##regressand, regressors:
+  tmp <- regressorsMean(y, mc=mc, ar=ar, ewma=ewma, mxreg=mxreg,
+    return.regressand=TRUE, return.as.zoo=TRUE,
+    na.trim=TRUE,
+    na.omit=FALSE)
+  
+  ##aux: auxiliary list, also used by getsm/getsv
+  aux <- list()
+  aux$y <- coredata(tmp[,1])
+  aux$y.n <- length(aux$y)
+  aux$y.name <- colnames(tmp)[1]
+  aux$y.index <- index(tmp)
+  if( NCOL(tmp)>1 ){
+    aux$mX <- cbind(coredata(tmp[,-1]))
+    aux$mXnames <- colnames(tmp)[-1]
+    colnames(aux$mX) <- NULL
+    aux$mXncol <- NCOL(aux$mX)
   }
 
-  ##ar terms:
-  if(!is.null(ar) && !identical(as.numeric(ar),0) ){
-    tmp <- NULL
-    nas <- rep(NA, max(ar))
-    tmpfun <- function(i){
-      tmp <<- cbind(tmp, c(nas[1:i],y[1:c(y.n-i)]))
-    }
-    tmpfun <- sapply(ar,tmpfun)
-    mX <- cbind(mX, tmp)
-    mXnames <- c(mXnames, paste("ar", ar, sep=""))
-  }
-
-  ##ewma term:
-  if(!is.null(ewma)){
-    ewma$as.vector <- FALSE #force result to be a matrix
-    tmp <- do.call(eqwma, c(list(y),ewma) )
-    mXnames <- c(mXnames, colnames(tmp))
-    colnames(tmp) <- NULL
-    mX <- cbind(mX, tmp)
-  }
-
-  ##adjust for NAs:
-  tmp <- zoo(cbind(y,mX), order.by=y.index)
-  tmp <- na.trim(tmp, sides="both", is.na="any")
-  y <- tmp[,1]
-  y.n <- NROW(y) #re-define y.n
-  y.index <- index(y) #re-define y.index
-  t1 <- y.index[1]
-  t2 <- y.index[y.n]
-  y <- coredata(y)
-  if(!is.null(mX)){
-    mX <- tmp[,2:NCOL(tmp)]
-    mX <- coredata(mX)
-    mX <- cbind(mX)
-    colnames(mX) <- NULL
-  }
-
-  ##mxreg:
-  if(!is.null(mxreg) && !identical(as.numeric(mxreg),0) ){
-    #if(is.ts(mxreg)){ mxreg <- as.zooreg(mxreg) }
-    mxreg <- as.zoo(cbind(mxreg))
-    mxreg.names <- colnames(mxreg)
-    if(is.null(mxreg.names)){
-      mxreg.names <- paste("mxreg", 1:NCOL(mxreg), sep="")
-    }
-    if(any(mxreg.names == "")){
-      missing.colnames <- which(mxreg.names == "")
-      for(i in 1:length(missing.colnames)){
-        mxreg.names[i] <- paste("mxreg", i, sep="")
-      }
-    }
-    #mxreg.names <- make.names(mxreg.names)
-    mXnames <- c(mXnames, mxreg.names)
-    mxreg <- window(mxreg, start=t1, end=t2)
-    mxreg <- cbind(coredata(mxreg))
-    mX <- cbind(mX, mxreg)
-
-    ##re-adjust for NAs:
-    tmp <- zoo(cbind(y,mX), order.by=y.index)
-    tmp <- na.trim(tmp, sides="both", is.na="any")
-    y <- tmp[,1]
-    y.n <- NROW(y) #re-define y.n
-    y.index <- index(y) #re-define y.index
-    t1 <- y.index[1]
-    t2 <- y.index[y.n]
-    y <- coredata(y)
-    mX <- tmp[,2:NCOL(tmp)]
-    mX <- coredata(mX)
-    mX <- cbind(mX)
-    colnames(mX) <- NULL
-
-  } #end if(!is.null(mxreg))
-
-  ##vxreg:
-  if(!is.null(vxreg) && !identical(as.numeric(vxreg),0) ){
+  ##modify vxreg:
+  if( !is.null(vxreg) ){
+    ##time:
     vxreg <- as.zoo(cbind(vxreg))
+    vxreg <- window(vxreg, start=aux$y.index[1],
+      end=aux$y.index[length(aux$y.index)])
+    ##colnames:
     vxreg.names <- colnames(vxreg)
     if(is.null(vxreg.names)){
-      vxreg.names <- paste("vxreg", 1:NCOL(vxreg), sep="")
+      vxreg.names <- paste0("vxreg", 1:NCOL(vxreg))
     }
-    if(any(vxreg.names == "")){
+    if( any(vxreg.names == "") ){
       missing.colnames <- which(vxreg.names == "")
       for(i in 1:length(missing.colnames)){
-        vxreg.names[i] <- paste("vxreg", i, sep="")
+        vxreg.names[missing.colnames[i]] <- paste0("vxreg", i)
       }
     }
-    vxreg <- window(vxreg, start=t1, end=t2)
-#OLD:
-#    vxreg <- cbind(coredata(vxreg))
-    colnames(vxreg) <- NULL
-  } #end if(!is.null(vxreg))
+    colnames(vxreg) <- vxreg.names
+  }
 
   ##determine qstat.options:
   if(is.null(qstat.options)){
@@ -1436,18 +1534,7 @@ arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
     qstat.options <- c(ar.lag, arch.lag)
   }
   
-  ##aux: info for getsm/getsv functions
-  aux <- list()
-  aux$y <- y
-  aux$y.index <- y.index
-  aux$y.name <- y.name
-  aux$y.n <- y.n
-  if(!is.null(mX)){
-    colnames(mX) <- NULL
-    aux$mX <- mX
-    aux$mXnames <- mXnames
-    aux$mXncol <- NCOL(mX)
-  }
+  ##info for getsm/getsv functions
   aux$vc <- vc
   aux$zero.adj <- zero.adj
   aux$vc.adj <- vc.adj
@@ -1470,19 +1557,21 @@ arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
   #### in order to determine what kind of estimator it is
 
   ##check if mean and log-garch spec:
-  meanSpec <- !is.null(mX)
+  meanSpec <- !is.null(aux$mX)
   noVarianceSpec <- if( vc==FALSE && is.null(arch)
     && is.null(asym) && is.null(log.ewma)
     && is.null(vxreg) ){ TRUE }else{ FALSE }
 
-  #### MEAN ###############
+  #### DEFAULT ESTIMATOR ###############
 
-  ##estimate:
   if( is.null(user.estimator) ){
 
+    ##mean equation:
+    ##--------------
+    
     estMethod <- which(vcov.type==c("none", "none", "ordinary",
       "white", "newey-west"))
-    out <- ols(y, mX, tol=tol, LAPACK=LAPACK, method=estMethod)
+    out <- ols(aux$y, aux$mX, tol=tol, LAPACK=LAPACK, method=estMethod)
 
     ##delete unneeded entries:
     #out$n <- NULL #this might have to be changed in order to enable gum.result in getsFun
@@ -1496,14 +1585,90 @@ arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
     out$residuals2 <- NULL
     #out$rss <- NULL
 
-    ##add entries if no variance spec:
-    if(noVarianceSpec){
+    ##name and rename some stuff:
+    colnames(out$vcov) <- aux$mXnames
+    rownames(out$vcov) <- aux$mXnames
+    outNames <- names(out)
+    whereIs <- which(outNames=="vcov")
+    if( length(whereIs) > 0 ){ names(out)[whereIs] <- "vcov.mean" }
+    whereIs <- which(outNames=="fit")
+    names(out)[whereIs] <- "mean.fit"
+
+    ##variance equation:
+    ##------------------
+    
+    ##if no variance spec:
+    if( noVarianceSpec ){
       out$var.fit <- rep(out$sigma2, aux$y.n)
       out$std.residuals <- out$residuals/sqrt(out$sigma2)
       aux$loge2.n <- aux$y.n #change to out$n?
     }
 
-  }else{
+    ##if variance spec:
+    if( noVarianceSpec==FALSE ){
+  
+      ##regressand, regressors:
+      residszoo <- zoo(out$residuals, order.by=aux$y.index)
+      tmp <- regressorsVariance(residszoo, vc=TRUE, arch=arch,
+        asym=asym, log.ewma=log.ewma, vxreg=vxreg, zero.adj=zero.adj,
+        vc.adj=vc.adj, return.regressand=TRUE, return.as.zoo=FALSE,
+        na.trim=TRUE, na.omit=FALSE)
+
+      ##add info to aux (some of it is for getsm/getsv):
+      aux$loge2 <- coredata(tmp[,1])
+      aux$loge2.n <- length(aux$loge2)
+      aux$vX <- cbind(coredata(tmp[,-1]))
+      aux$vXnames <- colnames(tmp)[-1]
+      colnames(aux$vX) <- NULL
+      aux$vXncol <- NCOL(aux$vX)
+      aux$arch <- arch
+      aux$asym <- asym
+      aux$log.ewma <- log.ewma
+      aux$vxreg <- vxreg #note: NROW(vxreg)!=NROW(vX) is possible
+  
+      ##estimate, prepare results:
+      estVar <- ols(aux$loge2, aux$vX, tol=tol, LAPACK=LAPACK, method=3)
+      s.e. <- sqrt(as.vector(diag(estVar$vcov)))
+      estVar$vcov <- as.matrix(estVar$vcov[-1,-1])
+      colnames(estVar$vcov) <- aux$vXnames[-1]
+      rownames(estVar$vcov) <- aux$vXnames[-1]
+      out$Elnz2 <- -log(mean(exp(estVar$residuals)))
+      t.stat <- estVar$coefficients/s.e.
+      p.val <- pt(abs(t.stat), estVar$df, lower.tail=FALSE)*2
+      if(vc.adj){
+        t.stat[1] <- ((estVar$coefficients[1]-out$Elnz2)^2)/s.e.[1]^2
+        p.val[1] <- pchisq(t.stat[1], 1, lower.tail=FALSE)
+        estVar$coefficients[1] <- estVar$coefficients[1] - out$Elnz2
+      }
+  
+      ##add/modify entries in out:
+      out$n <- estVar$n
+      out$vcov.var <- estVar$vcov
+      out$var.fit <- exp(estVar$fit - out$Elnz2)
+      out$ustar.residuals <- estVar$residuals
+      out$std.residuals <-
+        out$residuals[c(aux$y.n-aux$loge2.n+1):aux$y.n]/sqrt(out$var.fit)
+      out$logl <- 
+        -aux$loge2.n*log(2*pi)/2 - sum(log(out$var.fit))/2 - sum(out$std.residuals^2)/2
+      out$variance.results <-
+        as.data.frame(cbind(estVar$coefficients, s.e., t.stat, p.val))
+      colnames(out$variance.results) <- c("coef", "std.error", "t-stat", "p-value")
+      rownames(out$variance.results) <- aux$vXnames
+  
+      ##add NAs to variance-related series:
+      NAs2add <- rep(NA,aux$y.n-aux$loge2.n)
+      out$var.fit <- c(NAs2add, out$var.fit)
+      out$ustar.residuals <- c(NAs2add, out$ustar.residuals)
+      out$std.residuals <- c(NAs2add, out$std.residuals)
+  
+    } #end if( noVarianceSpec==FALSE )
+
+  } #close if( is.null(user.estimator) )
+  
+
+  #### USER-DEFINED ESTIMATOR ###############
+
+  if( !is.null(user.estimator) ){
 
     ##make user-estimator argument:
     if( is.null(user.estimator$envir) ){ user.estimator$envir <- .GlobalEnv }
@@ -1514,176 +1679,42 @@ arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
 
     ##user-defined estimator:
     out <- do.call(user.estimator$name,
-      c(list(y,mX), userEstArg), envir=user.estimator$envir)
-#      c(list(y=y,x=mX), userEstArg), envir=user.estimator$envir)
-    #delete?:
+      c(list(aux$y,aux$mX), userEstArg), envir=user.estimator$envir)
+#      c(list(y=aux$y,x=aux$mX), userEstArg), envir=user.estimator$envir)
+
+#delete?:
+    ##just in case...:
     if( is.null(out$vcov) && !is.null(out$vcov.mean) ){
       out$vcov <- out$vcov.mean
     }
 
-  } #end if(..)else(..)
+  } #end if( user.estimator )
 
-  ##make estimation results (a data frame):
-  if(meanSpec){
-    stderrs <- sqrt(diag(out$vcov))
-    colnames(out$vcov) <- mXnames
-    rownames(out$vcov) <- mXnames
+
+  ### OUTPUT: ######################
+
+  ##mean estimation results (a data frame):
+  if( meanSpec ){
+    if( !is.null(out$vcov) ){
+      coefvar <- out$vcov
+    }else{
+      coefvar <- out$vcov.mean
+    }
+    stderrs <- sqrt(diag(coefvar))
     t.stat <- out$coefficients/stderrs
     p.val <- pt(abs(t.stat), out$df, lower.tail=FALSE)*2
     out$mean.results <- as.data.frame(cbind(out$coefficients,
       stderrs, t.stat, p.val))
     colnames(out$mean.results) <- c("coef", "std.error",
       "t-stat", "p-value")
-    rownames(out$mean.results) <- mXnames
+    rownames(out$mean.results) <- aux$mXnames
   } #end if(meanSpec)
-
-  ##rename some stuff:
-  if( is.null(user.estimator) ){
-    outNames <- names(out)
-    whereIs <- which(outNames=="vcov")
-    if( length(whereIs) > 0 ){ names(out)[whereIs] <- "vcov.mean" }
-    whereIs <- which(outNames=="fit")
-    names(out)[whereIs] <- "mean.fit"
-  }
-  
-
-  #### VARIANCE #############
-
-  ##if log-arch spec:
-  if( noVarianceSpec==FALSE ){
-
-    ##regressand
-    zero.where <- which(out$residuals==0)
-    eabs <- abs(out$residuals)
-    if(length(zero.where) > 0){
-      eabs[zero.where] <- quantile(eabs[-zero.where], zero.adj)
-    }
-    loge2 <- log(eabs^2)
-
-    ##regressor matrix:
-    vX <- cbind(rep(1,y.n))
-    vXnames <- "vconst"
-
-    ##arch terms:
-    if(!is.null(arch) && !identical(as.numeric(arch),0) ){
-      tmp <- NULL
-      nas <- rep(NA, max(arch))
-      tmpfun <- function(i){
-        tmp <<- cbind(tmp, c(nas[1:i],loge2[1:c(y.n-i)]))
-      }
-      tmpfun <- sapply(arch,tmpfun)
-      vX <- cbind(vX, tmp)
-      vXnames <- c(vXnames, paste("arch", arch, sep=""))
-    }
-
-    ##asym terms:
-    if(!is.null(asym) && !identical(as.numeric(asym),0) ){
-      tmp <- NULL
-      nas <- rep(NA, max(asym))
-      tmpfun <- function(i){
-        tmp <<- cbind(tmp, c(nas[1:i],
-          loge2[1:c(y.n-i)]*as.numeric(out$residuals[1:c(y.n-i)]<0)))
-      }
-      tmpfun <- sapply(asym,tmpfun)
-      vX <- cbind(vX, tmp)
-      vXnames <- c(vXnames, paste("asym", asym, sep=""))
-    }
-
-    ##log.ewma term:
-    if(!is.null(log.ewma)){
-      if(is.list(log.ewma)){
-        log.ewma$k <- 1
-      }else{
-        log.ewma <- list(length=log.ewma)
-      }
-      tmp <- do.call(leqwma, c(list(out$residuals),log.ewma) )
-      vXnames <- c(vXnames, colnames(tmp))
-      colnames(tmp) <- NULL
-      vX <- cbind(vX, tmp)
-    }
-
-    ##adjust for NAs:
-    tmp <- zoo(cbind(loge2,vX), order.by=y.index)
-    tmp <- na.trim(tmp, sides="left", is.na="any")
-    loge2 <- tmp[,1]
-    loge2.n <- NROW(loge2)
-    loge2.index <- index(loge2) #re-define y.index
-    loge2 <- coredata(loge2)
-    vX <- tmp[,2:NCOL(tmp)]
-    vX <- coredata(vX)
-    vX <- cbind(vX)
-    colnames(vX) <- NULL
-
-    ##vxreg:
-    if( !is.null(vxreg) && !identical(as.numeric(vxreg),0) ){
-      vxreg <- window(vxreg, start=loge2.index[1],
-        end=loge2.index[loge2.n])
-      vxreg <- cbind(vxreg)
-      vX <- cbind(vX, coredata(vxreg))
-      vXnames <- c(vXnames, vxreg.names)
-      colnames(vxreg) <- vxreg.names
-
-      ##re-adjust for NAs:
-      tmp <- zoo(cbind(loge2,vX), order.by=loge2.index)
-      tmp <- na.trim(tmp, sides="left", is.na="any")
-      loge2 <- tmp[,1]
-      loge2.n <- NROW(loge2)
-      loge2.index <- index(loge2) #re-define index
-      loge2 <- coredata(loge2)
-      vX <- tmp[,2:NCOL(tmp)]
-      vX <- coredata(vX)
-      vX <- cbind(vX)
-      colnames(vX) <- NULL
-    }
-
-    ##aux: more info for getsm/getsv functions
-    aux$loge2 <- loge2
-    aux$loge2.n <- loge2.n
-    aux$vX <- vX
-    aux$vXnames <- vXnames
-    aux$vXncol <- NCOL(vX)
-    aux$arch <- arch
-    aux$asym <- asym
-    aux$log.ewma <- log.ewma
-    aux$vxreg <- vxreg #note: NROW(vxreg)!=NROW(vX) is possible
-
-    ##estimate, prepare results:
-    estVar <- ols(loge2, vX, tol=tol, LAPACK=LAPACK, method=3)
-    s.e. <- sqrt(as.vector(diag(estVar$vcov)))
-    estVar$vcov <- as.matrix(estVar$vcov[-1,-1])
-    colnames(estVar$vcov) <- vXnames[-1]
-    rownames(estVar$vcov) <- vXnames[-1]
-    Elnz2 <- -log(mean(exp(estVar$residuals)))
-    t.stat <- estVar$coefficients/s.e.
-    p.val <- pt(abs(t.stat), estVar$df, lower.tail=FALSE)*2
-    if(vc.adj){
-      t.stat[1] <- ((estVar$coefficients[1]-Elnz2)^2)/s.e.[1]^2
-      p.val[1] <- pchisq(t.stat[1], 1, lower.tail=FALSE)
-      estVar$coefficients[1] <- estVar$coefficients[1] - Elnz2
-    }
-
-    ##add/modify entries in out:
-    out$n <- estVar$n
-    out$vcov.var <- estVar$vcov
-    out$var.fit <- exp(estVar$fit - Elnz2)
-    out$ustar.residuals <- estVar$residuals
-    out$std.residuals <- out$residuals[c(y.n-loge2.n+1):y.n]/sqrt(out$var.fit)
-    out$logl <- -loge2.n*log(2*pi)/2 - sum(log(out$var.fit))/2 - sum(out$std.residuals^2)/2
-    out$Elnz2 <- Elnz2
-    out$variance.results <- as.data.frame(cbind(estVar$coefficients, s.e., t.stat, p.val))
-    colnames(out$variance.results) <- c("coef", "std.error", "t-stat", "p-value")
-    rownames(out$variance.results) <- vXnames
-
-  } #end if( noVarianceSpec==FALSE )
-
-
-  ### OUTPUT: ######################
 
   ##diagnostics:
   if( any( names(out) %in% c("residuals", "std.residuals") ) ){
     ar.LjungBarg <- c(qstat.options[1],0)
     arch.LjungBarg <- c(qstat.options[2],0)
-    if(identical(normality.JarqueB, FALSE)){
+    if( identical(normality.JarqueB,FALSE) ){
       normality.JarqueBarg <- NULL
     }else{
       normality.JarqueBarg <- as.numeric(normality.JarqueB)
@@ -1698,29 +1729,21 @@ arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
     normality.JarqueB=normality.JarqueBarg,
     user.fun=user.diagnostics, verbose=TRUE)
     
-  ##add NAs to variance series:
-  if( noVarianceSpec==FALSE ){
-    NAs2add <- rep(NA,y.n-loge2.n)
-    out$var.fit <- c(NAs2add, out$var.fit)
-    out$ustar.residuals <- c(NAs2add, out$ustar.residuals)
-    out$std.residuals <- c(NAs2add, out$std.residuals)
-  }
-
   ##add zoo-indices:
   if(!is.null(out$mean.fit)){
-    out$mean.fit <- zoo(out$mean.fit, order.by=y.index)
+    out$mean.fit <- zoo(out$mean.fit, order.by=aux$y.index)
   }
   if(!is.null(out$residuals)){
-    out$residuals <- zoo(out$residuals, order.by=y.index)
+    out$residuals <- zoo(out$residuals, order.by=aux$y.index)
   }
   if(!is.null(out$var.fit)){
-    out$var.fit <- zoo(out$var.fit, order.by=y.index)
+    out$var.fit <- zoo(out$var.fit, order.by=aux$y.index)
   }
   if(!is.null(out$ustar.residuals)){
-    out$ustar.residuals <- zoo(out$ustar.residuals, order.by=y.index)
+    out$ustar.residuals <- zoo(out$ustar.residuals, order.by=aux$y.index)
   }
   if(!is.null(out$std.residuals)){
-    out$std.residuals <- zoo(out$std.residuals, order.by=y.index)
+    out$std.residuals <- zoo(out$std.residuals, order.by=aux$y.index)
   }
 
   ##result:
@@ -1736,7 +1759,8 @@ arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
 
   ##return result:
   return(out)
-} #close arx function
+
+} #close arx() function
 
 ##==================================================
 coef.arx <- function(object, spec=NULL, ...)

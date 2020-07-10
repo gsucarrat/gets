@@ -106,6 +106,7 @@ plot(as.zoo(y), col=4) #plot
 ##=================
 
 isat(y, sis=TRUE)
+isat(y, sis=FALSE) #returns the error: "Error in ISmatrices[[i]] : subscript out of bounds"
 isat(y, iis=TRUE, sis=TRUE)
 isat(y, iis=TRUE, sis=FALSE)
 isat(y, sis=FALSE, tis=TRUE)

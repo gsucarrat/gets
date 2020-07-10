@@ -18,8 +18,8 @@ setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
 #setwd(choose.dir())
 
 ##load source code:
-source("gets-base-source-devel.R")
-source("gets-isat-source-devel.R")
+source("gets-base-source.R")
+source("gets-isat-source.R")
 
 ##END not in jstatsoft code
 #######################################################
@@ -578,9 +578,9 @@ mod02 <- arx(y, mc = TRUE, ar = 1:2, mxreg = mX, vcov.type = "white")
 mod02
 mod03 <- arx(eps, arch = 1)
 mod03
-mod04 <- mod04 <- arx(eps, arch = 1:3, asym = 2, vxreg = log(mX^2))
+mod04 <- arx(eps, arch = 1:3, asym = 2, vxreg = log(mX^2))
 mod04
-mod05 <- mod05 <- arx(yy, mc = TRUE, ar = 1:2, mxreg = mX, arch = 1:3, asym = 2, 
+mod05 <- arx(yy, mc = TRUE, ar = 1:2, mxreg = mX, arch = 1:3, asym = 2, 
   vxreg = log(mX^2), vcov.type = "white")
 mod05
 

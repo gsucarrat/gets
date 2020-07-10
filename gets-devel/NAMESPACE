@@ -21,7 +21,7 @@ export(
   
   ##base functions:
   "diagnostics", "dropvar", "eqwma", "getsFun", "info.criterion",
-  "infocrit", "leqwma", "ols", "regressorsMean",
+  "infocrit", "leqwma", "ols", "regressorsMean", "regressorsVariance",
   
   ##convenience functions:
   "periodicdummies", "eviews", "stata", "printtex",

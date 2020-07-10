@@ -5,8 +5,9 @@
 ## 1 INITIATE
 ## 2 TEST ols()
 ## 3 TEST diagnostics()
-## 4 TEST eqwma AND leqwma
+## 4 TEST eqwma() AND leqwma()
 ## 5 TEST regressorsMean()
+## 6 TEST regressorsVariance()
 ##
 ##################################################
 
@@ -218,7 +219,10 @@ regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),
 regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),
   mxreg=mxreg, return.regressand=FALSE, return.as.zoo=FALSE,
   na.trim=FALSE)
-
+##erroneous until version 0.23:
+colnames(mxreg) <- c("a", "", "c", "", "d")
+regressorsMean(y, mxreg=mxreg)
+ 
 ##test 2:
 ##=======
 
@@ -247,7 +251,6 @@ regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),
 regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),
   mxreg=mxreg, return.regressand=FALSE, return.as.zoo=FALSE,
   na.trim=FALSE)
-
 ##used to yield error:
 set.seed(123)
 vY <- rnorm(20)
@@ -264,3 +267,84 @@ mxreg <- matrix(rnorm(30*5), 30, 5)
 mxreg <- as.data.frame(mxreg)
 
 regressorsMean(y, mxreg=mxreg)
+
+
+##################################################
+## 6 TEST regressorsVariance()
+##################################################
+
+##test 1:
+##=======
+
+set.seed(123)
+iT <- 10
+eps <- rnorm(iT)
+eps <- arima.sim(list(ar=0.3), iT)
+eps[1] <- NA; eps[iT] <- NA
+eps[3] <- 0
+vxreg <- matrix(rnorm(5*iT), iT, 5)
+#vxreg <- cbind(rep(1, iT)); colnames(mX) <- "mconst"
+#vxreg[1:5,2] <- NA
+
+regressorsVariance(eps)
+regressorsVariance(eps, vc=FALSE)
+regressorsVariance(eps, arch=c(1,3))
+regressorsVariance(eps, log.ewma=5)
+regressorsVariance(eps, log.ewma=c(2,4))
+regressorsVariance(eps, vxreg=vxreg)
+regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),
+  vxreg=vxreg)
+regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),
+  vxreg=vxreg, return.regressand=FALSE)
+regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),
+  vxreg=vxreg, return.as.zoo=FALSE)
+regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),
+  vxreg=vxreg, na.trim=FALSE)
+regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),
+  vxreg=vxreg, return.regressand=FALSE, return.as.zoo=FALSE,
+  na.trim=FALSE)
+##check naming when "" in colnames:
+colnames(vxreg) <- c("a", "", "c", "", "d")
+regressorsVariance(eps, vxreg=vxreg)
+  
+
+##test 2:
+##=======
+
+set.seed(123)
+iT <- 10 #60 or 100. If iT=60, then usually no specific
+eps <- arima.sim(list(arch=0.3),iT)
+eps <- ts(eps, frequency=4, end=c(2015,4))
+vxreg <- matrix(rnorm(4*iT), iT, 4)
+vxreg <- ts(vxreg, frequency=4, end=c(2015,4))
+eps[1] <- NA; eps[iT] <- NA
+eps[3] <- 0
+
+regressorsVariance(eps)
+regressorsVariance(eps, vc=FALSE)
+regressorsVariance(eps, arch=c(1,3))
+regressorsVariance(eps, log.ewma=c(2,4))
+regressorsVariance(eps, vxreg=vxreg)
+regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),
+  vxreg=vxreg)
+regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),
+  vxreg=vxreg, return.regressand=FALSE)
+regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),
+  vxreg=vxreg, return.as.zoo=FALSE)
+regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),
+  vxreg=vxreg, na.trim=FALSE)
+regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),
+  vxreg=vxreg, return.regressand=FALSE, return.as.zoo=FALSE,
+  na.trim=FALSE)
+
+
+##test 3:
+##=======
+
+##from 0.24: vxreg can be a data.frame
+set.seed(123)
+eps <- rnorm(30)
+vxreg <- matrix(rnorm(30*5), 30, 5)
+vxreg <- as.data.frame(vxreg)
+
+regressorsVariance(eps, vxreg=vxreg)

@@ -67,7 +67,7 @@ getsv(vgum01, max.paths=3)
 getsv(vgum01, turbo=TRUE)
 getsv(vgum01, print.searchinfo=FALSE)
 getsv(vgum01, estimate.specific=FALSE, plot=FALSE)
-getsv(vgum01, estimate.specific=FALSE, plot=TRUE) #should produce warning
+getsv(vgum01, estimate.specific=FALSE, plot=TRUE) #should also return: "No estimated model, so no plot produced"
 
 ##extraction functions:
 vgets01 <- getsv(vgum01)

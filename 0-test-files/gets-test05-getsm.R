@@ -153,7 +153,7 @@ getsm(gum02, max.paths=1)
 getsm(gum02, max.paths=2)
 getsm(gum02, print.searchinfo=FALSE)
 getsm(gum02, print.searchinfo=FALSE, estimate.specific=FALSE,
-  ar.LjungB=NULL, arch.LjungB=NULL, do.pet=TRUE) #should produce warning: "No estimated model...etc."
+  ar.LjungB=NULL, arch.LjungB=NULL, do.pet=TRUE) #should return: "Not estimated, since estimate.specific=FALSE"
 
 ##extraction functions (both mean and variance equations):
 getsm02 <- getsm(gum02)
