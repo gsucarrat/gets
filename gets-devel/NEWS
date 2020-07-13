@@ -1,4 +1,4 @@
-Version 0.24 (10 July 2020):
+Version 0.24 (13 July 2020):
 ============================
 
 * arx()/isat() function:
@@ -11,7 +11,15 @@ Version 0.24 (10 July 2020):
 
 - new argument: na.omit
 
-* new function: regressorsVariance()
+* ols() function:
+
+- new argument: variance.spec
+
+* new functions:
+
+- regressorsVariance()
+
+- as.lm()
 
 * fixes:
 

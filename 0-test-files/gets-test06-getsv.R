@@ -140,6 +140,7 @@ terminals(vgets02)
 terminals(vgum02) #should return the error-message: The object does not belong to the 'gets' nor 'isat' class
 plot(VaR(vgets02, level=c(0.99,0.95,0.9))) #value-at-risk
 vcov(vgets02)
+##THIS MUST BE CHECKED!!!:
 vcov(vgets02, spec="m") #should be NULL
 vcov(vgets02, spec="v")
 

@@ -96,7 +96,7 @@ predict(mod01, n.ahead=5, newmxreg=matrix(0,5,NCOL(mX)))
 predict(mod01, n.ahead=30, newmxreg=matrix(0,30,NCOL(mX)))
 predict(mod01, n.ahead=5, newmxreg=matrix(0,5,NCOL(mX)), spec="mean")
 predict(mod01, n.ahead=5, newmxreg=matrix(0,5,NCOL(mX)),
-  plot=FALSE, return=FALSE) #return nothing
+  plot=FALSE, return=FALSE) #no plot, return nothing
 predict(mod01, n.ahead=5, newmxreg=matrix(0,5,NCOL(mX)), plot=FALSE)
 predict(mod01, n.ahead=5, newmxreg=matrix(0,5,NCOL(mX)),
   return=FALSE, plot=TRUE) #plot only
@@ -281,7 +281,7 @@ print(mod07)
 coef(mod07)
 coef(mod07, spec="m")
 coef(mod07, spec="v") #should be null
-coef(mod07, spec="b")
+coef(mod07, spec="b") #mean coefs only
 residuals(mod07) #should be null 
 residuals(mod07, std=FALSE) #should be null
 residuals(mod07, std=TRUE) #should be null
@@ -316,7 +316,7 @@ coef(mod08, spec="v") #should be null
 coef(mod08, spec="b")
 residuals(mod08) 
 residuals(mod08, std=FALSE)
-residuals(mod08, std=TRUE)
+residuals(mod08, std=TRUE) ##should be NULL
 fitted(mod08)
 fitted(mod08, spec="m")
 fitted(mod08, spec="v") #should be NULL

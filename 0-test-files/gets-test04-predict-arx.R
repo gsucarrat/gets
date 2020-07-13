@@ -10,6 +10,31 @@
 ##
 ##################################################
 
+##idea for shades.of=c("grey","blue","red","green"):
+##fc <- colorRampPalette(c("darkgreen", "green"))
+##plot(rep(1, 255),col = fc(255), pch = 19, cex = 3)
+##
+##fc <- colorRampPalette(c("darkgreen", "white"))
+##plot(rep(1, 255),col = fc(255), pch = 19, cex = 3)
+##
+##fc <- colorRampPalette(c("green", "white"))
+##plot(rep(1, 255),col = fc(255), pch = 19, cex = 3)
+##
+##fc <- colorRampPalette(c("red", "white"))
+##plot(rep(1, 255),col = fc(255), pch = 19, cex = 3)
+##
+##fc <- colorRampPalette(c("blue", "white"))
+##plot(rep(1, 255),col = fc(255), pch = 19, cex = 3)
+##
+##fc <- colorRampPalette(c("darkblue", "white"))
+##plot(rep(1, 255),col = fc(255), pch = 19, cex = 3)
+##
+##find colours:
+##cols <- colors()
+##cols <- cols[grep("blue", cols)]
+##plot(rep(1, length(cols)),col = cols, pch = 19, cex = 3)
+
+
 ##################################################
 ## 1 INITIATE
 ##################################################

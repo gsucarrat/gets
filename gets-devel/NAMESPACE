@@ -1,9 +1,9 @@
 import(zoo)
 
-importFrom("stats", "poisson.test", "rnorm", "Box.test", "coef", "cycle",
-  "deltat", "dnorm", "fitted", "frequency", "logLik", "pchisq", "pnorm",
-  "printCoefmat", "pt", "qnorm", "qt", "quantile", "residuals", "runif",
-  "sigma", "var", "vcov", "window")
+importFrom("stats", "Box.test", "coef", "cycle", "deltat", "dnorm",
+  "fitted", "frequency", "lm", "logLik", "pchisq", "pnorm", "poisson.test",
+  "printCoefmat", "pt", "qnorm", "qt", "quantile", "residuals", "rnorm",
+  "runif", "sigma", "var", "vcov", "window")
 
 importFrom("graphics", "abline", "legend", "lines", "mtext", "par",
   "plot", "points", "polygon", "text", "title")
@@ -24,7 +24,7 @@ export(
   "infocrit", "leqwma", "ols", "regressorsMean", "regressorsVariance",
   
   ##convenience functions:
-  "periodicdummies", "eviews", "stata", "printtex",
+  "periodicdummies", "eviews", "stata", "printtex", "as.lm",
   
   ##arx functions:
   "arx", "coef.arx", "ES", "fitted.arx", "logLik.arx", "plot.arx",

@@ -82,6 +82,7 @@
 ## eviews     #export function
 ## stata      #export function
 ## printtex   #print latex-code (equation-form)
+## as.lm      #convert arx/gets/isat object to 'lm' object
 ##
 ####################################################
 
@@ -437,7 +438,7 @@ leqwma <- function(x, length=5, k=1, p=2, as.vector=FALSE,
 ##==================================================
 ##OLS estimation using the QR decomposition
 ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
-  LAPACK=FALSE, method=3, ...)
+  LAPACK=FALSE, method=3, variance.spec=NULL, ...)
 {
 
   ##for the future:
@@ -448,11 +449,13 @@ ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
   ## estFun and vcovFun?
 
   ##user-specified:
+  ##---------------
   if(method==0){
     stop("method = 0 has been deprecated")
   }
 
   ##fastest, usually only for estimates:
+  ##------------------------------------
   if(method==1){
     out <- list()
     qx <- qr(x, tol, LAPACK=LAPACK)
@@ -461,6 +464,7 @@ ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
   }
 
   ##second fastest (slightly more output):
+  ##--------------------------------------
   if(method==2){
     out <- list()
     qx <- qr(x, tol, LAPACK=LAPACK) ## compute qr-decomposition of x
@@ -472,7 +476,10 @@ ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
   }
 
   ##ordinary vcov:
+  ##--------------
   if(method==3){
+
+    ##mean specification:
     out <- list()
     out$n <- length(y)
     if(is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
@@ -494,10 +501,14 @@ ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
       out$vcov <- out$sigma2 * out$xtxinv
     }
     out$logl <- -out$n*log(2*out$sigma2*pi)/2 - out$rss/(2*out$sigma2)
-  }
+
+  } #close method=3
 
   ##White (1980) vcov:
+  ##------------------
   if(method==4){
+
+    ##mean specification:
     out <- list()
     out$n <- length(y)
     if(is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
@@ -520,10 +531,16 @@ ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
       out$vcov <- out$xtxinv %*% out$omegahat %*% out$xtxinv
     }
     out$logl <- -out$n*log(2*out$sigma2*pi)/2 - out$rss/(2*out$sigma2)
+
+    ##variance specification:
+    
   }
 
   ##Newey and West(1987) vcov:
+  ##--------------------------
   if(method==5){
+
+    ##mean specification:
     out <- list()
     out$n <- length(y)
     if(is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
@@ -560,12 +577,17 @@ ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
       out$omegahat <- mS0 + mSum
       out$vcov <- out$xtxinv %*% out$omegahat %*% out$xtxinv
     } #end if(out$k>0)
-    
+
     out$logl <- -out$n*log(2*out$sigma2*pi)/2 - out$rss/(2*out$sigma2)
+
+    ##variance specification:
+    
   }
 
   ##log-variance w/ordinary vcov (note: y = log(e^2)):
+  ##--------------------------------------------------
   if(method==6){
+
     out <- list()
     out$n <- length(y)
     if(is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
@@ -591,12 +613,49 @@ ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
     out$var.fit <- exp(out$fit - out$Elnz2)
     out$std.residuals <- untransformed.residuals/sqrt(out$var.fit)
     out$logl <- -out$n*log(2*pi)/2 - sum(log(out$var.fit))/2 - sum(untransformed.residuals^2/out$var.fit)/2
+
   }
 
-  ##result:
+  ##if variance specification:
+  ##--------------------------
+  if( !is.null(variance.spec) ){
+
+    if(method==6){ stop("not compatible with method=6") }
+    if( !is.null(variance.spec$vxreg) ){
+      if( length(y)!=NROW(variance.spec$vxreg) ){
+        stop("length(y) != NROW(vxreg)")
+      }
+      variance.spec$vxreg <- coredata(variance.spec$vxreg)
+    }
+    e <- out$residuals
+    variance.spec <- c(list(e=e), variance.spec)
+    variance.spec$return.regressand <- TRUE #some protection
+    variance.spec$return.as.zoo <- FALSE
+    variance.spec$na.trim <- TRUE #some protection
+    variance.spec$na.omit <- FALSE #--||--
+    tmp <- do.call("regressorsVariance", variance.spec)
+    loge2 <- tmp[,1]
+    vX <- cbind(tmp[,-1])
+    e <- e[c(length(e)-length(loge2)+1):length(e)]
+    estVar <- ols(loge2, vX, untransformed.residuals=e, tol=tol,
+      LAPACK=LAPACK, method=6)
+    out$regressorsVariance <- tmp
+    out$var.coefficients <- estVar$coefficients
+    out$Elnz2 <- estVar$Elnz2
+    out$vcov.var <- estVar$vcov
+    NAs2add <- rep(NA, length(y)-length(loge2))
+    out$var.fit <- c(NAs2add, estVar$var.fit)
+    out$std.residuals <- c(NAs2add, estVar$std.residuals)
+    out$ustar.residuals <- c(NAs2add, estVar$residuals)
+    out$logl <- estVar$logl
+
+  }
+
+  ##return result:
+  ##--------------
   return(out)
 
-} #close ols function
+} #close ols() function
 
 ##==================================================
 ##do gets fast and with full flexibility (for advanced users)
@@ -1525,6 +1584,8 @@ arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
       }
     }
     colnames(vxreg) <- vxreg.names
+    ##add to aux (necessary for getsm/getsv):
+    aux$vxreg <- vxreg #note: NROW(vxreg)!=NROW(vX) is possible
   }
 
   ##determine qstat.options:
@@ -1558,22 +1619,27 @@ arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
 
   ##check if mean and log-garch spec:
   meanSpec <- !is.null(aux$mX)
-  noVarianceSpec <- if( vc==FALSE && is.null(arch)
+  varianceSpec <- if( vc==FALSE && is.null(arch)
     && is.null(asym) && is.null(log.ewma)
-    && is.null(vxreg) ){ TRUE }else{ FALSE }
+    && is.null(vxreg) ){ FALSE }else{ TRUE }
 
   #### DEFAULT ESTIMATOR ###############
 
   if( is.null(user.estimator) ){
 
-    ##mean equation:
-    ##--------------
-    
+    ##estimate:
     estMethod <- which(vcov.type==c("none", "none", "ordinary",
       "white", "newey-west"))
-    out <- ols(aux$y, aux$mX, tol=tol, LAPACK=LAPACK, method=estMethod)
+    varianceSpecArg <- NULL
+    if( varianceSpec ){
+      ##note: vc must be TRUE
+      varianceSpecArg <- list(vc=TRUE, arch=arch, asym=asym,
+        log.ewma=log.ewma, vxreg=vxreg)
+    }
+    out <- ols(aux$y, aux$mX, tol=tol, LAPACK=LAPACK, method=estMethod,
+      variance.spec=varianceSpecArg)
 
-    ##delete unneeded entries:
+    ##delete some unneeded entries:
     #out$n <- NULL #this might have to be changed in order to enable gum.result in getsFun
     #out$k <- NULL ##this might have to be changed in order to enable gum.result in getsFun
     #out$df <- NULL: Do not delete!
@@ -1585,7 +1651,7 @@ arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
     out$residuals2 <- NULL
     #out$rss <- NULL
 
-    ##name and rename some stuff:
+    ##re-organise stuff related to mean spec:
     colnames(out$vcov) <- aux$mXnames
     rownames(out$vcov) <- aux$mXnames
     outNames <- names(out)
@@ -1594,75 +1660,49 @@ arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
     whereIs <- which(outNames=="fit")
     names(out)[whereIs] <- "mean.fit"
 
-    ##variance equation:
-    ##------------------
-    
     ##if no variance spec:
-    if( noVarianceSpec ){
+    if( varianceSpec==FALSE ){
       out$var.fit <- rep(out$sigma2, aux$y.n)
       out$std.residuals <- out$residuals/sqrt(out$sigma2)
-      aux$loge2.n <- aux$y.n #change to out$n?
+      aux$loge2.n <- aux$y.n #same as out$n, change?
     }
 
     ##if variance spec:
-    if( noVarianceSpec==FALSE ){
-  
-      ##regressand, regressors:
-      residszoo <- zoo(out$residuals, order.by=aux$y.index)
-      tmp <- regressorsVariance(residszoo, vc=TRUE, arch=arch,
-        asym=asym, log.ewma=log.ewma, vxreg=vxreg, zero.adj=zero.adj,
-        vc.adj=vc.adj, return.regressand=TRUE, return.as.zoo=FALSE,
-        na.trim=TRUE, na.omit=FALSE)
+    if( varianceSpec ){
 
-      ##add info to aux (some of it is for getsm/getsv):
-      aux$loge2 <- coredata(tmp[,1])
+      ##aux: info for getsm and getsv:
+      aux$loge2 <- out$regressorsVariance[,1]
       aux$loge2.n <- length(aux$loge2)
-      aux$vX <- cbind(coredata(tmp[,-1]))
-      aux$vXnames <- colnames(tmp)[-1]
+      aux$vX <- cbind(out$regressorsVariance[,-1])
+      aux$vXnames <- colnames(out$regressorsVariance)[-1]
       colnames(aux$vX) <- NULL
       aux$vXncol <- NCOL(aux$vX)
       aux$arch <- arch
       aux$asym <- asym
       aux$log.ewma <- log.ewma
-      aux$vxreg <- vxreg #note: NROW(vxreg)!=NROW(vX) is possible
-  
-      ##estimate, prepare results:
-      estVar <- ols(aux$loge2, aux$vX, tol=tol, LAPACK=LAPACK, method=3)
-      s.e. <- sqrt(as.vector(diag(estVar$vcov)))
-      estVar$vcov <- as.matrix(estVar$vcov[-1,-1])
-      colnames(estVar$vcov) <- aux$vXnames[-1]
-      rownames(estVar$vcov) <- aux$vXnames[-1]
-      out$Elnz2 <- -log(mean(exp(estVar$residuals)))
-      t.stat <- estVar$coefficients/s.e.
-      p.val <- pt(abs(t.stat), estVar$df, lower.tail=FALSE)*2
-      if(vc.adj){
-        t.stat[1] <- ((estVar$coefficients[1]-out$Elnz2)^2)/s.e.[1]^2
-        p.val[1] <- pchisq(t.stat[1], 1, lower.tail=FALSE)
-        estVar$coefficients[1] <- estVar$coefficients[1] - out$Elnz2
-      }
-  
-      ##add/modify entries in out:
-      out$n <- estVar$n
-      out$vcov.var <- estVar$vcov
-      out$var.fit <- exp(estVar$fit - out$Elnz2)
-      out$ustar.residuals <- estVar$residuals
-      out$std.residuals <-
-        out$residuals[c(aux$y.n-aux$loge2.n+1):aux$y.n]/sqrt(out$var.fit)
-      out$logl <- 
-        -aux$loge2.n*log(2*pi)/2 - sum(log(out$var.fit))/2 - sum(out$std.residuals^2)/2
+      out$regressorsVariance <- NULL #delete, not needed anymore
+
+      ##re-organise stuff related to variance spec:
+      s.e. <- sqrt(as.vector(diag(out$vcov.var)))
+      tmpdf <- aux$loge2.n - length(out$var.coefficients)
+      tmpvcov <- as.matrix(out$vcov.var[-1,-1])
+      colnames(tmpvcov) <- aux$vXnames[-1]
+      rownames(tmpvcov) <- aux$vXnames[-1]
+      t.stat <- out$var.coefficients/s.e.
+      p.val <- pt(abs(t.stat), tmpdf, lower.tail=FALSE)*2
+      t.stat[1] <- ((out$var.coefficients[1]-out$Elnz2)^2)/s.e.[1]^2
+      p.val[1] <- pchisq(t.stat[1], 1, lower.tail=FALSE)
+      out$var.coefficients[1] <- out$var.coefficients[1] - out$Elnz2
+      out$n <- aux$loge2.n
+      out$vcov.var <- tmpvcov
       out$variance.results <-
-        as.data.frame(cbind(estVar$coefficients, s.e., t.stat, p.val))
+        as.data.frame(cbind(out$var.coefficients, s.e., t.stat, p.val))
       colnames(out$variance.results) <- c("coef", "std.error", "t-stat", "p-value")
       rownames(out$variance.results) <- aux$vXnames
-  
-      ##add NAs to variance-related series:
-      NAs2add <- rep(NA,aux$y.n-aux$loge2.n)
-      out$var.fit <- c(NAs2add, out$var.fit)
-      out$ustar.residuals <- c(NAs2add, out$ustar.residuals)
-      out$std.residuals <- c(NAs2add, out$std.residuals)
-  
-    } #end if( noVarianceSpec==FALSE )
+      out$var.coefficients <- NULL
 
+    } #close if( varianceSpec )
+        
   } #close if( is.null(user.estimator) )
   
 
@@ -3526,6 +3566,10 @@ vcov.arx <- function(object, spec=NULL, ...)
   ##if user-specified estimator:
   if( !is.null(object$aux$user.estimator) && is.null(specOriginal) ){
     result <- object$vcov
+    if( is.null(colnames(result)) ){
+      colnames(result) <- names(coef.arx(object))
+      rownames(result) <- colnames(result)
+    }
   }
   
   return(result)
@@ -5044,3 +5088,31 @@ printtex <- function(x, fitted.name=NULL, xreg.names=NULL,
 
 }   #close printtex
 
+##==================================================
+##convert to model of class 'lm':
+as.lm <- function(object)
+{
+
+  ##what kind of class?:
+  objectClass <- class(object)
+  classOK <-
+    ifelse( objectClass %in% c("arx","gets","isat"), TRUE, FALSE)
+
+  ##class not OK:
+  if(!classOK){
+    stop("'object' must be of class 'arx', 'gets' or 'isat'")
+  }
+
+  ##class OK:
+  if(classOK){
+    y <- object$aux$y
+    x <- object$aux$mX
+    colnames(x) <- object$aux$mXnames
+    yx <- data.frame(y, x)
+    result <- lm(formula = y ~ . - 1, data = yx)
+  }
+  
+  ##return result:
+  return(result)
+  
+}

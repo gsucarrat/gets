@@ -55,6 +55,17 @@ mCoefs
 tmp <- ols(vY, mX, method=3)
 tmp$logl == sum(dnorm(tmp$residuals, sd=sqrt(tmp$sigma2), log=TRUE))
 
+##check variance.spec argument:
+vX <- log(mX^2)
+tmp <- ols(vY, mX, method=3, variance.spec=list(vc=TRUE, arch=1, asym=1,
+  log.ewma=2, vxreg=vX))
+
+##check that logls now differ (should return FALSE):
+tmp$logl == sum(dnorm(tmp$residuals, sd=sqrt(tmp$sigma2), log=TRUE))
+
+##check that length(y)!=NROW(vxreg) fails:
+ols(vY, mX, method=3, variance.spec=list(vxreg=vX[-1,]))
+  
 ## until version 0.9, this example failed for
 ## methods 2-5 (example by F-bear, see his
 ## email 14/11-2016):
@@ -117,9 +128,9 @@ SWtest <- function(x, ...){
 SWtest(x)
 diagnostics(x, user.fun=list(name="SWtest", pval=0.025))
 diagnostics(x, user.fun=list(name="SWtest", pval=0.025),
-  verbose=FALSE)
+  verbose=FALSE) #should return TRUE
 diagnostics(x, user.fun=list(name="SWtest", pval=0.85),
-  verbose=FALSE)
+  verbose=FALSE) #should return FALSE
 
 ##user-defined Shapiro-Wilks test for normality in the residuals,
 ##but with user-specified row-name:
@@ -148,6 +159,10 @@ assign("SWtest",
   envir=myenv)
 diagnostics(x, user.fun=list(name="SWtest")) #should not work
 diagnostics(x, user.fun=list(name="SWtest", envir=myenv)) #should work
+
+##check whether variance.spec works (creates NAs in std.residuals):
+x <- ols(vY, mX, method=3, variance.spec=list(vc=TRUE, arch=1))
+diagnostics(x)
 
 
 ##################################################

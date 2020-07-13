@@ -334,6 +334,7 @@ isat(y, iis=FALSE, sis=FALSE, tis=FALSE, uis=uis,
   blocks=myblocks)
 isat(y, iis=FALSE, sis=FALSE, tis=FALSE, uis=uis,
   blocks=myblocks, max.paths=1)
+##but since version 0.24, is an error returned??
 
 ##further tests of predict.isat:
 ##==============================
