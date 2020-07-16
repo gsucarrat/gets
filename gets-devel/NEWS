@@ -1,5 +1,19 @@
-Version 0.24 (13 July 2020):
+Version 0.24 (16 July 2020):
 ============================
+
+* getsm() function:
+
+- new arguments: gof.function, gof.method, include.1cut, turbo
+
+- deprecated arguments: paths.method, max.regs, zero.adj, vc.adj, verbose, estimate.specific
+
+* getsv() function:
+
+- new arguments: gof.function, gof.method
+
+- new default: include.1cut=TRUE
+
+- deprecated arguments: max.regs, zero.adj, vc.adj, verbose, estimate.specific
 
 * arx()/isat() function:
 

@@ -57,17 +57,17 @@ getsv(vgum01, normality.JarqueB=0.05)
 getsv(vgum01, info.method="sc")
 getsv(vgum01, info.method="hq")
 getsv(vgum01, keep=1:3)
+getsv(vgum01, keep=c(1,3))
 getsv(vgum01, keep=NULL) 
 getsv(vgum01, include.gum=TRUE)
-getsv(vgum01, include.1cut=TRUE)
+getsv(vgum01, include.1cut=FALSE)
 getsv(vgum01, include.empty=TRUE)
 getsv(vgum01, include.gum=TRUE, include.1cut=TRUE, include.empty=TRUE)
 getsv(vgum01, max.paths=1)
 getsv(vgum01, max.paths=3)
 getsv(vgum01, turbo=TRUE)
 getsv(vgum01, print.searchinfo=FALSE)
-getsv(vgum01, estimate.specific=FALSE, plot=FALSE)
-getsv(vgum01, estimate.specific=FALSE, plot=TRUE) #should also return: "No estimated model, so no plot produced"
+getsv(vgum01, plot=FALSE)
 
 ##extraction functions:
 vgets01 <- getsv(vgum01)
@@ -140,7 +140,6 @@ terminals(vgets02)
 terminals(vgum02) #should return the error-message: The object does not belong to the 'gets' nor 'isat' class
 plot(VaR(vgets02, level=c(0.99,0.95,0.9))) #value-at-risk
 vcov(vgets02)
-##THIS MUST BE CHECKED!!!:
 vcov(vgets02, spec="m") #should be NULL
 vcov(vgets02, spec="v")
 

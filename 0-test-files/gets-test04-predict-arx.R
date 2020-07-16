@@ -285,6 +285,8 @@ predict(mymodel, plot.options=list(hlines=c(-2,-1,0,1,2)))
 predict(mymodel, plot.options=list(col=c("darkred","green")))
 predict(mymodel, plot.options=list(lty=c(3,2)))
 predict(mymodel, plot.options=list(lwd=3))
+#sort out?:
+predict(mymodel, plot.options=list(lwd=c(1,3)))
 predict(mymodel, plot.options=list(ylim=c(-8,8)))
 predict(mymodel, plot.options=list(ylab="G-values"))
 predict(mymodel,

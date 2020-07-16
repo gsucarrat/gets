@@ -303,7 +303,7 @@ gets.lm <- function(object, ...){
   }
   
   ##is there an intercept?
-  if(length(coef(object))>0){
+  if( length(coef(object))>0 ){
     cTRUE <- names(coef(object))[1] == "(Intercept)"
     if(cTRUE){
       x <- cbind(rep(1,NROW(y)),x)

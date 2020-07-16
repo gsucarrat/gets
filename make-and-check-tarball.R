@@ -126,8 +126,8 @@ system("R CMD build gets --resave-data")
 fileNames <- dir()
 tarballWhere <- grep(".tar.gz", fileNames)
 tarballName <- fileNames[tarballWhere]
-system( paste0("R CMD check ", tarballName, " --as-cran") )
-#system( paste0("R CMD check ", tarballName) )
+#system( paste0("R CMD check ", tarballName, " --as-cran") )
+system( paste0("R CMD check ", tarballName) )
 ## Note: The --as-cran option is obligatory according to cran policy.
 ## Check also the user manual for line exceedances in the .Rd files.
 ## This is not detected by the tarball check. An alternative way to

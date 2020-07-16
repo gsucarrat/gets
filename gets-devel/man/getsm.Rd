@@ -8,24 +8,22 @@
 
 \usage{
 ##gets of mean specification:
-getsm(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL, do.pet=TRUE,
-  ar.LjungB=list(lag=NULL, pval=0.025), arch.LjungB=list(lag=NULL, pval=0.025),
-  normality.JarqueB=NULL, user.diagnostics=NULL,
-  info.method=c("sc","aic","hq"), keep=NULL, include.gum=FALSE,
-  include.empty=FALSE, max.paths=NULL, max.regs=NULL, zero.adj=NULL,
-  vc.adj=NULL, verbose=TRUE, print.searchinfo=TRUE, estimate.specific=TRUE,
-  plot=NULL, alarm=FALSE)
+getsm(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL, 
+    do.pet=TRUE, ar.LjungB=list(lag=NULL, pval=0.025), 
+    arch.LjungB=list(lag=NULL, pval=0.025), normality.JarqueB=NULL, 
+    user.diagnostics=NULL, info.method=c("sc","aic","aicc", "hq"),
+    gof.function=NULL, gof.method=NULL, keep=NULL, include.gum=FALSE,
+    include.1cut=TRUE, include.empty=FALSE, max.paths=NULL, turbo=FALSE,
+    print.searchinfo=TRUE, plot=NULL, alarm=FALSE)
 
 ##gets of variance specification:
-getsv(object, t.pval=0.05, wald.pval=t.pval, do.pet=TRUE,
-  ar.LjungB=list(lag=NULL, pval=0.025), arch.LjungB=list(lag=NULL, pval=0.025),
-  normality.JarqueB=NULL, user.diagnostics=NULL,
-  info.method=c("sc","aic","hq"), keep=c(1), include.gum=FALSE,
-  include.1cut=FALSE, include.empty=FALSE, max.paths=NULL, turbo=FALSE,
-  max.regs=NULL, zero.adj=NULL, vc.adj=NULL, print.searchinfo=TRUE,
-  estimate.specific=TRUE, plot=NULL, alarm=FALSE)
-
-
+getsv(object, t.pval=0.05, wald.pval=t.pval,
+    do.pet=TRUE, ar.LjungB=list(lag=NULL, pval=0.025),
+    arch.LjungB=list(lag=NULL, pval=0.025), normality.JarqueB=NULL,
+    user.diagnostics=NULL, info.method=c("sc","aic","aicc","hq"),
+    gof.function=NULL, gof.method=NULL, keep=c(1), include.gum=FALSE,
+    include.1cut=TRUE, include.empty=FALSE, max.paths=NULL, turbo=FALSE,
+    print.searchinfo=TRUE, plot=NULL, alarm=FALSE)
 }
 
 \arguments{
@@ -39,18 +37,15 @@ getsv(object, t.pval=0.05, wald.pval=t.pval, do.pet=TRUE,
   \item{normality.JarqueB}{a value between 0 and 1, or \code{NULL}. In the former case, the Jarque and Bera (1980) test for non-normality is conducted using a significance level equal to the numeric value. If \code{NULL}, then no test for non-normality is undertaken}
   \item{user.diagnostics}{\code{NULL} or a \code{\link{list}} with two entries, \code{name} and \code{pval}, see the \code{user.fun} argument in \code{\link{diagnostics}} }
   \item{info.method}{character string, "sc" (default), "aic" or "hq", which determines the information criterion to be used when selecting among terminal models. The abbreviations are short for the Schwarz or Bayesian information criterion (sc), the Akaike information criterion (aic) and the Hannan-Quinn (hq) information criterion}
+  \item{gof.function}{\code{NULL} (default) or a \code{list}, see \code{\link{getsFun}}. If \code{NULL}, then \code{\link{infocrit}} is used }
+  \item{gof.method}{\code{NULL} (default) or a \code{character}, see \code{\link{getsFun}}. If \code{NULL} and \code{gof.function} is also \code{NULL}, then the best goodness-of-fit is characterised by a minimum value}
   \item{keep}{the regressors to be excluded from removal in the specification search. Note that \code{keep=c(1)} is obligatory when using \code{getsv}. This excludes the log-variance intercept from removal. The regressor numbering is contained in the \code{reg.no} column of the GUM}
   \item{include.gum}{logical. If \code{TRUE}, then the GUM (i.e. the starting model) is included among the terminal models. If \code{FALSE} (default), then the GUM is not included}
   \item{include.1cut}{logical. If \code{TRUE}, then the 1-cut model is added to the list of terminal models. If \code{FALSE} (default), then the 1-cut is not added, unless it is a terminal model in one of the paths }
   \item{include.empty}{logical. If \code{TRUE}, then an empty model is included among the terminal models, if it passes the diagnostic tests, even if it is not equal to one of the terminals. If \code{FALSE} (default), then the empty model is not included (unless it is one of the terminals)}
   \item{max.paths}{\code{NULL} (default) or an integer greater than 0. If \code{NULL}, then there is no limit to the number of paths. If an integer (e.g. 1), then this integer constitutes the maximum number of paths searched (e.g. a single path) }
   \item{turbo}{logical. If \code{TRUE}, then (parts of) paths are not searched twice (or more) unnecessarily, thus yielding a significant potential for speed-gain. However, the checking of whether the search has arrived at a point it has already been comes with a slight computational overhead. Accordingly, if \code{turbo=TRUE}, then the total search time might in fact be higher than if \code{turbo=FALSE}. This happens if estimation is very fast, say, less than quarter of a second. Hence the default is \code{FALSE}}
-  \item{max.regs}{integer. The maximum number of regressions along a deletion path. It is not recommended that this is altered}
-  \item{zero.adj}{numeric value between 0 and 1. The quantile adjustment for zero values. The default 0.1 means the zero residuals are replaced by the 10 percent quantile of the absolute residuals before taking the logarithm}
-  \item{vc.adj}{logical. If \code{TRUE} (default), then the log-variance intercept is adjusted by the estimate of E[ln(z^2)]. This adjustment is needed for the conditional scale of e to be equal to the conditional standard deviation. If \code{FALSE}, then the log-variance intercept is not adjusted}
-  \item{verbose}{logical. \code{TRUE} (default) returns (slightly) more output than \code{FALSE}}
   \item{print.searchinfo}{logical. If \code{TRUE} (default), then a print is returned whenever simiplification along a new path is started}
-  \item{estimate.specific}{logical. IF \code{TRUE} (default), then the specific model is estimated after model selection}
   \item{plot}{\code{NULL} or logical. If \code{TRUE}, then the fitted values and the residuals of the final model are plotted after model selection. If \code{FALSE}, then they are not. If \code{NULL} (default), then the value set by \code{\link{options}} determines whether a plot is produced or not}
   \item{alarm}{logical. If \code{TRUE}, then a sound or beep is emitted (in order to alert the user) when the model selection ends}
 }
@@ -76,7 +71,7 @@ Pretis, Felix, Reade, James and Sucarrat, Genaro (2018): 'Automated General-to-S
 Extraction functions: \code{\link{coef.gets}}, \code{\link{fitted.gets}}, \code{\link{paths}}, \code{\link{plot.gets}}, \code{\link{print.gets}},\cr
 \code{\link{residuals.gets}}, \code{\link{summary.gets}}, \code{\link{terminals}}, \code{\link{vcov.gets}}\cr
 
-Related functions: \code{\link{arx}}, \code{\link{isat}}, \code{\link{eqwma}}, \code{\link{leqwma}}, \code{\link{zoo}}, \code{\link{getsFun}}
+Related functions: \code{\link{arx}}, \code{\link{eqwma}}, \code{\link{leqwma}}, \code{\link{zoo}}, \code{\link{getsFun}}
 }
 
 \examples{

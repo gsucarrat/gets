@@ -120,13 +120,13 @@ printtex(isat01, diagnostics=FALSE)
 ###=========================
 ###test that as.lm() works:
 #
-#set.seed(123)
-#y <- rnorm(30)
-#arxmod <- arx(y, mc=TRUE, ar=1:3)
-#as.lm(arxmod)
-#
-#getsmod <- getsm(arxmod, keep=1)
-#as.lm(getsmod)
-#
-#isatmod <- isat(y)
-#as.lm(isatmod)
+set.seed(123)
+y <- rnorm(30)
+arxmod <- arx(y, mc=TRUE, ar=1:3)
+as.lm(arxmod)
+
+getsmod <- getsm(arxmod, keep=1)
+as.lm(getsmod)
+
+isatmod <- isat(y)
+as.lm(isatmod)

@@ -53,29 +53,32 @@ getsm(gum01, vcov.type="o")
 getsm(gum01, vcov.type="w")
 getsm(gum01, vcov.type="n")
 getsm(gum01, do.pet=FALSE)
-getsm(gum01, ar.LjungB=list(lag=6,pval=0.20))
+getsm(gum01, ar.LjungB=list(lag=6,pval=0.2))
 getsm(gum01, ar.LjungB=list(lag=NULL,pval=0.2))
 getsm(gum01, ar.LjungB=NULL)
 getsm(gum01, arch.LjungB=list(lag=6,pval=0.2))
 getsm(gum01, arch.LjungB=list(lag=NULL,pval=0.2))
 getsm(gum01, arch.LjungB=NULL)
-getsm(gum01, normality.JarqueB=0.025) #to do: make sure the JB-test is included in the print!
+getsm(gum01, normality.JarqueB=0.025)
 getsm(gum01, ar.LjungB=NULL, arch.LjungB=NULL,
   normality.JarqueB=0.025)
 getsm(gum01, info.method="hq")
+#add?:
+#getsm(gum01, gof.function=something, gof.method="min")
 getsm(gum01, keep=1:2)
 getsm(gum01, include.gum=TRUE)
+getsm(gum01, include.1cut=TRUE)
 getsm(gum01, include.empty=TRUE)
+getsm(gum01, include.gum=TRUE, include.1cut=TRUE, include.empty=TRUE)
 getsm(gum01, max.paths=1)
 getsm(gum01, max.paths=2)
-suppressMessages(getsm(gum01, print.searchinfo=TRUE))
-getsm(gum01, print.searchinfo=FALSE)
-getsm(gum01, print.searchinfo=FALSE, estimate.specific=FALSE,
-  ar.LjungB=NULL, arch.LjungB=NULL, do.pet=TRUE) #should produce warning: "No estimated model...etc."
+getsm(gum01, turbo=TRUE)
+tmp <- getsm(gum01, print.searchinfo=FALSE)
+tmp <- getsm(gum01, print.searchinfo=TRUE)
+suppressMessages(tmp <- getsm(gum01, print.searchinfo=TRUE))
 
 ##extraction functions (only mean equation):
 getsm01 <- getsm(gum01)
-suppressMessages( getsm01 <- getsm(gum01) )
 print(getsm01)
 sigma(getsm01)
 rsquared(getsm01)
@@ -91,6 +94,7 @@ plot(cbind(fitted(getsm01),
 predict(getsm01)
 predict(getsm01, spec="mean")
 predict(getsm01, spec="variance") #should return "Set 'vc=TRUE' to plot...
+##rename sd2hat to varhat in predict()?:
 predict(getsm01, spec="both")
 predict(getsm01, n.ahead=1)
 predict(getsm01, newindex=13:24) #issue in the plotting (see plot), not in the prediction
@@ -105,9 +109,12 @@ plot(cbind(residuals(getsm01),
   residuals(getsm01, std=TRUE)))
 paths(getsm01)
 paths(mod01) #should return the error-message: object 'mod01' not found
+paths(gum01) #should return the error-messase: object not of class...
 recursive(getsm01)
+recursive(getsm01, std.errors=FALSE)
 terminals(getsm01)
 terminals(mod01) #should return the error-message: object 'mod01' not found
+terminals(gum01) #should return the error-messase: object not of class...
 plot(VaR(getsm01, level=c(0.99,0.95,0.9)), #value-at-risk
   plot.type="single", col=c("blue","red","green4"))
 vcov(getsm01)
@@ -122,12 +129,7 @@ SWtest <- function(x, ...){
 }
 gum01 <- arx(y, mc=TRUE, ar=1:3, mxreg=mX,
   user.diagnostics=list(name="SWtest", pval=0.025))
-gum01
-getsm01 <- getsm(gum01,
-  user.diagnostics=list(name="SWtest", pval=0.025))
-getsm01
-getsm(gum01,
-  user.diagnostics=list(name="SWtest", pval=1e-10))
+getsm(gum01)
 
 ##both mean and variance equations:
 gum02 <- arx(y, mc=TRUE, ar=1:3, mxreg=mX, arch=1:2, asym=1,
@@ -151,9 +153,11 @@ getsm(gum02, include.gum=TRUE)
 getsm(gum02, include.empty=TRUE)
 getsm(gum02, max.paths=1)
 getsm(gum02, max.paths=2)
-getsm(gum02, print.searchinfo=FALSE)
-getsm(gum02, print.searchinfo=FALSE, estimate.specific=FALSE,
-  ar.LjungB=NULL, arch.LjungB=NULL, do.pet=TRUE) #should return: "Not estimated, since estimate.specific=FALSE"
+tmp <- getsm(gum02, print.searchinfo=FALSE)
+tmp <- getsm(gum02, print.searchinfo=TRUE)
+suppressMessages(tmp <- getsm(gum02, print.searchinfo=TRUE))
+getsm(gum02, print.searchinfo=FALSE,
+  ar.LjungB=NULL, arch.LjungB=NULL, do.pet=TRUE)
 
 ##extraction functions (both mean and variance equations):
 getsm02 <- getsm(gum02)
@@ -223,7 +227,7 @@ gum01 <- arx(y, mc=TRUE, ar=1:3, mxreg=mX,
   user.estimator=list(name="Gfun"), plot=FALSE)
 summary(gum01)
 print(gum01)
-getsm(gum01) #should not work; lacks logl, etc.
+myspecific <- getsm(gum01) #should not work; lacks logl, etc.
 
 ##user-defined estimator (usual, gets-modelling should work):
 Gfun <- function(y, x, ...){
@@ -236,8 +240,25 @@ gum01 <- arx(y, mc=TRUE, ar=1:3, mxreg=mX,
 summary(gum01)
 print(gum01)
 myspecific <- getsm(gum01)
-myspecific <- suppressMessages(getsm(gum01))
+suppressMessages( myspecific <- getsm(gum01) )
 summary(myspecific)
+myspecific
+
+#user-defined goodness-of-fit function:
+myGof <- function(object, ...){
+  ##needs to be added:
+  object$y <- object$residuals + object$fit 
+  TSS <- sum((object$y - mean(object$y))^2)
+  RSS <- sum(object$residuals^2)
+  Rsquared <- 1 - RSS/TSS
+  result <- 1 - (1 - Rsquared) * (object$n - 1)/(object$n - object$k)
+  return(result)
+}
+gum01 <- arx(y, mc=TRUE, ar=1:3, mxreg=mX,
+  user.estimator=list(name="Gfun"), plot=FALSE)
+summary(gum01)
+myspecific <- getsm(gum01,
+  gof.function=list(name="myGof"), gof.method="max")
 
 
 ##################################################

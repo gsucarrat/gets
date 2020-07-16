@@ -653,7 +653,7 @@ info.criterion(as.numeric(logLik(sp500Mod02)), n = 8240, k = 3)
 
 getsm05 <- getsm(mod05)
 getsm05
-getsm05a <- getsm05a <- getsm(mod05, t.pval = 0.01, arch.LjungB = NULL)
+getsm05a <- getsm(mod05, t.pval = 0.01, arch.LjungB = NULL)
 getsm05a
 getsm05b <- getsm(mod05, keep = 1)
 getsm05b
