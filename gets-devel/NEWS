@@ -1,4 +1,4 @@
-Version 0.24 (16 July 2020):
+Version 0.24 (19 July 2020):
 ============================
 
 * getsm() function:
@@ -29,15 +29,25 @@ Version 0.24 (16 July 2020):
 
 - new argument: variance.spec
 
+* print.gets() function:
+
+- new argument: signif.stars
+
 * new functions:
+
+- gets.arx()
 
 - regressorsVariance()
 
 - as.lm()
 
+* user-defined diagnostics and/or estimation: the default behaviour of the $envir argument under has been generalised
+
 * fixes:
 
-- printing issues resolved
+- getsFun: search is now undertaken if there is only one non-keep, insignificant variable in the gum. This fix carries over to the functions that calls getsFun(): getsm(), getsv() and isat()
+
+- printing issues relating to double backslashes in cat() commands resolved
 
 - regressorsMean(): "" colnames in mxreg argument are now handled correctly
 

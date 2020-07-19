@@ -54,6 +54,10 @@ getsFun(vY, mX, ar.LjungB=c(1,0.025))
 getsFun(vY, mX, arch.LjungB=c(1,0.025))
 getsFun(vY, mX, normality.JarqueB=0.05)
 getsFun(vY, mX, keep=c(1,6,10))
+##issue raised by Jonas Kurle/Moritz Schwarz in email
+##24 October 2019 sent to F-bear. If only a single non-keep
+##regressor, then no search is undertaken. Solved by G in 0.24:
+getsFun(vY, mX, keep=1:19)
 getsFun(vY, mX, include.gum=TRUE)
 getsFun(vY, mX, include.1cut=TRUE)
 getsFun(vY, mX, include.empty=TRUE)
@@ -81,9 +85,9 @@ tmp <- NULL
 for(m in 1:length(mod02$paths)){
   tmp[m] <- all( mod01$paths[[m]]==mod02$paths[[m]] )
 }
-tmp
-mod01$specific.spec==mod02$specific.spec
-mod01$terminals.results==mod02$terminals.results
+all( tmp==TRUE )
+identical(mod01$specific.spec, mod02$specific.spec)
+identical(mod01$terminals.results, mod02$terminals.results)
 
 ##keep=1:
 mod01 <- getsFun(vY, mX, keep=1)
@@ -96,9 +100,9 @@ tmp <- NULL
 for(m in 1:length(mod02$paths)){
   tmp[m] <- all( mod01$paths[[m]]==mod02$paths[[m]] )
 }
-tmp
-mod01$specific.spec==mod02$specific.spec
-mod01$terminals.results==mod02$terminals.results
+all( tmp==TRUE )
+identical(mod01$specific.spec, mod02$specific.spec)
+identical(mod01$terminals.results, mod02$terminals.results)
 
 ##keep=c(6,10):
 mod01 <- getsFun(vY, mX, keep=c(6,10))
@@ -111,9 +115,9 @@ tmp <- NULL
 for(m in 1:length(mod02$paths)){
   tmp[m] <- all( mod01$paths[[m]]==mod02$paths[[m]] )
 }
-tmp
-mod01$specific.spec==mod02$specific.spec
-mod01$terminals.results==mod02$terminals.results
+all( tmp==TRUE )
+identical( mod01$specific.spec, mod02$specific.spec)
+identical( mod01$terminals.results, mod02$terminals.results)
 
 ##ar diagnostics:
 mod01 <- getsFun(vY, mX, ar.LjungB=c(1, 0.025))
@@ -126,9 +130,9 @@ tmp <- NULL
 for(m in 1:length(mod02$paths)){
   tmp[m] <- all( mod01$paths[[m]]==mod02$paths[[m]] )
 }
-tmp
-mod01$specific.spec==mod02$specific.spec
-mod01$terminals.results==mod02$terminals.results
+all( tmp==TRUE )
+identical(mod01$specific.spec, mod02$specific.spec)
+identical(mod01$terminals.results, mod02$terminals.results)
 
 ##arch diagnostics:
 mod01 <- getsFun(vY, mX, arch.LjungB=c(1,0.025))
@@ -141,9 +145,9 @@ tmp <- NULL
 for(m in 1:length(mod02$paths)){
   tmp[m] <- all( mod01$paths[[m]]==mod02$paths[[m]] )
 }
-tmp
-mod01$specific.spec==mod02$specific.spec
-mod01$terminals.results==mod02$terminals.results
+all( tmp==TRUE )
+identical(mod01$specific.spec, mod02$specific.spec)
+identical(mod01$terminals.results, mod02$terminals.results)
 
 ##normality diagnostics:
 mod01 <- getsFun(vY, mX, normality.JarqueB=0.025)
@@ -156,9 +160,9 @@ tmp <- NULL
 for(m in 1:length(mod02$paths)){
   tmp[m] <- all( mod01$paths[[m]]==mod02$paths[[m]] )
 }
-tmp
-mod01$specific.spec==mod02$specific.spec
-mod01$terminals.results==mod02$terminals.results
+all( tmp==TRUE )
+identical(mod01$specific.spec, mod02$specific.spec)
+identical(mod01$terminals.results, mod02$terminals.results)
 
 
 ##################################################
@@ -219,8 +223,10 @@ SWtest <- function(x, ...){
   result <- c(tmp$statistic, NA, tmp$p.value)
   return(result)
 }
+##should work:
 getsFun(vY, mX, user.estimator=list(name="myEstimator"),
   user.diagnostics=list(name="SWtest", pval=1e-10))
+##should work (recall: 'SWtest' defined in 'myenv' too above):
 getsFun(vY, mX, user.estimator=list(name="myEstimator"),
   user.diagnostics=list(name="SWtest", pval=1e-10, envir=myenv))
 

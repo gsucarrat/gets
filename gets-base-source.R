@@ -18,7 +18,8 @@
 ##
 ## print startup message
 ## load required packages
-## create new S3 generics/methods
+## create new S3 generics/methods:
+## - gets
 ##
 ####################################################
 ##2 BASE FUNCTIONS
@@ -31,8 +32,9 @@
 ## info.criterion
 ## leqwma
 ## ols
-## getsFun
 ## regressorsMean
+## regressorsVariance
+## getsFun
 ##
 ####################################################
 ## 3 ARX FUNCTIONS
@@ -42,6 +44,7 @@
 ## coef.arx         #extraction functions
 ## ES
 ## fitted.arx
+## gets.arx
 ## logLik.arx
 ## plot.arx
 ## predict.arx
@@ -211,15 +214,19 @@ diagnostics <- function(x, ar.LjungB=c(1,0.025), arch.LjungB=c(1,0.025),
   ##---------------------
   if( diagnosticsGood && !is.null(user.fun) ){
     ##make user.fun argument
-    if( is.null(user.fun$envir) ){ user.fun$envir <- .GlobalEnv }
+#    if( is.null(user.fun$envir) ){ user.fun$envir <- .GlobalEnv }
     userFunArg <- user.fun
     userFunArg$name <- NULL
     userFunArg$envir <- NULL
     userFunArg$pval <- NULL
     if( length(userFunArg)==0 ){ userFunArg <- NULL }
     ##'do' user diagnostics:
-    userVals <- do.call(user.fun$name, c(list(x=x),userFunArg),
-      envir=user.fun$envir)
+    if( is.null(user.fun$envir) ){
+      userVals <- do.call(user.fun$name, c(list(x=x),userFunArg))
+    }else{
+      userVals <- do.call(user.fun$name, c(list(x=x),userFunArg),
+        envir=user.fun$envir)
+    }
     userVals <- rbind(userVals)
     if( !is.null(user.fun$pval) ){
       userFunPval <- as.numeric(userVals[,3])
@@ -659,587 +666,6 @@ ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
 } #close ols() function
 
 ##==================================================
-##do gets fast and with full flexibility (for advanced users)
-getsFun <- function(y, x, untransformed.residuals=NULL,
-  user.estimator=list(name="ols"), gum.result=NULL, t.pval=0.05,
-  wald.pval=t.pval, do.pet=TRUE, ar.LjungB=NULL, arch.LjungB=NULL,
-  normality.JarqueB=NULL, user.diagnostics=NULL,
-  gof.function=list(name="infocrit", method="sc"),
-  gof.method=c("min","max"), keep=NULL, include.gum=FALSE,
-  include.1cut=FALSE, include.empty=FALSE, max.paths=NULL, turbo=FALSE,
-  tol=1e-07, LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE,
-  alarm=FALSE)
-{
-  ## DO NOT:
-  ## - introduce a check of the type NROW(y)==NCOL(x), since this will
-  ##   invalidate situations where the x's contain coefficients rather
-  ##   than regressors (e.g. when models are non-linear in parameters)
-  ## TO DO:
-  ## - introduce check for is.vector(y)==TRUE?
-  ## - introduce check for is.matrix(x)==TRUE?
-  ## - let out$specific.spec be equal to the GUM in the case where
-  ##   all regressors are significant in the GUM?
-  ## - if gof.function is not default, e.g. adjusted R-squared, then
-  ##   it seems the value of logl is added to terminals.results
-  ##   unnecessarily. Look into?
-  ## - turbo: replace length(regsDeleteList) with regsDeleteList.n?
-  ## - turbo: redefine regsFun function (careful!: setequal is delicate)
-  ## - envir argument in user.estimator: change default behaviour?
-
-  ### ARGUMENTS: ###########
-
-  gof.method <- match.arg(gof.method)
-
-  ##y, x, make auxiliary list:
-  if( is.null(x) || NCOL(x)==0 ){ stop("GUM regressor matrix is empty") }
-  x <- cbind(x) #ensure x is a matrix
-  aux <- list()
-  aux$y.n <- NROW(y)
-  aux$xNCOL <- NCOL(x)
-
-  ##make user-estimator argument:
-  if( is.null(user.estimator$envir) ){ user.estimator$envir <- .GlobalEnv }
-  userEstArg <- user.estimator
-  userEstArg$name <- NULL
-  userEstArg$envir <- NULL
-  if( length(userEstArg)==0 ){ userEstArg <- NULL }
-
-  ##make gof.function argument:
-  if( is.null(gof.function$envir) ){ gof.function$envir <- .GlobalEnv }
-  if( gof.function$name=="infocrit" && is.null(gof.function$method) ){
-    gof.function$method <- "sc"
-  }
-  gofFunArg <- gof.function
-  gofFunArg$name <- NULL
-  gofFunArg$envir <- NULL
-  if( length(gofFunArg)==0 ){ gofFunArg <- NULL }
-
-  ##max.paths argument:
-  if( !is.null(max.paths) && max.paths < 1 ){
-    stop("'max.paths' cannot be smaller than 1")
-  }
-
-  ##do diagnostics?:
-  if( !is.null(ar.LjungB) || !is.null(arch.LjungB)
-    || !is.null(normality.JarqueB) || !is.null(user.diagnostics) ){
-      doDiagnostics <- TRUE
-  }else{ doDiagnostics <- FALSE }
-
-  ## max.regs:
-  if(is.null(max.regs)){ max.regs <- 10*aux$y.n }
-
-  ### INITIALISE ##########
-
-  ##add to auxiliary list:
-  aux$mR <- matrix(0, aux$xNCOL, aux$xNCOL)
-  diag(aux$mR) <- 1 #restriction matrix for PETs
-
-  ##make out list, add to out list:
-  out <- list()
-  out$time.started <- date()
-  out$time.finished <- NA
-  out$call <- sys.call()
-  out$no.of.estimations <- 0
-  out$messages <- NULL
-  out$paths <- list() #the paths
-  out$terminals <- list() #terminal specifications
-  out$terminals.results <- NULL #matrix w/terminals results
-  row.labels <- NULL #row labels for out$terminals.results matrix
-
-  ##deletable, non-deletable regressors, re-organise:
-  keep <- as.integer(keep) #do not change to as.numeric(NULL) nor as.vector(NULL), since this may affect setequal/!anyNA...etc. inside the turbo
-  keep.n <- length(keep)
-  gum <- 1:aux$xNCOL
-  delete <- setdiff(gum, keep) #integer(0) if empty
-  delete.n <- length(delete)
-
-  ## GUM: ##################
-
-  ##estimate GUM:
-  if( is.null(gum.result) ){
-    est <- do.call(user.estimator$name,
-      c(list(y,x), userEstArg), envir=user.estimator$envir)
-#OLD:
-#      c(list(y=y,x=x), userEstArg), envir=user.estimator$envir)
-    out$no.of.estimations <- out$no.of.estimations + 1
-  }else{ est <- gum.result }
-
-  ##do diagnostics:
-  if(doDiagnostics){
-    gumDiagnosticsOK <- diagnostics(est, ar.LjungB=ar.LjungB,
-      arch.LjungB=arch.LjungB, normality.JarqueB=normality.JarqueB,
-      verbose=FALSE, user.fun=user.diagnostics)
-  }else{ gumDiagnosticsOK <- TRUE }
-
-  ## if GUM passes diagnostic checks:
-  if(gumDiagnosticsOK){
-
-    ##record data for Wald-tests (pets) against gum:
-    gum.regs <- gum
-    gum.coefs <- est$coefficients
-    gum.varcovmat <- est$vcov
-
-    ##compute stderrs, t-stats, p-vals:
-    stderrs <- sqrt(diag(est$vcov))
-    gum.tstat <- est$coefficients/stderrs
-    gum.pval <- pt(abs(gum.tstat), est$df, lower.tail=FALSE)*2
-
-#    ##these two lines are repeated later under 1-cut and in
-#    ##the multi-path search:
-#    insig.regs <- setdiff( which(gum.pval > t.pval), keep)
-#    n.paths <- length(insig.regs)
-
-    ##include gum as terminal?:
-    #NEW?: if(include.gum || n.paths==0){
-    if(include.gum){
-
-      out$terminals[[1]]  <- gum #add gum to list of terminal specs
-
-      ##specification results
-      gofValue <- do.call(gof.function$name,
-        c(list(est),gofFunArg), envir=gof.function$envir)
-#        c(list(x=est),gofFunArg), envir=user.estimator$envir)
-      out$terminals.results <- rbind(out$terminals.results,
-        c(gofValue, est$logl, est$n, est$k))
-      row.labels <- c(row.labels, "spec 1 (gum):")
-
-    } #end if(include.gum)
-
-  }else{
-    out$messages <- paste(out$messages,
-      "- MGUM does not pass one or more diagnostic checks", sep="")
-  }
-
-
-  ## 1-CUT MODEL #########
-
-  if( gumDiagnosticsOK && delete.n>0 && include.1cut ){
-
-    ##these two lines are repeated later in the multi-path search:
-    ##move these two up under gum (see "NEW..")?
-    insig.regs <- setdiff( which(gum.pval > t.pval), keep)
-    n.paths <- length(insig.regs)
-
-    ##all non-keep regressors significant:
-    if(n.paths==0){
-      out$messages <- paste(out$messages,
-        "- 1-CUT not included (all non-keep regressors are significant)",
-        sep="")
-    }
-
-    ##one or more non-keep regressor insignificant:
-    if(n.paths > 0){
-
-      ##estimate 1cut:
-      mXadj <- cbind(x[,-insig.regs])
-      est <- do.call(user.estimator$name,
-        c(list(y,mXadj), userEstArg), envir=user.estimator$envir)
-#        c(list(y=y,x=mXadj), userEstArg), envir=user.estimator$envir)
-      out$no.of.estimations <- out$no.of.estimations + 1
-
-      ##do diagnostics:
-      if(doDiagnostics){
-        diagnosticsOK <- diagnostics(est, ar.LjungB=ar.LjungB,
-          arch.LjungB=arch.LjungB, normality.JarqueB=normality.JarqueB,
-          verbose=FALSE, user.fun=user.diagnostics)
-      }else{ diagnosticsOK <- TRUE }
-
-      ## if 1cut passes diagnostic checks:
-      if(diagnosticsOK){
-
-        ## do pet (i.e. wald-test):
-        if(do.pet){
-          mR <- rbind(aux$mR[insig.regs,])
-          mRestq <- mR %*% cbind(gum.coefs)
-          wald.stat <- t(mRestq)%*%qr.solve(mR%*%gum.varcovmat%*%t(mR), tol=tol) %*% mRestq
-          petOK <- as.logical(wald.pval < pchisq(wald.stat, n.paths, lower.tail = FALSE))
-        }else{
-          petOK <- TRUE
-        } #end if(do.pet)else..
-
-        ##add 1-cut to terminals?:
-        if(petOK){
-
-          #add 1cut to list of terminal specs:
-          spec.1cut <- setdiff(gum, insig.regs)
-          out$terminals[[ length(out$terminals)+1 ]] <- spec.1cut
-
-          ##specification results
-          gofValue <- do.call(gof.function$name,
-            c(list(est),gofFunArg), envir=gof.function$envir)
-#            c(list(x=est),gofFunArg), envir=user.estimator$envir)
-          out$terminals.results <- rbind(out$terminals.results,
-            c(gofValue, est$logl, est$n, est$k))
-          row.labels <- c(row.labels,
-            paste("spec ", length(out$terminals), " (1-cut):", sep=""))
-
-        } #end if(petOK)
-
-      } ##end if(diagnosticsOK)
-
-    } ###end if(n.paths > 0)
-
-  } ####end if(1-cut model)
-
-
-  ## EMPTY MODEL: ################
-
-  if( gumDiagnosticsOK && delete.n>0 && include.empty ){
-
-    ## DO NOT do pet in order to enable reality check!
-
-    ##check if empty = 1-cut:
-    if( include.1cut && exists("spec.1cut") ){
-      emptyEqualTo1cut <- identical(keep, spec.1cut)
-    }else{ emptyEqualTo1cut <- FALSE }
-
-    ##empty equal to 1cut?:
-    if( emptyEqualTo1cut ){
-
-        out$messages <- paste0(out$messages,
-          "- The empty model is equal to the 1-cut model")
-
-    }else{
-
-      ## estimate model:
-      mXadj <- cbind(x[,keep])
-      #OLD:
-      #if( keep.n==0 ){ mXadj <- NULL }else{ mXadj <- cbind(x[,keep]) }
-      est <- do.call(user.estimator$name,
-        c(list(y,mXadj), userEstArg), envir=user.estimator$envir)
-#        c(list(y=y,x=mXadj), userEstArg), envir=user.estimator$envir)
-      out$no.of.estimations <- out$no.of.estimations + 1
-
-      ##do diagnostics:
-      if(doDiagnostics){
-        diagnosticsOK <- diagnostics(est, ar.LjungB=ar.LjungB,
-          arch.LjungB=arch.LjungB, normality.JarqueB=normality.JarqueB,
-          verbose=FALSE, user.fun=user.diagnostics)
-      }else{ diagnosticsOK <- TRUE }
-
-      ## if diagnostics are OK:
-      if(diagnosticsOK){
-
-        out$terminals[[ length(out$terminals)+1 ]] <- keep #note: integer(0) if keep=NULL
-  #OLD:
-  #      out$terminals[[ length(out$terminals)+1 ]] <- if( is.null(keep) ){ 0 }else{ keep }
-
-        ##specification results
-        gofValue <- do.call(gof.function$name,
-          c(list(est),gofFunArg), envir=gof.function$envir)
-#          c(list(x=est),gofFunArg), envir=user.estimator$envir)
-        out$terminals.results <- rbind(out$terminals.results,
-          c(gofValue, est$logl, est$n, est$k))
-        row.labels <- c(row.labels,
-          paste("spec ", length(out$terminals), " (empty):", sep=""))
-
-      }else{
-
-          out$messages <- paste0(out$messages,
-            "- Empty model not included (it does not pass one or more diagnostics)")
-
-      } #end if(empty passes diagnostics==TRUE){..}else{..}
-
-    } ##end if( emptyEqualTo1cut )else(...)
-
-  } ###end if(include empty model==TRUE)
-
-
-## MULTI-PATH SEARCH: #################
-
-insig.regs <- NULL
-pathsTerminals <- list()
-if( gumDiagnosticsOK && delete.n>1 ){
-
-  ##number of paths:
-  insig.regs <- setdiff( which(gum.pval > t.pval), keep)
-  if( !is.null(max.paths) ){
-    if(max.paths < length(insig.regs)){
-      pvalRanksInv <- rank( 1-gum.pval[insig.regs] )
-      insig.regs <- insig.regs[ pvalRanksInv <= max.paths ]
-    }
-  }
-  n.paths <- length(insig.regs)
-
-  ## if paths = 0:
-  if(n.paths == 0){
-    out$messages <- paste(out$messages,
-      "- All regressors significant in GUM mean equation", sep="")
-  }
-
-  ## if paths > 0:
-  if(n.paths > 0){
-
-    if(print.searchinfo){
-      message(n.paths, " path(s) to search")
-      message("Searching: ", appendLF=FALSE)
-    }
-
-    ##initiate bookkeeping of paths:
-    #add if(turbo){...}?
-    regsDeleteList <- list()
-    regsKeepList <- list()
-    regsMat <- NULL
-
-    ## paths:
-    for(i in 1:n.paths){
-
-      ## print searchinfo:
-      if(print.searchinfo){
-        newLine <- ifelse(i==n.paths, TRUE, FALSE)
-        message(i, " ", appendLF=newLine)
-      }
-
-      ## prepare single-path search:
-      path <- insig.regs[i]
-      delete.adj <- setdiff(delete, insig.regs[i])
-      keep.adj <- keep
-
-      ## single-path search of path i:
-      for(j in 1:max.regs){
-
-        ##begin turbo:
-        if(turbo && j>1){
-
-          ##bookkeeping of paths:
-          regsDeleteList.n <- length(regsDeleteList)
-          if( regsDeleteList.n==0 || i==1 ){
-#          if( length(regsDeleteList)==0 || i==1 ){
-
-            counter <- regsDeleteList.n + 1
-#            counter <- length(regsDeleteList)+1
-            regsDeleteList[[ counter ]] <- delete.adj
-            regsKeepList[[ counter ]] <- keep.adj
-            regsMat <- rbind(regsMat, c(i,length(path)))
-
-          }else{
-
-            ##delete list:
-            whichOnesInDelete <- which( sapply(regsDeleteList,
-              setequal, delete.adj) )
-            #OLD:
-            #regsFun <- function(x){ setequal(x,delete.adj) }
-            #whichOnesInDelete <- which( sapply(regsDeleteList, regsFun) )
-            if( length(whichOnesInDelete)==0 ){
-              counter <- regsDeleteList.n + 1
-#              counter <- length(regsDeleteList)+1
-              regsDeleteList[[ counter ]] <- delete.adj
-              regsKeepList[[ counter ]] <- keep.adj
-              regsMat <- rbind(regsMat, c(i,length(path)))
-              regsDeleteAlreadyDone <- FALSE
-            }else{
-              regsDeleteAlreadyDone <- TRUE
-            }
-
-            ##keep list:
-            if( regsDeleteAlreadyDone ){
-
-              ##keep already done?
-              whichOnesInKeep <- which( sapply(regsKeepList,
-                setequal, keep.adj) )
-              #OLD:
-              #regsFun <- function(x){ setequal(x, keep.adj) }
-              #whichOnesInKeep <- which( sapply(regsKeepList, regsFun) )
-              whichOne <- intersect(whichOnesInDelete, whichOnesInKeep)
-              #faster version of intersect:
-              #y[match(as.vector(x), y, 0L)]
-              if( length(whichOne) == 1 ){
-                regsKeepAlreadyDone <- TRUE
-              }else{
-                counter <- regsDeleteList.n + 1
-#                counter <- length(regsDeleteList)+1
-                regsDeleteList[[ counter ]] <- delete.adj
-                regsKeepList[[ counter ]] <- keep.adj
-                regsMat <- rbind(regsMat, c(i,length(path)))
-                regsKeepAlreadyDone <- FALSE
-              }
-
-              ##both delete and keep already done:
-              if( regsKeepAlreadyDone ){
-                spec.adj <- pathsTerminals[[ regsMat[whichOne,1] ]]
-                pathtmp <- out$paths[[ regsMat[whichOne,1] ]]
-                pathtmp <- pathtmp[ -c(1:regsMat[whichOne,2]) ]
-                path <- c(path, pathtmp)
-                break # stop single path search
-              }
-
-            } #end regsDeleteAlreadyDone
-
-          } ##end bookkeeping of paths
-
-        } ### end turbo
-
-        ## estimate model:
-        #regsAdj <- union(delete.adj, keep.adj)
-        mXadj <- cbind(x[, union(delete.adj,keep.adj) ])
-        est <- do.call(user.estimator$name,
-          c(list(y,mXadj), userEstArg), envir=user.estimator$envir)
-        out$no.of.estimations <- out$no.of.estimations + 1
-
-        ##do diagnostics:
-        if(doDiagnostics){
-          diagnosticsOK <- diagnostics(est, ar.LjungB=ar.LjungB,
-            arch.LjungB=arch.LjungB, normality.JarqueB=normality.JarqueB,
-            verbose=FALSE, user.fun=user.diagnostics)
-        }else{ diagnosticsOK <- TRUE }
-
-        ## move regressor to keep.adj?:
-        if(!diagnosticsOK){
-          path.n <- length(path)
-          keep.adj <- union(path[path.n], keep.adj)
-          path <- union(path, path[path.n]*c(-1))
-          next #next j
-        }
-
-        ## if empty model passes diagnostic checks:
-        if(diagnosticsOK){
-
-          ## stop if no more deletable regressors:
-          if( length(delete.adj)==0 ){
-            spec.adj <- sort(keep.adj)
-            break
-          } #end if(length(..)==0)
-
-          #for the future?:
-          #if( is.null(est$vcov) ){
-          #  est$vcov <- vcovFun(est, method="ordinary")
-          #}
-          #this will speed up estimation whenever diagnosticsOK
-          #turns out to be FALSE. Also, it will provide the user
-          #with more flexibility in choosing the covariance matrix
-
-          ##compute stderrs, t-stats, p-vals:
-          stderrs <- sqrt(diag(est$vcov))
-          t.stat <- est$coefficients/stderrs
-          p.val <- pt(abs(t.stat), est$df, lower.tail=FALSE)*2
-
-          ## try deleting a regressor:
-          if( any( p.val[1:c(length(delete.adj))] > t.pval) > 0 ){
-
-            reg.no <- which.max( p.val[1:c(length(delete.adj))] )
-
-            ## do pet test (i.e. wald-test):
-            if(do.pet){
-              deleted <- setdiff(delete, delete.adj[-reg.no])
-              deleted <- sort(deleted) #sort() needed for correct restrictions
-              n.deleted <- length(deleted)
-              mR <- rbind(aux$mR[deleted,])
-              mRestq <- mR %*% cbind(gum.coefs)
-              wald.stat <- t(mRestq)%*%qr.solve(mR%*%gum.varcovmat%*%t(mR), tol=tol) %*% mRestq
-              petOK <- as.logical(wald.pval < pchisq(wald.stat, n.deleted, lower.tail = FALSE))
-            }else{
-              petOK <- TRUE
-            } #end if(do.pet)else..
-
-            ## delete regressor if(petOK), else move to keep:
-            if( petOK ){
-              path <- union(path, delete.adj[reg.no])
-              delete.adj <- delete.adj[-reg.no]
-            }else{
-              path <- union(path, delete.adj[reg.no]*c(-1))
-              keep.adj <- union(delete.adj[reg.no], keep.adj)
-              delete.adj <- delete.adj[-reg.no]
-            } #end if( petOK )else{..}
-
-          }else{
-            spec.adj <- sort(union(delete.adj, keep.adj))
-            break
-          } #end if( any p-value > t.pval )else(..)
-
-        } ##end if diagnostics are ok
-
-      } ### end single-path search: for(j in..
-
-
-      #add path to the paths list:
-      counter <- length(out$paths)+1
-      out$paths[[ counter ]] <- path
-      pathsTerminals[[ counter ]] <- spec.adj
-
-      ##check if spec.adj (terminal) is already in out$terminals:
-      if( length(out$terminals)==0 ){
-        chk.spec <- FALSE
-      }else{
-        for(l in 1:length(out$terminals)){
-          chk.spec <- setequal(spec.adj, out$terminals[[l]])
-          if(chk.spec==TRUE){break} #stop for(l in..)
-        }
-      } #end check
-
-      ##if spec.adj not in out$terminals (among terminals):
-      if(chk.spec==FALSE){
-
-        #add spec.adj to out$terminals:
-        out$terminals[[ length(out$terminals)+1 ]] <- spec.adj
-        gofValue <- do.call(gof.function$name,
-          c(list(est),gofFunArg), envir=gof.function$envir)
-#          c(list(x=est),gofFunArg), envir=user.estimator$envir)
-        out$terminals.results <- rbind(out$terminals.results,
-          c(gofValue, est$logl, est$n, est$k))
-        row.labels <- c(row.labels, paste("spec ", length(out$terminals), ":", sep=""))
-
-      } #end if(chk.spec==FALSE)
-
-    } ##end multi-path search: for(i in 1:n.paths) loop
-
-  } ###end if paths > 0
-
-} #####end if( gumDiagnosticsOK && delete.n>1 )
-
-
-  ## FIND THE BEST MODEL: ################
-
-  if( !is.null(out$terminals.results) ){
-
-    ##which is the best model(s):
-    if( gof.method=="min" ){
-      out$best.terminal <- which.min(out$terminals.results[,1])
-    }else{
-      out$best.terminal <- which.max(out$terminals.results[,1])
-    }
-
-    ##check for several minimums:
-    if( length(out$best.terminal)>1 ){
-      out$messages <- paste(out$messages,
-        "- Several 'best' terminals, the first selected", sep="")
-    }
-    out$best.terminal <- out$best.terminal[1]
-    out$specific.spec <- out$terminals[[ out$best.terminal ]] #the winner
-
-    ##'prettify' out$specific.spec:
-    if( length(out$specific.spec)==0 ){
-      out$specific.spec <- NULL
-    }else{
-      out$specific.spec <- sort(out$specific.spec)
-      names(out$specific.spec) <- colnames(x)[ out$specific.spec ]
-    }
-
-    ##'prettify' out$terminals.results and out$paths:
-    if( gof.function$name=="infocrit" ){
-      col.labels <- c(paste("info(", gofFunArg$method, ")", sep=""),
-        "logl", "n", "k")
-    }else{
-      col.labels <- c("gof-value", "logl", "n", "k")
-    }
-    if( NCOL(out$terminals.results) != length(col.labels) ){
-      col.labels <- c(col.labels[1], rep(NA,NCOL(out$terminals.results)-1))
-    }
-    colnames(out$terminals.results) <- col.labels
-    rownames(out$terminals.results) <- row.labels
-    if( length(out$paths)==0 ){ out$paths <- NULL }
-
-  } #end if( !is.null(out$terminals.results) )
-
-
-  ## OUTPUT ################################
-
-  out$time.finished <- date()
-  if(alarm){ alarm() }
-  return(out)
-
-} #close getsFun function
-
-##==================================================
 ##Create the mean regressors of an arx model:
 regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
   return.regressand=TRUE, return.as.zoo=TRUE, na.trim=TRUE,
@@ -1530,6 +956,640 @@ regressorsVariance <- function(e, vc=TRUE, arch=NULL, asym=NULL,
   return(result)
 
 } #close regressorsVariance()
+
+##==================================================
+##do gets fast and with full flexibility (for advanced users)
+getsFun <- function(y, x, untransformed.residuals=NULL,
+  user.estimator=list(name="ols"), gum.result=NULL, t.pval=0.05,
+  wald.pval=t.pval, do.pet=TRUE, ar.LjungB=NULL, arch.LjungB=NULL,
+  normality.JarqueB=NULL, user.diagnostics=NULL,
+  gof.function=list(name="infocrit", method="sc"),
+  gof.method=c("min","max"), keep=NULL, include.gum=FALSE,
+  include.1cut=FALSE, include.empty=FALSE, max.paths=NULL, turbo=FALSE,
+  tol=1e-07, LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE,
+  alarm=FALSE)
+{
+  ## DO NOT:
+  ## - introduce a check of the type NROW(y)==NCOL(x), since this will
+  ##   invalidate situations where the x's contain coefficients rather
+  ##   than regressors (e.g. when models are non-linear in parameters)
+  ## TO DO:
+  ## - introduce check for is.vector(y)==TRUE?
+  ## - introduce check for is.matrix(x)==TRUE?
+  ## - let out$specific.spec be equal to the GUM in the case where
+  ##   all regressors are significant in the GUM?
+  ## - if gof.function is not default, e.g. adjusted R-squared, then
+  ##   it seems the value of logl is added to terminals.results
+  ##   unnecessarily. Look into?
+  ## - turbo: replace length(regsDeleteList) with regsDeleteList.n?
+  ## - turbo: redefine regsFun function (careful!: setequal is delicate)
+  ## - envir argument in user.estimator: change default behaviour?
+
+  ## contents:
+  ## 1 arguments
+  ## 2 initialise
+  ## 3 gum
+  ## 4 1-cut model
+  ## 5 empty model
+  ## 6 multi-path search
+  ## 7 find the best model
+  ## 8 output
+
+
+  ##-----------------------
+  ## 1 arguments
+  ##-----------------------
+
+  gof.method <- match.arg(gof.method)
+
+  ##y, x, make auxiliary list:
+  if( is.null(x) || NCOL(x)==0 ){ stop("GUM regressor matrix is empty") }
+  x <- cbind(x) #ensure x is a matrix
+  aux <- list()
+  aux$y.n <- NROW(y)
+  aux$xNCOL <- NCOL(x)
+
+  ##make user-estimator argument:
+  userEstArg <- user.estimator
+  userEstArg$name <- NULL
+  userEstArg$envir <- NULL
+  if( length(userEstArg)==0 ){ userEstArg <- NULL }
+
+  ##make gof.function argument:
+  if( gof.function$name=="infocrit" && is.null(gof.function$method) ){
+    gof.function$method <- "sc"
+  }
+  gofFunArg <- gof.function
+  gofFunArg$name <- NULL
+  gofFunArg$envir <- NULL
+  if( length(gofFunArg)==0 ){ gofFunArg <- NULL }
+
+  ##max.paths argument:
+  if( !is.null(max.paths) && max.paths < 1 ){
+    stop("'max.paths' cannot be smaller than 1")
+  }
+
+  ##do diagnostics?:
+  if( !is.null(ar.LjungB) || !is.null(arch.LjungB)
+    || !is.null(normality.JarqueB) || !is.null(user.diagnostics) ){
+      doDiagnostics <- TRUE
+  }else{ doDiagnostics <- FALSE }
+
+  ## max.regs:
+  if(is.null(max.regs)){ max.regs <- 10*aux$y.n }
+
+
+  ##-----------------------
+  ## 2 initialise
+  ##-----------------------
+
+  ##add to auxiliary list:
+  aux$mR <- matrix(0, aux$xNCOL, aux$xNCOL)
+  diag(aux$mR) <- 1 #restriction matrix for PETs
+
+  ##make out list, add to out list:
+  out <- list()
+  out$time.started <- date()
+  out$time.finished <- NA
+  out$call <- sys.call()
+  out$no.of.estimations <- 0
+  out$messages <- NULL
+  out$paths <- list() #the paths
+  out$terminals <- list() #terminal specifications
+  out$terminals.results <- NULL #matrix w/terminals results
+  row.labels <- NULL #row labels for out$terminals.results matrix
+
+  ##deletable, non-deletable regressors, re-organise:
+  keep <- as.integer(keep) #do not change to as.numeric(NULL) nor as.vector(NULL), since this may affect setequal/!anyNA...etc. inside the turbo
+  keep.n <- length(keep)
+  gum <- 1:aux$xNCOL
+  delete <- setdiff(gum, keep) #integer(0) if empty
+  delete.n <- length(delete)
+
+
+  ##-----------------------
+  ## 3 gum
+  ##-----------------------
+
+  ##estimate GUM:
+  if( is.null(gum.result) ){
+    if( is.null(user.estimator$envir) ){
+      est <- do.call(user.estimator$name, c(list(y,x), userEstArg))
+    }else{
+      est <- do.call(user.estimator$name,
+        c(list(y,x), userEstArg), envir=user.estimator$envir)
+    }
+    out$no.of.estimations <- out$no.of.estimations + 1
+  }else{ est <- gum.result }
+
+  ##do diagnostics:
+  if( doDiagnostics ){
+    gumDiagnosticsOK <- diagnostics(est, ar.LjungB=ar.LjungB,
+      arch.LjungB=arch.LjungB, normality.JarqueB=normality.JarqueB,
+      verbose=FALSE, user.fun=user.diagnostics)
+  }else{ gumDiagnosticsOK <- TRUE }
+
+  ## if GUM passes diagnostic checks:
+  if( gumDiagnosticsOK ){
+
+    ##record data for Wald-tests (pets) against gum:
+    gum.regs <- gum
+    gum.coefs <- est$coefficients
+    gum.varcovmat <- est$vcov
+
+    ##compute stderrs, t-stats, p-vals:
+    stderrs <- sqrt(diag(est$vcov))
+    gum.tstat <- est$coefficients/stderrs
+    gum.pval <- pt(abs(gum.tstat), est$df, lower.tail=FALSE)*2
+
+#    ##these two lines are repeated later under 1-cut and in
+#    ##the multi-path search:
+#    insig.regs <- setdiff( which(gum.pval > t.pval), keep)
+#    n.paths <- length(insig.regs)
+
+    ##include gum as terminal?:
+    #NEW?: if(include.gum || n.paths==0){
+    if( include.gum ){
+
+      out$terminals[[1]]  <- gum #add gum to list of terminal specs
+
+      ##specification results
+      if( is.null(gof.function$envir) ){
+        gofValue <- do.call(gof.function$name, c(list(est),gofFunArg))
+      }else{
+        gofValue <- do.call(gof.function$name,
+          c(list(est),gofFunArg), envir=gof.function$envir)
+      }
+      out$terminals.results <- rbind(out$terminals.results,
+        c(gofValue, est$logl, est$n, est$k))
+      row.labels <- c(row.labels, "spec 1 (gum):")
+
+    } #end if(include.gum)
+
+  }else{
+    out$messages <- paste(out$messages,
+      "- MGUM does not pass one or more diagnostic checks", sep="")
+  }
+
+
+  ##-----------------------
+  ## 4 1-cut model
+  ##-----------------------
+
+  if( gumDiagnosticsOK && delete.n>0 && include.1cut ){
+
+    ##these two lines are repeated later in the multi-path search:
+    ##move these two up under gum (see "NEW..")?
+    insig.regs <- setdiff( which(gum.pval > t.pval), keep)
+    n.paths <- length(insig.regs)
+
+    ##all non-keep regressors significant:
+    if( n.paths==0 ){
+      out$messages <- paste(out$messages,
+        "- 1-CUT not included (all non-keep regressors are significant)",
+        sep="")
+    }
+
+    ##one or more non-keep regressor insignificant:
+    if( n.paths>0 ){
+
+      ##estimate 1cut:
+      mXadj <- cbind(x[,-insig.regs])
+      if( is.null(user.estimator$envir) ){
+        est <- do.call(user.estimator$name, c(list(y,mXadj), userEstArg))
+      }else{
+        est <- do.call(user.estimator$name, c(list(y,mXadj), userEstArg),
+          envir=user.estimator$envir)
+      }
+      out$no.of.estimations <- out$no.of.estimations + 1
+
+      ##do diagnostics:
+      if( doDiagnostics ){
+        diagnosticsOK <- diagnostics(est, ar.LjungB=ar.LjungB,
+          arch.LjungB=arch.LjungB, normality.JarqueB=normality.JarqueB,
+          verbose=FALSE, user.fun=user.diagnostics)
+      }else{ diagnosticsOK <- TRUE }
+
+      ## if 1cut passes diagnostic checks:
+      if( diagnosticsOK ){
+
+        ## do pet (i.e. wald-test):
+        if( do.pet ){
+          mR <- rbind(aux$mR[insig.regs,])
+          mRestq <- mR %*% cbind(gum.coefs)
+          wald.stat <- t(mRestq)%*%qr.solve(mR%*%gum.varcovmat%*%t(mR), tol=tol) %*% mRestq
+          petOK <- as.logical(wald.pval < pchisq(wald.stat, n.paths, lower.tail = FALSE))
+        }else{ petOK <- TRUE }
+
+        ##add 1-cut to terminals?:
+        if( petOK ){
+
+          #add 1cut to list of terminal specs:
+          spec.1cut <- setdiff(gum, insig.regs)
+          out$terminals[[ length(out$terminals)+1 ]] <- spec.1cut
+
+          ##specification results
+          if( is.null(gof.function$envir) ){
+            gofValue <- do.call(gof.function$name, c(list(est),
+              gofFunArg))
+          }else{
+            gofValue <- do.call(gof.function$name, c(list(est),
+              gofFunArg), envir=gof.function$envir)
+          }
+          out$terminals.results <- rbind(out$terminals.results,
+            c(gofValue, est$logl, est$n, est$k))
+          row.labels <- c(row.labels,
+            paste("spec ", length(out$terminals), " (1-cut):", sep=""))
+
+        } #end if(petOK)
+
+      } ##end if(diagnosticsOK)
+
+    } ###end if(n.paths > 0)
+
+  } ####end if(1-cut model)
+
+
+  ##-----------------------
+  ## 5 empty model
+  ##-----------------------
+
+  if( gumDiagnosticsOK && delete.n>0 && include.empty ){
+
+    ## DO NOT do pet in order to enable reality check!
+
+    ##check if empty = 1-cut:
+    if( include.1cut && exists("spec.1cut") ){
+      emptyEqualTo1cut <- identical(keep, spec.1cut)
+    }else{ emptyEqualTo1cut <- FALSE }
+
+    ##empty equal to 1cut?:
+    if( emptyEqualTo1cut ){
+
+        out$messages <- paste0(out$messages,
+          "- The empty model is equal to the 1-cut model")
+
+    }else{
+
+      ## estimate model:
+      mXadj <- cbind(x[,keep])
+      if( is.null(user.estimator$envir) ){
+        est <- do.call(user.estimator$name, c(list(y,mXadj), userEstArg))
+      }else{
+        est <- do.call(user.estimator$name, c(list(y,mXadj), userEstArg),
+          envir=user.estimator$envir)
+      }
+      out$no.of.estimations <- out$no.of.estimations + 1
+
+      ##do diagnostics:
+      if(doDiagnostics){
+        diagnosticsOK <- diagnostics(est, ar.LjungB=ar.LjungB,
+          arch.LjungB=arch.LjungB, normality.JarqueB=normality.JarqueB,
+          verbose=FALSE, user.fun=user.diagnostics)
+      }else{ diagnosticsOK <- TRUE }
+
+      ## if diagnostics are OK:
+      if(diagnosticsOK){
+
+        out$terminals[[ length(out$terminals)+1 ]] <- keep #note: integer(0) if keep=NULL
+
+        ##specification results
+        if( is.null(gof.function$envir) ){
+          gofValue <- do.call(gof.function$name, c(list(est),
+            gofFunArg))
+        }else{
+          gofValue <- do.call(gof.function$name, c(list(est),
+            gofFunArg), envir=gof.function$envir)
+        }
+        out$terminals.results <- rbind(out$terminals.results,
+          c(gofValue, est$logl, est$n, est$k))
+        row.labels <- c(row.labels,
+          paste("spec ", length(out$terminals), " (empty):", sep=""))
+
+      }else{
+
+          out$messages <- paste0(out$messages,
+            "- Empty model not included (it does not pass one or more diagnostics)")
+
+      } #end if(empty passes diagnostics==TRUE){..}else{..}
+
+    } ##end if( emptyEqualTo1cut )else(...)
+
+  } ###end if(include empty model==TRUE)
+
+
+  ##-----------------------
+  ## 6 multi-path search
+  ##-----------------------
+
+insig.regs <- NULL
+pathsTerminals <- list()
+if( gumDiagnosticsOK && delete.n>0 ){
+#OLD:
+#if( gumDiagnosticsOK && delete.n>1 ){
+
+  ##number of paths:
+  insig.regs <- setdiff( which(gum.pval > t.pval), keep)
+  if( !is.null(max.paths) ){
+    if(max.paths < length(insig.regs)){
+      pvalRanksInv <- rank( 1-gum.pval[insig.regs] )
+      insig.regs <- insig.regs[ pvalRanksInv <= max.paths ]
+    }
+  }
+  n.paths <- length(insig.regs)
+
+  ## if paths = 0:
+  if(n.paths == 0){
+    out$messages <- paste(out$messages,
+      "- All non-keep regressors significant in GUM", sep="")
+#OLD:    
+#      "- All regressors significant in GUM mean equation", sep="")
+  }
+
+  ## if paths > 0:
+  if(n.paths > 0){
+
+    if(print.searchinfo){
+      message(n.paths, " path(s) to search")
+      message("Searching: ", appendLF=FALSE)
+    }
+
+    ##initiate bookkeeping of paths:
+    #add if(turbo){...}?
+    regsDeleteList <- list()
+    regsKeepList <- list()
+    regsMat <- NULL
+
+    ## paths:
+    for(i in 1:n.paths){
+
+      ## print searchinfo:
+      if(print.searchinfo){
+        newLine <- ifelse(i==n.paths, TRUE, FALSE)
+        message(i, " ", appendLF=newLine)
+      }
+
+      ## prepare single-path search:
+      path <- insig.regs[i]
+      delete.adj <- setdiff(delete, insig.regs[i])
+      keep.adj <- keep
+
+      ## single-path search of path i:
+      for(j in 1:max.regs){
+
+        ##begin turbo:
+        if(turbo && j>1){
+
+          ##bookkeeping of paths:
+          regsDeleteList.n <- length(regsDeleteList)
+          if( regsDeleteList.n==0 || i==1 ){
+#          if( length(regsDeleteList)==0 || i==1 ){
+
+            counter <- regsDeleteList.n + 1
+#            counter <- length(regsDeleteList)+1
+            regsDeleteList[[ counter ]] <- delete.adj
+            regsKeepList[[ counter ]] <- keep.adj
+            regsMat <- rbind(regsMat, c(i,length(path)))
+
+          }else{
+
+            ##delete list:
+            whichOnesInDelete <- which( sapply(regsDeleteList,
+              setequal, delete.adj) )
+            #OLD:
+            #regsFun <- function(x){ setequal(x,delete.adj) }
+            #whichOnesInDelete <- which( sapply(regsDeleteList, regsFun) )
+            if( length(whichOnesInDelete)==0 ){
+              counter <- regsDeleteList.n + 1
+#              counter <- length(regsDeleteList)+1
+              regsDeleteList[[ counter ]] <- delete.adj
+              regsKeepList[[ counter ]] <- keep.adj
+              regsMat <- rbind(regsMat, c(i,length(path)))
+              regsDeleteAlreadyDone <- FALSE
+            }else{
+              regsDeleteAlreadyDone <- TRUE
+            }
+
+            ##keep list:
+            if( regsDeleteAlreadyDone ){
+
+              ##keep already done?
+              whichOnesInKeep <- which( sapply(regsKeepList,
+                setequal, keep.adj) )
+              #OLD:
+              #regsFun <- function(x){ setequal(x, keep.adj) }
+              #whichOnesInKeep <- which( sapply(regsKeepList, regsFun) )
+              whichOne <- intersect(whichOnesInDelete, whichOnesInKeep)
+              #faster version of intersect:
+              #y[match(as.vector(x), y, 0L)]
+              if( length(whichOne) == 1 ){
+                regsKeepAlreadyDone <- TRUE
+              }else{
+                counter <- regsDeleteList.n + 1
+#                counter <- length(regsDeleteList)+1
+                regsDeleteList[[ counter ]] <- delete.adj
+                regsKeepList[[ counter ]] <- keep.adj
+                regsMat <- rbind(regsMat, c(i,length(path)))
+                regsKeepAlreadyDone <- FALSE
+              }
+
+              ##both delete and keep already done:
+              if( regsKeepAlreadyDone ){
+                spec.adj <- pathsTerminals[[ regsMat[whichOne,1] ]]
+                pathtmp <- out$paths[[ regsMat[whichOne,1] ]]
+                pathtmp <- pathtmp[ -c(1:regsMat[whichOne,2]) ]
+                path <- c(path, pathtmp)
+                break # stop single path search
+              }
+
+            } #end regsDeleteAlreadyDone
+
+          } ##end bookkeeping of paths
+
+        } ### end turbo
+
+        ## estimate model:
+        #regsAdj <- union(delete.adj, keep.adj)
+        mXadj <- cbind(x[, union(delete.adj,keep.adj) ])
+        if( is.null(user.estimator$envir) ){
+          est <- do.call(user.estimator$name, c(list(y,mXadj),
+            userEstArg))
+        }else{
+          est <- do.call(user.estimator$name, c(list(y,mXadj),
+            userEstArg), envir=user.estimator$envir)
+        }
+        out$no.of.estimations <- out$no.of.estimations + 1
+
+        ##do diagnostics:
+        if(doDiagnostics){
+          diagnosticsOK <- diagnostics(est, ar.LjungB=ar.LjungB,
+            arch.LjungB=arch.LjungB, normality.JarqueB=normality.JarqueB,
+            verbose=FALSE, user.fun=user.diagnostics)
+        }else{ diagnosticsOK <- TRUE }
+
+        ## move regressor to keep.adj?:
+        if( !diagnosticsOK ){
+          path.n <- length(path)
+          keep.adj <- union(path[path.n], keep.adj)
+          path <- union(path, path[path.n]*c(-1))
+          next #next j
+        }
+
+        ## if empty model passes diagnostic checks:
+        if( diagnosticsOK ){
+
+          ## stop if no more deletable regressors:
+          if( length(delete.adj)==0 ){
+            spec.adj <- sort(keep.adj)
+            break
+          } #end if(length(..)==0)
+
+          #for the future?:
+          #if( is.null(est$vcov) ){
+          #  est$vcov <- vcovFun(est, method="ordinary")
+          #}
+          #this will speed up estimation whenever diagnosticsOK
+          #turns out to be FALSE. Also, it will provide the user
+          #with more flexibility in choosing the covariance matrix
+
+          ##compute stderrs, t-stats, p-vals:
+          stderrs <- sqrt(diag(est$vcov))
+          t.stat <- est$coefficients/stderrs
+          p.val <- pt(abs(t.stat), est$df, lower.tail=FALSE)*2
+
+          ## try deleting a regressor:
+          if( any( p.val[1:c(length(delete.adj))] > t.pval) > 0 ){
+
+            reg.no <- which.max( p.val[1:c(length(delete.adj))] )
+
+            ## do pet test (i.e. wald-test):
+            if(do.pet){
+              deleted <- setdiff(delete, delete.adj[-reg.no])
+              deleted <- sort(deleted) #sort() needed for correct restrictions
+              n.deleted <- length(deleted)
+              mR <- rbind(aux$mR[deleted,])
+              mRestq <- mR %*% cbind(gum.coefs)
+              wald.stat <- t(mRestq)%*%qr.solve(mR%*%gum.varcovmat%*%t(mR), tol=tol) %*% mRestq
+              petOK <- as.logical(wald.pval < pchisq(wald.stat, n.deleted, lower.tail = FALSE))
+            }else{
+              petOK <- TRUE
+            } #end if(do.pet)else..
+
+            ## delete regressor if(petOK), else move to keep:
+            if( petOK ){
+              path <- union(path, delete.adj[reg.no])
+              delete.adj <- delete.adj[-reg.no]
+            }else{
+              path <- union(path, delete.adj[reg.no]*c(-1))
+              keep.adj <- union(delete.adj[reg.no], keep.adj)
+              delete.adj <- delete.adj[-reg.no]
+            } #end if( petOK )else{..}
+
+          }else{
+            spec.adj <- sort(union(delete.adj, keep.adj))
+            break
+          } #end if( any p-value > t.pval )else(..)
+
+        } ##end if diagnostics are ok
+
+      } ### end single-path search: for(j in..
+
+
+      #add path to the paths list:
+      counter <- length(out$paths)+1
+      out$paths[[ counter ]] <- path
+      pathsTerminals[[ counter ]] <- spec.adj
+
+      ##check if spec.adj (terminal) is already in out$terminals:
+      if( length(out$terminals)==0 ){
+        chk.spec <- FALSE
+      }else{
+        for(l in 1:length(out$terminals)){
+          chk.spec <- setequal(spec.adj, out$terminals[[l]])
+          if(chk.spec==TRUE){break} #stop for(l in..)
+        }
+      } #end check
+
+      ##if spec.adj not in out$terminals (among terminals):
+      if(chk.spec==FALSE){
+
+        #add spec.adj to out$terminals:
+        out$terminals[[ length(out$terminals)+1 ]] <- spec.adj
+        if( is.null(gof.function$envir) ){
+          gofValue <- do.call(gof.function$name, c(list(est),
+            gofFunArg))
+        }else{
+          gofValue <- do.call(gof.function$name, c(list(est),
+            gofFunArg), envir=gof.function$envir)
+        }
+        out$terminals.results <- rbind(out$terminals.results,
+          c(gofValue, est$logl, est$n, est$k))
+        row.labels <- c(row.labels, paste("spec ", length(out$terminals), ":", sep=""))
+
+      } #end if(chk.spec==FALSE)
+
+    } ##end multi-path search: for(i in 1:n.paths) loop
+
+  } ###end if paths > 0
+
+} #####end if( gumDiagnosticsOK && delete.n>0 )
+
+
+  ##-----------------------
+  ## 7 find the best model
+  ##-----------------------
+
+  if( !is.null(out$terminals.results) ){
+
+    ##which is the best model(s):
+    if( gof.method=="min" ){
+      out$best.terminal <- which.min(out$terminals.results[,1])
+    }else{
+      out$best.terminal <- which.max(out$terminals.results[,1])
+    }
+
+    ##check for several minimums:
+    if( length(out$best.terminal)>1 ){
+      out$messages <- paste(out$messages,
+        "- Several 'best' terminals, the first selected", sep="")
+    }
+    out$best.terminal <- out$best.terminal[1]
+    out$specific.spec <- out$terminals[[ out$best.terminal ]] #the winner
+
+    ##'prettify' out$specific.spec:
+    if( length(out$specific.spec)==0 ){
+      out$specific.spec <- NULL
+    }else{
+      out$specific.spec <- sort(out$specific.spec)
+      names(out$specific.spec) <- colnames(x)[ out$specific.spec ]
+    }
+
+    ##'prettify' out$terminals.results and out$paths:
+    if( gof.function$name=="infocrit" ){
+      col.labels <- c(paste("info(", gofFunArg$method, ")", sep=""),
+        "logl", "n", "k")
+    }else{
+      col.labels <- c("gof-value", "logl", "n", "k")
+    }
+    if( NCOL(out$terminals.results) != length(col.labels) ){
+      col.labels <- c(col.labels[1], rep(NA,NCOL(out$terminals.results)-1))
+    }
+    colnames(out$terminals.results) <- col.labels
+    rownames(out$terminals.results) <- row.labels
+    if( length(out$paths)==0 ){ out$paths <- NULL }
+
+  } #end if( !is.null(out$terminals.results) )
+
+
+  ##-----------------------
+  ## 8 output
+  ##-----------------------
+
+  out$time.finished <- date()
+  if(alarm){ alarm() }
+  return(out)
+
+} #close getsFun function
 
 
 ####################################################
@@ -1929,6 +1989,32 @@ fitted.arx <- function(object, spec=NULL, ...)
 
   return(result)
 } #end fitted.arx
+
+##==================================================
+gets.arx <- function(x, spec=NULL, ...)
+{
+  ##determine spec:
+  if(is.null(spec)){
+    if( !is.null(x$mean.results) ){ spec <- "mean" }
+    if( is.null(x$mean.results)
+      && !is.null(x$variance.results) ){ spec <- "variance" }
+  }else{
+    specType <- c("mean", "variance")
+    whichType <- charmatch(spec, specType)
+    spec <- specType[ whichType ]  
+  }
+  
+  ##do the gets modelling:
+  if( spec=="mean" ){
+    result <- getsm(x, ...)
+  }else{
+    result <- getsv(x, ...)
+  }
+
+  ##return result:
+  return(result)
+    
+} #close gets.arx()
 
 ##==================================================
 logLik.arx <- function(object, ...)
@@ -3597,7 +3683,8 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
   ## contents:
   ## 1 arguments
   ## 2 gets modelling
-  ## 3 output
+  ## 3 estimate specific
+  ## 4 output
   
   ##------------------
   ## 1 arguments
@@ -3710,20 +3797,12 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
   out$time.finished <- date()
   est$call <- NULL
   out <- c(out, est)
-#  out$keep <- keep # do I need this?
 
+  ##---------------------
+  ## 3 estimate specific
+  ##---------------------
 
-  ##------------------
-  ## 3 output
-  ##------------------
-
-  if( length(out$specific.spec)>0 ){
-    out$specific.spec <- sort(out$specific.spec)
-    #object$aux$mXnames[ out$specific.spec ] #do I need this??
-  }
-  #out$insigs.in.gum <- insig.regs #don't think I need this one...
-
-  ## if no search has been undertaken, modify aux:
+  ## if no search has been undertaken:
   if( is.null(out$terminals.results) ){
     out$aux <- object$aux
     out$aux$vcov.type <- vcov.type
@@ -3732,59 +3811,67 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
   ##if search has been undertaken:
   if( !is.null(out$terminals.results) ){
 
-      ##prepare estimation:
-      yadj <- zoo(object$aux$y, order.by=object$aux$y.index)
-      if( length(out$specific.spec)==0 ){
-        mXadj <- NULL
-      }else{
-        mXadj <- cbind(object$aux$mX[, out$specific.spec ])
-        colnames(mXadj) <- object$aux$mXnames[ out$specific.spec ]
-        mXadj <- zoo(mXadj, order.by=object$aux$y.index)
-      }
-      if(is.null(ar.LjungB)){ ar.LjungB <- object$aux$qstat.options[1] }
-      if(is.null(arch.LjungB)){ arch.LjungB <- object$aux$qstat.options[2] }
-      if( is.null(normality.JarqueB) ){
-        normality.JarqueB <- FALSE
-      }else{
-        normality.JarqueB <- TRUE
-      }
+    if( length(out$specific.spec)>0 ){
+      out$specific.spec <- sort(out$specific.spec)
+    }
+
+    ##prepare estimation:
+    yadj <- zoo(object$aux$y, order.by=object$aux$y.index)
+    if( length(out$specific.spec)==0 ){
+      mXadj <- NULL
+    }else{
+      mXadj <- cbind(object$aux$mX[, out$specific.spec ])
+      colnames(mXadj) <- object$aux$mXnames[ out$specific.spec ]
+      mXadj <- zoo(mXadj, order.by=object$aux$y.index)
+    }
+    if(is.null(ar.LjungB)){ ar.LjungB <- object$aux$qstat.options[1] }
+    if(is.null(arch.LjungB)){ arch.LjungB <- object$aux$qstat.options[2] }
+    if( is.null(normality.JarqueB) ){
+      normality.JarqueB <- FALSE
+    }else{
+      normality.JarqueB <- TRUE
+    }
         
-      ##if( default estimator ):
-      if( is.null(object$call$user.estimator) ){
-        ##estimate specific model:
-        est <- arx(yadj, mxreg=mXadj, vc=object$aux$vc,
-          arch=object$aux$arch, asym=object$aux$asym,
-          log.ewma=object$aux$log.ewma, vxreg=object$aux$vxreg,
-          zero.adj=object$aux$zero.adj,
-          vc.adj=object$aux$vc.adj, vcov.type=vcov.type,
-          qstat.options=c(ar.LjungB[1],arch.LjungB[1]),
-          normality.JarqueB=normality.JarqueB,
-          user.diagnostics=user.diagnostics, tol=object$aux$tol,
-          LAPACK=object$aux$LAPACK, plot=FALSE)
-      } #end if( default estimator )
+    ##if( default estimator ):
+    if( is.null(object$call$user.estimator) ){
+      ##estimate specific model:
+      est <- arx(yadj, mxreg=mXadj, vc=object$aux$vc,
+        arch=object$aux$arch, asym=object$aux$asym,
+        log.ewma=object$aux$log.ewma, vxreg=object$aux$vxreg,
+        zero.adj=object$aux$zero.adj,
+        vc.adj=object$aux$vc.adj, vcov.type=vcov.type,
+        qstat.options=c(ar.LjungB[1],arch.LjungB[1]),
+        normality.JarqueB=normality.JarqueB,
+        user.diagnostics=user.diagnostics, tol=object$aux$tol,
+        LAPACK=object$aux$LAPACK, plot=FALSE)
+    } #end if( default estimator )
 
-      ##if( user-defined estimator ):
-      if( !is.null(object$call$user.estimator) ){
-        ##estimate specific:
-        est <- arx(yadj, mxreg=mXadj, user.estimator=user.estimator,
-          qstat.options=c(ar.LjungB[1],arch.LjungB[1]),
-          normality.JarqueB=normality.JarqueB,
-          user.diagnostics=user.diagnostics, tol=object$aux$tol,
-          LAPACK=object$aux$LAPACK, plot=FALSE)
-      } #end if( user-defined estimator )
+    ##if( user-defined estimator ):
+    if( !is.null(object$call$user.estimator) ){
+      ##estimate specific:
+      est <- arx(yadj, mxreg=mXadj, user.estimator=user.estimator,
+        qstat.options=c(ar.LjungB[1],arch.LjungB[1]),
+        normality.JarqueB=normality.JarqueB,
+        user.diagnostics=user.diagnostics, tol=object$aux$tol,
+        LAPACK=object$aux$LAPACK, plot=FALSE)
+    } #end if( user-defined estimator )
 
-      ##delete, rename, add:
-      est$call <- est$date <- NULL
-      where.diagnostics <- which(names(est)=="diagnostics")
-      if(length(where.diagnostics)>0){
-        names(est)[where.diagnostics] <- "specific.diagnostics"
-      }
-      est$aux$y.name <- object$aux$y.name
-      est$aux$call.gum <- object$call #used by predict.gets()
-      est <- unclass(est)
-      out <- c(out,est)
+    ##delete, rename, add:
+    est$call <- est$date <- NULL
+    where.diagnostics <- which(names(est)=="diagnostics")
+    if(length(where.diagnostics)>0){
+      names(est)[where.diagnostics] <- "specific.diagnostics"
+    }
+    est$aux$y.name <- object$aux$y.name
+    est$aux$call.gum <- object$call #used by predict.gets()
+    est <- unclass(est)
+    out <- c(out,est)
 
-  } #end if(!is.null(spec.results))
+  } #end if( !is.null(out$terminals.results) )
+
+  ##------------------
+  ## 4 output
+  ##------------------
 
   ##finalise and return:
   out <- c(list(date=date(), gets.type="getsm"), out)
@@ -4188,7 +4275,7 @@ predict.gets <- function(object, spec=NULL, n.ahead=12,
 
 ##==================================================
 ## print gets results
-print.gets <- function(x, ...)
+print.gets <- function(x, signif.stars=FALSE, ...)
 {
   ##determine spec:
   specType <- switch(as.character(x$call)[1],
@@ -4301,23 +4388,29 @@ print.gets <- function(x, ...)
       signif.stars=FALSE)
   }
   
-  ##specific model:
-  if( specType=="mean" && !is.null(x$specific.spec) ){
+  ##specific mean model:
+  if( specType=="mean" && !is.null(x$terminals.results) ){
+#OLD: if( specType=="mean" && !is.null(x$specific.spec) ){
     cat("\n")
     cat("SPECIFIC mean equation:\n")
     cat("\n")
-    if(!is.null(x$mean.results)){
-      printCoefmat(x$mean.results, signif.stars=FALSE)
+    if( !is.null(x$mean.results) ){
+      printCoefmat(x$mean.results, signif.stars=signif.stars)
+#      printCoefmat(x$mean.results, signif.stars=FALSE)
     }
-    if(x$specific.spec[1]==0){
-      cat("empty\n")
+    if( length(x$specific.spec)==0 ){
+#OLD: if( x$specific.spec[1]==0 ){
+      cat("  the empty model\n")
     }
   }
+
+  ##specific log-variance model:
   if( !is.null(x$variance.results) ){
     cat("\n")
     cat("SPECIFIC log-variance equation:\n")
     cat("\n")
-    printCoefmat(x$variance.results, signif.stars=FALSE)
+    printCoefmat(x$variance.results, signif.stars=signif.stars)
+#    printCoefmat(x$variance.results, signif.stars=FALSE)
 #    printCoefmat(x$variance.results, dig.tst=0, tst.ind=c(1,2),
 #      signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
   }

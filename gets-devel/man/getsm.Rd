@@ -2,12 +2,12 @@
 \alias{getsm}
 \alias{getsv}
 
-\title{General-to-Specific (GETS) Modelling of an AR-X model with log-ARCH-X errors}
+\title{General-to-Specific (GETS) Modelling of an AR-X model (the mean specification) with log-ARCH-X errors (the log-variance specification).}
 
 \description{The starting model, an object of the 'arx' class, is referred to as the General Unrestricted Model (GUM). The \code{getsm} function undertakes multi-path GETS modelling of the mean specification, whereas \code{getsv} does the same for the log-variance specification. The diagnostic tests are undertaken on the standardised residuals, and the \code{keep} option enables regressors to be excluded from possible removal.}
 
 \usage{
-##gets of mean specification:
+##GETS-modelling of mean specification:
 getsm(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL, 
     do.pet=TRUE, ar.LjungB=list(lag=NULL, pval=0.025), 
     arch.LjungB=list(lag=NULL, pval=0.025), normality.JarqueB=NULL, 
@@ -16,7 +16,7 @@ getsm(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
     include.1cut=TRUE, include.empty=FALSE, max.paths=NULL, turbo=FALSE,
     print.searchinfo=TRUE, plot=NULL, alarm=FALSE)
 
-##gets of variance specification:
+##GETS modelling of log-variance specification:
 getsv(object, t.pval=0.05, wald.pval=t.pval,
     do.pet=TRUE, ar.LjungB=list(lag=NULL, pval=0.025),
     arch.LjungB=list(lag=NULL, pval=0.025), normality.JarqueB=NULL,

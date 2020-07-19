@@ -2,7 +2,7 @@
 ## Test file for the 'isat' source of the 'gets'
 ## package. First created 23 September 2014, Oslo.
 ##
-## Current version: 0.21-devel
+## Current version: 0.24
 ##
 ## 1 INITIATE
 ## 2 TEST iim(), sim() AND tim()
@@ -238,10 +238,12 @@ predict(isatmod, newmxreg=matrix(0,12,5),
 set.seed(123)
 y <- rnorm(30)
 isatmod <- isat(y)
+isatmod
 predict(isatmod, plot=TRUE)
 
 ##same y, but slightly different model:
 isatmod <- isat(y, ar=1)
+isatmod
 predict(isatmod, plot=TRUE)
 
 ##test further arguments:
@@ -334,7 +336,7 @@ isat(y, iis=FALSE, sis=FALSE, tis=FALSE, uis=uis,
   blocks=myblocks)
 isat(y, iis=FALSE, sis=FALSE, tis=FALSE, uis=uis,
   blocks=myblocks, max.paths=1)
-##but since version 0.24, is an error returned??
+##but since version 0.24, is an error returned?? I do not think so...
 
 ##further tests of predict.isat:
 ##==============================

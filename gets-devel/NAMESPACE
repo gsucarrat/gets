@@ -26,18 +26,17 @@ export(
   ##convenience functions:
   "periodicdummies", "eviews", "stata", "printtex", "as.lm",
   
-  ##arx functions:
-  "arx", "coef.arx", "ES", "fitted.arx", "logLik.arx", "plot.arx",
-  "predict.arx", "print.arx", "recursive",
-  "rsquared", "residuals.arx", "sigma.arx", "summary.arx", "toLatex.arx",
-  "VaR", "vcov.arx",
+  ##arx-class functions:
+  "arx", "coef.arx", "ES", "fitted.arx", "gets.arx", "logLik.arx", "plot.arx",
+  "predict.arx", "print.arx", "recursive", "rsquared", "residuals.arx",
+  "sigma.arx", "summary.arx", "toLatex.arx", "VaR", "vcov.arx",
   
-  ##gets functions:
+  ##gets-class functions:
   "getsm", "getsv", "coef.gets", "fitted.gets", "paths",
   "plot.gets", "predict.gets", "print.gets", "residuals.gets", "sigma.gets",
   "summary.gets", "terminals", "toLatex.gets", "vcov.gets",
   
-  ##isat functions:
+  ##isat-class functions:
   "isat", "coef.isat", "fitted.isat", "logLik.isat", "plot.isat",
   "predict.isat", "print.isat", "residuals.isat", "sigma.isat",
   "summary.isat", "vcov.isat", "biascorr", "isattest", "isatvar",
@@ -50,6 +49,7 @@ export(
 ##methods for class arx:
 S3method("coef", "arx")
 S3method("fitted", "arx")
+S3method("gets", "arx")
 S3method("logLik", "arx")
 S3method("plot", "arx")
 S3method("predict", "arx")

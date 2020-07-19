@@ -24,7 +24,7 @@
     newvxreg=NULL, newindex=NULL, n.sim=5000, innov=NULL, probs=NULL,
     ci.levels=NULL, quantile.type=7, return=TRUE, verbose=FALSE, plot=NULL,
     plot.options=list(), ...)
-  \method{print}{gets}(x, ...)
+  \method{print}{gets}(x, signif.stars=FALSE, ...)
   \method{residuals}{gets}(object, std=NULL, ...)
   \method{sigma}{gets}(object, ...)
   \method{summary}{gets}(object, ...)
@@ -35,6 +35,7 @@
   \item{object}{an object of class 'gets'}
   \item{x}{an object of class 'gets'}
   \item{spec}{NULL, "mean", "variance" or, in some instances, "both". When \code{NULL} is a valid value, then it is automatically determined whether information pertaining to the mean or variance specification should be returned}
+  \item{signif.stars}{logical. If \code{TRUE}, then P-values are additionally encoded visually, see \code{\link{printCoefmat}} }
   \item{std}{logical. If FALSE (default), then the mean residuals are returned. If TRUE, then the standardised residuals are returned}
   \item{n.ahead}{\code{integer} that determines how many steps ahead predictions should be generated (the default is 12)}
   \item{newmxreg}{a \code{matrix} of \code{n.ahead} rows and \code{NCOL(mxreg)} columns with the out-of-sample values of the \code{mxreg} regressors}

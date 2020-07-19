@@ -838,5 +838,3 @@ isattest(sis, hnull = 0, lr = FALSE, ci.pval = 0.99, plot.turn = TRUE, biascorr 
 
 eviews(getsm05)
 stata(getsm05)
-
-

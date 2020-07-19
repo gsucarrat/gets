@@ -1,4 +1,4 @@
-####################################################
+  ####################################################
 ## This file contains a prototype of the gets.plm()
 ## function.
 ##
@@ -51,7 +51,7 @@ year <- rep(2001:2004, iN)
 mydata <- data.frame(firm, year, Z, x)
 head(mydata)
 
-##delete unnecessary stuff:
+##delete unnecessary stuff from workspace:
 rm(iN, iT, iNiT, Z, x, firm, year)
 
 ##check that plm works on data:
@@ -149,9 +149,13 @@ gets.plm <- function(object, ...)
   ##do the gets:
   getsResult <- getsFun(y, x,
     user.estimator=list(name="myEstimator", data=GUMdata,
-    listOfArgs=listOfArgs, envir=environment()), ...)
+    listOfArgs=listOfArgs), ...)
 ##for testing purposes:
 ##    listOfArgs=listOfArgs, envir=environment()), keep=5)
+#OLD:
+#  getsResult <- getsFun(y, x,
+#    user.estimator=list(name="myEstimator", data=GUMdata,
+#    listOfArgs=listOfArgs, envir=environment()), ...)
   bestTerminal <- getsResult$terminals[[ getsResult$best.terminal ]]
   getsResult$call <- NULL
 

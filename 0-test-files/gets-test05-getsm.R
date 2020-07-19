@@ -66,6 +66,10 @@ getsm(gum01, info.method="hq")
 #add?:
 #getsm(gum01, gof.function=something, gof.method="min")
 getsm(gum01, keep=1:2)
+##issue raised by Jonas Kurle/Moritz Schwarz in email
+##24 October 2019 sent to F-bear. If only a single non-keep
+##regressor, then no search is undertaken. Solved by G in 0.24:
+getsm(gum01, keep=1:7)
 getsm(gum01, include.gum=TRUE)
 getsm(gum01, include.1cut=TRUE)
 getsm(gum01, include.empty=TRUE)
@@ -80,6 +84,7 @@ suppressMessages(tmp <- getsm(gum01, print.searchinfo=TRUE))
 ##extraction functions (only mean equation):
 getsm01 <- getsm(gum01)
 print(getsm01)
+print(getsm01, signif.stars=TRUE)
 sigma(getsm01)
 rsquared(getsm01)
 summary(getsm01)
@@ -162,6 +167,7 @@ getsm(gum02, print.searchinfo=FALSE,
 ##extraction functions (both mean and variance equations):
 getsm02 <- getsm(gum02)
 print(getsm02)
+print(getsm02, signif.stars=TRUE)
 summary(getsm02)
 coef(getsm02)
 coef(getsm02, spec="m")

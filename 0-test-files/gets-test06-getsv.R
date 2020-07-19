@@ -58,6 +58,11 @@ getsv(vgum01, info.method="sc")
 getsv(vgum01, info.method="hq")
 getsv(vgum01, keep=1:3)
 getsv(vgum01, keep=c(1,3))
+##issue raised by Jonas Kurle/Moritz Schwarz in email
+##24 October 2019 sent to F-bear. If only a single non-keep
+##regressor, then no search is undertaken. Solved in getsFun
+##by G in 0.24:
+getsv(vgum01, keep=1:10)
 getsv(vgum01, keep=NULL) 
 getsv(vgum01, include.gum=TRUE)
 getsv(vgum01, include.1cut=FALSE)

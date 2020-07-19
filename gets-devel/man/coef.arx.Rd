@@ -29,7 +29,7 @@
 \arguments{
   \item{object}{an object of class 'arx'}
   \item{x}{an object of class 'arx'}
-  \item{spec}{NULL, "mean", "variance" or, in some instances, "both". When \code{NULL} is a valid value, then it is automatically determined whether information pertaining to the mean or variance specification should be returned}
+  \item{spec}{\code{NULL}, \code{"mean"}, \code{"variance"} or, in some instances, "both". When \code{NULL} is a valid value, then it is automatically determined whether information pertaining to the mean or variance specification should be returned}
   \item{signif.stars}{logical. If \code{TRUE}, then P-values are additionally encoded visually, see \code{printCoefmat} }
   \item{std}{logical. If FALSE (default), then the mean residuals are returned. If TRUE, then the standardised residuals are returned}
   \item{col}{colours of actual (default=blue) and fitted (default=red) lines}
