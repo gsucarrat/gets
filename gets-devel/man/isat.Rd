@@ -30,7 +30,7 @@ isat(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL, iis=FALSE, sis=TRUE,
   \item{sis}{logical. If \code{TRUE}, step indicator saturation is performed.}
   \item{tis}{logical. If \code{TRUE}, trend indicator saturation is performed.}
   \item{uis}{a matrix of regressors, or a list of matrices.}
-  \item{blocks}{NULL (default), an integer (the number of blocks) or a user-specified \code{list} that indicates how blocks should be put together. If \code{NULL}, then the number of blocks is determined automatically}
+  \item{blocks}{\code{NULL} (default), an integer (the number of blocks) or a user-specified \code{list} that indicates how blocks should be put together. If \code{NULL}, then the number of blocks is determined automatically}
   \item{ratio.threshold}{Minimum ratio of variables in each block to total observations to determine the block size, default=0.8. Only relevant if blocks = \code{NULL} }
   \item{max.block.size}{Maximum size of block of variables to be selected over, default=30. Block size used is the maximum of given by either the ratio.threshold and max.block.size }
   \item{t.pval}{numeric value between 0 and 1. The significance level used for the two-sided regressor significance t-tests}

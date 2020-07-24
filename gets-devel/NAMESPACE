@@ -20,7 +20,7 @@ export(
   "gets",
   
   ##base functions:
-  "diagnostics", "dropvar", "eqwma", "getsFun", "info.criterion",
+  "blocksFun", "diagnostics", "dropvar", "eqwma", "getsFun", "info.criterion",
   "infocrit", "leqwma", "ols", "regressorsMean", "regressorsVariance",
   
   ##convenience functions:

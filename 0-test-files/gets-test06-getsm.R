@@ -47,6 +47,7 @@ options(plot=TRUE)
 gum01 <- arx(y, mc=TRUE, ar=1:3, mxreg=mX)
 gum01
 getsm01 <- getsm(gum01)
+getsm(gum01)
 getsm(gum01, t.pval=0.01)
 getsm(gum01, wald.pval=0.01)
 getsm(gum01, vcov.type="o")

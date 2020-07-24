@@ -712,16 +712,39 @@ so2 <- data("so2data", package = "gets")
 yso2 <- zoo(so2data[, "DLuk_tot_so2"], order.by = so2data[, "year"])
 sis <- isat(yso2, t.pval = 0.01)
 sis
+##check:
+coefpaper <- c(0.01465385, -0.04332051, -0.11693333, 0.12860000,
+  -0.28400000, 0.24550000, -0.11550000)
+coefsis <- coef(sis)
+all( abs(coefpaper-coefsis) < 1e-8 )
 
 x1972 <- zoo(sim(so2data[, "year"])[, 26], order.by = so2data[, "year"])
-isat(yso2, t.pval = 0.01, mxreg = x1972)
+sis2 <- isat(yso2, t.pval = 0.01, mxreg = x1972)
+##check:
+coefpaper <- c(0.01465385, -0.04332051, -0.11693333, 0.12860000,
+  -0.28400000, 0.24550000, -0.11550000)
+coefsis2 <- coef(sis2)
+all( abs(coefpaper-coefsis2) < 1e-8 )
 
 sisvar <- isatvar(sis)
 sisvar
+##check:
+sisvarpaper <- #first two years, i.e. 1946 and 1947, as in paper
+  c(0.00000000, 0.01465385, 6.291637e-05, 0.007931984,
+  0.00000000, 0.01465385, 6.291637e-05, 0.007931984)
+sisvartmp <- c(as.vector(sisvar[1,]), as.vector(sisvar[2,]))
+all( abs(sisvarpaper-sisvartmp) < 1e-8 )
 
 iis <- isat(yso2, ar = 1, sis = FALSE, iis = TRUE, t.pval = 0.05)
 ## With Correction (conscorr = TRUE, effcorr = TRUE)
-isatvar(iis, conscorr = TRUE, effcorr = TRUE)
+iisvar <- isatvar(iis, conscorr = TRUE, effcorr = TRUE)
+##check:
+iisvarpaper <- #first two years, i.e. 1946 and 1947, as in paper
+  c(0.00000000, -0.006210179, 7.225479e-05, 0.008500282,
+  0.00000000, -0.006210179, 7.225479e-05, 0.008500282)
+iisvartmp <- c(as.vector(iisvar[1,]), as.vector(iisvar[2,]))
+##not all are true (isatvar has changed?)
+abs(iisvarpaper-iisvartmp) < 1e-8
 
 ## Without Correction (conscorr = FALSE, effcorr = FALSE)
 isatvar(iis, conscorr = FALSE, effcorr = FALSE)

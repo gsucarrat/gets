@@ -4,11 +4,12 @@
 ##
 ## 1 INITIATE 
 ## 2 TEST MAIN getsFun ARGUMENTS
-## 3 TEST getsFun() BOOKKEEPING
-## 4 TEST USER-DEFINED DIAGNOSTICS
-## 5 TEST USER-DEFINED ESTIMATION
-## 6 TEST USER-DEFINED GOF FUNCTION
-## 7 SIMULATIONS (FOR THE FUTURE)
+## 3 TEST SOME SPECIAL CASES
+## 4 TEST getsFun() BOOKKEEPING
+## 5 TEST USER-DEFINED DIAGNOSTICS
+## 6 TEST USER-DEFINED ESTIMATION
+## 7 TEST USER-DEFINED GOF FUNCTION
+## 8 SIMULATIONS (FOR THE FUTURE)
 ##
 ##################################################
 
@@ -32,7 +33,7 @@ source("gets-isat-source.R")
 ## 2 TEST MAIN getsFun ARGUMENTS
 ##################################################
 
-##dgp1:
+##dgp:
 set.seed(123)
 dgpn <- 40 #default: 20. Others: 40, 100
 dgpk <- 20 #default: 5. Others: 20, 60
@@ -42,7 +43,6 @@ colnames(mX) <- paste("x",1:NCOL(mX),sep="")
 
 ##check if arguments work:
 getsFun(vY, mX)
-getsFun(vY, mX, turbo=TRUE)
 getsFun(vY, mX, user.estimator=list(name="ols", method=4))
 getsFun(vY, mX, user.estimator=list(name="ols", method=5))
 gumResult <- ols(vY, mX, method=3)
@@ -63,6 +63,7 @@ getsFun(vY, mX, include.1cut=TRUE)
 getsFun(vY, mX, include.empty=TRUE)
 getsFun(vY, mX, include.gum=TRUE, include.1cut=TRUE, include.empty=TRUE)
 getsFun(vY, mX, max.paths=1)
+getsFun(vY, mX, turbo=TRUE)
 getsFun(vY, mX, tol=1) #should give error
 getsFun(vY, mX, LAPACK=TRUE)
 getsFun(vY, mX, max.regs=5) #should give error
@@ -71,8 +72,48 @@ getsFun(vY, mX, alarm=TRUE)
 
 
 ##################################################
-## 3 TEST getsFun() BOOKKEEPING
+## 3 TEST SOME SPECIAL CASES
 ##################################################
+
+##dgp (all variables in gum significant):
+set.seed(123)
+vY <- rnorm(50)
+vY[1:10] <- vY[1:10] + 4
+mX <- matrix(1,length(vY),2)
+mX[1:10,2] <- 0
+colnames(mX) <- c("mconst", "sis11")
+
+tmp <- getsFun(vY, mX)
+tmp
+tmp$specific.spec==c(1,2) 
+
+##dgp (all variables insignificant, but all in keep):
+set.seed(123)
+vY <- rnorm(20)
+mX <- matrix(rnorm(length(vY)*5), length(vY), 5)
+colnames(mX) <- paste0("x", 1:NCOL(mX))
+
+tmp <- getsFun(vY, mX, keep=1:NCOL(mX))
+tmp
+tmp$specific.spec==1:NCOL(mX)
+
+##the following should not return the message:
+tmp <- getsFun(vY, mX, include.gum=TRUE, keep=1:NCOL(mX))
+tmp
+is.null(tmp$messages)
+
+
+##################################################
+## 4 TEST getsFun() BOOKKEEPING
+##################################################
+
+##dgp:
+set.seed(123)
+dgpn <- 40 #default: 20. Others: 40, 100
+dgpk <- 20 #default: 5. Others: 20, 60
+vY <- rnorm(dgpn)
+mX <- matrix(rnorm(dgpn*dgpk), dgpn, dgpk)
+colnames(mX) <- paste("x",1:NCOL(mX),sep="")
 
 ##plain:
 mod01 <- getsFun(vY, mX)

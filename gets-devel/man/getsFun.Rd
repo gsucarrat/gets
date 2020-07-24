@@ -3,7 +3,7 @@
 
 \title{General-to-Specific (GETS) modelling function}
 
-\description{Auxiliary function (i.e. not intended for the average user) that enables fast and efficient GETS-modelling with user-specified estimators and models, and user-specified diagnostics and goodness-of-fit criteria. The function is called by and relied upon by \code{\link{getsv}} and \code{\link{isat}}, and in future versions of the package the same will be the case for \code{\link{getsm}}.}
+\description{Auxiliary function (i.e. not intended for the average user) that enables fast and efficient GETS-modelling with user-specified estimators and models, and user-specified diagnostics and goodness-of-fit criteria. The function is called by and relied upon by \code{\link{getsm}}, \code{\link{getsv}}, \code{\link{blocksFun}} and \code{\link{isat}}.}
 
 \usage{
 getsFun(y, x, untransformed.residuals=NULL,
@@ -18,12 +18,12 @@ getsFun(y, x, untransformed.residuals=NULL,
 }
 \arguments{
   \item{y}{a numeric vector (with no missing values, i.e. no non-numeric 'holes')}
-  \item{x}{a \code{matrix} with \code{NROW(x)} equal to \code{NROW(y)}, or \code{NULL} }
+  \item{x}{a \code{matrix}, or \code{NULL} }
   \item{untransformed.residuals}{\code{NULL} (default) or, when \code{\link{ols}} is used with \code{method=6}, a numeric vector containing the untransformed residuals}
   \item{user.estimator}{a \code{list}. The first item should be named \code{name} and contain the name (a character) of the estimation function. Additional items, if any, in the list \code{user.estimator} are passed on as arguments to the estimator. The value returned by the estimator should be a \code{list}, see details}
   \item{gum.result}{a \code{list} with the estimation results of the General Unrestricted Model (GUM), or \code{NULL} (default). If the estimation results of the GUM are already available, then re-estimation of the GUM is skipped if the estimation results are provided via this argument}
-  \item{t.pval}{numeric value between 0 and 1. The significance level used for the two-sided regressor significance t-tests}
-  \item{wald.pval}{numeric value between 0 and 1. The significance level used for the Parsimonious Encompassing Tests (PETs). By default, it is the same as \code{t.pval}}
+  \item{t.pval}{\code{numeric} value between 0 and 1. The significance level used for the two-sided regressor significance t-tests }
+  \item{wald.pval}{numeric value between 0 and 1. The significance level used for the Parsimonious Encompassing Tests (PETs) }
   \item{do.pet}{logical. If \code{TRUE} (default), then a Parsimonious Encompassing Test (PET) against the GUM is undertaken at each regressor removal for the joint significance of all the deleted regressors along the current path. If \code{FALSE}, then a PET is not undertaken at each regressor removal}
   \item{ar.LjungB}{a two element vector or \code{NULL}. In the former case, the first element contains the AR-order, the second element the significance level. If \code{NULL}, then a test for autocorrelation is not conducted}
   \item{arch.LjungB}{a two element vector or \code{NULL}. In the former case, the first element contains the ARCH-order, the second element the significance level. If \code{NULL}, then a test for ARCH is not conducted}
@@ -39,7 +39,7 @@ getsFun(y, x, untransformed.residuals=NULL,
   \item{turbo}{logical. If \code{TRUE}, then (parts of) paths are not searched twice (or more) unnecessarily, thus yielding a significant potential for speed-gain. However, the checking of whether the search has arrived at a point it has already been comes with a slight computational overhead. Accordingly, if \code{turbo=TRUE}, then the total search time might in fact be higher than if \code{turbo=FALSE}. This happens if estimation is very fast, say, less than quarter of a second. Hence the default is \code{FALSE}}
   \item{tol}{numeric value (\code{default = 1e-07}). The tolerance for detecting linear dependencies in the columns of the variance-covariance matrix when computing the Wald-statistic used in the Parsimonious Encompassing Tests (PETs), see the \code{\link{qr.solve}} function}
   \item{LAPACK}{currently not used}
-  \item{max.regs}{integer. The maximum number of regressions along a deletion path. It is not recommended that this is altered}
+  \item{max.regs}{integer. The maximum number of regressions along a deletion path. Do not alter unless you know what you are doing! }
   \item{print.searchinfo}{logical. If \code{TRUE} (default), then a print is returned whenever simiplification along a new path is started}
   \item{alarm}{logical. If \code{TRUE}, then a sound or beep is emitted (in order to alert the user) when the model selection ends}
 }
@@ -54,12 +54,13 @@ getsFun(y, x, untransformed.residuals=NULL,
 }
 
 \references{
-C. Jarque and A. Bera (1980): 'Efficient Tests for Normality,
-  Homoscedasticity and Serial Independence'. Economics Letters 6,
-  pp. 255-259
+C. Jarque and A. Bera (1980): 'Efficient Tests for Normality, Homoscedasticity and Serial Independence'. Economics Letters 6, pp. 255-259
 
-G. Ljung and G. Box (1979): 'On a Measure of Lack of Fit in Time
-  Series Models'. Biometrika 66, pp. 265-270
+G. Ljung and G. Box (1979): 'On a Measure of Lack of Fit in Time Series Models'. Biometrika 66, pp. 265-270
+
+F. Pretis, J. Reade and G. Sucarrat (2018): 'Automated General-to-Specific (GETS) Regression Modeling and Indicator Saturation for Outliers and Structural Breaks'. Journal of Statistical Software 86, Number 3, pp. 1-44
+
+G. sucarrat (2019): 'User-Specified General-to-Specific and Indicator Saturation Methods', Munich Personal RePEc Archive: \url{https://mpra.ub.uni-muenchen.de/96653/}
 }
 
 \author{Genaro Sucarrat, \url{http://www.sucarrat.net/} }

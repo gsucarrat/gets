@@ -63,7 +63,7 @@ getsv(vgum01, keep=c(1,3))
 ##regressor, then no search is undertaken. Solved in getsFun
 ##by G in 0.24:
 getsv(vgum01, keep=1:10)
-getsv(vgum01, keep=NULL) 
+getsv(vgum01, keep=NULL) #should return 'warning': "Regressor 1..."
 getsv(vgum01, include.gum=TRUE)
 getsv(vgum01, include.1cut=FALSE)
 getsv(vgum01, include.empty=TRUE)
