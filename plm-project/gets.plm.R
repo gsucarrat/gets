@@ -149,13 +149,9 @@ gets.plm <- function(object, ...)
   ##do the gets:
   getsResult <- getsFun(y, x,
     user.estimator=list(name="myEstimator", data=GUMdata,
-    listOfArgs=listOfArgs), ...)
+    listOfArgs=listOfArgs, envir=environment()), ...)
 ##for testing purposes:
 ##    listOfArgs=listOfArgs, envir=environment()), keep=5)
-#OLD:
-#  getsResult <- getsFun(y, x,
-#    user.estimator=list(name="myEstimator", data=GUMdata,
-#    listOfArgs=listOfArgs, envir=environment()), ...)
   bestTerminal <- getsResult$terminals[[ getsResult$best.terminal ]]
   getsResult$call <- NULL
 
