@@ -949,7 +949,7 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
 
 ##==================================================
 # ## print isat results
-print.isat <-  function(x, ...)
+print.isat <-  function(x, signif.stars = TRUE, ...)
   {
     
     ##messages from final gets:
@@ -1076,8 +1076,8 @@ print.isat <-  function(x, ...)
       cat("\n")
       cat("Diagnostics and fit:\n")
       cat("\n")
-      printCoefmat(x$diagnostics, dig.tst=0, tst.ind=2,
-                   signif.stars=signif.stars)
+      printCoefmat(x$diagnostics, tst.ind=2,
+                   signif.stars=signif.stars, has.Pvalue = TRUE)
       if(!is.null(x$call$iis)){
         #OLD:
         #      if (x$call$iis==TRUE){
