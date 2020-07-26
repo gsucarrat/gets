@@ -4791,7 +4791,7 @@ print.gets <- function(x, signif.stars=FALSE, ...)
   if(is.null(x$paths)){
     print(NULL)
   }else{
-    for(i in 1:length(x$paths)){
+    for(i in seq_along(x$paths)){
       cat("path",i,":",x$paths[[i]],"\n")
     }
   } #end if(is.null(x$paths))
@@ -4802,7 +4802,7 @@ print.gets <- function(x, signif.stars=FALSE, ...)
     cat("Terminal models: \n")
     if(!is.null(x$terminals)){
       cat("\n")
-      for(i in 1:length(x$terminals)){
+      for(i in seq_along(x$terminals)){
         cat("spec",i,":",x$terminals[[i]],"\n")
       }
     }
