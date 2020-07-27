@@ -8,7 +8,7 @@ Automated multi-path General-to-Specific (GETS) modelling of the mean and varian
 
 The four main functions of the package are \code{\link{arx}}, \code{\link{getsm}}, \code{\link{getsv}} and \code{\link{isat}}. The first function, \code{arx}, estimates an AR-X model with (optionally) a log-ARCH-X specification on the log-variance. The second function, \code{getsm}, undertakes GETS model selection of the mean specification of an \code{arx} object. The third function, \code{getsv}, undertakes GETS model selection of the log-variance specification of an \code{arx} object. The fourth function, \code{isat}, undertakes GETS model selection of an indicator saturated mean specification. Extraction functions (mainly S3 methods) are also available, together with additional auxiliary functions used by the main functions.
 
-For the advanced user, the package provides facilities for user-defined GETS and ISAT methods. To this end, the main functions are \code{\link{getsFun}} and \code{\link{isat}}.
+For the advanced user, the package provides facilities for user-defined GETS and ISAT methods. To this end, the main functions are \code{\link{getsFun}}, \code{\link{blocksFun}} and \code{\link{isat}}, see Sucarrat (2019).
 }
 
 \details{
@@ -16,7 +16,7 @@ For the advanced user, the package provides facilities for user-defined GETS and
 Package: \tab gets\cr
 Type: \tab Package\cr
 Version: \tab 0.24\cr
-Date: \tab 2020-07-24\cr
+Date: \tab 2020-07-27\cr
 License: \tab GPL-2\cr
 }
 The code originated in relation with G. Sucarrat and A. Escribano (2012). Subsequently, Felix Pretis and James Reade joined for the development of the \code{\link{isat}} code and related functions. For a recent introduction to the package, see Pretis, Reade and Sucarrat (2018).
@@ -26,17 +26,19 @@ The code originated in relation with G. Sucarrat and A. Escribano (2012). Subseq
 Felix Pretis, \url{http://www.felixpretis.org/}\cr
 James Reade,  \url{https://sites.google.com/site/jjamesreade/}\cr
 Genaro Sucarrat, \url{http://www.sucarrat.net/}\cr\cr
-Maintainer: Genaro Sucarrat
+Maintainer: Genaro Sucarrat            
 }
 
 \references{
-Jurgen, A. Doornik, Hendry, David F., and Pretis, Felix (2013): 'Step Indicator Saturation', Oxford Economics Discussion Paper, 658.
+Jurgen A. Doornik, David F. Hendry, and Felix Pretis (2013): 'Step Indicator Saturation', Oxford Economics Discussion Paper, 658.
 
-Pretis, Felix, Reade, James and Sucarrat, Genaro (2018): 'Automated General-to-Specific (GETS) Regression Modeling and Indicator Saturation for Outliers and Structural Breaks'. Journal of Statistical Software 86, Number 3, pp. 1-44. DOI: https://www.jstatsoft.org/article/view/v086i03
+Felix Pretis, James Reade and Genaro Sucarrat (2018): 'Automated General-to-Specific (GETS) Regression Modeling and Indicator Saturation for Outliers and Structural Breaks'. Journal of Statistical Software 86, Number 3, pp. 1-44. DOI: https://www.jstatsoft.org/article/view/v086i03
 
-Carlos Santos, Hendry, David, F. and Johansen, Soren (2007):  'Automatic selection of indicators in a fully saturated regression'. Computational Statistics, vol 23:1, pp.317-335
+Carlos Santos, David F. Hendry and Soren Johansen (2007):  'Automatic selection of indicators in a fully saturated regression'. Computational Statistics, vol 23:1, pp.317-335
 
-Sucarrat, Genaro and Escribano, Alvaro (2012): 'Automated Financial Model Selection: General-to-Specific Modelling of the Mean and Volatility Specifications', Oxford Bulletin of Economics and Statistics 74, Issue 5 (October), pp. 716-735
+Genaro Sucarrat (2019): 'User-Specified General-to-Specific and Indicator Saturation Methods'. \url{https://mpra.ub.uni-muenchen.de/96653/}
+
+Genaro Sucarrat and Alvaro Escribano (2012): 'Automated Financial Model Selection: General-to-Specific Modelling of the Mean and Volatility Specifications', Oxford Bulletin of Economics and Statistics 74, Issue 5 (October), pp. 716-735
 }
 
 \seealso{

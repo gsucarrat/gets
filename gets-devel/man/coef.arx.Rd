@@ -19,7 +19,7 @@
   \method{logLik}{arx}(object, ...)
   \method{plot}{arx}(x, spec=NULL, col=c("red","blue"),
     lty=c("solid","solid"), lwd=c(1,1), ...)
-  \method{print}{arx}(x, signif.stars=FALSE, ...)
+  \method{print}{arx}(x, signif.stars=TRUE, ...)
   \method{residuals}{arx}(object, std=FALSE, ...)
   \method{sigma}{arx}(object, ...)
   \method{summary}{arx}(object, ...)
@@ -30,8 +30,8 @@
   \item{object}{an object of class 'arx'}
   \item{x}{an object of class 'arx'}
   \item{spec}{\code{NULL}, \code{"mean"}, \code{"variance"} or, in some instances, "both". When \code{NULL} is a valid value, then it is automatically determined whether information pertaining to the mean or variance specification should be returned}
-  \item{signif.stars}{logical. If \code{TRUE}, then P-values are additionally encoded visually, see \code{printCoefmat} }
-  \item{std}{logical. If FALSE (default), then the mean residuals are returned. If TRUE, then the standardised residuals are returned}
+  \item{signif.stars}{\code{logical}. If \code{TRUE}, then P-values are additionally encoded visually, see \code{printCoefmat} }
+  \item{std}{\code{logical}. If \code{FALSE} (default), then the mean residuals are returned. If TRUE, then the standardised residuals are returned}
   \item{col}{colours of actual (default=blue) and fitted (default=red) lines}
   \item{lty}{types of actual (default=solid) and fitted (default=solid) lines}
   \item{lwd}{widths of actual (default=1) and fitted (default=1) lines}

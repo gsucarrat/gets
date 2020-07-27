@@ -274,8 +274,8 @@ mod07 <- arx(y, ar=1:4, mxreg=mX,
   user.estimator=list(name="Gfun"), plot=FALSE)
 summary(mod07)
 print(mod07)
-mod07 <- arx(y, ar=1:4, mxreg=mX,
-  user.estimator=list(name="Gfun"), plot=TRUE) #should produce warning
+mod07 <- arx(y, ar=1:4, mxreg=mX, #should work but produce warning
+  user.estimator=list(name="Gfun"), plot=TRUE) 
 summary(mod07)
 print(mod07)
 coef(mod07)

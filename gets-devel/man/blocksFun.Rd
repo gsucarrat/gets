@@ -6,11 +6,12 @@
 \description{Auxiliary function (i.e. not intended for the average user) that enables block-based GETS-modelling with user-specified estimators, diagnostics and goodness-of-fit criteria. }
 
 \usage{
-blocksFun(y, x, blocks=NULL, no.of.blocks=NULL, max.block.size=30,
-  ratio.threshold=0.8, gets.of.union=TRUE, force.invertibility=FALSE,
+blocksFun(y, x, untransformed.residuals=NULL, blocks=NULL,
+  no.of.blocks=NULL, max.block.size=30, ratio.threshold=0.8,
+  gets.of.union=TRUE, force.invertibility=FALSE,
   user.estimator=list(name="ols"), t.pval=0.001, wald.pval=t.pval,
   do.pet=FALSE, ar.LjungB=NULL, arch.LjungB=NULL, normality.JarqueB=NULL,
-  user.diagnostics=NULL, gof.function=list(name="infocrit", method="sc"),
+  user.diagnostics=NULL, gof.function=list(name="infocrit"),
   gof.method=c("min", "max"), keep=NULL, include.gum=FALSE,
   include.1cut=FALSE, include.empty=FALSE, max.paths=NULL,
   turbo=FALSE, parallel.options=NULL, tol=1e-07, LAPACK=FALSE,
@@ -20,7 +21,8 @@ blocksFun(y, x, blocks=NULL, no.of.blocks=NULL, max.block.size=30,
 \arguments{
   \item{y}{a numeric vector (with no missing values, i.e. no non-numeric 'holes') }
   \item{x}{a \code{matrix}, or a \code{list} of matrices }
-  \item{blocks}{\code{NULL} (default) or a \code{list} of lists with vectors of integers that indicate how blocks should be put together. If \code{NULL}, then the block composition is undertaken automatically by an internal algorithm that depends on ...}
+  \item{untransformed.residuals}{\code{NULL} (default) or, when \code{\link{ols}} is used with \code{method=6} in \code{user.estimator}, a numeric vector containing the untransformed residuals }
+  \item{blocks}{\code{NULL} (default) or a \code{list} of lists with vectors of integers that indicate how blocks should be put together. If \code{NULL}, then the block composition is undertaken automatically by an internal algorithm that depends on \code{no.of.blocks}, \code{max.block.size} and \code{ratio.threshold} }
   \item{no.of.blocks}{\code{NULL} (default) or \code{integer}. If \code{NULL}, then the number of blocks is determined automatically by an internal algorithm }
   \item{max.block.size}{\code{integer} that controls the size of blocks }
   \item{ratio.threshold}{\code{numeric} between 0 and 1 that controls the minimum ratio of variables in each block to total observations }
@@ -36,7 +38,7 @@ blocksFun(y, x, blocks=NULL, no.of.blocks=NULL, max.block.size=30,
   \item{user.diagnostics}{\code{NULL} (default) or a \code{list} with two entries, \code{name} and \code{pval}. See \code{\link{getsFun}} for the details }
   \item{gof.function}{\code{list}. The first item should be named \code{name} and contain the name (a character) of the Goodness-of-Fit (GOF) function used. Additional items in the list \code{gof.function} are passed on as arguments to the GOF-function. . See \code{\link{getsFun}} for the details }
   \item{gof.method}{\code{character}. Determines whether the best Goodness-of-Fit is a minimum (default) or maximum }
-  \item{keep}{\code{NULL} (default), \code{vector} of integers or a \code{list} of vectors of integers. In the latter case, \code{x} is expected to also be a \code{list}, and the number of vectors in \code{keep} should correspond to the number of matrices in \code{x} }
+  \item{keep}{\code{NULL} (default), \code{vector} of integers or a \code{list} of vectors of integers. In the latter case, the number of vectors should be equal to the number of matrices in \code{x} }
   \item{include.gum}{\code{logical}. If \code{TRUE}, then the GUM (i.e. the starting model) is included among the terminal models }
   \item{include.1cut}{\code{logical}. If \code{TRUE}, then the 1-cut model is added to the list of terminal models }
   \item{include.empty}{\code{logical}. If \code{TRUE}, then the empty model is added to the list of terminal models }
@@ -81,7 +83,7 @@ blocksFun(y, x)
 z <- matrix(rnorm(length(y)*40), length(y), 40)
 blocksFun(y, list(x,z))
 
-## ensure regressor no. 3 in matrix no. is not removed:
+## ensure regressor no. 3 in matrix no. 2 is not removed:
 blocksFun(y, list(x,z), keep=list(integer(0), 3))
 
 }

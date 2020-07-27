@@ -394,8 +394,8 @@ getsFun(vY, mX, gof.function=list(name="infocrit", method="aic"))
 ##user-defined gof-function:
 myGofFun <- function(x, ...){ return( x$logl ) }
 getsFun(vY, mX, gof.function=list(name="myGofFun"), gof.method="max")
-getsFun(vY, mX, gof.method="min")
-getsFun(vY, mX, gof.method="max")
+names(getsFun(vY, mX, gof.method="min")$specific.spec)
+names(getsFun(vY, mX, gof.method="max")$specific.spec)
 ##user-defined gof-function:
 myGofFun <- function(x, ...){ return( x$k ) }
 getsFun(vY, mX, gof.function=list(name="myGofFun"), gof.method="min")

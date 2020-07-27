@@ -219,7 +219,7 @@ predict(isatmod, newmxreg=matrix(0,12,5),
 predict(isatmod, newmxreg=matrix(0,12,5),
   plot.options=list(ylab="G-values"))
 predict(isatmod, newmxreg=matrix(0,12,5),
-  plot.options=list(main="Plot is slightly lower when 'main' is specified"))
+  plot.options=list(main="Plot slightly lower when 'main' is specified"))
 predict(isatmod, newmxreg=matrix(0,12,5),
   plot.options=list(legend.text=c("Prognose","Faktisk")))
 predict(isatmod, newmxreg=matrix(0,12,5),

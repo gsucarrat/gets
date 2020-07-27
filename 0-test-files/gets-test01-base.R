@@ -235,7 +235,7 @@ regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),
   mxreg=mxreg, return.regressand=FALSE, return.as.zoo=FALSE,
   na.trim=FALSE)
 ##erroneous until version 0.23:
-colnames(mxreg) <- c("a", "", "c", "", "d")
+colnames(mxreg) <- c("a", "", "c", "", "e")
 regressorsMean(y, mxreg=mxreg)
  
 ##test 2:

@@ -215,6 +215,7 @@ diagnostics <- function(x, ar.LjungB=c(1,0.025), arch.LjungB=c(1,0.025),
   ##---------------------
   if( diagnosticsGood && !is.null(user.fun) ){
     ##make user.fun argument
+#OLD:
 #    if( is.null(user.fun$envir) ){ user.fun$envir <- .GlobalEnv }
     userFunArg <- user.fun
     userFunArg$name <- NULL
@@ -964,11 +965,10 @@ getsFun <- function(y, x, untransformed.residuals=NULL,
   user.estimator=list(name="ols"), gum.result=NULL, t.pval=0.05,
   wald.pval=t.pval, do.pet=TRUE, ar.LjungB=NULL, arch.LjungB=NULL,
   normality.JarqueB=NULL, user.diagnostics=NULL,
-  gof.function=list(name="infocrit", method="sc"),
-  gof.method=c("min","max"), keep=NULL, include.gum=FALSE,
-  include.1cut=FALSE, include.empty=FALSE, max.paths=NULL, turbo=FALSE,
-  tol=1e-07, LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE,
-  alarm=FALSE)
+  gof.function=list(name="infocrit"), gof.method=c("min","max"),
+  keep=NULL, include.gum=FALSE, include.1cut=FALSE,
+  include.empty=FALSE, max.paths=NULL, turbo=FALSE, tol=1e-07,
+  LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE, alarm=FALSE)
 {
   ## DO NOT:
   ## - introduce a check of the type NROW(y)==NCOL(x), since this will
@@ -1593,16 +1593,17 @@ if( gumDiagnosticsOK && delete.n>0 ){
 
 ##==================================================
 ##do block-based gets with full flexibility (for advanced users)
-blocksFun <- function(y, x, blocks=NULL, no.of.blocks=NULL, 
-  max.block.size=30, ratio.threshold=0.8, gets.of.union=TRUE,
-  force.invertibility=FALSE,  user.estimator=list(name="ols"),
-  t.pval=0.001, wald.pval=t.pval, do.pet=FALSE, ar.LjungB=NULL,
-  arch.LjungB=NULL, normality.JarqueB=NULL, user.diagnostics=NULL,
-  gof.function=list(name = "infocrit", method = "sc"),
-  gof.method=c("min","max"), keep=NULL, include.gum=FALSE,
-  include.1cut=FALSE, include.empty=FALSE, max.paths=NULL,
-  turbo=FALSE, parallel.options=NULL, tol=1e-07, LAPACK=FALSE,
-  max.regs=NULL, print.searchinfo=TRUE, alarm=FALSE)
+blocksFun <- function(y, x, untransformed.residuals=NULL,
+  blocks=NULL, no.of.blocks=NULL, max.block.size=30,
+  ratio.threshold=0.8, gets.of.union=TRUE, force.invertibility=FALSE,
+  user.estimator=list(name="ols"), t.pval=0.001, wald.pval=t.pval,
+  do.pet=FALSE, ar.LjungB=NULL, arch.LjungB=NULL,
+  normality.JarqueB=NULL, user.diagnostics=NULL,
+  gof.function=list(name="infocrit"), gof.method=c("min","max"),
+  keep=NULL, include.gum=FALSE, include.1cut=FALSE,
+  include.empty=FALSE, max.paths=NULL, turbo=FALSE,
+  parallel.options=NULL, tol=1e-07, LAPACK=FALSE, max.regs=NULL,
+  print.searchinfo=TRUE, alarm=FALSE)
 {
   ## contents:
   ## 1 initiate
@@ -1622,9 +1623,6 @@ blocksFun <- function(y, x, blocks=NULL, no.of.blocks=NULL,
   result$time.started <- date()
   result$time.finished <- NA
   result$messages <- NULL
-
-  ##regressand:
-  y.n <- NROW(y) #needed to determine no.of.blocks
 
   ##parallel.options argument:
   if(!is.null(parallel.options)){
@@ -1667,15 +1665,10 @@ blocksFun <- function(y, x, blocks=NULL, no.of.blocks=NULL,
   
   ##x is a matrix:
   if( is.matrix(x) ){
-
-    ##name:
     xMatrixName <- deparse(substitute(x))
-
-    ##convert to list:
-    x <- list(x=x)
+    x <- list(x=x) #convert to list
     names(x) <- xMatrixName
-
-  } #end if( is.matrix(x) )
+  }
 
   ##x is a list of matrices:
   if( is.list(x) ){
@@ -1780,6 +1773,7 @@ blocksFun <- function(y, x, blocks=NULL, no.of.blocks=NULL,
     ##blocks:
     if( !blocks.is.list ){
 
+      y.n <- NROW(y)
       ncol.adj <- NCOL(x[[i]])
 
       ##determine no. of blocks:
@@ -1817,13 +1811,16 @@ blocksFun <- function(y, x, blocks=NULL, no.of.blocks=NULL,
 
     } #end if(!blocks.is.list)
 
+#    ##name the blocks:
+#    names(blocks[[i]]) <- paste0("block", 1:length(blocks[[i]]))
+
     ##add keep entries to blocks:
     if( length(keep[[i]])>0 ){
       for(j in 1:length(blocks[[i]])){
         blocks[[i]][[j]] <- sort(union(keep[[i]], blocks[[i]][[j]]))
       }
     }
-        
+            
     ##xkeep argument:
     if( length(keep[[i]])==0 ){
       xkeep <- NULL
@@ -1831,11 +1828,12 @@ blocksFun <- function(y, x, blocks=NULL, no.of.blocks=NULL,
     
     ##make blocks function for lapply/parLapply:
     XblocksFun <- function(j, i, x, blocks,
-      parallel.options, y, user.estimator, t.pval, wald.pval, do.pet,
-      ar.LjungB, arch.LjungB, normality.JarqueB, user.diagnostics,
-      gof.function, gof.method, xkeep, include.gum, include.1cut,
-      include.empty, max.paths, turbo, force.invertibility, tol,
-      LAPACK, max.regs, print.searchinfo){
+      parallel.options, y, untransformed.residuals, user.estimator,
+      t.pval, wald.pval, do.pet, ar.LjungB, arch.LjungB,
+      normality.JarqueB, user.diagnostics, gof.function, gof.method,
+      xkeep, include.gum, include.1cut, include.empty, max.paths,
+      turbo, force.invertibility, tol, LAPACK, max.regs,
+      print.searchinfo){
 
       ##check if block contains 1 regressor:
       if( length(blocks[[i]][[j]])==1 ){
@@ -1867,7 +1865,8 @@ blocksFun <- function(y, x, blocks=NULL, no.of.blocks=NULL,
       }
 
       ##do gets inside XblocksFun:
-      getsx <- getsFun(y, mX, untransformed.residuals=NULL,
+      getsx <- getsFun(y, mX,
+        untransformed.residuals=untransformed.residuals,
         user.estimator=user.estimator, gum.result=NULL, t.pval=t.pval,
         wald.pval=wald.pval, do.pet=do.pet, ar.LjungB=ar.LjungB,
         arch.LjungB=arch.LjungB, normality.JarqueB=normality.JarqueB,
@@ -1887,7 +1886,8 @@ blocksFun <- function(y, x, blocks=NULL, no.of.blocks=NULL,
 
       ##return
       return(xSpecificmodels)
-      #for the future?: return(getsx)
+      ##for the future?: return(getsx) - careful! this would change
+      ##the subsequent code substantially
 
     } #close XblocksFun
 
@@ -1895,11 +1895,11 @@ blocksFun <- function(y, x, blocks=NULL, no.of.blocks=NULL,
     if( is.null(parallel.options) ){
       xSpecificmodels <- lapply(1:length(blocks[[i]]),
         XblocksFun, i, x, blocks, parallel.options,
-        y, user.estimator, t.pval, wald.pval, do.pet, ar.LjungB,
-        arch.LjungB, normality.JarqueB, user.diagnostics, gof.function,
-        gof.method, xkeep, include.gum, include.1cut,
-        include.empty, max.paths, turbo, force.invertibility, tol,
-        LAPACK, max.regs, print.searchinfo)
+        y, untransformed.residuals, user.estimator, t.pval, wald.pval,
+        do.pet, ar.LjungB, arch.LjungB, normality.JarqueB,
+        user.diagnostics, gof.function, gof.method, xkeep, include.gum,
+        include.1cut, include.empty, max.paths, turbo,
+        force.invertibility, tol, LAPACK, max.regs, print.searchinfo)
     }
       
     ##call XblocksFun/do gets on each block: WITH parallel computing
@@ -1921,11 +1921,12 @@ blocksFun <- function(y, x, blocks=NULL, no.of.blocks=NULL,
         envir=.GlobalEnv) #idea for the future?: envir=clusterEnvir
       xSpecificmodels <- parLapply(blocksClust,
         1:length(blocks[[i]]), XblocksFun, i, x,
-        blocks, parallel.options, y, user.estimator, t.pval,
-        wald.pval, do.pet, ar.LjungB, arch.LjungB, normality.JarqueB,
-        user.diagnostics, gof.function, gof.method, xkeep,
-        include.gum, include.1cut, include.empty, max.paths, turbo,
-        force.invertibility, tol, LAPACK, max.regs, print.searchinfo)
+        blocks, parallel.options, y, untransformed.residuals,
+        user.estimator, t.pval, wald.pval, do.pet, ar.LjungB,
+        arch.LjungB, normality.JarqueB, user.diagnostics, gof.function,
+        gof.method, xkeep, include.gum, include.1cut, include.empty,
+        max.paths, turbo, force.invertibility, tol, LAPACK, max.regs,
+        print.searchinfo)
       stopCluster(blocksClust)
 
     } #end if( parallel computing )
@@ -1941,7 +1942,7 @@ blocksFun <- function(y, x, blocks=NULL, no.of.blocks=NULL,
         #check if non-empty:
         if( !is.null(xSpecificmodels[[j]]) ){
           xNames <- union(xNames, xSpecificmodels[[j]])
-        } #for the future?: x$..[[j]]$specific.spec
+        }
       }
     }
 
@@ -1976,7 +1977,8 @@ blocksFun <- function(y, x, blocks=NULL, no.of.blocks=NULL,
       }
       
       ##do gets of union:
-      getsx <- getsFun(y, mX, untransformed.residuals=NULL,
+      getsx <- getsFun(y, mX,
+        untransformed.residuals=untransformed.residuals,
         user.estimator=user.estimator, gum.result=NULL, t.pval=t.pval,
         wald.pval=wald.pval, do.pet=do.pet, ar.LjungB=ar.LjungB,
         arch.LjungB=arch.LjungB, normality.JarqueB=normality.JarqueB,
@@ -2206,10 +2208,15 @@ arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
     if( length(userEstArg)==0 ){ userEstArg <- NULL }
 
     ##user-defined estimator:
-    out <- do.call(user.estimator$name,
-      c(list(aux$y,aux$mX), userEstArg), envir=user.estimator$envir)
-#      c(list(y=aux$y,x=aux$mX), userEstArg), envir=user.estimator$envir)
-
+    if( is.null(user.estimator$envir) ){
+      out <- do.call(user.estimator$name,
+        c(list(aux$y,aux$mX), userEstArg))
+    }else{
+      out <- do.call(user.estimator$name,
+        c(list(aux$y,aux$mX), userEstArg), envir=user.estimator$envir)
+#        c(list(y=aux$y,x=aux$mX), userEstArg), envir=user.estimator$envir)
+    }
+    
 #delete?:
     ##just in case...:
     if( is.null(out$vcov) && !is.null(out$vcov.mean) ){
@@ -3678,7 +3685,8 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
 
 ##==================================================
 ## print estimation result
-print.arx <- function(x, signif.stars=FALSE, ...)
+print.arx <- function(x, signif.stars=TRUE, ...)
+#print.arx <- function(x, signif.stars=FALSE, ...)
 {
   ##check if mean and variance have been fitted:
   xNames <- names(x)
@@ -3756,7 +3764,7 @@ print.arx <- function(x, signif.stars=FALSE, ...)
     cat("   No estimation results\n")
   }
 
-  ##goodness-of-fit:
+  ##create goodness-of-fit matrix:
   if( !"gof" %in% xNames && is.null(x$aux$user.estimator) ){
     gof <- matrix(NA, 3, 1)
     rownames(gof) <- c("SE of regression", "R-squared",
@@ -3775,7 +3783,12 @@ print.arx <- function(x, signif.stars=FALSE, ...)
     cat("\n")
     printCoefmat(x$diagnostics, dig.tst=0, tst.ind=2,
       signif.stars=FALSE)
-    if( !is.null(x$gof) ){printCoefmat(x$gof, digits=6, signif.stars=FALSE) }
+#NEW (suggested by Moritz)?:
+#    printCoefmat(x$diagnostics, tst.ind=2,
+#      signif.stars=signif.stars, has.Pvalue=TRUE)
+    if( !is.null(x$gof) ){
+      printCoefmat(x$gof, digits=6, signif.stars=FALSE)
+    }
   }
 
 } #end print.arx
@@ -4700,7 +4713,7 @@ predict.gets <- function(object, spec=NULL, n.ahead=12,
 
 ##==================================================
 ## print gets results
-print.gets <- function(x, signif.stars=FALSE, ...)
+print.gets <- function(x, signif.stars=TRUE, ...)
 {
   ##determine spec:
   specType <- switch(as.character(x$call)[1],
@@ -4761,8 +4774,11 @@ print.gets <- function(x, signif.stars=FALSE, ...)
     cat("\n")
     cat("GUM mean equation:\n")
     cat("\n")
-    printCoefmat(x$gum.mean, dig.tst=0, tst.ind=c(1,2),
-      signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
+    printCoefmat(x$gum.mean, tst.ind=c(1,2),
+      signif.stars=signif.stars)
+#OLD:
+#    printCoefmat(x$gum.mean, dig.tst=0, tst.ind=c(1,2),
+#      signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
   }
   if( !is.null(x$gum.variance) ){
     cat("\n")
@@ -4772,8 +4788,11 @@ print.gets <- function(x, signif.stars=FALSE, ...)
       printCoefmat(x$gum.variance, signif.stars=FALSE)
     }
     if(specType=="variance"){
-      printCoefmat(x$gum.variance, dig.tst=0, tst.ind=c(1,2),
-      signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
+      printCoefmat(x$gum.variance, tst.ind=c(1,2),
+        signif.stars=signif.stars)
+#OLD:
+#      printCoefmat(x$gum.variance, dig.tst=0, tst.ind=c(1,2),
+#        signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
     }
   }
   if( !is.null(x$gum.diagnostics) ){

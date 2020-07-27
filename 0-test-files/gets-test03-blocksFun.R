@@ -37,6 +37,8 @@ vY <- mX[,10] + 0.1*rnorm(NROW(mX))
 
 ##check if each argument works:
 blocksFun(vY, mX)$specific.spec
+blocksFun(vY, mX,
+  untransformed.residuals=NA)$specific.spec #should have no effect
 mXX <- list(); mXX[[1]] <- mX[,1:5]; mXX[[2]] <- mX[,6:10]
 blocksFun(vY, mXX)$specific.spec
 myblocks <- list(); myblocks[[1]] <- list(1:3,4:6,7:10)
@@ -89,6 +91,10 @@ mXX[[2]] <- x[,6:10]
 ##list without names:
 blocksFun(y, mXX)
 
+##a single block:
+myblocks <- list(); myblocks[[1]] <- list(1:10)
+blocksFun(y, x, blocks=myblocks)
+
 ##keep:
 blocksFun(y, mXX, keep=1)
 mykeep <- list(); mykeep[[1]] <- 2; mykeep[[2]] <- 3
@@ -102,8 +108,8 @@ x <- list(IIS=cbind(mconst,coredata(iim(y))),
 blocksFun(y, x, keep=list(1,1))
 isat(y, iis=TRUE, sis=TRUE)
 ##compare speed (not much difference really...):
-system.time(isat(y, iis=TRUE, sis=TRUE))
 system.time(blocksFun(y,x))
+system.time(isat(y, iis=TRUE, sis=TRUE))
 
 
 ##################################################
