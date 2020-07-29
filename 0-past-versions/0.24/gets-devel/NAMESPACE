@@ -1,0 +1,86 @@
+import(zoo)
+
+importFrom("stats", "Box.test", "coef", "cycle", "deltat", "dnorm",
+  "fitted", "frequency", "lm", "logLik", "pchisq", "pnorm", "poisson.test",
+  "printCoefmat", "pt", "qnorm", "qt", "quantile", "residuals", "rnorm",
+  "runif", "sigma", "var", "vcov", "window")
+
+importFrom("graphics", "abline", "legend", "lines", "mtext", "par",
+  "plot", "points", "polygon", "text", "title")
+
+importFrom("grDevices", "rgb")
+
+importFrom("utils", "tail", "toLatex", "write.csv")
+
+importFrom("parallel", "detectCores", "makeCluster", "clusterExport",
+  "parLapply", "stopCluster")
+
+export(
+  ##generic method:
+  "gets",
+  
+  ##base functions:
+  "blocksFun", "diagnostics", "dropvar", "eqwma", "getsFun", "info.criterion",
+  "infocrit", "leqwma", "ols", "regressorsMean", "regressorsVariance",
+  
+  ##convenience functions:
+  "periodicdummies", "eviews", "stata", "printtex", "as.lm",
+  
+  ##arx-class functions:
+  "arx", "coef.arx", "ES", "fitted.arx", "gets.arx", "logLik.arx", "plot.arx",
+  "predict.arx", "print.arx", "recursive", "rsquared", "residuals.arx",
+  "sigma.arx", "summary.arx", "toLatex.arx", "VaR", "vcov.arx",
+  
+  ##gets-class functions:
+  "getsm", "getsv", "coef.gets", "fitted.gets", "paths",
+  "plot.gets", "predict.gets", "print.gets", "residuals.gets", "sigma.gets",
+  "summary.gets", "terminals", "toLatex.gets", "vcov.gets",
+  
+  ##isat-class functions:
+  "isat", "coef.isat", "fitted.isat", "logLik.isat", "plot.isat",
+  "predict.isat", "print.isat", "residuals.isat", "sigma.isat",
+  "summary.isat", "vcov.isat", "biascorr", "isattest", "isatvar",
+  "isvarcor", "isvareffcor", "iim", "sim", "tim", "isatdates",
+  "isatloop", "isatvarcorrect", "mvrnormsim", "outlierscaletest",
+  "outliertest", "vargaugeiis"
+
+)
+
+##methods for class arx:
+S3method("coef", "arx")
+S3method("fitted", "arx")
+S3method("gets", "arx")
+S3method("logLik", "arx")
+S3method("plot", "arx")
+S3method("predict", "arx")
+S3method("print", "arx")
+S3method("residuals", "arx")
+S3method("sigma", "arx")
+S3method("summary", "arx")
+S3method("toLatex", "arx")
+S3method("vcov", "arx")
+
+##methods for class gets:
+S3method("coef", "gets")
+S3method("fitted", "gets")
+S3method("logLik", "gets")
+S3method("plot", "gets")
+S3method("predict", "gets")
+S3method("print", "gets")
+S3method("residuals", "gets")
+S3method("sigma", "gets")
+S3method("summary", "gets")
+S3method("toLatex", "gets")
+S3method("vcov", "gets")
+
+##methods for class isat:
+S3method("coef", "isat")
+S3method("fitted", "isat")
+S3method("logLik", "isat")
+S3method("plot", "isat")
+S3method("predict", "isat")
+S3method("print", "isat")
+S3method("residuals", "isat")
+S3method("sigma", "isat")
+S3method("summary", "isat")
+S3method("vcov", "isat")
