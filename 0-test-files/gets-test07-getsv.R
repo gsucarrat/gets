@@ -9,17 +9,21 @@
 ##################################################
 
 ##################################################
-## 1 INITIATE
+##1 INITIATE
 ##################################################
 
 ##set working directory:
 setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
 #setwd(choose.dir())
 
-##remove everything in workspace:
+##load required packages:
+require(parallel)
+require(zoo)
+
+##remove everything in workspace (.GlobaleEnv:
 rm(list=ls())
 
-##load source code:
+##load source:
 source("gets-base-source.R")
 source("gets-isat-source.R")
 

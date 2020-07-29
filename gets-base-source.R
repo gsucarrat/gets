@@ -2,7 +2,7 @@
 ## This file contains the base-source of the gets
 ## package.
 ##
-## Current version: 0.24
+## Current version: 0.25
 ##
 ## CONTENTS:
 ##
@@ -16,9 +16,7 @@
 ##1 INITIATE
 ####################################################
 ##
-## print startup message
-## load required packages
-## create new S3 generics/methods:
+## create S3 generics/methods:
 ## - gets
 ##
 ####################################################
@@ -43,7 +41,7 @@
 ##
 ## arx
 ## coef.arx         #extraction functions
-## ES
+## ES               #(some are S3 methods)
 ## fitted.arx
 ## gets.arx
 ## logLik.arx
@@ -96,38 +94,7 @@
 ####################################################
                                                        
 ##==================================================
-## print startup message/code contained in the file
-## gets-internal.R (./gets-devel/R folder):
-
-  ##set start-up message:
-  txt <- c("\n",
-    paste(sQuote("gets"), "version 0.24\n"),
-    "\n",
-    paste0("General-to-Specific (GETS) and Indicator Saturation (ISAT) methods, type help(", sQuote("gets-package"), ") for details"),
-    "\n",
-    paste("CRAN website: https://CRAN.R-project.org/package=gets"),
-    paste("An introduction (PDF): https://www.jstatsoft.org/article/view/v086i03"),
-    "\n",
-    paste("For automatic plotting, set plot=TRUE in options: options(plot = TRUE)"),
-    "\n")
-  
-  ##print message:
-  if(interactive() || getOption("verbose")){
-    packageStartupMessage(paste(strwrap(txt, indent = 2,
-      exdent = 4), collapse = "\n"))
-  }
-
-##remove txt from global environment:
-rm(txt) 
-
-
-##==================================================
-##required packages:
-require(parallel)
-require(zoo)
-
-##==================================================
-##create S3 method 'gets':
+##create S3 generic/method 'gets':
 gets <- function(x, ...){ UseMethod("gets") }
 ###test the method:
 #set.seed(123); y <- arima.sim(list(ar=0.4, ma=0.1), 100)
@@ -157,7 +124,7 @@ gets <- function(x, ...){ UseMethod("gets") }
 ####################################################
 
 ##==================================================
-##diagnostics checking of residuals
+##diagnostics checking
 diagnostics <- function(x, ar.LjungB=c(1,0.025), arch.LjungB=c(1,0.025),
   normality.JarqueB=NULL, verbose=TRUE, user.fun=NULL, ...)
 {
@@ -178,7 +145,7 @@ diagnostics <- function(x, ar.LjungB=c(1,0.025), arch.LjungB=c(1,0.025),
       diagnosticsGood <- FALSE
       diagnosticsGood <- as.logical(max(diagnosticsGood,verbose))
     }
-  } #end serial correlation
+  }
 
   ##test for arch:
   ##--------------
@@ -189,12 +156,12 @@ diagnostics <- function(x, ar.LjungB=c(1,0.025), arch.LjungB=c(1,0.025),
       diagnosticsGood <- FALSE
       diagnosticsGood <- as.logical(max(diagnosticsGood,verbose))
     }
-  } #end arch
+  }
 
 
   ##test for normality:
   ##-------------------
-  if( diagnosticsGood && !is.null(normality.JarqueB)){
+  if( diagnosticsGood && !is.null(normality.JarqueB) ){
     zhatadj <- coredata(na.trim(zhat))
     n <- length(zhatadj)
     avgzhat <- mean(zhatadj) #do I really need this?
@@ -208,15 +175,12 @@ diagnostics <- function(x, ar.LjungB=c(1,0.025), arch.LjungB=c(1,0.025),
         diagnosticsGood <- FALSE
         diagnosticsGood <- as.logical(max(diagnosticsGood,verbose))
     }
-  } #end normality
-
+  }
 
   ##user-defined test(s):
   ##---------------------
   if( diagnosticsGood && !is.null(user.fun) ){
-    ##make user.fun argument
-#OLD:
-#    if( is.null(user.fun$envir) ){ user.fun$envir <- .GlobalEnv }
+    ##make user.fun argument:
     userFunArg <- user.fun
     userFunArg$name <- NULL
     userFunArg$envir <- NULL
@@ -236,16 +200,16 @@ diagnostics <- function(x, ar.LjungB=c(1,0.025), arch.LjungB=c(1,0.025),
         diagnosticsGood <- FALSE
       }
     }
-  } #end if(user.fun)
+  } #end if( user.fun )
 
   ##result:
   ##-------
 
   ##if(!verbose): return logical only
-  if(!verbose){ result <- diagnosticsGood }
+  if( !verbose ){ result <- diagnosticsGood }
 
   ##if(verbose): return diagnostics table
-  if(verbose){
+  if( verbose ){
     result <- NULL
     resultRowNames <- NULL
     if(exists("ar.LjungBox")){
