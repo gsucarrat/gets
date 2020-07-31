@@ -3678,7 +3678,7 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
 
 ##==================================================
 ## print estimation result
-print.arx <- function(x, signif.stars=TRUE, ...)
+print.arx <- function(x, signif.stars=FALSE, ...)
 {
   ##check if mean and variance have been fitted:
   xNames <- names(x)
@@ -3774,8 +3774,8 @@ print.arx <- function(x, signif.stars=TRUE, ...)
     cat("Diagnostics and fit:\n")
     cat("\n")
     printCoefmat(x$diagnostics, dig.tst=0, tst.ind=2,
-      signif.stars=signif.stars)
-    if( !is.null(x$gof) ){printCoefmat(x$gof, digits=6, signif.stars=signif.stars) }
+      signif.stars=FALSE)
+    if( !is.null(x$gof) ){printCoefmat(x$gof, digits=6, signif.stars=FALSE) }
   }
 
 } #end print.arx
@@ -4700,7 +4700,7 @@ predict.gets <- function(object, spec=NULL, n.ahead=12,
 
 ##==================================================
 ## print gets results
-print.gets <- function(x, signif.stars=TRUE, ...)
+print.gets <- function(x, signif.stars=FALSE, ...)
 {
   ##determine spec:
   specType <- switch(as.character(x$call)[1],
@@ -4761,18 +4761,19 @@ print.gets <- function(x, signif.stars=TRUE, ...)
     cat("\n")
     cat("GUM mean equation:\n")
     cat("\n")
-    printCoefmat(x$gum.mean, tst.ind=c(1,2),
-      signif.stars=signif.stars)
+    printCoefmat(x$gum.mean, dig.tst=0, tst.ind=c(1,2),
+      signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
   }
   if( !is.null(x$gum.variance) ){
     cat("\n")
     cat("GUM log-variance equation:\n")
     cat("\n")
     if(specType=="mean"){
-      printCoefmat(x$gum.variance, signif.stars=signif.stars)
+      printCoefmat(x$gum.variance, signif.stars=FALSE)
     }
     if(specType=="variance"){
-      printCoefmat(x$gum.variance, tst.ind=c(1,2),signif.stars=signif.stars)
+      printCoefmat(x$gum.variance, dig.tst=0, tst.ind=c(1,2),
+      signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
     }
   }
   if( !is.null(x$gum.diagnostics) ){
@@ -4780,7 +4781,7 @@ print.gets <- function(x, signif.stars=TRUE, ...)
     cat("Diagnostics:\n")
     cat("\n")
     printCoefmat(x$gum.diagnostics, dig.tst=0, tst.ind=2,
-      signif.stars=signif.stars)
+      signif.stars=FALSE)
   }
 
   ##paths:
@@ -4809,7 +4810,7 @@ print.gets <- function(x, signif.stars=TRUE, ...)
   if(!is.null(x$terminals.results)){
     cat("\n")
     printCoefmat(x$terminals.results, dig.tst=0, tst.ind=c(3,4),
-      signif.stars=signif.stars)
+      signif.stars=FALSE)
   }
   
   ##specific mean model:
@@ -4860,7 +4861,7 @@ print.gets <- function(x, signif.stars=TRUE, ...)
     cat("Diagnostics and fit:\n")
     cat("\n")
     printCoefmat(x$specific.diagnostics, dig.tst=0, tst.ind=2,
-      signif.stars=signif.stars)
+      signif.stars=FALSE)
     printCoefmat(mGOF, digits=6, signif.stars=FALSE)
 
   }
