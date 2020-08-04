@@ -54,6 +54,11 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   info.method <- match.arg(info.method)
   gof.method <- match.arg(gof.method)
   
+  ##check that any indicator method is selected
+  if(sis == FALSE && iis == FALSE && tis == FALSE && uis == FALSE){
+    stop("No Indicator Selection Method was selected. Either set iis, sis or tis as TRUE or specify uis.")
+  }
+  
   ##name of regressand:
   y.name <- deparse(substitute(y))
   if( y.name[1] == "" ){ y.name <- "y" }
@@ -777,7 +782,7 @@ plot.isat <- function(x, col=c("red","blue"),
       ###if tis is there and it is not null, then don't plot, else
 
 
-      if(!is.null(as.list(x$call)$tis) && as.list(x$call)$tis==TRUE){
+      if(!is.null(as.list(x$call)$tis) && as.logical(as.character(as.list(x$call)$tis))==TRUE){
         message("\n", appendLF=FALSE)
         message("NB: Because TIS selected, coefficient standard errors invalid hence not plotted",
           appendLF=TRUE)
@@ -1294,10 +1299,10 @@ biascorr <- function(b, b.se, p.alpha, T){
   #only correct if significant
 
   b_1step <- b
-  b_1step[abs(bt)>c_alpha] <- b*(1-(dr/bt))[abs(bt)>c_alpha]
+  b_1step[abs(bt)>c_alpha] <- b[abs(bt)>c_alpha]*(1-(dr/bt))[abs(bt)>c_alpha]
 
   b_2step <- b
-  b_2step[abs(bt)>c_alpha] <- b*(1-(drbar/bt))[abs(bt)>c_alpha]
+  b_2step[abs(bt)>c_alpha] <- b[abs(bt)>c_alpha]*(1-(drbar/bt))[abs(bt)>c_alpha]
 
   b_corr <- cbind(b, b_1step, b_2step)
   colnames(b_corr) <- c("beta", "beta.1step", "beta.2step")
