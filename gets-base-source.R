@@ -2223,10 +2223,10 @@ arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
 
   ##mean estimation results (a data frame):
   if( meanSpec ){
-    if( !is.null(out[["vcov"]]) ){
-      coefvar <- out[["vcov"]]
+    if( !is.null(out$vcov) ){
+      coefvar <- out$vcov
     }else{
-      coefvar <- out[["vcov.mean"]]
+      coefvar <- out$vcov.mean
     }
     stderrs <- sqrt(diag(coefvar))
     t.stat <- out$coefficients/stderrs
