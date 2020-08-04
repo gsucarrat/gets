@@ -17,8 +17,8 @@ For an introduction to the package, see Pretis, Reade and Sucarrat (2018): \url{
 \tabular{ll}{
 Package: \tab gets\cr
 Type: \tab Package\cr
-Version: \tab 0.24\cr
-Date: \tab 2020-07-28\cr
+Version: \tab 0.25\cr
+Date: \tab 2020-07-31\cr
 License: \tab GPL-2\cr
 }
 The code originated in relation with G. Sucarrat and A. Escribano (2012). Felix Pretis and James Reade joined for the development of the \code{\link{isat}} code and related functions. Subsequently, Moritz Schwarz and Jonas Kurle have made various contributions.

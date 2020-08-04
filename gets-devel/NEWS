@@ -1,3 +1,19 @@
+Version 0.25 (31 July 2020):
+============================
+
+* predict.arx()/predict.gets()/predict.isat():
+
+- plot.options: argument 'shades.of.grey' changed name to 'shades'
+
+* fixes:
+
+- use of the LINPACK argument in chol2inv(), called by ols(), has been removed
+
+- predict.arx()/predict.gets()/predict.isat():
+ . if 'plot=TRUE' and 'newindex' is not entirely out-of-sample, then no plot is produces
+ . 'plot=TRUE' and length(plot.options$lwd)=2, then plot.options$lwd[2] is now used for the actual values
+
+
 Version 0.24 (28 July 2020):
 ============================
 

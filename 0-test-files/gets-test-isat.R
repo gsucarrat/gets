@@ -200,6 +200,12 @@ vcov(isatmod)
 
 predict(isatmod, newmxreg=matrix(0,12,5), ci.levels=seq(0.20,0.95,by=0.05),
   n.sim=20000)
+predict(isatmod, newmxreg=matrix(0,12,5), ci.levels=seq(0.20,0.95,by=0.05),
+  n.sim=20000, plot.options=list(shades=seq(20,95,by=5)))
+predict(isatmod, newmxreg=matrix(0,12,5), ci.levels=seq(0.20,0.95,by=0.05),
+  n.sim=20000, plot.options=list(shades=seq(95,20,by=-5)))
+predict(isatmod, newmxreg=matrix(0,12,5), ci.levels=seq(0.20,0.95,by=0.05),
+  n.sim=20000, plot.options=list(shades=seq(100,25,by=-5)))
 predict(isatmod, newmxreg=matrix(0,12,5),
   plot.options=list(keep=1))
 predict(isatmod, newmxreg=matrix(0,12,5),
@@ -231,9 +237,9 @@ predict(isatmod, newmxreg=matrix(0,12,5),
 predict(isatmod, newmxreg=matrix(0,12,5),
   plot.options=list(newmactual=rep(0,6)))
 predict(isatmod, newmxreg=matrix(0,12,5),
-  plot.options=list(shades.of.grey=c(95,50)))
+  plot.options=list(shades=c(95,50)))
 predict(isatmod, newmxreg=matrix(0,12,5),
-  plot.options=list(shades.of.grey=c(50,95))) #invert shades
+  plot.options=list(shades=c(50,95))) #invert shades
 
 ##In the following model (isatmod), the constant was not correctly
 ##named 'mconst' at one point. Instead, it was named 'mxreg',

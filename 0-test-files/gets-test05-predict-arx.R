@@ -47,7 +47,7 @@ setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
 require(parallel)
 require(zoo)
 
-##remove everything in workspace (.GlobaleEnv:
+##remove everything in workspace (.GlobalEnv):
 rm(list=ls())
 
 ##load source:
@@ -288,8 +288,10 @@ predict(mymodel, plot.options=list(dot.at.origin=FALSE))
 predict(mymodel, plot.options=list(hlines=c(-2,-1,0,1,2)))
 predict(mymodel, plot.options=list(col=c("darkred","green")))
 predict(mymodel, plot.options=list(lty=c(3,2)))
+##does not work, but should it?:
+predict(mymodel, plot.options=list(lty=3))
+##only the forecast is lwd=3, should both be?:
 predict(mymodel, plot.options=list(lwd=3))
-#sort out?:
 predict(mymodel, plot.options=list(lwd=c(1,3)))
 predict(mymodel, plot.options=list(ylim=c(-8,8)))
 predict(mymodel, plot.options=list(ylab="G-values"))
@@ -299,8 +301,9 @@ predict(mymodel,
   plot.options=list(legend.text=c("Prognose","Faktisk")))
 predict(mymodel, plot.options=list(fitted=TRUE))
 predict(mymodel, plot.options=list(newmactual=rep(0,6)))
+predict(mymodel, plot.options=list(shades=c(95,50)))
+predict(mymodel, plot.options=list(shades=c(50,95))) #invert shades
 predict(mymodel, plot.options=list(shades.of.grey=c(95,50)))
-predict(mymodel, plot.options=list(shades.of.grey=c(50,95))) #invert shades
 
 ##arch(1) model:
 ##==============
@@ -325,8 +328,8 @@ predict(mymodel,
   plot.options=list(legend.text=c("Prognose","Residualene kvadrert")))
 predict(mymodel, plot.options=list(fitted=TRUE))
 predict(mymodel, plot.options=list(newvactual=rep(1,6)))
-predict(mymodel, plot.options=list(shades.of.grey=c(95,50)))
-predict(mymodel, plot.options=list(shades.of.grey=c(50,95))) #invert shades
+predict(mymodel, plot.options=list(shades=c(95,50)))
+predict(mymodel, plot.options=list(shades=c(50,95))) #invert shades
 
 
 ##################################################
@@ -370,6 +373,15 @@ predict(arxmod, n.ahead=1, newmxreg=matrix(0,1,5),
   plot.options=list(start.at.origin=FALSE,
   line.at.origin=TRUE, fitted=TRUE))
 
+##used to produce graphical error in the plot; since version 0.25
+##the following message is returned to the user: "The values of
+##'newindex' are not entirely out-of-sample, so no plot produced"
+set.seed(123)
+y <- rnorm(20)
+arxmod <- arx(y, mc=TRUE, ar=1)
+##generates predictions with user-specified index, but no plot:
+predict(arxmod, newindex=19:30)
+
 
 ##################################################
 ## 6 SIMULATIONS VS. ANALYTICAL FORMULA
@@ -387,6 +399,9 @@ phi1 <- 0.95
 set.seed(123)
 y <- arima.sim(list(ar=phi1), 1000)
 
+##large sample (T=1000):
+##======================
+
 ##estimate ar(1):
 mymodel <- arx(y, ar=1)
 
@@ -396,3 +411,21 @@ predict(mymodel, n.ahead=24, plot=TRUE)
 predict(mymodel, n.ahead=24, n.sim=10000, plot=TRUE)
 predict(mymodel, n.ahead=24, n.sim=10000, plot=TRUE,
   innov=rnorm(10000*24))
+
+##conclusion ("large sample"): there is not much difference
+##in the fans produced by the bootstrap and innov=rnorm.
+
+##small sample (T=20):
+##====================
+
+##estimate ar(1):
+mymodel <- arx(y[1:20], ar=1)
+
+##predictions of the mean:
+predict(mymodel, n.ahead=24, plot=TRUE)
+predict(mymodel, n.ahead=24, n.sim=10000, plot=TRUE)
+predict(mymodel, n.ahead=24, n.sim=10000, plot=TRUE,
+  innov=rnorm(10000*24)) -> tmp2
+
+##conclusion (small sample): there can be a large difference
+##in the fans produced by the bootstrap and innov=rnorm.

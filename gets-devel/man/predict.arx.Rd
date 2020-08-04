@@ -54,7 +54,7 @@ The \code{plot.options} argument is a \code{list} that, optionally, can contain 
   \item \code{fitted}: If \code{TRUE}, then the fitted values as well as actual values are plotted in-sample\cr
   \item \code{newmactual}: numeric vector or \code{NULL} (default). Enables the plotting of actual values out-of-sample in the mean in addition to the forecasts\cr
   \item \code{newvactual}: numeric vector or \code{NULL} (default). Enables the plotting of squared residuals ('actual values') out-of-sample in addition to the forecasts\cr
-  \item \code{shades.of.grey}: numeric vector of length \code{length(ci.levels)} that contains the shades of grey associated with the confidence intervals in the prediction plot. The shades can range from 100 (white) to 0 (black)\cr
+  \item \code{shades}: numeric vector of length \code{length(ci.levels)} that contains the shades of grey associated with the confidence intervals in the prediction plot. The shades can range from 100 (white) to 0 (black)\cr
 }
 
 }

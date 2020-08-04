@@ -107,7 +107,10 @@ predict(getsm01, spec="variance") #should return "Set 'vc=TRUE' to plot...
 ##rename sd2hat to varhat in predict()?:
 predict(getsm01, spec="both")
 predict(getsm01, n.ahead=1)
-predict(getsm01, newindex=13:24) #issue in the plotting (see plot), not in the prediction
+##creates issue in the plot (not in the predictions), since
+##the out-of-sample index is not of the same type as the in-sample
+##index:
+predict(getsm01, newindex=13:24)
 predict(getsm01, return=FALSE)
 predict(getsm01, plot=FALSE)
 predict(getsm01, return=FALSE)
