@@ -2,7 +2,7 @@
 ## This file contains a draft of how to combine
 ## blocksFun() with plm()
 ##
-## Created 25 July 2020 by Genaro Sucarrat.
+## First created 25 July 2020.
 ##
 ## CONTENTS:
 ##
@@ -88,7 +88,7 @@ summary(object)
   ##do some clean-up:
   rm(idAndTime)
 
-#  ##idea for how to create 'individual effects' indicators:
+#  ##G-man idea for how to create 'individual effects' indicators:
 #  NROWplmdata <- NROW(plmdata)
 #  IDs <- as.character(union(plmdata[,1], NULL))
 #  IIS <- matrix(0, NROWplmdata, length(IDs))
@@ -118,7 +118,7 @@ summary(object)
 
   myEstimator <- function(y, x, data=NULL, listOfArgs=NULL)
   {
-    ##handle NULL-matrices (obligatory):
+    ##handle empty matrices (obligatory):
     if(is.null(x) || NCOL(x)==0){
 
       result <- list()
@@ -128,15 +128,20 @@ summary(object)
     	result$k <- 0
     	result$df <- result$n - result$k
 
-    }else{ ##if x is not NULL:
+    }else{ ##if x is not empty:
 
       ##make formula:
-      myformula <- paste0("y ~ ", x[1,])
-      if(NCOL(x)>1){
-        for(i in 2:NCOL(x)){
-          myformula <- paste0(myformula, " + ", x[1,i])
-        }
-      }
+      
+      # replace following lines:
+      # myformula <- paste0("y ~ ", x[1,])
+      # if(NCOL(x)>1){
+      #   for(i in 2:NCOL(x)){
+      #     myformula <- paste0(myformula, " + ", x[1,i])
+      #   }
+      # }
+      # myformula <- as.formula(myformula)
+      myformula <- paste(x[1,], collapse = " + ")
+      myformula <- paste("y ~", myformula, sep = " ")
       myformula <- as.formula(myformula)
 
       ##estimate:
@@ -144,7 +149,7 @@ summary(object)
       listOfArgs$data <- GUMdata
       tmp <- do.call("plm", listOfArgs)
 
-    	#rename and re-organise:
+    	##rename and re-organise:
      	result <- list()
     	result$coefficients <- coef(tmp)
     	result$vcov <- vcov(tmp)
@@ -195,12 +200,17 @@ summary(object)
   if( length(bestXs)>0 ){
 
     ##create formula:
-    myformula <- paste0(yName, " ~ ", bestXs)
-    if( length(bestXs)>1 ){
-      for(i in 2:length(bestXs)){
-        myformula <- paste0(myformula, " + ", bestXs[i])
-      }
-    }
+    
+    # replace following code:
+    # myformula <- paste0(yName, " ~ ", bestXs)
+    # if( length(bestXs)>1 ){
+    #   for(i in 2:length(bestXs)){
+    #     myformula <- paste0(myformula, " + ", bestXs[i])
+    #   }
+    # }
+    # myformula <- as.formula(myformula)
+    myformula <- paste(bestXs, collapse = " + ")
+    myformula <- paste(yName, "~", myformula, sep = " ")
     myformula <- as.formula(myformula)
 
     ##estimate final model:
