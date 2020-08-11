@@ -99,11 +99,11 @@ y <- 4*x[,"sis30"] + eps #create shift upwards at observation 30
 plot(y)
 
 ##estimate the gum and then do gets in a single step:
-getsFun(y, x, user.estimator=list(name="myEstimator"))
+##getsFun(y, x, user.estimator=list(name="myEstimator"))
 
 ##estimate the gum and then do gets in two steps:
-mygum <- myEstimator(y, x)
-getsFun(y, x, user.estimator=list(name="myEstimator"), gum.result=mygum)
+#mygum <- myEstimator(y, x)
+##getsFun(y, x, user.estimator=list(name="myEstimator"), gum.result=mygum)
 
 }
 
