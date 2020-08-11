@@ -2,7 +2,7 @@
 The folder *gets* contains the 'raw-material' of the current development version of the package. Whenever the contents of this folder changes, the package changes.
 
 ## Source code
-The source code of the package is contained in two files in the *gets/R/* folder:
+The source code of the package is contained in the following two files in the *gets/R/* folder:
 
     gets-base-source.R
     gets-isat-source.R
