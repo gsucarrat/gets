@@ -1,5 +1,5 @@
 # Overview of the files and folders here on Github
-The folder *gets* contains the 'raw-material' of the current development version of the package. Whenever the contents changes, the package changes.
+The folder *gets* contains the 'raw-material' of the current development version of the package. Whenever the contents of this folder changes, the package changes.
 
 ## Source code
 The source code of the package is contained in two files in the *gets/R/* folder:
