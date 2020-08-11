@@ -3677,7 +3677,6 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
 ##==================================================
 ## print estimation result
 print.arx <- function(x, signif.stars=TRUE, ...)
-#print.arx <- function(x, signif.stars=FALSE, ...)
 {
   ##check if mean and variance have been fitted:
   xNames <- names(x)
@@ -4106,7 +4105,7 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
   arch.LjungB=list(lag=NULL, pval=0.025), normality.JarqueB=NULL,
   user.diagnostics=NULL, info.method=c("sc","aic","aicc","hq"),
   gof.function=NULL, gof.method=NULL, keep=NULL, include.gum=FALSE,
-  include.1cut=TRUE, include.empty=FALSE, max.paths=NULL,
+  include.1cut=TRUE, include.empty=FALSE, max.paths=NULL, tol=1e-07,
   turbo=FALSE, print.searchinfo=TRUE, plot=NULL, alarm=FALSE)
 {
   ## contents:
@@ -4219,7 +4218,7 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
     user.diagnostics=user.diagnostics, gof.function=gof.function,
     gof.method=gof.method, keep=keep, include.gum=include.gum,
     include.1cut=include.1cut, include.empty=include.empty,
-    max.paths=max.paths, turbo=turbo, max.regs=NULL,
+    max.paths=max.paths, turbo=turbo, tol=tol, max.regs=NULL,
     print.searchinfo=print.searchinfo, alarm=alarm)
   est$time.started <- NULL
   est$time.finished <- NULL
@@ -4324,7 +4323,7 @@ getsv <- function(object, t.pval=0.05, wald.pval=t.pval,
   info.method=c("sc", "aic", "aicc", "hq"),
   gof.function=NULL, gof.method=NULL, keep=c(1),
   include.gum=FALSE, include.1cut=TRUE, include.empty=FALSE,
-  max.paths=NULL, turbo=FALSE, print.searchinfo=TRUE,
+  max.paths=NULL, tol=1e-07, turbo=FALSE, print.searchinfo=TRUE,
   plot=NULL, alarm=FALSE)
 {
   ### ARGUMENTS ###########
@@ -4401,7 +4400,8 @@ getsv <- function(object, t.pval=0.05, wald.pval=t.pval,
     gof.function=gof.function, gof.method=gof.method, keep=keep,
     include.gum=include.gum, include.1cut=include.1cut,
     include.empty=include.empty, max.paths=max.paths, turbo=turbo,
-    max.regs=NULL, print.searchinfo=print.searchinfo, alarm=alarm)
+    tol=tol, max.regs=NULL, print.searchinfo=print.searchinfo,
+    alarm=alarm)
   est$time.started <- NULL
   est$time.finished <- NULL
   est$call <- NULL

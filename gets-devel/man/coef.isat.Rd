@@ -23,7 +23,7 @@
   \method{predict}{isat}(object, n.ahead=12, newmxreg=NULL, newindex=NULL,
     n.sim=2000, probs=NULL, ci.levels=NULL, quantile.type=7,
     return=TRUE, verbose=FALSE, plot=NULL, plot.options=list(), ...)
-  \method{print}{isat}(x, ...)
+  \method{print}{isat}(x, signif.stars=TRUE, ...)
   \method{residuals}{isat}(object, std=FALSE, ...)
   \method{sigma}{isat}(object, ...)
   \method{summary}{isat}(object, ...)
@@ -49,6 +49,8 @@
   \item{lty}{types of fitted (default=solid) and actual (default=solid) lines}
   \item{lwd}{widths of fitted (default=1) and actual (default=1) lines}
   \item{coef.path}{logical. Only applicable if there are retained indicators after the application of \code{isat}}
+  \item{signif.stars}{\code{logical}. If \code{TRUE}, then p-values are additionally encoded visually, 
+  see \code{\link{printCoefmat}} }
   \item{\dots}{additional arguments}
 }
 

@@ -13,8 +13,8 @@ getsm(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
     arch.LjungB=list(lag=NULL, pval=0.025), normality.JarqueB=NULL, 
     user.diagnostics=NULL, info.method=c("sc","aic","aicc", "hq"),
     gof.function=NULL, gof.method=NULL, keep=NULL, include.gum=FALSE,
-    include.1cut=TRUE, include.empty=FALSE, max.paths=NULL, turbo=FALSE,
-    print.searchinfo=TRUE, plot=NULL, alarm=FALSE)
+    include.1cut=TRUE, include.empty=FALSE, max.paths=NULL, tol=1e-07,
+    turbo=FALSE, print.searchinfo=TRUE, plot=NULL, alarm=FALSE)
 
 ##GETS modelling of log-variance specification:
 getsv(object, t.pval=0.05, wald.pval=t.pval,
@@ -22,8 +22,8 @@ getsv(object, t.pval=0.05, wald.pval=t.pval,
     arch.LjungB=list(lag=NULL, pval=0.025), normality.JarqueB=NULL,
     user.diagnostics=NULL, info.method=c("sc","aic","aicc","hq"),
     gof.function=NULL, gof.method=NULL, keep=c(1), include.gum=FALSE,
-    include.1cut=TRUE, include.empty=FALSE, max.paths=NULL, turbo=FALSE,
-    print.searchinfo=TRUE, plot=NULL, alarm=FALSE)
+    include.1cut=TRUE, include.empty=FALSE, max.paths=NULL, tol=1e-07,
+    turbo=FALSE, print.searchinfo=TRUE, plot=NULL, alarm=FALSE)
 }
 
 \arguments{
@@ -44,6 +44,7 @@ getsv(object, t.pval=0.05, wald.pval=t.pval,
   \item{include.1cut}{logical. If \code{TRUE}, then the 1-cut model is added to the list of terminal models. If \code{FALSE} (default), then the 1-cut is not added, unless it is a terminal model in one of the paths }
   \item{include.empty}{logical. If \code{TRUE}, then an empty model is included among the terminal models, if it passes the diagnostic tests, even if it is not equal to one of the terminals. If \code{FALSE} (default), then the empty model is not included (unless it is one of the terminals)}
   \item{max.paths}{\code{NULL} (default) or an integer greater than 0. If \code{NULL}, then there is no limit to the number of paths. If an integer (e.g. 1), then this integer constitutes the maximum number of paths searched (e.g. a single path) }
+  \item{tol}{numeric value. The tolerance for detecting linear dependencies in the columns of the variance-covariance matrix when computing the Wald-statistic used in the Parsimonious Encompassing Tests (PETs), see the \code{\link{qr.solve}} function}
   \item{turbo}{logical. If \code{TRUE}, then (parts of) paths are not searched twice (or more) unnecessarily, thus yielding a significant potential for speed-gain. However, the checking of whether the search has arrived at a point it has already been comes with a slight computational overhead. Accordingly, if \code{turbo=TRUE}, then the total search time might in fact be higher than if \code{turbo=FALSE}. This happens if estimation is very fast, say, less than quarter of a second. Hence the default is \code{FALSE}}
   \item{print.searchinfo}{logical. If \code{TRUE} (default), then a print is returned whenever simiplification along a new path is started}
   \item{plot}{\code{NULL} or logical. If \code{TRUE}, then the fitted values and the residuals of the final model are plotted after model selection. If \code{FALSE}, then they are not. If \code{NULL} (default), then the value set by \code{\link{options}} determines whether a plot is produced or not}
@@ -74,7 +75,7 @@ Genaro Sucarrat (2019): 'User-Specified General-to-Specific and Indicator Satura
 Extraction functions: \code{\link{coef.gets}}, \code{\link{fitted.gets}}, \code{\link{paths}}, \code{\link{plot.gets}}, \code{\link{print.gets}},\cr
 \code{\link{residuals.gets}}, \code{\link{summary.gets}}, \code{\link{terminals}}, \code{\link{vcov.gets}}\cr
 
-Related functions: \code{\link{arx}}, \code{\link{eqwma}}, \code{\link{leqwma}}, \code{\link{zoo}}, \code{\link{getsFun}}
+Related functions: \code{\link{arx}}, \code{\link{eqwma}}, \code{\link{leqwma}}, \code{\link{zoo}}, \code{\link{getsFun}}, \code{\link{qr.solve}}
 }
 
 \examples{

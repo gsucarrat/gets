@@ -78,6 +78,10 @@ rm(list = ls())
 ## 3 BUILD THE GETS FOLDER
 ####################################################
 
+##load required packages:
+library(parallel)
+library(zoo)
+
 ##Load sources:
 source("gets-base-source.R")
 source("gets-isat-source.R")
@@ -143,7 +147,7 @@ remove.packages("gets")
 
 ##install new version:
 system( paste0("R CMD INSTALL ", tarballName) )
-#system("R CMD INSTALL gets_0.24.tar.gz")
+#system("R CMD INSTALL gets_0.25.tar.gz")
 #system("R CMD INSTALL --build gets")
 
 

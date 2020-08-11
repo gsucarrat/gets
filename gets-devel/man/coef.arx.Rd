@@ -30,8 +30,8 @@
   \item{object}{an object of class 'arx'}
   \item{x}{an object of class 'arx'}
   \item{spec}{\code{NULL}, \code{"mean"}, \code{"variance"} or, in some instances, "both". When \code{NULL} is a valid value, then it is automatically determined whether information pertaining to the mean or variance specification should be returned}
-  \item{signif.stars}{\code{logical}. If \code{TRUE}, then p-values are additionally encoded visually, see 
-  \code{printCoefmat} }
+  \item{signif.stars}{\code{logical}. If \code{TRUE}, then p-values are additionally encoded visually, 
+  see \code{\link{printCoefmat}} }
   \item{std}{\code{logical}. If \code{FALSE} (default), then the mean residuals are returned. If TRUE, then the standardised residuals are returned}
   \item{col}{colours of actual (default=blue) and fitted (default=red) lines}
   \item{lty}{types of actual (default=solid) and fitted (default=solid) lines}

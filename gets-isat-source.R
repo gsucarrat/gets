@@ -954,7 +954,7 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
 
 ##==================================================
 # ## print isat results
-print.isat <-  function(x, ...)
+print.isat <- function(x, signif.stars=TRUE, ...)
   {
     
     ##messages from final gets:

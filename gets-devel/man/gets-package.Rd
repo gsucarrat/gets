@@ -18,7 +18,7 @@ For an introduction to the package, see Pretis, Reade and Sucarrat (2018): \url{
 Package: \tab gets\cr
 Type: \tab Package\cr
 Version: \tab 0.25\cr
-Date: \tab 2020-07-31\cr
+Date: \tab 2020-08-11\cr
 License: \tab GPL-2\cr
 }
 The code originated in relation with G. Sucarrat and A. Escribano (2012). Felix Pretis and James Reade joined for the development of the \code{\link{isat}} code and related functions. Subsequently, Moritz Schwarz and Jonas Kurle have made various contributions.
@@ -30,7 +30,7 @@ Jonas Kurle, \url{https://www.jonaskurle.com/}\cr
 Felix Pretis, \url{http://www.felixpretis.org/}\cr
 James Reade,  \url{https://sites.google.com/site/jjamesreade/}\cr
 Moritz Schwarz, \url{https://www.inet.ox.ac.uk/people/moritz-schwarz/}\cr
-Genaro Sucarrat, \url{http://www.sucarrat.net/}\cr\cr
+Genaro Sucarrat \url{http://www.sucarrat.net/}\cr\cr
 Maintainer: Genaro Sucarrat            
 }
 
@@ -43,7 +43,7 @@ Carlos Santos, David F. Hendry and Soren Johansen (2007):  'Automatic selection 
 
 Genaro Sucarrat (2019): 'User-Specified General-to-Specific and Indicator Saturation Methods'. \url{https://mpra.ub.uni-muenchen.de/96653/}
 
-Genaro Sucarrat and Alvaro Escribano (2012): 'Automated Financial Model Selection: General-to-Specific Modelling of the Mean and Volatility Specifications', Oxford Bulletin of Economics and Statistics 74, Issue 5 (October), pp. 716-735. \url{http://doi.org/10.1111/j.1468-0084.2011.00669.x}
+Genaro Sucarrat and Alvaro Escribano (2012): 'Automated Financial Model Selection: General-to-Specific Modelling of the Mean and Volatility Specifications', Oxford Bulletin of Economics and Statistics 74, Issue 5 (October), pp. 716-735. \url{https://doi.org/10.1111/j.1468-0084.2011.00669.x}
 
 }
 

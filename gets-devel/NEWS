@@ -1,14 +1,15 @@
-Version 0.25 (31 July 2020):
-============================
+Version 0.25 (11 August 2020):
+==============================
+
+* getsm()/getsv(): new argument 'tol'
+
+* print.isat() function: new argument 'signif.stars'
 
 * predict.arx()/predict.gets()/predict.isat():
-
 - plot.options: argument 'shades.of.grey' changed name to 'shades'
 
 * fixes:
-
 - use of the LINPACK argument in chol2inv(), called by ols(), has been removed
-
 - predict.arx()/predict.gets()/predict.isat():
  . if 'plot=TRUE' and 'newindex' is not entirely out-of-sample, then no plot is produces
  . 'plot=TRUE' and length(plot.options$lwd)=2, then plot.options$lwd[2] is now used for the actual values
@@ -18,45 +19,30 @@ Version 0.24 (28 July 2020):
 ============================
 
 * getsm() function:
-
 - new arguments: gof.function, gof.method, include.1cut, turbo
-
 - deprecated arguments: paths.method, max.regs, zero.adj, vc.adj, verbose, estimate.specific
 
 * getsv() function:
-
 - new arguments: gof.function, gof.method
-
 - new default: include.1cut=TRUE
-
 - deprecated arguments: max.regs, zero.adj, vc.adj, verbose, estimate.specific
 
 * arx()/isat() function:
-
 - mxreg argument: can now be a data.frame
 
 * regressorsMean() function:
-
 - mxreg argument: can now be a data.frame
-
 - new argument: na.omit
 
 * ols() function:
-
 - new argument: variance.spec
 
-* print.gets() function:
-
-- new argument: signif.stars
+* print.gets() function: new argument 'signif.stars'
 
 * new functions:
-
 - blocksFun()
-
 - gets.arx()
-
 - regressorsVariance()
-
 - as.lm()
 
 * user-defined diagnostics and/or estimation: the default behaviour of the $envir argument has been made more general
@@ -66,9 +52,7 @@ Version 0.24 (28 July 2020):
 - getsFun (the fixes carry over to the functions that call getsFun(): getsm(), getsv() and isat()):
  . search is now undertaken if there is only one non-keep, insignificant variable in the gum.
  . the entry $specific.spec in the returned list is now non-empty if all non-keep regressors are significant in the gum, or if all regressors are set to 'keep'
-
 - printing issues relating to double backslashes in cat() commands resolved
-
 - regressorsMean(): "" colnames in mxreg argument are now handled correctly
 
 

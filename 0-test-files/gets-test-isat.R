@@ -110,7 +110,7 @@ plot(as.zoo(y), col=4) #plot
 ##=================
 
 isat(y, sis=TRUE)
-isat(y, sis=FALSE) #returns the error: "Error in ISmatrices[[i]] : subscript out of bounds"
+isat(y, sis=FALSE) #should return the error: "Error in isat..."
 isat(y, iis=TRUE, sis=TRUE)
 isat(y, iis=TRUE, sis=FALSE)
 isat(y, sis=FALSE, tis=TRUE)
@@ -187,7 +187,7 @@ plot(isatmod)
 predict(isatmod) #should return the error-message: 'newmxreg' is NULL
 predict(isatmod, newmxreg=matrix(0,12,5))
 predict(isatmod, n.ahead=1, newmxreg=matrix(0,1,5)) #used to yield error
-predict(isatmod, newmxreg=matrix(0,12,5), newindex=13:24) #creates bug in plot, but not in predictions
+predict(isatmod, newmxreg=matrix(0,12,5), newindex=13:24)
 predict(isatmod, newmxreg=matrix(0,12,5), return=FALSE)
 predict(isatmod, newmxreg=matrix(0,12,5), plot=FALSE)
 predict(isatmod, newmxreg=matrix(0,12,5), return=FALSE, plot=FALSE)
@@ -289,6 +289,7 @@ uis <- iim(dgp.n)
 isat(y, sis=FALSE, uis=uis)
 isat(y, sis=FALSE, uis=uis, max.paths=1)
 uis <- sim(dgp.n)
+##as of August 2020, these do not work (why?):
 isat(y, sis=FALSE, uis=uis)
 isat(y, sis=FALSE, uis=uis[,seq(1,dgp.n,2)])
 isat(y, sis=FALSE, uis=uis, max.paths=1)
@@ -303,6 +304,7 @@ mX <- matrix(rnorm(1*30), 30, 1)
 isat(y, mxreg=z, iis=FALSE, sis=TRUE, uis=mX)
 
 ##used to crash (uis is a matrix):
+##as of August 2020, these do not work (why?):
 dgpN <- 50
 set.seed(123)
 y <- rnorm(dgpN); x <- rnorm(dgpN)
@@ -318,6 +320,7 @@ isat(y, sis=FALSE, uis=mX)
 
 ##uis as list:
 uis <- list(sis=sim(y) , tis=tim(y))
+##as of August 2020, these do not work (why?):
 isat(y, sis=FALSE, uis=uis)
 isat(y, sis=FALSE, uis=uis, max.paths=1)
 isat(y, sis=FALSE, uis=uis, max.paths=2)
@@ -340,13 +343,11 @@ isat(y, iis=FALSE, sis=TRUE, tis=FALSE, uis=FALSE,
   blocks=myblocks, max.paths=1)
 uis <- list(sim(dgp.n), tim(dgp.n))
 myblocks[[2]] <- list(7:19, 27:34, 40:45)
-##since version 0.21, the following return an error because of the changes
-##made to print.isat
+##as of August 2020, these do not work (why?):
 isat(y, iis=FALSE, sis=FALSE, tis=FALSE, uis=uis,
   blocks=myblocks)
 isat(y, iis=FALSE, sis=FALSE, tis=FALSE, uis=uis,
   blocks=myblocks, max.paths=1)
-##but since version 0.24, is an error returned?? I do not think so...
 
 ##further tests of predict.isat:
 ##==============================

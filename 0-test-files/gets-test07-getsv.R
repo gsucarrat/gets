@@ -74,6 +74,7 @@ getsv(vgum01, include.empty=TRUE)
 getsv(vgum01, include.gum=TRUE, include.1cut=TRUE, include.empty=TRUE)
 getsv(vgum01, max.paths=1)
 getsv(vgum01, max.paths=3)
+getsv(vgum01, tol=1) #should return the error: "Error in qr.solve...
 getsv(vgum01, turbo=TRUE)
 getsv(vgum01, print.searchinfo=FALSE)
 getsv(vgum01, plot=FALSE)

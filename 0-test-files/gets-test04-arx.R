@@ -216,6 +216,7 @@ summary(mod03)
 plot(VaR(mod03, level=c(0.99,0.95,0.9)), #value-at-risk
   plot.type="single", col=c("blue","red","green4"))
 vcov(mod03)
+##ISSUE!!! DISCOVERED 11/8-2020 BY G.:
 vcov(mod03, spec="m") #should return NULL
 vcov(mod03, spec="v")
 
@@ -235,7 +236,7 @@ print(mod06)
 print(mod06, signif.stars=TRUE)
 mod06 <- arx(y, ar=1:4, mxreg=mX,
   user.diagnostics=list(name="SWtest", pval=0.025))
-  #the pval argument is ignored, I think
+  #the pval argument is ignored (as it should), I think
 print(mod06)
 
 ##test the envir entry:

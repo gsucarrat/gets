@@ -35,8 +35,8 @@
   \item{object}{an object of class 'gets'}
   \item{x}{an object of class 'gets'}
   \item{spec}{NULL, "mean", "variance" or, in some instances, "both". When \code{NULL} is a valid value, then it is automatically determined whether information pertaining to the mean or variance specification should be returned}
-  \item{signif.stars}{\code{logical}. If \code{TRUE}, then p-values are additionally encoded visually, see 
-  \code{\link{printCoefmat}} }
+  \item{signif.stars}{\code{logical}. If \code{TRUE}, then p-values are additionally encoded visually, 
+  see \code{\link{printCoefmat}} }
   \item{std}{\code{logical}. If \code{FALSE} (default), then the mean residuals are returned. If TRUE, then the standardised residuals are returned}
   \item{n.ahead}{\code{integer} that determines how many steps ahead predictions should be generated (the default is 12)}
   \item{newmxreg}{a \code{matrix} of \code{n.ahead} rows and \code{NCOL(mxreg)} columns with the out-of-sample values of the \code{mxreg} regressors}

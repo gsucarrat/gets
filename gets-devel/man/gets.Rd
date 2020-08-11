@@ -35,4 +35,3 @@ gets(x, ...)
 \keyword{Econometrics}
 \keyword{Climate Econometrics}
 \keyword{Financial Econometrics}
-
