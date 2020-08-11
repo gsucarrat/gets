@@ -58,6 +58,8 @@ object <-
   plm(Z ~ a + b + c + d + e + f + g + h + i + j,
   data=mydata)
 summary(object)
+coef(object)
+vcov(object)
 
 
 ####################################################
