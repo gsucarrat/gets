@@ -6,16 +6,12 @@
 ##
 ## Requirements:
 ##
-## - Reading and writing permissions to the working
-##   directory that is used. To ensure this in
-##   Windows, first right-click mouse in folder,
-##   and then choose properties -> security ...etc..
-##
-## - The work directory contains: the gets folder
+## - writing permission to the working directory that
+##   is used.
 ##
 ## Contents:
 ##
-## 1 SET WORK DIRECTORY
+## 1 SET DIRECTORIES
 ## 2 CLEAN WORK-DIRECTORY AND WORKSPACE
 ## 3 BUILD AND CHECK THE TARBALL
 ## 4 INSTALL PACKAGE
@@ -25,16 +21,25 @@
 
 
 ####################################################
-## 1 SET WORK DIRECTORY
+## 1 SET DIRECTORIES
 ####################################################
   
-##Set working directory:
-#setwd(choose.dir())
-#Examples in Windows:
-#setwd("C:/Program files/R/R-devel/bin/")
-#setwd("C:/Program files/R/R-3.6.3/bin/")
-#setwd("C:/Users/sucarrat/Documents/R/R-devel/bin")
-setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
+##set working directory:
+##======================
+
+##this directory will be used to store and test the
+##tarball, i.e. the auxiliary files and folders
+##that are created during the tests will appear in
+##this folder.
+
+##set working directory:
+setwd("C:/Users/sucarrat/Documents/R/gs/gets/github/")
+#setwd(choose.dir()) #interactively
+
+##where is the 'gets' package located?:
+##=====================================
+
+getsDir <- "C:/Users/sucarrat/Documents/R/gs/gets/github/gets/gets"
 
 
 ####################################################
@@ -76,20 +81,28 @@ if(doDelete){
 ## - /man/gets-package.Rd
 
 ##build tarball:
-system("R CMD build gets --resave-data")
-## - The --resave-data option is recommended for better compression.
-##   However, it is not obligatory.
+##==============
+
+##note: the following command assumes the gets package,
+##i.e. the folder 'gets' with the source, is contained
+##in getsDir.
+
+system( paste0("R CMD build ", getsDir, " --resave-data") )
+## - The --resave-data option is recommended by CRAN for
+##   better compression, but it is not obligatory.
 ## - In principle, the latest development version of R should be
 ##   used for the build, but this sometimes leads to spurious errors.
 
 ##check tarball (needs internet):
+##===============================
+
 fileNames <- dir()
 tarballWhere <- grep(".tar.gz", fileNames)
-tarballName <- fileNames[tarballWhere]
+tarballName <- fileNames[ tarballWhere ]
 #system( paste0("R CMD check ", tarballName, " --as-cran") )
 system( paste0("R CMD check ", tarballName) )
 ## Note: The --as-cran option is obligatory according to cran policy.
-## Check also the user manual for line exceedances in the .Rd files.
+## Check also the PDF user manual for line exceedances in the .Rd files.
 ## This is not detected by the tarball check. An alternative way to
 ## check tarball, see: http://win-builder.r-project.org/
 
@@ -103,7 +116,7 @@ remove.packages("gets")
 
 ##install new version:
 system( paste0("R CMD INSTALL ", tarballName) )
-#system("R CMD INSTALL gets_0.25.tar.gz")
+#system("R CMD INSTALL gets_0.26.tar.gz")
 #system("R CMD INSTALL --build gets")
 
 

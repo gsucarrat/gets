@@ -1,7 +1,7 @@
 Package: gets
 Type: Package
 Title: General-to-Specific (GETS) Modelling and Indicator Saturation Methods
-Version: 0.25
+Version: 0.26
 Date: 2020-08-11
 Author: Genaro Sucarrat [aut, cre], Felix Pretis [aut], James Reade [aut], Jonas Kurle [ctb], Moritz Schwarz [ctb]
 Maintainer: Genaro Sucarrat <genaro.sucarrat@bi.no>
