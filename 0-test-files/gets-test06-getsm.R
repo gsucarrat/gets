@@ -14,7 +14,7 @@
 ##################################################
 
 ##set working directory:
-setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
+setwd("C:/Users/sucarrat/Documents/R/gs/gets/github/")
 #setwd(choose.dir())
 
 ##load required packages:
@@ -25,8 +25,8 @@ require(zoo)
 rm(list=ls())
 
 ##load source:
-source("gets-base-source.R")
-source("gets-isat-source.R")
+source("./gets/gets/R/gets-base-source.R")
+source("./gets/gets/R/gets-isat-source.R")
 
 
 ##################################################
@@ -227,6 +227,15 @@ getsm(gum03)
 gum04 <- arx(y, mc=TRUE, ar=1:3, mxreg=mX, arch=1:2, asym=1,
   log.ewma=list(length=3), vxreg=log(mX^2), vcov.type="n")
 getsm(gum04)
+
+##issue #22 (by M-orca) on Github (6/9-2020):
+set.seed(123)
+y <- arima.sim(list(ar=0.9), 80)
+xregs <- matrix(rnorm(2*80), 80, 2)
+object <- arx(y,mxreg = xregs)
+##gum does not pass one or more diagnostics tests:
+x <- getsm(object)
+print(x)
 
 
 ##################################################

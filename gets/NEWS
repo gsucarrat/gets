@@ -1,7 +1,10 @@
 Version 0.26 (TBA):
 ===================
 
-- TBA
+* vignette added: An introduction to the gets package
+
+* fixes:
+- print.gets() now prints properly when no search has been undertaken
 
 
 Version 0.25 (11 August 2020):

@@ -4767,9 +4767,6 @@ print.gets <- function(x, signif.stars=TRUE, ...)
     cat("\n")
     printCoefmat(x$gum.mean, tst.ind=c(1,2),
       signif.stars=signif.stars)
-#OLD:
-#    printCoefmat(x$gum.mean, dig.tst=0, tst.ind=c(1,2),
-#      signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
   }
   if( !is.null(x$gum.variance) ){
     cat("\n")
@@ -4781,9 +4778,6 @@ print.gets <- function(x, signif.stars=TRUE, ...)
     if(specType=="variance"){
       printCoefmat(x$gum.variance, tst.ind=c(1,2),
         signif.stars=signif.stars)
-#OLD:
-#      printCoefmat(x$gum.variance, dig.tst=0, tst.ind=c(1,2),
-#        signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
     }
   }
   if( !is.null(x$gum.diagnostics) ){
@@ -4798,7 +4792,7 @@ print.gets <- function(x, signif.stars=TRUE, ...)
   cat("\n")
   cat("Paths searched: \n")
   cat("\n")
-  if(is.null(x$paths)){
+  if( is.null(x$paths) || length(x$paths)==0 ){
     print(NULL)
   }else{
     for(i in 1:length(x$paths)){
@@ -4807,7 +4801,7 @@ print.gets <- function(x, signif.stars=TRUE, ...)
   } #end if(is.null(x$paths))
 
   ##terminal models and results:
-  if(!is.null(x$terminals)){
+  if( !is.null(x$terminals) && length(x$terminals)>0 ){
     cat("\n")
     cat("Terminal models: \n")
     if(!is.null(x$terminals)){
@@ -4817,7 +4811,7 @@ print.gets <- function(x, signif.stars=TRUE, ...)
       }
     }
   }
-  if(!is.null(x$terminals.results)){
+  if( !is.null(x$terminals.results) ){
     cat("\n")
     printCoefmat(x$terminals.results, dig.tst=0, tst.ind=c(3,4),
       signif.stars=FALSE)
@@ -4825,13 +4819,11 @@ print.gets <- function(x, signif.stars=TRUE, ...)
   
   ##specific mean model:
   if( specType=="mean" && !is.null(x$terminals.results) ){
-#OLD: if( specType=="mean" && !is.null(x$specific.spec) ){
     cat("\n")
     cat("SPECIFIC mean equation:\n")
     cat("\n")
     if( !is.null(x$mean.results) ){
       printCoefmat(x$mean.results, signif.stars=signif.stars)
-#      printCoefmat(x$mean.results, signif.stars=FALSE)
     }
     if( length(x$specific.spec)==0 ){
 #OLD: if( x$specific.spec[1]==0 ){
@@ -4845,9 +4837,6 @@ print.gets <- function(x, signif.stars=TRUE, ...)
     cat("SPECIFIC log-variance equation:\n")
     cat("\n")
     printCoefmat(x$variance.results, signif.stars=signif.stars)
-#    printCoefmat(x$variance.results, signif.stars=FALSE)
-#    printCoefmat(x$variance.results, dig.tst=0, tst.ind=c(1,2),
-#      signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
   }
 
   ##diagnostics and fit:
@@ -4878,6 +4867,8 @@ print.gets <- function(x, signif.stars=TRUE, ...)
 
   ##messages:
   if(!is.null(x$messages)){
+    message("\n", appendLF=FALSE)
+    message("Messages:", appendLF=TRUE)
     message("\n", appendLF=FALSE)
     message(x$messages)
   }
