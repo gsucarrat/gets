@@ -1081,8 +1081,7 @@ print.isat <- function(x, signif.stars=TRUE, ...)
       cat("\n")
       cat("Diagnostics and fit:\n")
       cat("\n")
-      printCoefmat(x$diagnostics, dig.tst=0, tst.ind=2,
-                   signif.stars=signif.stars)
+      printCoefmat(x$diagnostics, tst.ind=2,signif.stars=signif.stars, has.Pvalue = TRUE)
       if(!is.null(x$call$iis)){
         #OLD:
         #      if (x$call$iis==TRUE){
@@ -1093,11 +1092,11 @@ print.isat <- function(x, signif.stars=TRUE, ...)
         mOutl[1,] <- c(outltest$prop$statistic, outltest$prop$p.value)
         mOutl[2,] <- c(outltest$count$statistic, outltest$count$p.value)
         cat("\n")
-        printCoefmat(mOutl, digits=6, signif.stars = FALSE) 
+        printCoefmat(mOutl, digits=6, signif.stars = signif.stars) 
         #cat("\n")
         }
       }
-      printCoefmat(mGOF, digits=6, signif.stars=FALSE)
+      printCoefmat(mGOF, digits=6, signif.stars=signif.stars)
       
     }
     
