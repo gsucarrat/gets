@@ -55,7 +55,7 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   gof.method <- match.arg(gof.method)
   
   ##check that any indicator method is selected
-  if(sis == FALSE && iis == FALSE && tis == FALSE && uis == FALSE){
+  if(sis == FALSE && iis == FALSE && tis == FALSE && identical(uis, FALSE)){
     stop("No Indicator Selection Method was selected. Either set iis, sis or tis as TRUE or specify uis.")
   }
   
