@@ -3771,13 +3771,9 @@ print.arx <- function(x, signif.stars=TRUE, ...)
     cat("\n")
     cat("Diagnostics and fit:\n")
     cat("\n")
-    printCoefmat(x$diagnostics, dig.tst=0, tst.ind=2,
-      signif.stars=FALSE)
-#NEW (suggested by Moritz)?:
-#    printCoefmat(x$diagnostics, tst.ind=2,
-#      signif.stars=signif.stars, has.Pvalue=TRUE)
+    printCoefmat(x$diagnostics, tst.ind=2,signif.stars=signif.stars, has.Pvalue=TRUE)
     if( !is.null(x$gof) ){
-      printCoefmat(x$gof, digits=6, signif.stars=FALSE)
+      printCoefmat(x$gof, digits=6, signif.stars=signif.stars)
     }
   }
 
@@ -4784,8 +4780,7 @@ print.gets <- function(x, signif.stars=TRUE, ...)
     cat("\n")
     cat("Diagnostics:\n")
     cat("\n")
-    printCoefmat(x$gum.diagnostics, dig.tst=0, tst.ind=2,
-      signif.stars=FALSE)
+    printCoefmat(x$gum.diagnostics, tst.ind=2, has.Pvalue = TRUE, signif.stars=signif.stars)
   }
 
   ##paths:
@@ -4859,8 +4854,7 @@ print.gets <- function(x, signif.stars=TRUE, ...)
     cat("\n")
     cat("Diagnostics and fit:\n")
     cat("\n")
-    printCoefmat(x$specific.diagnostics, dig.tst=0, tst.ind=2,
-      signif.stars=FALSE)
+    printCoefmat(x$specific.diagnostics, tst.ind=2,has.Pvalue = TRUE, signif.stars=signif.stars)
     printCoefmat(mGOF, digits=6, signif.stars=FALSE)
 
   }
