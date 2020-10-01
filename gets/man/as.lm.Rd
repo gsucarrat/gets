@@ -14,8 +14,8 @@
 \value{Object of class \code{\link{lm}} }
 
 \author{
-Moritz Schwarz
-Genaro Sucarrat
+Moritz Schwarz, \url{https://www.inet.ox.ac.uk/people/moritz-schwarz/}\cr
+Genaro Sucarrat \url{http://www.sucarrat.net/}\cr\cr
 }
 
 \seealso{

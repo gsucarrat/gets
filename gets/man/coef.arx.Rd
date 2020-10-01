@@ -54,6 +54,7 @@
 \author{
 Felix Pretis, \url{http://www.felixpretis.org/}\cr
 James Reade, \url{https://sites.google.com/site/jjamesreade/}\cr
+Moritz Schwarz, \url{https://www.inet.ox.ac.uk/people/moritz-schwarz/}\cr
 Genaro Sucarrat, \url{http://www.sucarrat.net/}
 }
 

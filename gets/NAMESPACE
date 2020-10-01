@@ -20,8 +20,8 @@ export(
   "gets",
   
   ##base functions:
-  "blocksFun", "diagnostics", "dropvar", "eqwma", "getsFun", "info.criterion",
-  "infocrit", "leqwma", "ols", "regressorsMean", "regressorsVariance",
+  "blocksFun", "diagnostics", "dropvar", "eqwma", "getsFun", "gmm", "info.criterion",
+  "infocrit", "leqwma", "ols", "regressorsMean", "regressorsVariance",  
   
   ##convenience functions:
   "periodicdummies", "eviews", "stata", "printtex", "as.lm",

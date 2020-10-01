@@ -1093,7 +1093,9 @@ print.isat <- function(x, signif.stars=TRUE, ...)
         mOutl[1,] <- c(outltest$prop$statistic, outltest$prop$p.value)
         mOutl[2,] <- c(outltest$count$statistic, outltest$count$p.value)
         cat("\n")
-        printCoefmat(mOutl, digits=6, signif.stars = FALSE) 
+#OLD:
+#        printCoefmat(mOutl, digits=6, signif.stars = FALSE) 
+        printCoefmat(mOutl, digits=6, signif.stars = TRUE) 
         #cat("\n")
         }
       }

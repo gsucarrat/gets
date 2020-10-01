@@ -29,9 +29,10 @@
 ## infocrit
 ## info.criterion
 ## leqwma
-## ols
 ## regressorsMean
 ## regressorsVariance
+## ols
+## gmm
 ## getsFun
 ## blocksFun
 ##
@@ -410,228 +411,6 @@ leqwma <- function(x, length=5, k=1, p=2, as.vector=FALSE,
 } #close leqwma
 
 ##==================================================
-##OLS estimation using the QR decomposition
-ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
-  LAPACK=FALSE, method=3, variance.spec=NULL, ...)
-{
-
-  ##for the future:
-  ## - new argument: options=NULL (default), to control how the
-  ## Newey and West (1987) coefficient-covariance is computed,
-  ## amongst other
-  ## - rename ols to estFun? Split estFun into two functions,
-  ## estFun and vcovFun?
-
-  ##user-specified:
-  ##---------------
-  if(method==0){
-    stop("method = 0 has been deprecated")
-  }
-
-  ##fastest, usually only for estimates:
-  ##------------------------------------
-  if(method==1){
-    out <- list()
-    qx <- qr(x, tol, LAPACK=LAPACK)
-    out <- c(out, qx)
-    out$coefficients <- solve.qr(qx, y, tol=tol)
-  }
-
-  ##second fastest (slightly more output):
-  ##--------------------------------------
-  if(method==2){
-    out <- list()
-    qx <- qr(x, tol, LAPACK=LAPACK) ## compute qr-decomposition of x
-    out <- c(out, qx)
-    out$coefficients <- solve.qr(qx, y, tol=tol)
-    out$xtxinv <- chol2inv(qx$qr) #(x'x)^-1
-    out$fit <- as.vector(x %*% out$coefficients)
-    out$residuals <- y - out$fit
-  }
-
-  ##ordinary vcov:
-  ##--------------
-  if(method==3){
-
-    ##mean specification:
-    out <- list()
-    out$n <- length(y)
-    if(is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
-    out$df <- out$n - out$k
-    if(out$k > 0){
-      qx <- qr(x, tol, LAPACK=LAPACK) ## compute qr-decomposition of x
-      out <- c(out, qx)
-      out$coefficients <- solve.qr(qx, y, tol=tol)
-      out$xtxinv <- chol2inv(qx$qr) #(x'x)^-1
-      out$fit <- as.vector(x %*% out$coefficients)
-    }else{
-      out$fit <- rep(0, out$n)
-    }
-    out$residuals <- y - out$fit
-    out$residuals2 <- out$residuals^2
-    out$rss <- sum(out$residuals2)
-    out$sigma2 <- out$rss/out$df
-    if(out$k>0){
-      out$vcov <- out$sigma2 * out$xtxinv
-    }
-    out$logl <- -out$n*log(2*out$sigma2*pi)/2 - out$rss/(2*out$sigma2)
-
-  } #close method=3
-
-  ##White (1980) vcov:
-  ##------------------
-  if(method==4){
-
-    ##mean specification:
-    out <- list()
-    out$n <- length(y)
-    if(is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
-    out$df <- out$n - out$k
-    if(out$k > 0){
-      qx <- qr(x, tol, LAPACK=LAPACK) ## compute qr-decomposition of x
-      out <- c(out, qx)
-      out$coefficients <- solve.qr(qx, y, tol=tol)
-      out$xtxinv <- chol2inv(qx$qr) #(x'x)^-1
-      out$fit <- as.vector(x %*% out$coefficients)
-    }else{
-      out$fit <- rep(0, out$n)
-    }
-    out$residuals <- y - out$fit
-    out$residuals2 <- out$residuals^2
-    out$rss <- sum(out$residuals2)
-    out$sigma2 <- out$rss/out$df
-    if(out$k>0){
-      out$omegahat <- crossprod(x, x*out$residuals2)
-      out$vcov <- out$xtxinv %*% out$omegahat %*% out$xtxinv
-    }
-    out$logl <- -out$n*log(2*out$sigma2*pi)/2 - out$rss/(2*out$sigma2)
-
-    ##variance specification:
-    
-  }
-
-  ##Newey and West(1987) vcov:
-  ##--------------------------
-  if(method==5){
-
-    ##mean specification:
-    out <- list()
-    out$n <- length(y)
-    if(is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
-    out$df <- out$n - out$k
-    if(out$k>0){
-      qx <- qr(x, tol, LAPACK=LAPACK) ## compute qr-decomposition of x
-      out <- c(out, qx)
-      out$coefficients <- solve.qr(qx, y, tol=tol)
-      out$xtxinv <- chol2inv(qx$qr) #(x'x)^-1
-      out$fit <- as.vector(x %*% out$coefficients)
-    }else{
-      out$fit <- rep(0, out$n)
-    }
-    out$residuals <- y - out$fit
-    out$residuals2 <- out$residuals^2
-    out$rss <- sum(out$residuals2)
-    out$sigma2 <- out$rss/out$df
-
-    if(out$k>0){
-      iL <- round(out$n^(1/4), digits=0)
-      vW <- 1 - 1:iL/(iL+1)
-      vWsqrt <- sqrt(vW)
-      mXadj <- out$residuals*x
-      mS0 <- crossprod(mXadj)
-
-      mSum <- 0
-      for(l in 1:iL){
-        mXadjw <- mXadj*vWsqrt[l]
-        mXadjwNo1 <- mXadjw[-c(1:l),]
-        mXadjwNo2 <- mXadjw[-c(c(out$n-l+1):out$n),]
-        mSum <- mSum + crossprod(mXadjwNo1, mXadjwNo2) + crossprod(mXadjwNo2, mXadjwNo1)
-      }
-
-      out$omegahat <- mS0 + mSum
-      out$vcov <- out$xtxinv %*% out$omegahat %*% out$xtxinv
-    } #end if(out$k>0)
-
-    out$logl <- -out$n*log(2*out$sigma2*pi)/2 - out$rss/(2*out$sigma2)
-
-    ##variance specification:
-    
-  }
-
-  ##log-variance w/ordinary vcov (note: y = log(e^2)):
-  ##--------------------------------------------------
-  if(method==6){
-
-    out <- list()
-    out$n <- length(y)
-    if(is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
-    out$df <- out$n - out$k
-    if(out$k > 0){
-      qx <- qr(x, tol, LAPACK=LAPACK) ## compute qr-decomposition of x
-      out <- c(out, qx)
-      out$coefficients <- solve.qr(qx, y, tol=tol)
-      out$xtxinv <- chol2inv(qx$qr) #(x'x)^-1
-      out$fit <- as.vector(x %*% out$coefficients)
-    }else{
-      out$fit <- rep(0, out$n)
-    }
-    out$residuals <- y - out$fit #residuals of AR-X representation
-    out$residuals2 <- out$residuals^2
-    out$rss <- sum(out$residuals2)
-    out$sigma2 <- out$rss/out$df
-    if(out$k>0){
-      out$vcov <- out$sigma2 * out$xtxinv
-    }
-    ##log-variance part:
-    out$Elnz2 <- -log(mean(exp(out$residuals)))
-    out$var.fit <- exp(out$fit - out$Elnz2)
-    out$std.residuals <- untransformed.residuals/sqrt(out$var.fit)
-    out$logl <- -out$n*log(2*pi)/2 - sum(log(out$var.fit))/2 - sum(untransformed.residuals^2/out$var.fit)/2
-
-  }
-
-  ##if variance specification:
-  ##--------------------------
-  if( !is.null(variance.spec) ){
-
-    if(method==6){ stop("not compatible with method=6") }
-    if( !is.null(variance.spec$vxreg) ){
-      if( length(y)!=NROW(variance.spec$vxreg) ){
-        stop("length(y) != NROW(vxreg)")
-      }
-      variance.spec$vxreg <- coredata(variance.spec$vxreg)
-    }
-    e <- out$residuals
-    variance.spec <- c(list(e=e), variance.spec)
-    variance.spec$return.regressand <- TRUE #some protection
-    variance.spec$return.as.zoo <- FALSE
-    variance.spec$na.trim <- TRUE #some protection
-    variance.spec$na.omit <- FALSE #--||--
-    tmp <- do.call("regressorsVariance", variance.spec)
-    loge2 <- tmp[,1]
-    vX <- cbind(tmp[,-1])
-    e <- e[c(length(e)-length(loge2)+1):length(e)]
-    estVar <- ols(loge2, vX, untransformed.residuals=e, tol=tol,
-      LAPACK=LAPACK, method=6)
-    out$regressorsVariance <- tmp
-    out$var.coefficients <- estVar$coefficients
-    out$Elnz2 <- estVar$Elnz2
-    out$vcov.var <- estVar$vcov
-    NAs2add <- rep(NA, length(y)-length(loge2))
-    out$var.fit <- c(NAs2add, estVar$var.fit)
-    out$std.residuals <- c(NAs2add, estVar$std.residuals)
-    out$ustar.residuals <- c(NAs2add, estVar$residuals)
-    out$logl <- estVar$logl
-
-  }
-
-  ##return result:
-  ##--------------
-  return(out)
-
-} #close ols() function
-
-##==================================================
 ##Create the mean regressors of an arx model:
 regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
   return.regressand=TRUE, return.as.zoo=TRUE, na.trim=TRUE,
@@ -922,6 +701,400 @@ regressorsVariance <- function(e, vc=TRUE, arch=NULL, asym=NULL,
   return(result)
 
 } #close regressorsVariance()
+
+##==================================================
+##OLS estimation using the QR decomposition
+ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
+  LAPACK=FALSE, method=3, variance.spec=NULL, ...)
+{
+
+  ##for the future:
+  ## - new argument: options=NULL (default), to control how the
+  ## Newey and West (1987) coefficient-covariance is computed,
+  ## amongst other
+  ## - rename ols to estFun? Split estFun into two functions,
+  ## estFun and vcovFun?
+
+  ##user-specified:
+  ##---------------
+  if(method==0){
+    stop("method = 0 has been deprecated")
+  }
+
+  ##fastest, usually only for estimates:
+  ##------------------------------------
+  if(method==1){
+    out <- list()
+    qx <- qr(x, tol, LAPACK=LAPACK)
+    out <- c(out, qx)
+    out$coefficients <- solve.qr(qx, y, tol=tol)
+  }
+
+  ##second fastest (slightly more output):
+  ##--------------------------------------
+  if(method==2){
+    out <- list()
+    qx <- qr(x, tol, LAPACK=LAPACK) ## compute qr-decomposition of x
+    out <- c(out, qx)
+    out$coefficients <- solve.qr(qx, y, tol=tol)
+    out$xtxinv <- chol2inv(qx$qr) #(x'x)^-1
+    out$fit <- as.vector(x %*% out$coefficients)
+    out$residuals <- y - out$fit
+  }
+
+  ##ordinary vcov:
+  ##--------------
+  if(method==3){
+
+    ##mean specification:
+    out <- list()
+    out$n <- length(y)
+    if(is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
+    out$df <- out$n - out$k
+    if(out$k > 0){
+      qx <- qr(x, tol, LAPACK=LAPACK) ## compute qr-decomposition of x
+      out <- c(out, qx)
+      out$coefficients <- solve.qr(qx, y, tol=tol)
+      out$xtxinv <- chol2inv(qx$qr) #(x'x)^-1
+      out$fit <- as.vector(x %*% out$coefficients)
+    }else{
+      out$fit <- rep(0, out$n)
+    }
+    out$residuals <- y - out$fit
+    out$residuals2 <- out$residuals^2
+    out$rss <- sum(out$residuals2)
+    out$sigma2 <- out$rss/out$df
+    if(out$k>0){
+      out$vcov <- out$sigma2 * out$xtxinv
+    }
+    out$logl <- -out$n*log(2*out$sigma2*pi)/2 - out$rss/(2*out$sigma2)
+
+  } #close method=3
+
+  ##White (1980) vcov:
+  ##------------------
+  if(method==4){
+
+    ##mean specification:
+    out <- list()
+    out$n <- length(y)
+    if(is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
+    out$df <- out$n - out$k
+    if(out$k > 0){
+      qx <- qr(x, tol, LAPACK=LAPACK) ## compute qr-decomposition of x
+      out <- c(out, qx)
+      out$coefficients <- solve.qr(qx, y, tol=tol)
+      out$xtxinv <- chol2inv(qx$qr) #(x'x)^-1
+      out$fit <- as.vector(x %*% out$coefficients)
+    }else{
+      out$fit <- rep(0, out$n)
+    }
+    out$residuals <- y - out$fit
+    out$residuals2 <- out$residuals^2
+    out$rss <- sum(out$residuals2)
+    out$sigma2 <- out$rss/out$df
+    if(out$k>0){
+      out$omegahat <- crossprod(x, x*out$residuals2)
+      out$vcov <- out$xtxinv %*% out$omegahat %*% out$xtxinv
+    }
+    out$logl <- -out$n*log(2*out$sigma2*pi)/2 - out$rss/(2*out$sigma2)
+
+  }
+
+  ##Newey and West(1987) vcov:
+  ##--------------------------
+  if(method==5){
+
+    ##mean specification:
+    out <- list()
+    out$n <- length(y)
+    if(is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
+    out$df <- out$n - out$k
+    if(out$k>0){
+      qx <- qr(x, tol, LAPACK=LAPACK) ## compute qr-decomposition of x
+      out <- c(out, qx)
+      out$coefficients <- solve.qr(qx, y, tol=tol)
+      out$xtxinv <- chol2inv(qx$qr) #(x'x)^-1
+      out$fit <- as.vector(x %*% out$coefficients)
+    }else{
+      out$fit <- rep(0, out$n)
+    }
+    out$residuals <- y - out$fit
+    out$residuals2 <- out$residuals^2
+    out$rss <- sum(out$residuals2)
+    out$sigma2 <- out$rss/out$df
+
+    if(out$k>0){
+      iL <- round(out$n^(1/4), digits=0)
+      vW <- 1 - 1:iL/(iL+1)
+      vWsqrt <- sqrt(vW)
+      mXadj <- out$residuals*x
+      mS0 <- crossprod(mXadj)
+
+      mSum <- 0
+      for(l in 1:iL){
+        mXadjw <- mXadj*vWsqrt[l]
+        mXadjwNo1 <- mXadjw[-c(1:l),]
+        mXadjwNo2 <- mXadjw[-c(c(out$n-l+1):out$n),]
+        mSum <- mSum + crossprod(mXadjwNo1, mXadjwNo2) + crossprod(mXadjwNo2, mXadjwNo1)
+      }
+
+      out$omegahat <- mS0 + mSum
+      out$vcov <- out$xtxinv %*% out$omegahat %*% out$xtxinv
+    } #end if(out$k>0)
+
+    out$logl <- -out$n*log(2*out$sigma2*pi)/2 - out$rss/(2*out$sigma2)
+
+  }
+
+  ##log-variance w/ordinary vcov (note: y = log(e^2)):
+  ##--------------------------------------------------
+  if(method==6){
+
+    out <- list()
+    out$n <- length(y)
+    if(is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
+    out$df <- out$n - out$k
+    if(out$k > 0){
+      qx <- qr(x, tol, LAPACK=LAPACK) ## compute qr-decomposition of x
+      out <- c(out, qx)
+      out$coefficients <- solve.qr(qx, y, tol=tol)
+      out$xtxinv <- chol2inv(qx$qr) #(x'x)^-1
+      out$fit <- as.vector(x %*% out$coefficients)
+    }else{
+      out$fit <- rep(0, out$n)
+    }
+    out$residuals <- y - out$fit #residuals of AR-X representation
+    out$residuals2 <- out$residuals^2
+    out$rss <- sum(out$residuals2)
+    out$sigma2 <- out$rss/out$df
+    if(out$k>0){
+      out$vcov <- out$sigma2 * out$xtxinv
+    }
+    ##log-variance part:
+    out$Elnz2 <- -log(mean(exp(out$residuals)))
+    out$var.fit <- exp(out$fit - out$Elnz2)
+    out$std.residuals <- untransformed.residuals/sqrt(out$var.fit)
+    out$logl <- -out$n*log(2*pi)/2 - sum(log(out$var.fit))/2 - sum(untransformed.residuals^2/out$var.fit)/2
+
+  }
+
+  ##if variance specification:
+  ##--------------------------
+  if( !is.null(variance.spec) ){
+
+    if(method==6){ stop("not compatible with method=6") }
+    if( !is.null(variance.spec$vxreg) ){
+      if( length(y)!=NROW(variance.spec$vxreg) ){
+        stop("length(y) != NROW(vxreg)")
+      }
+      variance.spec$vxreg <- coredata(variance.spec$vxreg)
+    }
+    e <- out$residuals
+    variance.spec <- c(list(e=e), variance.spec)
+    variance.spec$return.regressand <- TRUE #some protection
+    variance.spec$return.as.zoo <- FALSE
+    variance.spec$na.trim <- TRUE #some protection
+    variance.spec$na.omit <- FALSE #--||--
+    tmp <- do.call("regressorsVariance", variance.spec)
+    loge2 <- tmp[,1]
+    vX <- cbind(tmp[,-1])
+    e <- e[c(length(e)-length(loge2)+1):length(e)]
+    estVar <- ols(loge2, vX, untransformed.residuals=e, tol=tol,
+      LAPACK=LAPACK, method=6)
+    out$regressorsVariance <- tmp
+    out$var.coefficients <- estVar$coefficients
+    out$Elnz2 <- estVar$Elnz2
+    out$vcov.var <- estVar$vcov
+    NAs2add <- rep(NA, length(y)-length(loge2))
+    out$var.fit <- c(NAs2add, estVar$var.fit)
+    out$std.residuals <- c(NAs2add, estVar$std.residuals)
+    out$ustar.residuals <- c(NAs2add, estVar$residuals)
+    out$logl <- estVar$logl
+
+  }
+
+  ##return result:
+  ##--------------
+  return(out)
+
+} #close ols() function
+
+##==================================================
+##GMM estimation of linear models
+gmm <- function(y, x, z, tol=.Machine$double.eps,
+  weighting.matrix=c("efficient", "2sls", "identity"),
+  vcov.type=c("ordinary", "robust"))
+{
+  ## contents:
+  ## initiate
+  ## iv estimator
+  ## 2sls estimator
+  ## efficient gmm estimator
+  ## return result
+  
+    
+  ## initiate:
+  ##----------
+
+  ##determine weighting matrix:
+  types <- c("efficient", "2sls", "identity")
+  whichType <- charmatch(weighting.matrix[1], types)
+  weighting.matrix <- types[ whichType ]
+
+  ##determine vcov.type:
+  types <- c("ordinary", "robust")
+  whichType <- charmatch(vcov.type[1], types)
+  vcov.type <- types[ whichType ]
+
+  ##ensure vector and matrices:
+  y <- as.vector(y)
+  x <- cbind(x) #regressors
+  z <- cbind(z) #instruments
+  
+  ##create result list:
+  result <- list()
+  result$weighting.matrix <- weighting.matrix
+  result$vcov.type <- vcov.type
+  result$n <- length(y)
+  result$k <- NCOL(x)
+  result$df <- result$n - result$k
+  
+
+  ## iv estimator:
+  ##--------------
+
+  if( weighting.matrix=="identity" ){
+
+    if( result$k>0 ){
+      mZtXinv <- solve(crossprod(z, x), tol=tol)
+      mZty <- crossprod(z, y)
+      result$coefficients <- as.numeric( mZtXinv %*% mZty )
+      result$fit <- as.vector( x %*% result$coefficients )
+    }else{
+      result$fit <- rep(0, result$n)
+    }
+    result$residuals <- as.numeric(y - result$fit)
+    result$residuals2 <- result$residuals^2
+    result$rss <- sum(result$residuals2)
+    result$sigma2 <- result$rss/result$df
+
+    ##vcov:
+    mXtZinv <- solve(crossprod(x, z), tol=tol) 
+    if( vcov.type=="ordinary" && result$k>0 ){
+      mShat <- result$sigma2 * crossprod(z)
+      result$vcov <- mZtXinv %*% mShat %*% mXtZinv
+    }
+    if( vcov.type=="robust" && result$k>0 ){
+      mShat <- crossprod(z, z*result$residuals2)                
+      result$vcov <- mZtXinv %*% mShat %*% mXtZinv
+    }
+    
+    ##log-likelihood:
+    result$logl <-
+      -result$n*log(2*result$sigma2*pi)/2 - result$rss/(2*result$sigma2)
+
+  } #end if("identity")
+
+  
+  ## 2sls estimator:
+  ##----------------
+
+  if( weighting.matrix=="2sls" ){
+
+    if( result$k>0 ){
+      mWhat <- solve(crossprod(z), tol=tol) #W-hat matrix
+      mXtZ <- crossprod(x,z)
+      mZtX <- crossprod(z,x)
+      mXtZmWhat <- mXtZ %*% mWhat
+      mZty <- crossprod(z,y)
+      mXtZmWhatZtXinv <- solve(mXtZmWhat %*% mZtX, tol=tol)
+      result$coefficients <-
+        as.numeric( mXtZmWhatZtXinv %*% mXtZmWhat %*% mZty)
+      result$fit <- as.vector( x %*% result$coefficients )
+    }else{
+      result$fit <- rep(0, result$n)
+    }
+    result$residuals <- as.numeric(y - result$fit)
+    result$residuals2 <- result$residuals^2
+    result$rss <- sum(result$residuals2)
+    result$sigma2 <- result$rss/result$df
+
+    ##vcov:
+    if( vcov.type=="ordinary" && result$k>0 ){
+      result$vcov <- result$sigma2 * mXtZmWhatZtXinv
+    }
+    if( vcov.type=="robust" && result$k>0 ){
+      mShat <- crossprod(z, z*result$residuals2)                
+      result$vcov <- mXtZmWhatZtXinv %*%
+        mXtZmWhat %*% mShat %*% mWhat %*% mZtX %*%
+        mXtZmWhatZtXinv
+    }
+
+    ##log-likelihood:    
+    result$logl <-
+      -result$n*log(2*result$sigma2*pi)/2 - result$rss/(2*result$sigma2)
+    
+  } #end if("2sls")
+  
+
+  ## efficient gmm estimator:
+  ##-------------------------
+
+  if( weighting.matrix=="efficient" ){
+
+    if( result$k>0 ){
+
+      ##1st step (2sls):
+      mZtZinv <- solve(crossprod(z), tol=tol) #W-hat matrix
+      mXtZ <- crossprod(x,z)
+      mZtX <- crossprod(z,x)
+      mXtZmZtZinv <- mXtZ %*% mZtZinv
+      mZty <- crossprod(z,y)
+      mXtZmZtZinvZtXinv <- solve(mXtZmZtZinv %*% mZtX, tol=tol)
+      result$coefficients <-
+        as.numeric( mXtZmZtZinvZtXinv %*% mXtZmZtZinv %*% mZty)
+      result$fit <- as.vector( x %*% result$coefficients )
+      result$residuals <- as.numeric(y - result$fit)
+      result$residuals2 <- result$residuals^2
+  
+      ##2nd step (efficient gmm):    
+      mWhat <- solve(crossprod(z, z*result$residuals2), tol=tol)
+      mXtZmWhat <- mXtZ %*% mWhat
+      mXtZmWhatZtXinv <- solve(mXtZmWhat %*% mZtX, tol=tol)
+      result$coefficients <-
+        as.numeric( mXtZmWhatZtXinv %*% mXtZmWhat %*% mZty)
+      result$fit <- as.vector( x %*% result$coefficients )
+
+    }else{
+      result$fit <- rep(0, result$n)
+    }
+
+    result$residuals <- as.numeric(y - result$fit)
+    result$residuals2 <- result$residuals^2
+    result$rss <- sum(result$residuals2)
+    result$sigma2 <- result$rss/result$df
+    
+    ##vcov:
+    if( vcov.type=="ordinary" && result$k>0 ){
+      result$vcov <- result$sigma2 * mXtZmZtZinvZtXinv
+    }
+    if( vcov.type=="robust" && result$k>0 ){
+      result$vcov <- mXtZmWhatZtXinv
+    }
+    
+    ##log-likelihood:
+    result$logl <-
+      -result$n*log(2*result$sigma2*pi)/2 - result$rss/(2*result$sigma2)
+
+  }
+
+  ##return result:
+  ##--------------
+  
+  return(result)
+
+} #close gmm()
 
 ##==================================================
 ##do gets fast and with full flexibility (for advanced users)
@@ -3377,16 +3550,22 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
           ylimArg <- c(ylimArg, coredata(plot.options$newmactual))
         }
         ylimArg <- range(ylimArg)
+#NEW line added by G.:
+        vlineTopValue <- ylimArg[2] #for vertical line (further below)
         eps <- abs(ylimArg[2]-ylimArg[1])
         ylimArg[2] <- ylimArg[2] + eps*0.15 #add more space at the top
         ylimArg[1] <- ylimArg[1] - eps*0.05 #add more space at the bottom
 
-      }else{ ylimArg <- plot.options$ylim }
+      }else{
+        ylimArg <- plot.options$ylim
+#NEW line added by G.:
+        vlineTopValue <- 0.9*ylimArg[2]
+      }
            
       ##get current par-values:
       def.par <- par(no.readonly=TRUE)
   
-      ##margins:
+      ##set margins:
       par(mar=parMarVals) 
   
       ##plot actual values in white (i.e. create plot):
@@ -3398,7 +3577,9 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
       if( plot.options$line.at.origin ){
         startlineIndx <- rep( index(dataForPlot)[plot.options$keep], 2)
         eps <- abs(ylimArg[2]-ylimArg[1])
-        startlineVals <- c(ylimArg[1]-eps*0.05, ylimArg[2]/1.2)
+        startlineVals <- c(ylimArg[1]-eps*0.05, vlineTopValue)
+#OLD:
+#        startlineVals <- c(ylimArg[1]-eps*0.05, ylimArg[2]/1.15)
         polygon(startlineIndx, startlineVals, col="grey",
           border="grey", lwd=plot.options$lwd)
       }
@@ -3771,11 +3952,11 @@ print.arx <- function(x, signif.stars=TRUE, ...)
     cat("\n")
     cat("Diagnostics and fit:\n")
     cat("\n")
-    printCoefmat(x$diagnostics, dig.tst=0, tst.ind=2,
-      signif.stars=FALSE)
-#NEW (suggested by Moritz)?:
-#    printCoefmat(x$diagnostics, tst.ind=2,
-#      signif.stars=signif.stars, has.Pvalue=TRUE)
+##OLD:
+##    printCoefmat(x$diagnostics, dig.tst=0, tst.ind=2,
+##      signif.stars=FALSE)
+    printCoefmat(x$diagnostics, tst.ind=2,
+      signif.stars=signif.stars, has.Pvalue=TRUE)
     if( !is.null(x$gof) ){
       printCoefmat(x$gof, digits=6, signif.stars=FALSE)
     }
@@ -4859,8 +5040,11 @@ print.gets <- function(x, signif.stars=TRUE, ...)
     cat("\n")
     cat("Diagnostics and fit:\n")
     cat("\n")
+#OLD:
+#    printCoefmat(x$specific.diagnostics, dig.tst=0, tst.ind=2,
+#      signif.stars=FALSE)
     printCoefmat(x$specific.diagnostics, dig.tst=0, tst.ind=2,
-      signif.stars=FALSE)
+      signif.stars=signif.stars, has.Pvalue=TRUE)
     printCoefmat(mGOF, digits=6, signif.stars=FALSE)
 
   }
