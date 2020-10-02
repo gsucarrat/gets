@@ -427,5 +427,5 @@ predict(mymodel, n.ahead=24, n.sim=10000, plot=TRUE)
 predict(mymodel, n.ahead=24, n.sim=10000, plot=TRUE,
   innov=rnorm(10000*24)) -> tmp2
 
-##conclusion (small sample): there can be a large difference
+##conclusion ("small sample"): there can be a large difference
 ##in the fans produced by the bootstrap and innov=rnorm.

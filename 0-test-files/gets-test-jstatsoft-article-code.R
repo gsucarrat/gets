@@ -1,5 +1,3 @@
-I AM HERE!!!
-
 #######################################################
 ## This code replicates the analyses in the JSS-paper
 ## on the gets package

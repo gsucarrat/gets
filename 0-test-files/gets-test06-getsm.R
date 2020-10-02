@@ -90,7 +90,7 @@ suppressMessages(tmp <- getsm(gum01, print.searchinfo=TRUE))
 ##extraction functions (only mean equation):
 getsm01 <- getsm(gum01)
 print(getsm01)
-print(getsm01, signif.stars=TRUE)
+print(getsm01, signif.stars=FALSE)
 sigma(getsm01)
 rsquared(getsm01)
 summary(getsm01)
@@ -230,12 +230,12 @@ getsm(gum04)
 
 ##issue #22 (by M-orca) on Github (6/9-2020):
 set.seed(123)
-y <- arima.sim(list(ar=0.9), 80)
+yy <- arima.sim(list(ar=0.9), 80)
 xregs <- matrix(rnorm(2*80), 80, 2)
-object <- arx(y,mxreg = xregs)
+object <- arx(yy, mxreg = xregs)
 ##gum does not pass one or more diagnostics tests:
-x <- getsm(object)
-print(x)
+tmp <- getsm(object)
+print(tmp)
 
 
 ##################################################

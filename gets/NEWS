@@ -5,7 +5,7 @@ Version 0.26 (TBA):
 
 * vignette added: An introduction to the gets package
 
-* print.arx()/print.gets()/print.isat(): significance codes are now printed, by default, for the diagnostics
+* print.arx()/print.gets()/print.isat(): significance codes are now printed for the diagnostics if 'signif.stars = TRUE' (the default)
 
 * fixes:
 - print.gets() now prints properly when no search has been undertaken

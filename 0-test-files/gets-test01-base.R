@@ -65,10 +65,10 @@ vX <- log(mX^2)
 tmp <- ols(vY, mX, method=3, variance.spec=list(vc=TRUE, arch=1, asym=1,
   log.ewma=2, vxreg=vX))
 
-##check that logls now differ (should return FALSE):
-tmp$logl == sum(dnorm(tmp$residuals, sd=sqrt(tmp$sigma2), log=TRUE))
+##check that logls now differ (should return TRUE):
+tmp$logl != sum(dnorm(tmp$residuals, sd=sqrt(tmp$sigma2), log=TRUE))
 
-##check that length(y)!=NROW(vxreg) fails:
+##check that length(y)!=NROW(vxreg) fails (should return FALSE):
 ols(vY, mX, method=3, variance.spec=list(vxreg=vX[-1,]))
   
 ## until version 0.9, this example failed for
@@ -80,7 +80,7 @@ x <- rnorm(100, 0, 1)*10^8
 ols(y,cbind(1,x), method=2, LAPACK=FALSE)$coefficients
 ols(y,cbind(1,x), method=2, LAPACK=TRUE)$coefficients
 
-##verify that method=0 yields error:
+##verify that method=0 returns error ("method = 0 has been deprecated"):
 ols(vY, mX, method=0)
 
 ##test tol argument (only used if LAPACK=FALSE):

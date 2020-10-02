@@ -54,10 +54,14 @@ if(doDelete){
 
   ##files and folders of the work-directory:
   fileNames <- dir()
+
+  ##the deleted files and folders:
+  deletedItems <- NULL
   
   ##delete tarball, if it already exists:             
   toBeDeleted <- fileNames[ grep(".tar.gz", fileNames) ] 
   if( length(toBeDeleted)>0 ){ file.remove(toBeDeleted) }
+  deletedItems <- c(deletedItems, toBeDeleted)
   
   ##delete "gets.Rcheck" folder, if it already exists:
   toBeDeleted <- intersect("gets.Rcheck", fileNames)
@@ -66,7 +70,20 @@ if(doDelete){
       unlink(i, recursive=TRUE) #delete folder+its content
     }
   }
+  deletedItems <- c(deletedItems, toBeDeleted)
 
+  ##print deleted items:
+  if( length(deletedItems) > 0){
+    cat("\n")
+    cat("The following was deleted: \n") 
+    cat(deletedItems, sep="\n")
+    cat("\n")
+  }else{
+    cat("\n")
+    cat("No items were deleted\n")
+    cat("\n")
+  }
+  
 } #end if(doDelete)
 
 

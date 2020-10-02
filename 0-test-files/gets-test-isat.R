@@ -289,7 +289,8 @@ uis <- iim(dgp.n)
 isat(y, sis=FALSE, uis=uis)
 isat(y, sis=FALSE, uis=uis, max.paths=1)
 uis <- sim(dgp.n)
-##as of August 2020, these do not work (why?):
+##as of August 2020, these did not work;
+##but as of 2 October 2020 they do!:
 isat(y, sis=FALSE, uis=uis)
 isat(y, sis=FALSE, uis=uis[,seq(1,dgp.n,2)])
 isat(y, sis=FALSE, uis=uis, max.paths=1)
@@ -304,7 +305,8 @@ mX <- matrix(rnorm(1*30), 30, 1)
 isat(y, mxreg=z, iis=FALSE, sis=TRUE, uis=mX)
 
 ##used to crash (uis is a matrix):
-##as of August 2020, these do not work (why?):
+##as of August 2020, these did not work;
+##but as of 2 October 2020 they do!:
 dgpN <- 50
 set.seed(123)
 y <- rnorm(dgpN); x <- rnorm(dgpN)
@@ -343,7 +345,8 @@ isat(y, iis=FALSE, sis=TRUE, tis=FALSE, uis=FALSE,
   blocks=myblocks, max.paths=1)
 uis <- list(sim(dgp.n), tim(dgp.n))
 myblocks[[2]] <- list(7:19, 27:34, 40:45)
-##as of August 2020, these do not work (why?):
+##as of August 2020, these did not work;
+##but as of 2 October 2020 they do!:
 isat(y, iis=FALSE, sis=FALSE, tis=FALSE, uis=uis,
   blocks=myblocks)
 isat(y, iis=FALSE, sis=FALSE, tis=FALSE, uis=uis,
