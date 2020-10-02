@@ -55,7 +55,7 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   gof.method <- match.arg(gof.method)
   
   ##check that any indicator method is selected
-  if(sis == FALSE && iis == FALSE && tis == FALSE && uis == FALSE){
+  if(sis == FALSE && iis == FALSE && tis == FALSE && identical(uis, FALSE)){
     stop("No Indicator Selection Method was selected. Either set iis, sis or tis as TRUE or specify uis.")
   }
   
@@ -1081,8 +1081,7 @@ print.isat <- function(x, signif.stars=TRUE, ...)
       cat("\n")
       cat("Diagnostics and fit:\n")
       cat("\n")
-      printCoefmat(x$diagnostics, dig.tst=0, tst.ind=2,
-                   signif.stars=signif.stars)
+      printCoefmat(x$diagnostics, tst.ind=2,signif.stars=signif.stars, has.Pvalue = TRUE)
       if(!is.null(x$call$iis)){
         #OLD:
         #      if (x$call$iis==TRUE){
@@ -1099,7 +1098,7 @@ print.isat <- function(x, signif.stars=TRUE, ...)
         #cat("\n")
         }
       }
-      printCoefmat(mGOF, digits=6, signif.stars=FALSE)
+      printCoefmat(mGOF, digits=6, signif.stars=signif.stars)
       
     }
     
