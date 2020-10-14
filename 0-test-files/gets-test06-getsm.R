@@ -177,7 +177,7 @@ getsm(gum02, print.searchinfo=FALSE,
 ##extraction functions (both mean and variance equations):
 getsm02 <- getsm(gum02)
 print(getsm02)
-print(getsm02, signif.stars=TRUE)
+print(getsm02, signif.stars=FALSE)
 summary(getsm02)
 coef(getsm02)
 coef(getsm02, spec="m")

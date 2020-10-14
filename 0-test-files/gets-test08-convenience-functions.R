@@ -122,6 +122,7 @@ printtex(isat01, intercept=FALSE)
 printtex(isat01, gof=FALSE)
 printtex(isat01, diagnostics=FALSE)
 
+
 ##################################################
 ## 4 TEST as.lm()
 ##################################################

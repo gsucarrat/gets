@@ -295,8 +295,8 @@ fitted(mod07, spec="m")
 fitted(mod07, spec="v")
 fitted(mod07, spec="b") #should be NULL
 logLik(mod07) #should produce warning
-plot(mod07) #should produce warning
-recursive(mod07) #should return the error-message "Not available..."
+plot(mod07) #should return "...no plot produced"
+recursive(mod07) #should return the error-message "...Not available..."
 vcov(mod07)
 vcov(mod07, spec="m")
 vcov(mod07, spec="v")
@@ -330,7 +330,7 @@ logLik(mod08)
 plot(mod08) #should produce warning
 ##this does not work, fixing it (i.e. changing Gfun) requires some work!:
 predict(mod08, n.ahead=24, newmxreg=matrix(0,24,2))
-recursive(mod08) #should return the error-message "Not available..."
+recursive(mod08) #should return the error-message "...Not available..."
 vcov(mod08)
 vcov(mod08, spec="m")
 vcov(mod08, spec="v") #should return NULL

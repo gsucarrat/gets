@@ -2,7 +2,6 @@
 ## Test file for the 'isat' source of the 'gets'
 ## package. First created 23 September 2014, Oslo.
 ##
-## Current version: 0.24
 ##
 ## 1 INITIATE
 ## 2 TEST iim(), sim() AND tim()
@@ -323,9 +322,23 @@ isat(y, sis=FALSE, uis=mX)
 ##uis as list:
 uis <- list(sis=sim(y) , tis=tim(y))
 ##as of August 2020, these do not work (why?):
+##but as of 14 October 2020 they do!:
 isat(y, sis=FALSE, uis=uis)
 isat(y, sis=FALSE, uis=uis, max.paths=1)
 isat(y, sis=FALSE, uis=uis, max.paths=2)
+
+##uis as data.frame:
+##in an email 5/10-2020, F-bear reported an error produced by
+##the following code:
+set.seed(123)
+mx <- data.frame(matrix(runif(500),ncol=5))
+colnames(mx) <- paste("x", seq(1:5), sep="")
+mx <- as.data.frame(mx)
+#mx <- as.zoo(mx) #conversion to zoo solves the issue
+yx <- 2*mx[,1] + rnorm(100, 0, 1)
+is2 <- isat(yx, iis=TRUE, sis=FALSE, uis=mx, t.pval=0.01)
+is2
+
 
 ##test blocks argument:
 ##=====================
@@ -420,9 +433,9 @@ assign("SWtest",
   envir=myenv) #close assign
 isat(y, #should not work
   user.diagnostics=list(name="SWtest", pval=0.025)) 
-isat(y, #should work
+isat(y, #should work:
   user.diagnostics=list(name="SWtest", pval=1e-05, envir=myenv))
-isat(y, #should work
+isat(y, #should work:
   user.diagnostics=list(name="SWtest", pval=0.025, envir=myenv))
 
 
@@ -483,7 +496,7 @@ isat(y, user.estimator=list(name="ols2"))
 ##compare speed 1:
 system.time(isat(y))
 system.time(isat(y, user.estimator=list(name="ols2")))
-##Conclusion: here, ols is faster than ols2
+##Conclusion: here, they are more or less equally fast
 
 ##comparisons 2: w/microbenchmark, see
 ##https://nelsonareal.net/blog/2017/06/speeding_up_ols.html
@@ -580,8 +593,8 @@ isat(y, user.diagnostics=list(name="SWtest", pval=1e-10),
 ##either outright errors, or strange results. Currently, therefore,
 ##until more numerically stable versions are derived, users are
 ##discouraged to use these robust coefficient covariances. The tests
-##here therefore only tests whether the arguments work or not. The
-##last set of tests suggests the source of the problem is near-zero
+##here, therefore, only check whether the arguments work or not. The
+##last set of checks suggest the source of the problem is near-zero
 ##residuals.
 
 ##test "white" vcov (all yield errors?):

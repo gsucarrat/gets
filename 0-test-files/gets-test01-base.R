@@ -68,7 +68,7 @@ tmp <- ols(vY, mX, method=3, variance.spec=list(vc=TRUE, arch=1, asym=1,
 ##check that logls now differ (should return TRUE):
 tmp$logl != sum(dnorm(tmp$residuals, sd=sqrt(tmp$sigma2), log=TRUE))
 
-##check that length(y)!=NROW(vxreg) fails (should return FALSE):
+##check that length(y)!=NROW(vxreg) fails:
 ols(vY, mX, method=3, variance.spec=list(vxreg=vX[-1,]))
   
 ## until version 0.9, this example failed for
