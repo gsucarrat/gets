@@ -4458,7 +4458,7 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
     ##if( user-defined estimator ):
     if( !is.null(object$call$user.estimator) ){
       ##estimate specific:
-      est <- arx(yadj, mxreg=mXadj, user.estimator=user.estimator,
+      est <- arx(yadj, mxreg=mXadj, mc=FALSE, user.estimator=user.estimator,
         qstat.options=c(ar.LjungB[1],arch.LjungB[1]),
         normality.JarqueB=normality.JarqueB,
         user.diagnostics=user.diagnostics, tol=object$aux$tol,
