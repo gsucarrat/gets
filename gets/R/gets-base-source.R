@@ -4617,7 +4617,7 @@ getsv <- function(object, t.pval=0.05, wald.pval=t.pval,
   }
 
   ## estimate model:
-  est <- arx(e, vc=TRUE, vxreg=vXadj,
+  est <- arx(e, vc=TRUE, vxreg=vXadj,mc=FALSE,
     zero.adj=object$aux$zero.adj, vc.adj=object$aux$vc.adj,
     qstat.options=c(ar.LjungB[1],arch.LjungB[1]),
     normality.JarqueB=normality.JarqueB,
