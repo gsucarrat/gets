@@ -4444,7 +4444,7 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
     ##if( default estimator ):
     if( is.null(object$call$user.estimator) ){
       ##estimate specific model:
-      est <- arx(yadj, mxreg=mXadj, mc = FALSE,vc=object$aux$vc,
+      est <- arx(yadj, mxreg=mXadj, mc=FALSE,vc=object$aux$vc,
         arch=object$aux$arch, asym=object$aux$asym,
         log.ewma=object$aux$log.ewma, vxreg=object$aux$vxreg,
         zero.adj=object$aux$zero.adj,
