@@ -2179,6 +2179,8 @@ arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     na.trim=TRUE,
     na.omit=FALSE)
   
+  if(missing(mc)){warning("Warning: Default argument for mc (Intercept) was changed in gets version 0.27. Before it was mc=FALSE, now it is mc=TRUE. Suppress warning by directly specifying the mc argument.")}
+  
   ##aux: auxiliary list, also used by getsm/getsv
   aux <- list()
   aux$y <- coredata(tmp[,1])
