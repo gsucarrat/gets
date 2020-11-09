@@ -412,7 +412,7 @@ leqwma <- function(x, length=5, k=1, p=2, as.vector=FALSE,
 
 ##==================================================
 ##Create the mean regressors of an arx model:
-regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
+regressorsMean <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   return.regressand=TRUE, return.as.zoo=TRUE, na.trim=TRUE,
   na.omit=FALSE)
 {
@@ -2162,7 +2162,7 @@ blocksFun <- function(y, x, untransformed.residuals=NULL,
 
 ##==================================================
 ##Estimate AR-X model with log-ARCH-X errors
-arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
+arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   vc=FALSE, arch=NULL, asym=NULL, log.ewma=NULL, vxreg=NULL,
   zero.adj=0.1, vc.adj=TRUE,
   vcov.type=c("ordinary", "white", "newey-west"),
@@ -4444,7 +4444,7 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
     ##if( default estimator ):
     if( is.null(object$call$user.estimator) ){
       ##estimate specific model:
-      est <- arx(yadj, mxreg=mXadj, vc=object$aux$vc,
+      est <- arx(yadj, mxreg=mXadj, mc = FALSE,vc=object$aux$vc,
         arch=object$aux$arch, asym=object$aux$asym,
         log.ewma=object$aux$log.ewma, vxreg=object$aux$vxreg,
         zero.adj=object$aux$zero.adj,
