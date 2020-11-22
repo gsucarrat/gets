@@ -4,10 +4,11 @@
 ##
 ## 1 INITIATE
 ## 2 TEST ols()
-## 3 TEST diagnostics()
-## 4 TEST eqwma() AND leqwma()
-## 5 TEST regressorsMean()
-## 6 TEST regressorsVariance()
+## 3 TEST gmm()
+## 4 TEST diagnostics()
+## 5 TEST eqwma() AND leqwma()
+## 6 TEST regressorsMean()
+## 7 TEST regressorsVariance()
 ##
 ##################################################
 
@@ -16,7 +17,7 @@
 ##################################################
 
 ##set working directory:
-setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
+setwd("C:/Users/sucarrat/Documents/R/gs/gets/github/")
 #setwd(choose.dir())
 
 ##load required packages:
@@ -27,8 +28,8 @@ require(zoo)
 rm(list=ls())
 
 ##load source:
-source("gets-base-source.R")
-source("gets-isat-source.R")
+source("./gets/gets/R/gets-base-source.R")
+source("./gets/gets/R/gets-isat-source.R")
 
 
 ##################################################
@@ -64,8 +65,8 @@ vX <- log(mX^2)
 tmp <- ols(vY, mX, method=3, variance.spec=list(vc=TRUE, arch=1, asym=1,
   log.ewma=2, vxreg=vX))
 
-##check that logls now differ (should return FALSE):
-tmp$logl == sum(dnorm(tmp$residuals, sd=sqrt(tmp$sigma2), log=TRUE))
+##check that logls now differ (should return TRUE):
+tmp$logl != sum(dnorm(tmp$residuals, sd=sqrt(tmp$sigma2), log=TRUE))
 
 ##check that length(y)!=NROW(vxreg) fails:
 ols(vY, mX, method=3, variance.spec=list(vxreg=vX[-1,]))
@@ -79,7 +80,7 @@ x <- rnorm(100, 0, 1)*10^8
 ols(y,cbind(1,x), method=2, LAPACK=FALSE)$coefficients
 ols(y,cbind(1,x), method=2, LAPACK=TRUE)$coefficients
 
-##verify that method=0 yields error:
+##verify that method=0 returns error ("method = 0 has been deprecated"):
 ols(vY, mX, method=0)
 
 ##test tol argument (only used if LAPACK=FALSE):
@@ -100,7 +101,160 @@ names(ols(vY, mX, method=6))
 
 
 ##################################################
-##3 TEST diagnostics()
+##3 TEST gmm()
+##################################################
+
+##in this experiment the aim is simply to verify
+##that the arguments work
+##----------------------------------------------
+
+set.seed(123)
+y <- rnorm(20)
+x <- matrix(rnorm(20*2), 20, 2)
+z <- matrix(rnorm(20*2), 20, 2)
+
+gmm(y,x,z) #basic test
+gmm(y,x,z, tol=1) ##should return error
+gmm(y,x,z, tol=0.01) ##should return error
+gmm(y,x,z, tol=0.001) ##should work
+gmm(y,x,z, weighting.matrix="efficient", vcov.type="ordinary")
+gmm(y,x,z, weighting.matrix="efficient", vcov.type="robust")
+gmm(y,x,z, weighting.matrix="2sls", vcov.type="ordinary")
+gmm(y,x,z, weighting.matrix="2sls", vcov.type="robust")
+gmm(y,x,z, weighting.matrix="identity", vcov.type="ordinary")
+gmm(y,x,z, weighting.matrix="identity", vcov.type="robust")
+
+
+##in this experiment NCOL(x) < NCOL(z), so there
+##are more instruments than regressors; the aim is
+##to check whether 2sls and efficient gmm work.
+##------------------------------------------------
+
+set.seed(123)
+y <- rnorm(20)
+x <- matrix(rnorm(20*2), 20, 2)
+z <- matrix(rnorm(20*3), 20, 3)
+
+gmm(y,x,z, weighting.matrix="efficient", vcov.type="ordinary")
+gmm(y,x,z, weighting.matrix="efficient", vcov.type="robust")
+gmm(y,x,z, weighting.matrix="2sls", vcov.type="ordinary")
+gmm(y,x,z, weighting.matrix="2sls", vcov.type="robust")
+
+##in this experiment x=z, so the results from
+##ols() and gmm() should be identical
+##-------------------------------------------
+
+set.seed(123)
+y <- rnorm(20)
+x <- matrix(rnorm(20*2), 20, 2)
+z <- x
+
+##vcov.type="ordinary":
+olsEst <- ols(y,x, method=3)
+ivEst <- gmm(y,x,x, weighting.matrix="identity", vcov.type="ordinary")
+round(ivEst$coefficients, digits=10) == round(olsEst$coefficients, digits=10)
+all( round(ivEst$fit, digits=10) == round(olsEst$fit, digits=10) )
+all( round(ivEst$residuals, digits=10) == round(olsEst$residuals, digits=10))
+round(ivEst$rss, digits=10) == round(olsEst$rss, digits=10)
+round(ivEst$sigma2, digits=10) == round(olsEst$sigma2, digits=10)
+round(ivEst$vcov, digits=10) == round(olsEst$vcov, digits=10)
+round(ivEst$logl, digits=10) == round(olsEst$logl, digits=10)
+
+##vcov.type="robust":
+olsEst <- ols(y,x, method=4)
+ivEst <- gmm(y,x,x, weighting.matrix="identity", vcov.type="robust")
+round(ivEst$coefficients, digits=10) == round(olsEst$coefficients, digits=10)
+all( round(ivEst$fit, digits=10) == round(olsEst$fit, digits=10) )
+all( round(ivEst$residuals, digits=10) == round(olsEst$residuals, digits=10))
+round(ivEst$rss, digits=10) == round(olsEst$rss, digits=10)
+round(ivEst$sigma2, digits=10) == round(olsEst$sigma2, digits=10)
+round(ivEst$vcov, digits=10) == round(olsEst$vcov, digits=10)
+round(ivEst$logl, digits=10) == round(olsEst$logl, digits=10)
+
+
+##in this experiment NCOL(x)==NCOL(z), but x!=z;
+##also, the regressor x is correlated with the
+##error; the aim is to obtain an idea of whether
+##estimates are consistent
+##------------------------------------------------
+
+set.seed(123)
+n <- 10000
+z1 <- rnorm(n)
+eps <- rnorm(n) #ensures cor(z,eps)=0
+x1 <- 0.5*z1 + 0.5*eps #ensures cor(x,eps) is strong
+y <- 0.4 + 0.8*x1 + eps #the dgp
+cor(x1, eps) #check correlatedness
+cor(z1, eps) #check uncorrelatedness
+
+x <- cbind(1,x1) #regressor matrix
+z <- cbind(1,z1) #instrument matrix
+
+##ols as benchmark (should be inconsistent):
+tmp <- ols(y,x)
+tmp$coefficients #true values are 0.4. and 0.8
+
+##check consistency of iv estimator:
+tmp <- gmm(y,x,z, weighting.matrix="identity")
+tmp$coefficients #should be approx 0.4 and 0.8
+tmp$vcov
+tmp <- gmm(y,x,z, weighting.matrix="identity", vcov.type="robust")
+tmp$vcov
+
+##check consistency of 2sls estimator:
+tmp <- gmm(y,x,z, weighting.matrix="2sls")
+tmp$coefficients #should be approx 0.4 and 0.8
+tmp$vcov
+tmp <- gmm(y,x,z, weighting.matrix="2sls", vcov.type="robust")
+tmp$vcov
+
+##check consistency of efficient gmm estimator:
+tmp <- gmm(y,x,z, weighting.matrix="efficient")
+tmp$coefficients #should be approx 0.4 and 0.8
+tmp$vcov
+tmp <- gmm(y,x,z, weighting.matrix="efficient", vcov.type="robust")
+tmp$vcov
+
+##compare log-likelihoods (should return TRUE):
+tmp <- gmm(y,x,z, weighting.matrix="identity")
+round(tmp$logl, digits=10) ==
+  round(sum(dnorm(tmp$residuals, sd=sqrt(tmp$sigma2), log=TRUE)),
+  digits=10)
+
+##compare log-likelihoods (should return TRUE):
+tmp <- gmm(y,x,z, weighting.matrix="2sls")
+round(tmp$logl, digits=10) ==
+  round(sum(dnorm(tmp$residuals, sd=sqrt(tmp$sigma2), log=TRUE)),
+  digits=10)
+
+##compare log-likelihoods (should return TRUE):
+tmp <- gmm(y,x,z, weighting.matrix="efficient")
+round(tmp$logl, digits=10) ==
+  round(sum(dnorm(tmp$residuals, sd=sqrt(tmp$sigma2), log=TRUE)),
+  digits=10)
+
+
+##the aim of this experiment is to test whether
+##gmm() works with getsFun()
+##------------------------------------------------
+
+set.seed(123)
+y <- rnorm(20)
+x <- matrix(rnorm(20*10), 20, 10)
+colnames(x) <- paste0("x",1:10)
+z <- matrix(rnorm(20*10), 20, 10)
+
+getsFun(y,x, user.estimator=list(name="gmm", z=z))
+getsFun(y,x, user.estimator=list(name="gmm", z=z),
+  keep=6)
+
+blocksFun(y,x, user.estimator=list(name="gmm", z=z))
+blocksFun(y,x, user.estimator=list(name="gmm", z=z),
+  keep=6)
+
+
+##################################################
+##4 TEST diagnostics()
 ##################################################
 
 set.seed(123)
@@ -170,7 +324,7 @@ diagnostics(x)
 
 
 ##################################################
-## 4 TEST eqwma AND leqwma
+## 5 TEST eqwma AND leqwma
 ##################################################
 
 set.seed(123)
@@ -206,7 +360,7 @@ leqwma(x, lag=1) #should return error
 
 
 ##################################################
-## 5 TEST regressorsMean()
+## 6 TEST regressorsMean()
 ##################################################
 
 ##test 1:
@@ -289,7 +443,7 @@ regressorsMean(y, mxreg=mxreg)
 
 
 ##################################################
-## 6 TEST regressorsVariance()
+## 7 TEST regressorsVariance()
 ##################################################
 
 ##test 1:

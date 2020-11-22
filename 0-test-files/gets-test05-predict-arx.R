@@ -40,19 +40,19 @@
 ##################################################
 
 ##set working directory:
-setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
+setwd("C:/Users/sucarrat/Documents/R/gs/gets/github/")
 #setwd(choose.dir())
 
 ##load required packages:
 require(parallel)
 require(zoo)
 
-##remove everything in workspace (.GlobalEnv):
+##remove everything in workspace (.GlobaleEnv:
 rm(list=ls())
 
 ##load source:
-source("gets-base-source.R")
-source("gets-isat-source.R")
+source("./gets/gets/R/gets-base-source.R")
+source("./gets/gets/R/gets-isat-source.R")
 
 
 ##################################################
@@ -181,6 +181,8 @@ mymodel <- arx(vY)
 
 ##predictions of the variance:
 functionVals <- predict(mymodel, spec="variance", n.ahead=3)
+##note: is it correct that the message "Set 'vc = TRUE'..."
+##should be returned?
 
 ##correct predictions:
 sd2hat1 <- sd2hat2 <- sd2hat3 <- sigma(mymodel)^2
@@ -196,6 +198,8 @@ mymodel <- arx(vY, mc=TRUE)
 
 ##predictions of the variance:
 functionVals <- predict(mymodel, spec="variance", n.ahead=3)
+##note: is it correct that the message "Set 'vc = TRUE'..."
+##should be returned?
 
 ##correct predictions:
 sd2hat1 <- sd2hat2 <- sd2hat3 <- sigma(mymodel)^2
@@ -211,6 +215,8 @@ mymodel <- arx(vY, mc=TRUE, ar=1)
 
 ##predictions of the variance:
 functionVals <- predict(mymodel, spec="variance", n.ahead=3)
+##note: is it correct that the message "Set 'vc = TRUE'..."
+##should be returned?
 
 ##correct predictions:
 sd2hat1 <- sd2hat2 <- sd2hat3 <- sigma(mymodel)^2
@@ -292,6 +298,9 @@ predict(mymodel, plot.options=list(lty=c(3,2)))
 predict(mymodel, plot.options=list(lty=3))
 ##only the forecast is lwd=3, should both be?:
 predict(mymodel, plot.options=list(lwd=3))
+##now both are lwd=3:
+predict(mymodel, plot.options=list(lwd=c(3,3)))
+##now only actual is lwd=3:
 predict(mymodel, plot.options=list(lwd=c(1,3)))
 predict(mymodel, plot.options=list(ylim=c(-8,8)))
 predict(mymodel, plot.options=list(ylab="G-values"))
@@ -427,5 +436,5 @@ predict(mymodel, n.ahead=24, n.sim=10000, plot=TRUE)
 predict(mymodel, n.ahead=24, n.sim=10000, plot=TRUE,
   innov=rnorm(10000*24)) -> tmp2
 
-##conclusion (small sample): there can be a large difference
+##conclusion ("small sample"): there can be a large difference
 ##in the fans produced by the bootstrap and innov=rnorm.

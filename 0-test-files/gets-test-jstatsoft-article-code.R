@@ -1,5 +1,3 @@
-I AM HERE!!!
-
 #######################################################
 ## This code replicates the analyses in the JSS-paper
 ## on the gets package
@@ -13,7 +11,7 @@ I AM HERE!!!
 ##START not in jstatsoft code:
 
 ##set working directory:
-setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
+setwd("C:/Users/sucarrat/Documents/R/gs/gets/github/")
 #setwd(choose.dir())
 
 ##load required packages:
@@ -24,8 +22,8 @@ require(zoo)
 rm(list=ls())
 
 ##load source:
-source("gets-base-source.R")
-source("gets-isat-source.R")
+source("./gets/gets/R/gets-base-source.R")
+source("./gets/gets/R/gets-isat-source.R")
 
 ##END not in jstatsoft code
 #######################################################

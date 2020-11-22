@@ -18,7 +18,7 @@
 ##################################################
 
 ##set working directory:
-setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
+setwd("C:/Users/sucarrat/Documents/R/gs/gets/github/")
 #setwd(choose.dir())
 
 ##load required packages:
@@ -29,8 +29,8 @@ require(zoo)
 rm(list=ls())
 
 ##load source:
-source("gets-base-source.R")
-source("gets-isat-source.R")
+source("./gets/gets/R/gets-base-source.R")
+source("./gets/gets/R/gets-isat-source.R")
 
 
 ##################################################
@@ -165,10 +165,10 @@ identical( mod01$specific.spec, mod02$specific.spec)
 identical( mod01$terminals.results, mod02$terminals.results)
 
 ##ar diagnostics:
-mod01 <- getsFun(vY, mX, ar.LjungB=c(1, 0.025))
+mod01 <- getsFun(vY, mX, ar.LjungB=c(1, 0.50))
 mod01$no.of.estimations
 mod01$terminals.results
-mod02 <- getsFun(vY, mX, ar.LjungB=c(1,0.025), turbo=TRUE)
+mod02 <- getsFun(vY, mX, ar.LjungB=c(1,0.50), turbo=TRUE)
 mod02$no.of.estimations
 mod02$terminals.results
 tmp <- NULL
@@ -180,10 +180,10 @@ identical(mod01$specific.spec, mod02$specific.spec)
 identical(mod01$terminals.results, mod02$terminals.results)
 
 ##arch diagnostics:
-mod01 <- getsFun(vY, mX, arch.LjungB=c(1,0.025))
+mod01 <- getsFun(vY, mX, arch.LjungB=c(1,0.20))
 mod01$no.of.estimations
 mod01$terminals.results
-mod02 <- getsFun(vY, mX, arch.LjungB=c(1,0.025), turbo=TRUE)
+mod02 <- getsFun(vY, mX, arch.LjungB=c(1,0.20), turbo=TRUE)
 mod02$no.of.estimations
 mod02$terminals.results
 tmp <- NULL
@@ -195,10 +195,10 @@ identical(mod01$specific.spec, mod02$specific.spec)
 identical(mod01$terminals.results, mod02$terminals.results)
 
 ##normality diagnostics:
-mod01 <- getsFun(vY, mX, normality.JarqueB=0.025)
+mod01 <- getsFun(vY, mX, normality.JarqueB=0.20)
 mod01$no.of.estimations
 mod01$terminals.results
-mod02 <- getsFun(vY, mX, normality.JarqueB=0.025, turbo=TRUE)
+mod02 <- getsFun(vY, mX, normality.JarqueB=0.20, turbo=TRUE)
 mod02$no.of.estimations
 mod02$terminals.results
 tmp <- NULL

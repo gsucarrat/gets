@@ -14,7 +14,7 @@
 ##################################################
 
 ##set working directory:
-setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
+setwd("C:/Users/sucarrat/Documents/R/gs/gets/github/")
 #setwd(choose.dir())
 
 ##load required packages:
@@ -25,8 +25,8 @@ require(zoo)
 rm(list=ls())
 
 ##load source:
-source("gets-base-source.R")
-source("gets-isat-source.R")
+source("./gets/gets/R/gets-base-source.R")
+source("./gets/gets/R/gets-isat-source.R")
 
 
 ##################################################
@@ -39,13 +39,17 @@ vY <- rnorm(20)
 mX <- matrix(rnorm(length(vY)*10), length(vY), 10)
 vY <- mX[,10] + 0.1*rnorm(NROW(mX))
 
+##note: in the tests that follows, it seems the name of the
+##regressor matrix, mX, is used unnecessarily in naming objects
+##of the value returned by blocksFun(). check?
+
 ##check if each argument works:
 blocksFun(vY, mX)$specific.spec
 blocksFun(vY, mX,
   untransformed.residuals=NA)$specific.spec #should have no effect
 mXX <- list(); mXX[[1]] <- mX[,1:5]; mXX[[2]] <- mX[,6:10]
 blocksFun(vY, mXX)$specific.spec
-myblocks <- list(); myblocks[[1]] <- list(1:3,4:6,7:10)
+myblocks <- list(); myblocks[[1]] <- list(1:3, 4:6, 7:10)
 blocksFun(vY, mX, blocks=myblocks)$blocks
 blocksFun(vY, mX, no.of.blocks=4)$blocks
 blocksFun(vY, mX, max.block.size=2)$blocks

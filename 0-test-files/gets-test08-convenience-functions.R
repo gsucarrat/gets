@@ -5,6 +5,7 @@
 ## 1 INITIATE
 ## 2 TEST eviews() AND stata()
 ## 3 TEST printtex()
+## 4 TEST as.lm()
 ##
 ##################################################
 
@@ -13,7 +14,7 @@
 ##################################################
 
 ##set working directory:
-setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
+setwd("C:/Users/sucarrat/Documents/R/gs/gets/github/")
 #setwd(choose.dir())
 
 ##load required packages:
@@ -24,8 +25,8 @@ require(zoo)
 rm(list=ls())
 
 ##load source:
-source("gets-base-source.R")
-source("gets-isat-source.R")
+source("./gets/gets/R/gets-base-source.R")
+source("./gets/gets/R/gets-isat-source.R")
 
 
 ##################################################
@@ -121,9 +122,11 @@ printtex(isat01, intercept=FALSE)
 printtex(isat01, gof=FALSE)
 printtex(isat01, diagnostics=FALSE)
 
-###=========================
-###test that as.lm() works:
-#
+
+##################################################
+## 4 TEST as.lm()
+##################################################
+
 set.seed(123)
 y <- rnorm(30)
 arxmod <- arx(y, mc=TRUE, ar=1:3)

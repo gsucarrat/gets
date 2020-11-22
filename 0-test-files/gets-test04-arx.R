@@ -16,7 +16,7 @@
 ##################################################
 
 ##set working directory:
-setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
+setwd("C:/Users/sucarrat/Documents/R/gs/gets/github/")
 #setwd(choose.dir())
 
 ##load required packages:
@@ -27,8 +27,8 @@ require(zoo)
 rm(list=ls())
 
 ##load source:
-source("gets-base-source.R")
-source("gets-isat-source.R")
+source("./gets/gets/R/gets-base-source.R")
+source("./gets/gets/R/gets-isat-source.R")
 
 
 ##################################################
@@ -77,8 +77,8 @@ arx(y, mc=TRUE, ar=c(1,3), vcov.type="w")
 arx(y, mc=TRUE, ar=c(1,3), vcov.type="n")
 arx(y, mc=TRUE, ar=c(1,3), qstat.options=c(5,5))
 arx(y, mc=TRUE, ar=c(1,3), tol=1e-15)
-arx(y, mc=TRUE, ar=c(1,3), tol=1, LAPACK=FALSE) #should crash
 arx(y, mc=TRUE, ar=c(1,3), tol=1, LAPACK=TRUE)
+arx(y, mc=TRUE, ar=c(1,3), tol=1, LAPACK=FALSE) #should crash
 
 ##only mean specification:
 mod01 <- arx(y, ar=1:4, mxreg=mX)
@@ -295,8 +295,8 @@ fitted(mod07, spec="m")
 fitted(mod07, spec="v")
 fitted(mod07, spec="b") #should be NULL
 logLik(mod07) #should produce warning
-plot(mod07) #should produce warning
-recursive(mod07) #should return the error-message "Not available..."
+plot(mod07) #should return "...no plot produced"
+recursive(mod07) #should return the error-message "...Not available..."
 vcov(mod07)
 vcov(mod07, spec="m")
 vcov(mod07, spec="v")
@@ -330,7 +330,7 @@ logLik(mod08)
 plot(mod08) #should produce warning
 ##this does not work, fixing it (i.e. changing Gfun) requires some work!:
 predict(mod08, n.ahead=24, newmxreg=matrix(0,24,2))
-recursive(mod08) #should return the error-message "Not available..."
+recursive(mod08) #should return the error-message "...Not available..."
 vcov(mod08)
 vcov(mod08, spec="m")
 vcov(mod08, spec="v") #should return NULL
@@ -385,6 +385,12 @@ recursive(mod09) #should return the error-message "Not available..."
 vcov(mod09)
 vcov(mod09, spec="m")
 vcov(mod09, spec="v")
+
+##user-defined estimator (gmm):
+z <- matrix(rnorm(10*54), 54,10)
+colnames(z) <- paste0("z", 1:NCOL(z))
+mod10 <- arx(y, mc=TRUE, ar=1:4, mxreg=mX,
+  user.estimator=list(name="gmm", z=z), plot=FALSE)
 
 
 ##################################################
