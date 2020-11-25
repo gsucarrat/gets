@@ -8,6 +8,12 @@ Maintainer: Genaro Sucarrat <genaro.sucarrat@bi.no>
 Description: Automated General-to-Specific (GETS) modelling of the mean and variance of a regression, and indicator saturation methods for detecting and testing for structural breaks in the mean, see Pretis, Reade and Sucarrat (2018) <doi:10.18637/jss.v086.i03>.
 License: GPL (>= 2)
 Depends: R (>= 3.3.0), zoo, parallel
-Suggests: lgarch, xtable
+Suggests: 
+    lgarch,
+    xtable,
+    testthat,
+    Matrix,
+    microbenchmark
 BugReports: https://github.com/gsucarrat/gets/issues
 URL: https://CRAN.R-project.org/package=gets, http://www.sucarrat.net/R/gets/
+Config/testthat/edition: 3
