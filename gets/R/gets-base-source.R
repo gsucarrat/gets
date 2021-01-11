@@ -3144,7 +3144,8 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
       coefs <- coef.arx(object, spec="mean")
   
       ##mc:
-      if(!is.null(object$call$mc)){
+      if(is.null(object$call$mc) | isTRUE(object$call$mc)){
+      #if(!is.null(object$call$mc) & isTRUE(object$call$mc)){
         mconst <- as.numeric(coefs[1])
         mconstIndx <- 1
       }else{
