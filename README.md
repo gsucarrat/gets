@@ -1,4 +1,7 @@
 # gets
+
+![R-CMD-check](https://github.com/gsucarrat/gets/workflows/R-CMD-check/badge.svg)
+
 The R Package *gets* provides General-to-Specific (GETS) modelling of the mean and variance of a regression, and Indicator Saturation (ISAT) methods for detecting and testing for structural breaks in the mean. Facilities for *user-specified* GETS and ISAT methods are also provided.
 
 The CRAN webpage of the package is: [https://CRAN.R-project.org/package=gets]( https://CRAN.R-project.org/package=gets). Here, on Github, we provide the development version of the package. For an overview of the files and folders, see OVERVIEW.md.
