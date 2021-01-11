@@ -590,7 +590,7 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   }else{
     normalityArg <- as.numeric(normality.JarqueB)  
   }
-  mod <- arx(y, mxreg=mXis, vcov.type=vcov.type,
+  mod <- arx(y, mxreg=mXis, vcov.type=vcov.type, mc = FALSE,
     qstat.options=qstat.options, normality.JarqueB=normalityArg,
     user.estimator=userEstArgArx, user.diagnostics=user.diagnostics,
     tol=tol, LAPACK=LAPACK, plot=FALSE)
