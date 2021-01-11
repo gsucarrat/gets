@@ -3145,7 +3145,7 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
   
       ##mc:
       if(is.null(object$call$mc) | isTRUE(object$call$mc)){
-      #if(!is.null(object$call$mc) & isTRUE(object$call$mc)){
+      #if(!is.null(object$call$mc)){
         mconst <- as.numeric(coefs[1])
         mconstIndx <- 1
       }else{
@@ -3285,7 +3285,6 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
   ##-----------------------
   ## 4 probs (quantiles)
   ##-----------------------
-
   ##mean:
   mMeanQs <- NULL
   if( predictMean && !is.null(probsArg) ){
@@ -4745,7 +4744,7 @@ predict.gets <- function(object, spec=NULL, n.ahead=12,
       objectNew$call$mc <- TRUE
       indxCounter <- indxCounter + 1
     }else{
-      objectNew$call$mc <- NULL
+      objectNew$call$mc <- FALSE
     }
     
     ##ar argument:
