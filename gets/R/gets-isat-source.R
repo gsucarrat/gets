@@ -868,7 +868,7 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
       objectNew$call$mc <- TRUE
       indxCounter <- indxCounter + 1
     }else{
-      objectNew$call$mc <- NULL
+      objectNew$call$mc <- FALSE
     }
 
     ##ar argument:
