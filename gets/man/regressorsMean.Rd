@@ -6,7 +6,7 @@
 \description{The function generates the regressors of the mean equation in an \code{\link{arx}} model. The returned value is a \code{matrix} with the regressors and, by default, the regressand in column one. By default, observations (rows) with missing values are removed in the beginning and the end with \code{\link{na.trim}}, and the returned matrix is a \code{\link{zoo}} object. }
 
 \usage{
-regressorsMean(y, mc = FALSE, ar = NULL, ewma = NULL, mxreg = NULL,
+regressorsMean(y, mc = TRUE, ar = NULL, ewma = NULL, mxreg = NULL,
   return.regressand = TRUE, return.as.zoo = TRUE, na.trim = TRUE,
   na.omit=FALSE)
 }

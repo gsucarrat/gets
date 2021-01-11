@@ -52,7 +52,7 @@ printtex(mymod)
 ##add intercept, at the end, to regressor matrix:
 mX <- cbind(mX,1)
 colnames(mX) <- c("xreg1", "xreg2", "intercept")
-mymod <- arx(y, mxreg=mX)
+mymod <- arx(y, mxreg=mX, mc = FALSE)
 
 ##set intercept location to 3:
 printtex(mymod, intercept=3)
