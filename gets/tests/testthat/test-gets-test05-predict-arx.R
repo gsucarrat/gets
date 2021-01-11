@@ -11,7 +11,7 @@ vY <- rnorm(20)
 
 test_that("Mean Predictions: ar(0) model without constant",{
   
-  mymodel <- arx(vY)
+  mymodel <- arx(vY, mc=FALSE)
   
   ##predictions of the mean:
   functionVals <- predict(mymodel, spec="mean", n.ahead=3)
@@ -89,8 +89,8 @@ test_that("Mean Predictions: ar(1)-x model",{
 
 ##===============
 test_that("Mean Predictions: EqWMA(2) model",{
-  mymodel <- arx(vY, ewma=list(length=2))
-  regressorsMean(vY, ewma=list(length=2))
+  mymodel <- arx(vY, mc=FALSE, ewma=list(length=2))
+  regressorsMean(vY, mc = FALSE, ewma=list(length=2))
   mean( c(vY[1],vY[2]) ) #obs no. 3
   mean( c(vY[2],vY[3]) ) #obs no. 4
   mean( c(vY[18],vY[19]) ) #obs no. 20
@@ -126,7 +126,7 @@ vY <- rnorm(20)
 ##=============================
 
 test_that("Variance Predictions: ar(0) model without constant",{
-  mymodel <- arx(vY)
+  mymodel <- arx(vY, mc=FALSE)
   
   ##predictions of the variance:
   functionVals <- predict(mymodel, spec="variance", n.ahead=3)
@@ -183,7 +183,7 @@ test_that("ar(1) model",{
 ##============================
 
 test_that("arch(0) model with constant",{
-  mymodel <- arx(vY, vc=TRUE)
+  mymodel <- arx(vY, mc=FALSE, vc=TRUE)
   
   ##predictions of the variance:
   functionVals <- predict(mymodel, spec="variance", n.ahead=3)
@@ -212,7 +212,7 @@ save_png <- function(code, width = 1000, height = 600) {
 
 test_that("arch(1) models graphs correct", {
 
-  mymodel1 <- arx(vY, arch=1)
+  mymodel1 <- arx(vY, mc=FALSE, arch=1)
   mymodel2 <- arx(vY, mc=TRUE, arch=1)
   mymodel3 <- arx(vY, mc=TRUE, ar=1, arch=1)
   
@@ -245,7 +245,7 @@ test_that("arch(1) models predictions correct", {
   
   # snapshot_output saves the output, so don't have to compare to a manually
   # created vector
-  mymodel <- arx(vY, arch=1)
+  mymodel <- arx(vY, mc=FALSE, arch=1)
   set.seed(123)
   expect_snapshot_output(predict(mymodel, spec="variance"))
   
@@ -286,7 +286,7 @@ test_that("ar(1)-x model", {
 test_that("arch(1)-x model", {
   skip_on_ci()
   
-  mymodel <- arx(vY, arch=1, vxreg=mX)
+  mymodel <- arx(vY, mc=FALSE, arch=1, vxreg=mX)
   expect_snapshot_file(cran = FALSE, path = save_png(plot(mymodel)), name = "arch1x_1.png")
   
   set.seed(123)
@@ -367,7 +367,7 @@ test_that("arch(1) plot options work", {
   
   skip_on_ci()
   
-  mymodel <- arx(vY, vc=TRUE, arch=1)
+  mymodel <- arx(vY, mc=FALSE, vc=TRUE, arch=1)
   set.seed(123)
   expect_snapshot_file(cran = FALSE, path = save_png(predict(mymodel, plot = TRUE)), name = "pred_arch1_1.png")
   set.seed(123)
@@ -486,7 +486,7 @@ y <- arima.sim(list(ar=phi1), 1000)
 ##======================
 
 ##estimate ar(1):
-mymodel <- arx(y, ar=1)
+mymodel <- arx(y, mc=FALSE, ar=1)
 
 ##predictions of the mean:
 predict(mymodel, plot=TRUE)
@@ -507,7 +507,7 @@ test_that("Check that bootstrap and innov=rnorm simulations are similar in large
 ##====================
 
 ##estimate ar(1):
-mymodel <- arx(y[1:20], ar=1)
+mymodel <- arx(y[1:20], mc=FALSE, ar=1)
 
 ##predictions of the mean:
 predict(mymodel, n.ahead=24, plot=TRUE)

@@ -47,19 +47,19 @@ y[1] <- NA
 y[y.n] <- NA
 
 ##test each argument separately and together:
-arx(y) #should return "Warning message: In plot.arx(out) : No estimated...etc."
-arx(y, normality.JarqueB=TRUE)
+arx(y, mc=FALSE) #should return "Warning message: In plot.arx(out) : No estimated...etc."
+arx(y, mc=FALSE, normality.JarqueB=TRUE)
 arx(y, mc=TRUE)
-arx(y, ar=c(1,3))
-arx(y, ewma=list(length=c(2,4)))
-arx(y, mxreg=mX)
+arx(y, mc = FALSE, ar=c(1,3))
+arx(y, mc = FALSE, ewma=list(length=c(2,4)))
+arx(y, mc = FALSE, mxreg=mX)
 arx(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)), mxreg=mX)
-arx(y, vc=TRUE)
-arx(y, arch=c(2,4))
-arx(y, asym=c(1,3))
-arx(y, log.ewma=list(length=c(3,5)))
-arx(y, vxreg=cbind(log(mX[,1:2]^2), mX[,3:4]))
-arx(y, vc=TRUE, arch=c(2,4), asym=c(1,3),log.ewma=list(length=c(3,5)),vxreg=cbind(log(mX[,1:2]^2), mX[,3:4]))
+arx(y, mc = FALSE, vc=TRUE)
+arx(y, mc = FALSE, arch=c(2,4))
+arx(y, mc = FALSE, asym=c(1,3))
+arx(y, mc = FALSE, log.ewma=list(length=c(3,5)))
+arx(y, mc = FALSE, vxreg=cbind(log(mX[,1:2]^2), mX[,3:4]))
+arx(y, mc = FALSE, vc=TRUE, arch=c(2,4), asym=c(1,3),log.ewma=list(length=c(3,5)),vxreg=cbind(log(mX[,1:2]^2), mX[,3:4]))
 arx(y, mc=TRUE, ar=c(1,3), vcov.type="o")
 arx(y, mc=TRUE, ar=c(1,3), vcov.type="w")
 arx(y, mc=TRUE, ar=c(1,3), vcov.type="n")
@@ -72,20 +72,23 @@ arx(y, mc=TRUE, ar=c(1,3), tol=1, LAPACK=TRUE)
 # Unit Testing
 
 test_that("arx test each argument",{
-  expect_message(arx(y)) #should return "Warning message: In plot.arx(out) : No estimated...etc."
-  expect_message(arx(y, normality.JarqueB=TRUE))
+  expect_message(arx(y, mc = FALSE)) #should return "Warning message: In plot.arx(out) : No estimated...etc."
+  expect_message(arx(y, mc = FALSE, normality.JarqueB=TRUE))
+  
+  # Check the new warning of not specifying an mc argument
+  expect_warning(arx(y, ar=c(1,3)),regexp = "Default argument for mc")
   
   expect_silent(arx(y, mc=TRUE))
-  expect_silent(arx(y, ar=c(1,3)))
-  expect_silent(arx(y, ewma=list(length=c(2,4))))
-  expect_silent(arx(y, mxreg=mX))
+  expect_silent(arx(y, mc=FALSE,ar=c(1,3)))
+  expect_silent(arx(y, mc=FALSE,ewma=list(length=c(2,4))))
+  expect_silent(arx(y, mc=FALSE,mxreg=mX))
   expect_silent(arx(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)), mxreg=mX))
-  expect_silent(arx(y, vc=TRUE))
-  expect_silent(arx(y, arch=c(2,4)))
-  expect_silent(arx(y, asym=c(1,3)))
-  expect_silent(arx(y, log.ewma=list(length=c(3,5))))
-  expect_silent(arx(y, vxreg=cbind(log(mX[,1:2]^2), mX[,3:4])))
-  expect_silent(arx(y, vc=TRUE, arch=c(2,4), asym=c(1,3),log.ewma=list(length=c(3,5)),vxreg=cbind(log(mX[,1:2]^2), mX[,3:4])))
+  expect_silent(arx(y, mc=FALSE,vc=TRUE))
+  expect_silent(arx(y, mc=FALSE,arch=c(2,4)))
+  expect_silent(arx(y, mc=FALSE,asym=c(1,3)))
+  expect_silent(arx(y, mc=FALSE,log.ewma=list(length=c(3,5))))
+  expect_silent(arx(y, mc=FALSE,vxreg=cbind(log(mX[,1:2]^2), mX[,3:4])))
+  expect_silent(arx(y, mc=FALSE,vc=TRUE, arch=c(2,4), asym=c(1,3),log.ewma=list(length=c(3,5)),vxreg=cbind(log(mX[,1:2]^2), mX[,3:4])))
   expect_silent(arx(y, mc=TRUE, ar=c(1,3), vcov.type="o"))
   expect_silent(arx(y, mc=TRUE, ar=c(1,3), vcov.type="w"))
   expect_silent(arx(y, mc=TRUE, ar=c(1,3), vcov.type="n"))
@@ -98,7 +101,7 @@ test_that("arx test each argument",{
 })
 
 ##only mean specification:
-mod01 <- arx(y, ar=1:4, mxreg=mX)
+mod01 <- arx(y, ar=1:4, mxreg=mX, mc = FALSE)
 print(mod01)
 print(mod01, signif.stars=TRUE) # Nov 2020 Moritz: don't think we need this anymore, our default is signif.stars=TRUE anyway
 coef(mod01)
@@ -209,8 +212,8 @@ recursive(mod01, std.errors=FALSE)
 # recursive(arx(y), spec="variance") #should return the error-message No variance-equation
 recursive(arx(y, mc=TRUE, plot=FALSE))
 recursive(arx(y, mc=TRUE, plot=FALSE), return=FALSE)
-recursive(arx(y, ar=1, plot=FALSE))
-recursive(arx(y, mxreg=mX, plot=FALSE))
+recursive(arx(y, mc=FALSE,ar=1, plot=FALSE))
+recursive(arx(y, mc=FALSE,mxreg=mX, plot=FALSE))
 plot(cbind(residuals(mod01),
            residuals(mod01, std=FALSE),
            residuals(mod01, std=TRUE)))
@@ -232,13 +235,13 @@ test_that("Recursive testing",{
   expect_silent(recursive(mod01, plot=FALSE, return=FALSE)) #return nothing
   expect_silent(recursive(mod01, std.errors=FALSE))
   
-  expect_error(recursive(arx(y))) #should return the error-message: No mean-equation
-  expect_error(recursive(arx(y), spec="variance")) #should return the error-message No variance-equation
+  expect_error(recursive(arx(y,mc=FALSE))) #should return the error-message: No mean-equation
+  expect_error(recursive(arx(y,mc=FALSE), spec="variance")) #should return the error-message No variance-equation
   
   expect_silent(recursive(arx(y, mc=TRUE, plot=FALSE)))
   expect_silent(recursive(arx(y, mc=TRUE, plot=FALSE), return=FALSE))
-  expect_silent(recursive(arx(y, ar=1, plot=FALSE)))
-  expect_silent(recursive(arx(y, mxreg=mX, plot=FALSE)))
+  expect_silent(recursive(arx(y, mc=FALSE, ar=1, plot=FALSE)))
+  expect_silent(recursive(arx(y, mc=FALSE, mxreg=mX, plot=FALSE)))
   
   expect_vector(sigma(mod01))
   expect_vector(rsquared(mod01))
@@ -257,8 +260,8 @@ test_that("Recursive testing",{
   expect_snapshot_file(cran = FALSE, path = save_png(recursive(mod01, std.errors=FALSE)), name = "arx_recursive_mean_3.png")
   expect_snapshot_file(cran = FALSE, path = save_png(recursive(arx(y, mc=TRUE, plot=FALSE))), name = "arx_recursive_mean_4.png")
   expect_snapshot_file(cran = FALSE, path = save_png(recursive(arx(y, mc=TRUE, plot=FALSE), return=FALSE)), name = "arx_recursive_mean_5.png")
-  expect_snapshot_file(cran = FALSE, path = save_png(recursive(arx(y, ar=1, plot=FALSE))), name = "arx_recursive_mean_6.png")
-  expect_snapshot_file(cran = FALSE, path = save_png(recursive(arx(y, mxreg=mX, plot=FALSE))), name = "arx_recursive_mean_7.png")
+  expect_snapshot_file(cran = FALSE, path = save_png(recursive(arx(y, mc=FALSE, ar=1, plot=FALSE))), name = "arx_recursive_mean_6.png")
+  expect_snapshot_file(cran = FALSE, path = save_png(recursive(arx(y, mc=FALSE, mxreg=mX, plot=FALSE))), name = "arx_recursive_mean_7.png")
   expect_snapshot_file(cran = FALSE, path = save_png(plot(cbind(residuals(mod01),
                                                                 residuals(mod01, std=FALSE),
                                                                 residuals(mod01, std=TRUE)))), name = "arx_recursive_mean_8.png")
@@ -358,10 +361,10 @@ recursive(mod02, spec="variance")
 recursive(mod02, spec="variance", return=FALSE)
 recursive(mod02, spec="variance", plot=FALSE, return=FALSE) #return nothing
 recursive(mod02, spec="variance", std.errors=FALSE)
-recursive(arx(y, vc=TRUE), spec="variance")
-recursive(arx(y, arch=1), spec="variance")
-recursive(arx(y, vxreg=mX), spec="variance")
-recursive(arx(y, vc=TRUE), spec="variance", return=FALSE)
+recursive(arx(y, mc=FALSE, vc=TRUE), spec="variance")
+recursive(arx(y, mc=FALSE, arch=1), spec="variance")
+recursive(arx(y, mc=FALSE, vxreg=mX), spec="variance")
+recursive(arx(y, mc=FALSE, vc=TRUE), spec="variance", return=FALSE)
 plot(cbind(residuals(mod02),
            residuals(mod02, std=FALSE),
            residuals(mod02, std=TRUE)))
@@ -381,10 +384,10 @@ test_that("Recursive Tests arx Mean and Variance specification",{
   expect_silent(recursive(mod02, spec="variance", return=FALSE))
   expect_silent(recursive(mod02, spec="variance", plot=FALSE, return=FALSE)) #return nothing
   expect_silent(recursive(mod02, spec="variance", std.errors=FALSE))
-  expect_silent(recursive(arx(y, vc=TRUE), spec="variance"))
-  expect_silent(recursive(arx(y, arch=1), spec="variance"))
-  expect_silent(recursive(arx(y, vxreg=mX), spec="variance"))
-  expect_silent(recursive(arx(y, vc=TRUE), spec="variance", return=FALSE))
+  expect_silent(recursive(arx(y, mc=FALSE, vc=TRUE), spec="variance"))
+  expect_silent(recursive(arx(y, mc=FALSE, arch=1), spec="variance"))
+  expect_silent(recursive(arx(y, mc=FALSE, vxreg=mX), spec="variance"))
+  expect_silent(recursive(arx(y, mc=FALSE, vc=TRUE), spec="variance", return=FALSE))
   expect_true(isClass("summaryDefault",summary(mod02)))
   expect_vector(vcov(mod02))
   expect_vector(vcov(mod02, spec="m"))
@@ -397,10 +400,10 @@ test_that("Recursive Tests arx Mean and Variance specification",{
   expect_snapshot_file(cran = FALSE, path = save_png(recursive(mod02, spec="variance")), name = "arx_recursive_meanvariance_2.png")
   expect_snapshot_file(cran = FALSE, path = save_png(recursive(mod02, spec="variance", return=FALSE)), name = "arx_recursive_meanvariance_3.png")
   expect_snapshot_file(cran = FALSE, path = save_png(recursive(mod02, spec="variance", std.errors=FALSE)), name = "arx_recursive_meanvariance_4.png")
-  expect_snapshot_file(cran = FALSE, path = save_png(recursive(arx(y, vc=TRUE), spec="variance")), name = "arx_recursive_meanvariance_5.png")
-  expect_snapshot_file(cran = FALSE, path = save_png(recursive(arx(y, arch=1), spec="variance")), name = "arx_recursive_meanvariance_6.png")
-  expect_snapshot_file(cran = FALSE, path = save_png(recursive(arx(y, vxreg=mX), spec="variance")), name = "arx_recursive_meanvariance_7.png")
-  expect_snapshot_file(cran = FALSE, path = save_png(recursive(arx(y, vc=TRUE), spec="variance", return=FALSE)), name = "arx_recursive_meanvariance_8.png")
+  expect_snapshot_file(cran = FALSE, path = save_png(recursive(arx(y, mc=FALSE, vc=TRUE), spec="variance")), name = "arx_recursive_meanvariance_5.png")
+  expect_snapshot_file(cran = FALSE, path = save_png(recursive(arx(y, mc=FALSE, arch=1), spec="variance")), name = "arx_recursive_meanvariance_6.png")
+  expect_snapshot_file(cran = FALSE, path = save_png(recursive(arx(y, mc=FALSE, vxreg=mX), spec="variance")), name = "arx_recursive_meanvariance_7.png")
+  expect_snapshot_file(cran = FALSE, path = save_png(recursive(arx(y, mc=FALSE, vc=TRUE), spec="variance", return=FALSE)), name = "arx_recursive_meanvariance_8.png")
   expect_snapshot_file(cran = FALSE, path = save_png(plot(cbind(residuals(mod02),
                                                                 residuals(mod02, std=FALSE),
                                                                 residuals(mod02, std=TRUE)))), name = "arx_recursive_meanvariance_9.png")
@@ -412,7 +415,7 @@ test_that("Recursive Tests arx Mean and Variance specification",{
 ##only variance specification:
 
 # Visual Inspection
-mod03 <- arx(y, arch=1:4, asym=1:2, log.ewma=3, vxreg=log(mX^2))
+mod03 <- arx(y, mc=FALSE, arch=1:4, asym=1:2, log.ewma=3, vxreg=log(mX^2))
 print(mod03)
 print(mod03, signif.stars=TRUE)
 coef(mod03)
@@ -443,7 +446,7 @@ vcov(mod03)
 # Unit testing
 
 test_that("arx only variance specification",{
-  expect_silent(mod03 <- arx(y, arch=1:4, asym=1:2, log.ewma=3, vxreg=log(mX^2)))
+  expect_silent(mod03 <- arx(y, mc=FALSE, arch=1:4, asym=1:2, log.ewma=3, vxreg=log(mX^2)))
   expect_output(print(mod03))
   expect_output(print(mod03, signif.stars=TRUE))
   expect_vector(coef(mod03))
@@ -464,7 +467,7 @@ test_that("arx only variance specification",{
   # Snapshot testing
   skip_on_ci()
   
-  expect_snapshot_file(cran = FALSE, path = save_png(mod03 <- arx(y, arch=1:4, asym=1:2, log.ewma=3, vxreg=log(mX^2))), name = "arx_variance_1.png")
+  expect_snapshot_file(cran = FALSE, path = save_png(mod03 <- arx(y, mc=FALSE, arch=1:4, asym=1:2, log.ewma=3, vxreg=log(mX^2))), name = "arx_variance_1.png")
   expect_snapshot_file(cran = FALSE, path = save_png(plot(ES(mod01, level=c(0.99,0.95,0.9)), plot.type="single", col=c("blue","red","green4"))), name = "arx_variance_2.png") #expected shortfall
   expect_snapshot_file(cran = FALSE, path = save_png(plot(cbind(fitted(mod03),
                                                                 fitted(mod03, spec="m"),
@@ -506,10 +509,10 @@ SWtest <- function(x, ...){
 
 
 test_that("User defined diagnostics",{
-  mod06 <- arx(y, ar=1:4, mxreg=mX, user.diagnostics=list(name="SWtest", envir = environment(SWtest)))
+  mod06 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX, user.diagnostics=list(name="SWtest", envir = environment(SWtest)))
   expect_output(print(mod06))
   expect_output(print(mod06, signif.stars=TRUE))
-  mod06 <- arx(y, ar=1:4, mxreg=mX,user.diagnostics=list(name="SWtest", pval=0.025, envir = environment(SWtest)))
+  mod06 <- arx(y,mc=FALSE,  ar=1:4, mxreg=mX,user.diagnostics=list(name="SWtest", pval=0.025, envir = environment(SWtest)))
   expect_output(print(mod06))
   
 })
@@ -527,13 +530,13 @@ assign("SWtest",
          return(result)
        },
        envir=myenv) #end function
-# mod06 <- arx(y, ar=1:4, mxreg=mX, user.diagnostics=list(name="SWtest")) #should not work
-mod06 <- arx(y, ar=1:4, mxreg=mX, user.diagnostics=list(name="SWtest", envir=myenv)) #should work
+# mod06 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX, user.diagnostics=list(name="SWtest")) #should not work
+mod06 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX, user.diagnostics=list(name="SWtest", envir=myenv)) #should work
 print(mod06)
 
 test_that("Testing the user-defined environment",{
-  # expect_error(arx(y, ar=1:4, mxreg=mX, user.diagnostics=list(name="SWtest"))) #should not work
-  mod06 <- arx(y, ar=1:4, mxreg=mX, user.diagnostics=list(name="SWtest", envir=myenv)) #should work
+  # expect_error(arx(y,mc=FALSE,  ar=1:4, mxreg=mX, user.diagnostics=list(name="SWtest"))) #should not work
+  mod06 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX, user.diagnostics=list(name="SWtest", envir=myenv)) #should work
   expect_output(print(mod06))
   
 })
@@ -557,7 +560,7 @@ Gfun <- function(y, x, method=3){
 
 # Visual Inspection
 
-mod07 <- arx(y, ar=1:4, mxreg=mX,user.estimator=list(name="Gfun", envir=environment(Gfun)), plot=FALSE)
+mod07 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX,user.estimator=list(name="Gfun", envir=environment(Gfun)), plot=FALSE)
 summary(mod07)
 print(mod07)
 # mod07 <- arx(y, ar=1:4, mxreg=mX, user.estimator=list(name="Gfun"), plot=TRUE) #should work but produce warning
@@ -585,10 +588,10 @@ vcov(mod07, spec="v")
 # Unit testing
 
 test_that("TEST USER-DEFINED ESTIMATION",{
-  expect_silent(mod07 <- arx(y, ar=1:4, mxreg=mX,user.estimator=list(name="Gfun",envir=environment(Gfun)), plot=FALSE))
+  expect_silent(mod07 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX,user.estimator=list(name="Gfun",envir=environment(Gfun)), plot=FALSE))
   expect_silent(summary(mod07))
   expect_output(print(mod07))
-  expect_message(mod07 <- arx(y, ar=1:4, mxreg=mX, user.estimator=list(name="Gfun",envir=environment(Gfun)), plot=TRUE)) #should work but produce warning
+  expect_message(mod07 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX, user.estimator=list(name="Gfun",envir=environment(Gfun)), plot=TRUE)) #should work but produce warning
   expect_silent(summary(mod07))
   expect_output(print(mod07))
   expect_vector(coef(mod07))
@@ -619,7 +622,7 @@ Gfun <- function(y, x, ...){
   tmp$mean.fit <- tmp$fit
   return(tmp)
 }
-mod08 <- arx(y, ar=1:4, mxreg=mX,user.estimator=list(name="Gfun", envir=environment(Gfun)), plot=FALSE)
+mod08 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX,user.estimator=list(name="Gfun", envir=environment(Gfun)), plot=FALSE)
 summary(mod08)
 print(mod08)
 # mod08 <- arx(y, ar=1:4, mxreg=mX,user.estimator=list(name="Gfun"), plot=TRUE) #should produce warning
@@ -640,10 +643,10 @@ logLik(mod08)
 plot(mod08) #should produce warning
 
 test_that("Test user-defined estimator G-fun usual",{
-  expect_silent(mod08 <- arx(y, ar=1:4, mxreg=mX,user.estimator=list(name="Gfun",envir= environment(Gfun)), plot=FALSE))
+  expect_silent(mod08 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX,user.estimator=list(name="Gfun",envir= environment(Gfun)), plot=FALSE))
   expect_silent(summary(mod08))
   expect_output(print(mod08))
-  expect_message(mod08 <- arx(y, ar=1:4, mxreg=mX,user.estimator=list(name="Gfun",envir= environment(Gfun)), plot=TRUE)) #should produce warning
+  expect_message(mod08 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX,user.estimator=list(name="Gfun",envir= environment(Gfun)), plot=TRUE)) #should produce warning
   expect_silent(summary(mod08))
   expect_output(print(mod08))
   expect_vector(coef(mod08))
@@ -699,10 +702,10 @@ ols2 <- function(y, x){
 
 # Visual inspection
 
-mod09 <- arx(y, ar=1:4, mxreg=mX,user.estimator=list(name="ols2", envir=environment(ols2)), plot=FALSE)
+mod09 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX,user.estimator=list(name="ols2", envir=environment(ols2)), plot=FALSE)
 summary(mod09)
 print(mod09)
-# mod09 <- arx(y, ar=1:4, mxreg=mX,user.estimator=list(name="ols2"), plot=TRUE) #should produce warning
+# mod09 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX,user.estimator=list(name="ols2"), plot=TRUE) #should produce warning
 summary(mod09)
 print(mod09)
 coef(mod09)
@@ -726,10 +729,10 @@ vcov(mod09, spec="v")
 # Unit testing
 
 test_that("ols2 user-defined testing (fast ols)",{
-  expect_silent(mod09 <- arx(y, ar=1:4, mxreg=mX,user.estimator=list(name="ols2", envir=environment(ols2)), plot=FALSE))
+  expect_silent(mod09 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX,user.estimator=list(name="ols2", envir=environment(ols2)), plot=FALSE))
   expect_silent(summary(mod09))
   expect_output(print(mod09))
-  expect_message(mod09 <- arx(y, ar=1:4, mxreg=mX,user.estimator=list(name="ols2", envir=environment(ols2)), plot=TRUE)) #should produce warning
+  expect_message(mod09 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX,user.estimator=list(name="ols2", envir=environment(ols2)), plot=TRUE)) #should produce warning
   expect_silent(summary(mod09))
   expect_output(print(mod09))
   expect_vector(coef(mod09))
