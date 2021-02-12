@@ -34,6 +34,7 @@
 
 ##set working directory:
 setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
+# setwd("~/GitHub/gets/")
 #setwd(choose.dir()) #interactively
 
 ##where is the 'gets' package located?:
@@ -41,6 +42,7 @@ setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
 
 whereFolder <- "C:/Users/sucarrat/Documents/R/gs/gets/devel/gets"
 
+# whereFolder <- "~/GitHub/gets/gets"
 
 ####################################################
 ## 2 CLEAN WORK-DIRECTORY AND WORKSPACE
@@ -89,6 +91,40 @@ if( doDelete ){
   
 } #end if(doDelete)
 
+####################################################
+## 2.5 MOVE CODE TO TEMPORARY FOLDER - M-orca Feb 2021
+####################################################
+# Find the folder above our source code (i.e. the folder above the package structure)
+folder_above <- dirname(whereFolder)
+
+# Create a temporary folder there
+if(dir.exists(paste0(folder_above,"/temp"))){
+  unlink(dir.exists(paste0(folder_above,"/temp")))
+} else{
+  dir.create(paste0(folder_above,"/temp"))
+}
+
+# Copy the package to the temporary folder
+file.copy(from = whereFolder, to = paste0(folder_above,"/temp"), recursive = TRUE,overwrite = TRUE)
+
+### Remove Unwanted Files ###
+unlink(paste0(folder_above,"/temp/gets/tests"),recursive = TRUE)
+file.remove(c(paste0(folder_above,"/temp/gets/",c(".gitignore",".Rbuildignore","gets.Rproj"))))
+  
+
+# Remove Unwanted Text from the DESCRIPTION
+fileName <- paste0(folder_above,"/temp/gets/DESCRIPTION")
+text <- readChar(fileName, file.info(fileName)$size)
+# Remove testthat package from DESCRIPTION
+text <- gsub("lgarch, xtable, Matrix, microbenchmark, testthat","lgarch, xtable, Matrix, microbenchmark", text)
+# Remove Edition and line breaks from the DESCRIPTIONS
+text <- gsub("\nConfig/testthat/edition: 3\r\n|\r","", text)
+
+# Write the changes to the DESCRIPTION
+fileConn<-file(fileName)
+writeLines(text, fileConn)
+close(fileConn)
+
 
 ####################################################
 ## 3 BUILD AND CHECK THE TARBALL
@@ -107,13 +143,22 @@ if( doDelete ){
 ##i.e. the folder 'gets' with the source, is contained
 ##in whereFolder.
 
-system( paste0("R CMD build ", whereFolder, " --resave-data") )
+## M-orca, Feb 2021:
+system( paste0("R CMD build ", paste0(folder_above,"/temp/gets"), " --resave-data") )
+
+#system( paste0("R CMD build ", whereFolder, " --resave-data") )
 #system( paste0("R CMD build ", whereFolder, " --compact-vignettes") )
 
 ## - The --resave-data option is recommended by CRAN for
 ##   better compression, but it is not obligatory.
 ## - In principle, the latest development version of R should be
 ##   used for the build, but this sometimes leads to spurious errors.
+
+## M-orca, Feb 2021:
+### Remove temporary directory ### 
+unlink(paste0(folder_above,"/temp"),recursive = TRUE, force = TRUE)
+
+
 
 ##compress the vignette:
 ##======================
