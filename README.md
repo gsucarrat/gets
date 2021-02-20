@@ -47,5 +47,5 @@ The first file contains the base functions of the package, and the functions rel
 ## Create and check the tarball
 The file in the *0-make-and-check-tarball-by-G* folder is used by the maintainer to build and CRAN-check the tarball. The files in *0-test-files-by-G* are used by the maintainer to test the code before a new version is released. A subset of these tests is automatically invoked by the test-files in the *gets/tests/* folder.
 
-## Other files
+### Other files
 The remaining files on Github are auxiliary files, or prototypes of new ideas and functionality.
