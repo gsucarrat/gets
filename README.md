@@ -33,7 +33,7 @@ Alternatively, you can try installing the development version directly from GitH
 This package is free and open source software, licensed under GPL (>= 2)
 
 # Overview of files and folders
-The folder *gets* contains the 'raw-material' of the current development version of the package. The file *gets_devel.tar.gz* contains a tested tarball of the package. See further below for instructions on how to install this version.
+The folder *gets* contains the 'raw-material' of the current development version of the package. The file *gets_devel.tar.gz* contains a tested tarball of the package. See the instructions above for how to install this version.
 
 ### Source code
 The source code of the package is contained in the following files in the *gets/R/* folder:
