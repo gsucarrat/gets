@@ -43,7 +43,7 @@ Carlos Santos, David F. Hendry and Soren Johansen (2007):  'Automatic selection 
 
 Genaro Sucarrat (2019): 'User-Specified General-to-Specific and Indicator Saturation Methods'. \url{https://mpra.ub.uni-muenchen.de/96653/}
 
-Genaro Sucarrat and Alvaro Escribano (2012): 'Automated Financial Model Selection: General-to-Specific Modelling of the Mean and Volatility Specifications', Oxford Bulletin of Economics and Statistics 74, Issue 5 (October), pp. 716-735. \url{doi.org/10.1111/j.1468-0084.2011.00669.x}
+Genaro Sucarrat and Alvaro Escribano (2012): 'Automated Financial Model Selection: General-to-Specific Modelling of the Mean and Volatility Specifications', Oxford Bulletin of Economics and Statistics 74, Issue 5 (October), pp. 716-735. \doi{10.1111/j.1468-0084.2011.00669.x}
 
 }
 
