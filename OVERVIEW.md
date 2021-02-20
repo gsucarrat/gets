@@ -1,5 +1,5 @@
 # Overview of the files and folders here on Github
-The folder *gets* contains the 'raw-material' of the current development version of the package. The file *gets_devel.tar.gz* contains a tested tarball of the package.
+The folder *gets* contains the 'raw-material' of the current development version of the package. The file *gets_devel.tar.gz* contains a tested tarball of the package. See further below for instructions on how to install this version.
 
 ## Source code
 The source code of the package is contained in the following files in the *gets/R/* folder:
