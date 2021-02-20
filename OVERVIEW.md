@@ -1,4 +1,4 @@
-# Overview of the files and folders here on Github
+# Overview of the files and folders on Github
 The folder *gets* contains the 'raw-material' of the current development version of the package. The file *gets_devel.tar.gz* contains a tested tarball of the package. See further below for instructions on how to install this version.
 
 ## Source code
