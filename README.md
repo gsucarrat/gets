@@ -24,7 +24,7 @@ Alternatively, you can try installing the development version directly from GitH
     
 # Resources
 * An introduction (PDF): [https://doi.org/10.18637/jss.v086.i03](https://doi.org/10.18637/jss.v086.i03)
-* User-specified GETS and ISAT (PDF): [https://mpra.ub.uni-muenchen.de/96653/](https://mpra.ub.uni-muenchen.de/96653/)
+* User-specified GETS and ISAT (PDF): [https://journal.r-project.org/archive/2021/RJ-2021-024/](https://journal.r-project.org/archive/2021/RJ-2021-024/)
 * Webpage: [http://www.sucarrat.net/R/gets](http://www.sucarrat.net/R/gets)
 * CRAN webpage: [https://CRAN.R-project.org/package=gets]( https://CRAN.R-project.org/package=gets)
 * [https://felixpretis.climateeconometrics.org/software/](https://felixpretis.climateeconometrics.org/software/)
