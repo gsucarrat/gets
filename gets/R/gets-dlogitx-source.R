@@ -127,7 +127,7 @@ dlogitxSim <- function(n, intercept=0, ar=NULL, xreg=NULL,
 ## lower:           lower bounds of the permissible parameter values
 ## upper:           upper bounds of the permissible parameter values
 ## method:          estimation method, 1=only estimates,
-##                  2=ordinary vcov, 3=hac vcov
+##                  2=ordinary vcov, 3=robust vcov
 ## lag.length:      integer controlling the bandwidth when method=3
 ## control:         options passed on to nlminb()
 ## eps.tol:         pi0 is computed as pmax(pi0, eps.tol) to
@@ -261,7 +261,7 @@ logit <- function(y, x, initial.values=NULL, lower=-Inf, upper=Inf,
     result$vcov <- -hessianinv
   }  
 
-  ##hac coefficient covariance:
+  ##robust coefficient covariance:
   if( method==3 && result$k>0 ){
   
     ##lag length (bandwidth):
@@ -300,7 +300,7 @@ logit <- function(y, x, initial.values=NULL, lower=-Inf, upper=Inf,
 ## estimate model of class "dlogitx":
 
 dlogitx <- function(y, intercept=TRUE, ar=NULL, ewma=NULL,
-  xreg=NULL, vcov.type=c("ordinary", "hac"), lag.length=NULL,
+  xreg=NULL, vcov.type=c("ordinary", "robust"), lag.length=NULL,
   initial.values=NULL, lower=-Inf, upper=Inf, control=list(),
   eps.tol=.Machine$double.eps, solve.tol=.Machine$double.eps,
   plot=NULL)
@@ -313,10 +313,10 @@ dlogitx <- function(y, intercept=TRUE, ar=NULL, ewma=NULL,
   
   ##regressand, regressors:
   tmp <- regressorsMean(y, mc=intercept, ar=ar, ewma=ewma, mxreg=xreg,
-    return.regressand=TRUE, return.as.zoo=TRUE,
+    prefix=character(0), return.regressand=TRUE, return.as.zoo=TRUE,
     na.trim=TRUE,
     na.omit=FALSE)
-  whereMconst <- which( colnames(tmp)=="mconst" )
+  whereMconst <- which( colnames(tmp)=="const" )
   if( length(whereMconst)>0 ){
     colnames(tmp)[ whereMconst ] <- "intercept"
   }
@@ -331,7 +331,7 @@ dlogitx <- function(y, intercept=TRUE, ar=NULL, ewma=NULL,
   }
 
   ##determine estimation method/vcov type:
-  types <- c("ordinary", "hac")
+  types <- c("ordinary", "robust")
   whichType <- charmatch(vcov.type[1], types)
   aux$logit.method <- whichType + 1 
 
@@ -438,7 +438,7 @@ gets.dlogitx <- function(x, t.pval=0.05, wald.pval=t.pval,
   vY <- cbind(zoo(vY, order.by=x$y.index))
   colnames(vY) <- x$y.name
   xfinal <- result1$terminals[[ result1$best.terminal ]]
-  vcov.type <- c("none", "ordinary", "hac")[ x$logit.method ]
+  vcov.type <- c("none", "ordinary", "robust")[ x$logit.method ]
   solve.tol <- ifelse( is.null(userEstArgs$solve.tol),
     .Machine$double.eps, userEstArgs$solve.tol)
 
@@ -503,7 +503,7 @@ print.dlogitx <- function(x, signif.stars=TRUE, ...)
   cat("Method: Maximum Likelihood (logit) \n")
   cat("Variance-Covariance:",
     switch(x$logit.method, "1" = "Ordinary", "2" = "Ordinary",
-    "3" = "HAC, Newey and West (1987)"), "\n")
+    "3" = "Robust, Newey and West (1987)"), "\n")
   cat("No. of observations:", x$n, "\n")
 
   ##sample info:

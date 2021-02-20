@@ -4,7 +4,7 @@
 \title{General-to-Specific (GETS) Modelling of objects of class 'dlogitx'}
 
 \description{
-General-to-Specific (GETS) Modelling of autoregressive logit models of class 'dlogitx'
+General-to-Specific (GETS) Modelling of a dynamic Autoregressive (AR) logit model with covariates ('X') of class 'dlogitx'.
 }
 
 \usage{
@@ -31,7 +31,13 @@ General-to-Specific (GETS) Modelling of autoregressive logit models of class 'dl
   \item{\dots}{further arguments passed to or from other methods}
 }
 
-\details{No details form the moment}
+\details{
+The model of class 'dlogitx' is a dynamic Autoregressive (AR) logit model with (optional) covariates ('X') proposed by Kauppi and Saikkonen (2008). Internally, \code{gets.dlogitx} undertakes the General-to-Specific (GETS) modelling with the \code{\link{getsFun}} function, see Sucarrat (2020). 
+}
+
+\references{
+Heikki Kauppi and Penti Saikkonen (2008): 'Predicting U.S. Recessions with Dynamic Binary Response Models'. The Review of Economic Statistics 90, pp. 777-791
+}
 
 \author{
 Genaro Sucarrat, \url{http://www.sucarrat.net/}
@@ -42,7 +48,18 @@ Genaro Sucarrat, \url{http://www.sucarrat.net/}
 }
 
 \examples{
-##no examples for the moment
+
+##simulate from ar(1), create covariates:
+set.seed(123) #for reproducibility
+y <- dlogitxSim(100, ar=0.3)
+x <- matrix(rnorm(5*100), 100, 5)
+
+##estimate model:
+mymod <- dlogitx(y, ar=1:4, xreg=x)
+
+##do gets modelling:
+gets(mymod)
+
 }
 
 \keyword{Statistical Models}

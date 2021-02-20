@@ -1,5 +1,5 @@
 ##################################################
-## Test file for predict.arx function. First
+## Test file for the predict.arx function. First
 ## created 25 July 2019.
 ##
 ## 1 INITIATE
@@ -10,7 +10,11 @@
 ##
 ##################################################
 
-##idea for shades.of=c("grey","blue","red","green"):
+##idea: new argument 'shades.of=c("grey","blue","red","green")'
+##this would be in addition to the already existing argument 'shades'
+##
+##some useful code?:
+##
 ##fc <- colorRampPalette(c("darkgreen", "green"))
 ##plot(rep(1, 255),col = fc(255), pch = 19, cex = 3)
 ##
@@ -51,8 +55,8 @@ require(zoo)
 rm(list=ls())
 
 ##load source:
-source("./gets/gets/R/gets-base-source.R")
-source("./gets/gets/R/gets-isat-source.R")
+source("./contents/gets/R/gets-base-source.R")
+source("./contents/gets/R/gets-isat-source.R")
 
 
 ##################################################
@@ -244,6 +248,8 @@ all( round(functionVals, digits=10) == round(correctVals, digits=10) )
 ##arch(1) models:
 ##===============
 
+##just to check that things seem to work
+
 mymodel <- arx(vY, arch=1)
 predict(mymodel, spec="variance")
 
@@ -271,6 +277,8 @@ all( functionVals == correctVals )
 
 ##arch(1)-x model:
 ##================
+
+##just to check that things seem to work
 
 mymodel <- arx(vY, arch=1, vxreg=mX)
 predict(mymodel, spec="variance", n.ahead=3, newvxreg=matrix(1,3,1))
@@ -312,12 +320,14 @@ predict(mymodel, plot.options=list(fitted=TRUE))
 predict(mymodel, plot.options=list(newmactual=rep(0,6)))
 predict(mymodel, plot.options=list(shades=c(95,50)))
 predict(mymodel, plot.options=list(shades=c(50,95))) #invert shades
-predict(mymodel, plot.options=list(shades.of.grey=c(95,50)))
+predict(mymodel, plot.options=list(shades=c(95,50)))
 
 ##arch(1) model:
 ##==============
 
 mymodel <- arx(vY, vc=TRUE, arch=1)
+
+##for visual inspection:
 predict(mymodel)
 predict(mymodel, plot.options=list(keep=1))
 predict(mymodel, plot.options=list(line.at.origin=TRUE))

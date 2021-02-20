@@ -7,7 +7,7 @@
 
 \usage{
 regressorsMean(y, mc = FALSE, ar = NULL, ewma = NULL, mxreg = NULL,
-  return.regressand = TRUE, return.as.zoo = TRUE, na.trim = TRUE,
+  prefix="m", return.regressand = TRUE, return.as.zoo = TRUE, na.trim = TRUE,
   na.omit=FALSE)
 }
 
@@ -17,6 +17,7 @@ regressorsMean(y, mc = FALSE, ar = NULL, ewma = NULL, mxreg = NULL,
   \item{ar}{either \code{NULL} (default) or an integer vector, say, \code{c(2,4)} or \code{1:4} with the AR-lags to include in the mean specification. If \code{NULL}, then no lags are included. }
   \item{ewma}{either \code{NULL} (default) or a \code{\link{list}} with arguments sent to the \code{\link{eqwma}} function. In the latter case a lagged moving average of \code{y} is included as a regressor. }
   \item{mxreg}{either \code{NULL} (default), numeric vector or matrix, say, a \code{\link{zoo}} object, or \code{\link{data.frame}} containing conditioning variables (covariates). Note that, if both \code{y} and \code{mxreg} are \code{zoo} objects, then their samples are matched. }
+  \item{prefix}{character, possibly of length zero, e.g. \code{""} or \code{character(0)}. The prefix added to the constant and covariate labels. The default is \code{"m"}, so that the default labels are \code{"mconst"} and \code{"mxreg"}. }
   \item{return.regressand}{logical. \code{TRUE}, the default, includes the regressand as column one in the returned matrix. }
   \item{return.as.zoo}{\code{TRUE}, the default, returns the matrix as a \code{\link{zoo}} object. }
   \item{na.trim}{\code{TRUE}, the default, removes observations with \code{NA}-values in the beginning and the end with \code{\link{na.trim}}. }

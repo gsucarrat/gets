@@ -31,8 +31,8 @@ require(zoo)
 rm(list=ls())
 
 ##load source:
-source("./gets/gets/R/gets-base-source.R")
-source("./gets/gets/R/gets-isat-source.R")
+source("./contents/gets/R/gets-base-source.R")
+source("./contents/gets/R/gets-isat-source.R")
 
 
 ##################################################
@@ -103,11 +103,12 @@ set.seed(123); dgp.n <- 50
 y <- rnorm(dgp.n) #or: y <- rt(dgp.n, df=4.1)
 mX <- matrix(rnorm(dgp.n*3),dgp.n,3)
 y[1:10] <- y[1:10] + 4 #step-shift
-plot(as.zoo(y), col=4) #plot
+plot(as.zoo(y), col="blue") #plot
 
 ##some basic tests:
 ##=================
 
+##for visual inspection:
 isat(y, sis=TRUE)
 isat(y, sis=FALSE) #should return the error: "Error in isat..."
 isat(y, iis=TRUE, sis=TRUE)
@@ -167,7 +168,7 @@ set.seed(123); dgp.n <- 50
 y <- rnorm(dgp.n) #or: y <- rt(dgp.n, df=4.1)
 mX <- matrix(rnorm(dgp.n*3),dgp.n,3)
 y[1:10] <- y[1:10] + 4 #step-shift
-plot(as.zoo(y), col=4) #plot
+plot(as.zoo(y), col="blue") #plot
 
 isatmod <- isat(y, ar=1:2, mxreg=mX, iis=TRUE, sis=TRUE, tis=TRUE)
 print(isatmod)
@@ -334,7 +335,7 @@ set.seed(123)
 mx <- data.frame(matrix(runif(500),ncol=5))
 colnames(mx) <- paste("x", seq(1:5), sep="")
 mx <- as.data.frame(mx)
-#mx <- as.zoo(mx) #conversion to zoo solves the issue
+#mx <- as.zoo(mx) #conversion to zoo solves the issue partially
 yx <- 2*mx[,1] + rnorm(100, 0, 1)
 is2 <- isat(yx, iis=TRUE, sis=FALSE, uis=mx, t.pval=0.01)
 is2
@@ -496,7 +497,7 @@ isat(y, user.estimator=list(name="ols2"))
 ##compare speed 1:
 system.time(isat(y))
 system.time(isat(y, user.estimator=list(name="ols2")))
-##Conclusion: here, they are more or less equally fast
+##Conclusion: here, ols is faster than ols2
 
 ##comparisons 2: w/microbenchmark, see
 ##https://nelsonareal.net/blog/2017/06/speeding_up_ols.html
@@ -505,6 +506,7 @@ microbenchmark( ols(y,mX), ols2(y,mX), times=10)
 microbenchmark( isat(y),
   isat(y, user.estimator=list(name="ols2")),
   times=10)
+##Conclusion ("small T"): ols is faster than ols2
 
 ##compare speed 2:
 set.seed(123); dgp.n <- 1000; y <- rnorm(dgp.n)

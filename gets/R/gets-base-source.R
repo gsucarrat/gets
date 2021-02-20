@@ -413,7 +413,7 @@ leqwma <- function(x, length=5, k=1, p=2, as.vector=FALSE,
 ##==================================================
 ##Create the mean regressors of an arx model:
 regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
-  return.regressand=TRUE, return.as.zoo=TRUE, na.trim=TRUE,
+  prefix="m", return.regressand=TRUE, return.as.zoo=TRUE, na.trim=TRUE,
   na.omit=FALSE)
 {
 
@@ -434,13 +434,13 @@ regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
   mXnames <- NULL
 
   ##mean intercept:
-  if(identical(as.numeric(mc),1)){
+  if( identical(as.numeric(mc),1) ){
     mX <- cbind(rep(1,y.n))
-    mXnames  <- "mconst"
+    mXnames  <- paste0(prefix, "const")
   }
 
   ##ar terms:
-  if(!is.null(ar) && !identical(as.numeric(ar),0) ){
+  if( !is.null(ar) && !identical(as.numeric(ar),0) ){
     tmp <- NULL
     nas <- rep(NA, max(ar))
     tmpfun <- function(i){
@@ -452,7 +452,7 @@ regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
   }
 
   ##ewma term:
-  if(!is.null(ewma)){
+  if( !is.null(ewma) ){
     ewma$as.vector <- FALSE #force result to be a matrix
     tmp <- do.call(eqwma, c(list(y),ewma) )
     mXnames <- c(mXnames, colnames(tmp))
@@ -479,20 +479,25 @@ regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
   
   ##mxreg:
   if( !is.null(mxreg) ){
-#OLD (until version 0.23):
-#  if( !is.null(mxreg) && !identical(as.numeric(mxreg),0) ){
     mxreg <- as.zoo(cbind(mxreg))
     mxreg.names <- colnames(mxreg)
+    xregLabel <- paste0( prefix, "xreg" )
     if(is.null(mxreg.names)){
-      mxreg.names <- paste("mxreg", 1:NCOL(mxreg), sep="")
+      mxreg.names <- paste(xregLabel, 1:NCOL(mxreg), sep="")
+#OLD:
+#      mxreg.names <- paste("mxreg", 1:NCOL(mxreg), sep="")
     }
-    if(any(mxreg.names == "")){
+    if( any(mxreg.names == "") ){
       missing.colnames <- which(mxreg.names == "")
       for(i in 1:length(missing.colnames)){
-        mxreg.names[missing.colnames[i]] <- paste0("mxreg", i)
+        mxreg.names[missing.colnames[i]] <- paste0(xregLabel, i)
+#OLD:
+#        mxreg.names[missing.colnames[i]] <- paste0("mxreg", i)
       }
     }
-    #mxreg.names <- make.names(mxreg.names)
+##for the future?:
+##    mxreg.names <- make.names(mxreg.names)
+##(alternatively, we should consider some check for uniqueness of names)
     mXnames <- c(mXnames, mxreg.names)
     mxreg <- window(mxreg, start=t1, end=t2)
     mxreg <- cbind(coredata(mxreg))

@@ -18,12 +18,12 @@ setwd("C:/Users/sucarrat/Documents/R/gs/gets/github/")
 require(parallel)
 require(zoo)
 
-##remove everything in workspace (.GlobaleEnv:
+##remove everything in workspace (.GlobalEnv:
 rm(list=ls())
 
 ##load source:
-source("./gets/gets/R/gets-base-source.R")
-source("./gets/gets/R/gets-isat-source.R")
+source("./contents/gets/R/gets-base-source.R")
+source("./contents/gets/R/gets-isat-source.R")
 
 ##END not in jstatsoft code
 #######################################################
