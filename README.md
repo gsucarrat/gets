@@ -4,18 +4,14 @@
 
 The R Package *gets* provides General-to-Specific (GETS) modelling of the mean and variance of a regression, and Indicator Saturation (ISAT) methods for detecting and testing for structural breaks in the mean. Facilities for *user-specified* GETS and ISAT methods are also provided.
 
-The CRAN webpage of the package is: [https://CRAN.R-project.org/package=gets]( https://CRAN.R-project.org/package=gets). Here, on Github, we provide the development version of the package. For an overview of the files and folders, see below.
+The CRAN webpage of the package is: [https://CRAN.R-project.org/package=gets]( https://CRAN.R-project.org/package=gets). Here, on Github, we provide the development version of the package. For an overview of the files and folders, see below under 'Overview of files and folders'.
 
 # Installation
 The following R command installs the stable version from CRAN:
 
     install.packages('gets', dependencies = TRUE)
 
-To install the current development version available here at Github, first download the tarball (i.e. the file named gets_devel.tar.gz). Next, run:
-
-    system("R CMD INSTALL --build gets")
-
-Alternatively, you can try installing the development version directly from GitHub with the following code:
+To install the current development version available here at Github, run the following code:
 
     install.packages(
       "https://github.com/gsucarrat/gets/raw/master/gets_devel.tar.gz",
@@ -33,7 +29,7 @@ Alternatively, you can try installing the development version directly from GitH
 This package is free and open source software, licensed under GPL (>= 2)
 
 # Overview of files and folders
-The folder *gets* contains the 'raw-material' of the current development version of the package. The file *gets_devel.tar.gz* contains a tested tarball of the package. See the instructions above for how to install this version.
+The folder *gets* contains the 'raw-material' of the current development version of the package. The file *gets_devel.tar.gz* contains a tarball of the package that has passed the CRAN checks. See the instructions above for how to install this version.
 
 ### Source code
 The source code of the package is contained in the following files in the *gets/R/* folder:
