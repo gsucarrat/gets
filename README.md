@@ -11,7 +11,7 @@ The following R command installs the stable version from CRAN:
 
     install.packages('gets', dependencies = TRUE)
 
-To install the current development version available here at Github, run the following code:
+To install the current development version available here at Github, use the following command:
 
     install.packages(
       "https://github.com/gsucarrat/gets/raw/master/gets_devel.tar.gz",
