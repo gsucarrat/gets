@@ -47,7 +47,10 @@ export(
   ##dlogitx-class function:
   "dlogitxSim", "logit", "dlogitx", "coef.dlogitx", "fitted.dlogitx",
   "gets.dlogitx", "logLik.dlogitx", "plot.dlogitx", "print.dlogitx",
-  "summary.dlogitx", "toLatex.dlogitx", "vcov.dlogitx"
+  "summary.dlogitx", "toLatex.dlogitx", "vcov.dlogitx",
+  
+  ##lm-class functions:
+  "isat.lm", "getsm.lm","arx.lm"
 
 )
 
