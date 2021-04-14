@@ -102,6 +102,6 @@ S3method("toLatex", "dlogitx")
 S3method("vcov", "dlogitx")
 
 ##methods for class lm:
-#S3method("isat","lm")
-#S3method("getsm","lm")
-#S3method("arx","lm")
+S3method("isat","lm")
+S3method("getsm","lm")
+S3method("arx","lm")
