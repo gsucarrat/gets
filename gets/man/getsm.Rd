@@ -1,6 +1,7 @@
 \name{getsm}
 \alias{getsm}
 \alias{getsv}
+\alias{getsm.lm}
 
 \title{General-to-Specific (GETS) Modelling of an AR-X model (the mean specification) with log-ARCH-X errors (the log-variance specification).}
 
@@ -25,10 +26,17 @@ getsv(object, t.pval=0.05, wald.pval=t.pval,
     include.1cut=TRUE, include.empty=FALSE, max.paths=NULL, tol=1e-07,
     turbo=FALSE, print.searchinfo=TRUE, plot=NULL, alarm=FALSE)
     
-    \method{getsm}{lm}(lmobject, ...)
+    \method{getsm}{lm}(lmobject, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL, 
+    do.pet=TRUE, ar.LjungB=list(lag=NULL, pval=0.025), 
+    arch.LjungB=list(lag=NULL, pval=0.025), normality.JarqueB=NULL, 
+    user.diagnostics=NULL, info.method=c("sc","aic","aicc", "hq"),
+    gof.function=NULL, gof.method=NULL, keep=NULL, include.gum=FALSE,
+    include.1cut=TRUE, include.empty=FALSE, max.paths=NULL, tol=1e-07,
+    turbo=FALSE, print.searchinfo=TRUE, plot=NULL, alarm=FALSE)
 }
 
 \arguments{
+  \item{lmobject}{an object of class 'lm'}
   \item{object}{an object of class 'arx'}
   \item{t.pval}{numeric value between 0 and 1. The significance level used for the two-sided regressor significance t-tests}
   \item{wald.pval}{numeric value between 0 and 1. The significance level used for the Parsimonious Encompassing Tests (PETs). By default, it is the same as \code{t.pval}}

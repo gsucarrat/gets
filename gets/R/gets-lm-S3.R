@@ -13,7 +13,7 @@ isat.lm <- function(lmobject, ar=NULL, ewma=NULL, iis=FALSE, sis=TRUE, tis=FALSE
   # Checks
   if(!is.null(lmobject$weights)){stop("Usage of weights is not yet implemented in isat. Please estimate the lm object without weights.")}
   
-  data <- model.frame(lmobject)
+  data <- stats::model.frame(lmobject)
   y <- data.frame(y = data[,1])
   names(y) <- names(data)[1] 
   
@@ -52,7 +52,7 @@ getsm.lm <- function(lmobject, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
 }
 
 
-arx.lm <- function(lmobject, ar=NULL, ewma=NULL, mxreg=NULL,
+arx.lm <- function(lmobject, ar=NULL, ewma=NULL, 
                    vc=FALSE, arch=NULL, asym=NULL, log.ewma=NULL, vxreg=NULL,
                    zero.adj=0.1, vc.adj=TRUE,
                    vcov.type=c("ordinary", "white", "newey-west"),
@@ -61,7 +61,7 @@ arx.lm <- function(lmobject, ar=NULL, ewma=NULL, mxreg=NULL,
   # Checks
   if(!is.null(lmobject$weights)){stop("Usage of weights is not yet implemented in arx. Please estimate the lm object without weights.")}
   
-  data <- model.frame(lmobject)
+  data <- stats::model.frame(lmobject)
   y <- data.frame(y = data[,1])
   names(y) <- names(data)[1] 
   
