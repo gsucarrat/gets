@@ -1,6 +1,8 @@
 ##################################################
-## Test file for gets package. First created
-## 23 September 2014, Oslo.
+## This file tests some of the base functions of
+## the gets package.
+##
+## First created 23 September 2014, Oslo.
 ##
 ## 1 INITIATE
 ## 2 TEST ols()
@@ -28,8 +30,10 @@ require(zoo)
 rm(list=ls())
 
 ##load source:
-source("./gets/gets/R/gets-base-source.R")
-source("./gets/gets/R/gets-isat-source.R")
+source("./contents/gets/R/gets-base-source.R")
+
+##load library used for some of the tests:
+library(testthat)
 
 
 ##################################################
@@ -56,20 +60,24 @@ mCoefs[6,] <- lm(vY ~ mX-1)$coefficients #compare with lm
 rownames(mCoefs) <- paste("method ",1:NROW(mCoefs), ":", sep="")
 mCoefs
 
-##compare log-likelihoods (should return TRUE):
-tmp <- ols(vY, mX, method=3)
-tmp$logl == sum(dnorm(tmp$residuals, sd=sqrt(tmp$sigma2), log=TRUE))
+##compare log-likelihoods (they should differ):
+test_that("Log-Likelihoods are the same",{
+  tmp <- ols(vY, mX, method=3)
+  expect_equal(tmp$logl,sum(dnorm(tmp$residuals, sd=sqrt(tmp$sigma2), log=TRUE)))
+})
 
 ##check variance.spec argument:
 vX <- log(mX^2)
 tmp <- ols(vY, mX, method=3, variance.spec=list(vc=TRUE, arch=1, asym=1,
   log.ewma=2, vxreg=vX))
-
-##check that logls now differ (should return TRUE):
-tmp$logl != sum(dnorm(tmp$residuals, sd=sqrt(tmp$sigma2), log=TRUE))
+test_that("Log-Likelihoods now differ with variance.spec argument",{
+  expect_false(tmp$logl == sum(dnorm(tmp$residuals, sd=sqrt(tmp$sigma2), log=TRUE)))
+})
 
 ##check that length(y)!=NROW(vxreg) fails:
-ols(vY, mX, method=3, variance.spec=list(vxreg=vX[-1,]))
+test_that("check that length(y)!=NROW(vxreg) fails",{
+  expect_error(ols(vY, mX, method=3, variance.spec=list(vxreg=vX[-1,])))
+})
   
 ## until version 0.9, this example failed for
 ## methods 2-5 (example by F-bear, see his
@@ -80,16 +88,24 @@ x <- rnorm(100, 0, 1)*10^8
 ols(y,cbind(1,x), method=2, LAPACK=FALSE)$coefficients
 ols(y,cbind(1,x), method=2, LAPACK=TRUE)$coefficients
 
-##verify that method=0 returns error ("method = 0 has been deprecated"):
+##verify that method=0 returns error:
+test_that("verify that ols with method=0 yields error",{
+  expect_error(ols(vY, mX, method=0))
+})
+
+##verify that method=0 returns the info "method = 0 has been deprecated":
 ols(vY, mX, method=0)
 
 ##test tol argument (only used if LAPACK=FALSE):
-ols(vY, mX, tol=1, LAPACK=FALSE) #should return 'Error...'
-ols(vY, mX, tol=1, LAPACK=TRUE) #should work
-ols(vY, mX, tol=0.96, LAPACK=FALSE) #should return 'Error...'
-ols(vY, mX, tol=0.96, LAPACK=TRUE) #should work
-ols(vY, mX, tol=0.95, LAPACK=FALSE) #should work
-ols(vY, mX, tol=0.95, LAPACK=TRUE) #should work
+test_that("test tol argument (only used if LAPACK=FALSE)",{
+  expect_error(ols(vY, mX, tol=1, LAPACK=FALSE)) #should return 'Error...'
+  expect_silent(ols(vY, mX, tol=1, LAPACK=TRUE)) #should work
+  expect_error(ols(vY, mX, tol=0.96, LAPACK=FALSE)) #should return 'Error...'
+  expect_silent(ols(vY, mX, tol=0.96, LAPACK=TRUE)) #should work
+  expect_silent(ols(vY, mX, tol=0.95, LAPACK=FALSE)) #should work
+  expect_silent(ols(vY, mX, tol=0.95, LAPACK=TRUE)) #should work
+  
+})
 
 ##view the return values of methods 1 to 6:
 names(ols(vY, mX, method=1))
@@ -235,7 +251,7 @@ round(tmp$logl, digits=10) ==
 
 
 ##the aim of this experiment is to test whether
-##gmm() works with getsFun()
+##gmm() works with getsFun() and blocksFun()
 ##------------------------------------------------
 
 set.seed(123)
@@ -274,8 +290,26 @@ diagnostics(x, arch.LjungB=c(1,0.10), verbose=FALSE)
 
 ##add the Jarque-Bera normality test to the diagnostics:
 diagnostics(x, normality.JarqueB=TRUE)
-diagnostics(x, normality.JarqueB=0.9) #should have no effect
-diagnostics(x, normality.JarqueB=0.9, verbose=FALSE)
+diagnostics(x, normality.JarqueB=0.8) #should have no effect
+diagnostics(x, normality.JarqueB=0.8, verbose=FALSE) #should return TRUE
+diagnostics(x, normality.JarqueB=0.9, verbose=FALSE) #should return FALSE
+
+##use test_that to check:
+test_that("Test the Diagnostics matrix",{
+  expect_true(is.matrix(diagnostics(x)))
+  
+  ##check x for autocorrelation and ARCH, and indicate
+  ##whether it passes the check:
+  expect_true(diagnostics(x, verbose=FALSE))
+  expect_false(diagnostics(x, ar.LjungB=c(1,0.96), verbose=FALSE))
+  expect_false(diagnostics(x, arch.LjungB=c(1,0.10), verbose=FALSE))
+  
+  ##add the Jarque-Bera normality test to the diagnostics:
+  expect_true(is.matrix(diagnostics(x, normality.JarqueB=TRUE)) & nrow(diagnostics(x, normality.JarqueB=TRUE))==3)
+  expect_true(is.matrix(diagnostics(x, normality.JarqueB=0.9)) & nrow(diagnostics(x, normality.JarqueB=TRUE))==3) #should have no effect
+  expect_false(diagnostics(x, normality.JarqueB=0.9, verbose=FALSE))
+  
+})
 
 ##user-defined Shapiro-Wilks test for normality in the residuals:
 SWtest <- function(x, ...){
@@ -300,8 +334,8 @@ SWtest <- function(x, ...){
   return(result)
 }
 diagnostics(x, user.fun=list(name="SWtest", pval=0.025))
-diagnostics(x, user.fun=list(name="SWtest", pval=0.025), verbose=FALSE)
-diagnostics(x, user.fun=list(name="SWtest", pval=0.85), verbose=FALSE)
+diagnostics(x, user.fun=list(name="SWtest", pval=0.025), verbose=FALSE) #should return TRUE
+diagnostics(x, user.fun=list(name="SWtest", pval=0.85), verbose=FALSE) #should return FALSE
 
 ##test the envir entry:
 rm("SWtest") #make sure SWtest is not defined in the global environment
@@ -315,12 +349,16 @@ assign("SWtest",
   return(result)
   },
   envir=myenv)
-diagnostics(x, user.fun=list(name="SWtest")) #should not work
+diagnostics(x, user.fun=list(name="SWtest")) #should not work ("...could not find...")
 diagnostics(x, user.fun=list(name="SWtest", envir=myenv)) #should work
 
 ##check whether variance.spec works (creates NAs in std.residuals):
 x <- ols(vY, mX, method=3, variance.spec=list(vc=TRUE, arch=1))
 diagnostics(x)
+x <- ols(vY, mX, method=3, variance.spec=list(vc=TRUE, arch=1))
+test_that("check whether variance.spec works (creates NAs in std.residuals)",{
+  expect_silent(diagnostics(x))
+})
 
 
 ##################################################
@@ -345,6 +383,21 @@ eqwma(x, as.vector=TRUE)
 eqwma(x, start=1) #should return error
 eqwma(x, lag=1) #should return error
 
+test_that("test EQMA",{
+  expect_silent(eqwma(x))
+  expect_silent(eqwma(as.zoo(x)))
+  expect_silent(eqwma(x, length=2))
+  expect_silent(eqwma(x, length=c(2,3)))
+  expect_silent(eqwma(x, k=2 ))
+  expect_silent(eqwma(x, p=2))
+  expect_silent(eqwma(x, abs=TRUE))
+  expect_silent(eqwma(x, log=TRUE))
+  expect_silent(eqwma(x, as.vector=TRUE))
+  
+  expect_error(eqwma(x, start=1)) #should return error
+  expect_error(eqwma(x, lag=1)) #should return error
+})
+
 ##test leqwma:
 ##============
 
@@ -357,6 +410,18 @@ leqwma(x, p=1)
 leqwma(x, as.vector=TRUE)
 leqwma(x, start=1) #should return error
 leqwma(x, lag=1) #should return error
+
+test_that("test leqwma",{
+  expect_silent(leqwma(x))
+  expect_silent(leqwma(as.zoo(x)))
+  expect_silent(leqwma(x, length=2))
+  expect_silent(leqwma(x, length=c(2,3)))
+  expect_silent(leqwma(x, k=2 ))
+  expect_silent(leqwma(x, p=1))
+  expect_silent(leqwma(x, as.vector=TRUE))
+  expect_error(leqwma(x, start=1)) #should return error
+  expect_error(leqwma(x, lag=1)) #should return error
+})
 
 
 ##################################################
@@ -375,6 +440,7 @@ mxreg <- matrix(rnorm(5*iT), iT, 5)
 #mxreg <- cbind(rep(1, iT)); colnames(mX) <- "mconst"
 #mxreg[1:5,2] <- NA
 
+##for visual inspection:
 regressorsMean(y)
 regressorsMean(log(y^2))
 regressorsMean(y, mc=TRUE)
@@ -383,6 +449,8 @@ regressorsMean(y, ewma=list(length=c(2,4)))
 regressorsMean(y, mxreg=mxreg)
 regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),
   mxreg=mxreg)
+regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),
+  mxreg=mxreg, prefix="G")
 regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),
   mxreg=mxreg, return.regressand=FALSE)
 regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),
@@ -396,6 +464,26 @@ regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),
 colnames(mxreg) <- c("a", "", "c", "", "e")
 regressorsMean(y, mxreg=mxreg)
  
+##unit test:
+test_that("Testing the regressorsMean() function - Test 1",{
+  expect_silent(regressorsMean(y))
+  expect_silent(regressorsMean(log(y^2)))
+  expect_silent(regressorsMean(y, mc=TRUE))
+  expect_silent(regressorsMean(y, ar=c(1,3)))
+  expect_silent(regressorsMean(y, ewma=list(length=c(2,4))))
+  expect_silent(regressorsMean(y, mxreg=mxreg))
+  expect_silent(regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),mxreg=mxreg))
+  expect_silent(regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),mxreg=mxreg, return.regressand=FALSE))
+  expect_silent(regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),mxreg=mxreg, return.as.zoo=FALSE))
+  expect_silent(regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),mxreg=mxreg, na.trim=FALSE))
+  expect_silent(regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),mxreg=mxreg, return.regressand=FALSE, return.as.zoo=FALSE,na.trim=FALSE))
+  
+  
+  ##erroneous until version 0.23:
+  colnames(mxreg) <- c("a", "", "c", "", "e")
+  expect_silent(regressorsMean(y, mxreg=mxreg))
+})
+
 ##test 2:
 ##=======
 
@@ -407,6 +495,7 @@ mxreg <- matrix(rnorm(4*iT), iT, 4)
 mxreg <- ts(mxreg, frequency=4, end=c(2015,4))
 y[1] <- NA; y[iT] <- NA
 
+##for visual inspection:
 regressorsMean(y)
 regressorsMean(log(y^2))
 regressorsMean(y, mc=TRUE)
@@ -415,6 +504,8 @@ regressorsMean(y, ewma=list(length=c(2,4)))
 regressorsMean(y, mxreg=mxreg)
 regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),
   mxreg=mxreg)
+regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),
+  mxreg=mxreg, prefix="G")
 regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),
   mxreg=mxreg, return.regressand=FALSE)
 regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),
@@ -429,17 +520,40 @@ set.seed(123)
 vY <- rnorm(20)
 regressorsMean(vY, mc=TRUE, ar=1, ewma=list(length=2))
 
+##unit test:
+test_that("Testing the regressorsMean() function - Test 2",{
+  expect_silent(regressorsMean(y))
+  expect_silent(regressorsMean(log(y^2)))
+  expect_silent(regressorsMean(y, mc=TRUE))
+  expect_silent(regressorsMean(y, ar=c(1,3)))
+  expect_silent(regressorsMean(y, ewma=list(length=c(2,4))))
+  expect_silent(regressorsMean(y, mxreg=mxreg))
+  expect_silent(regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),mxreg=mxreg))
+  expect_silent(regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),mxreg=mxreg, return.regressand=FALSE))
+  expect_silent(regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),mxreg=mxreg, return.as.zoo=FALSE))
+  expect_silent(regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),mxreg=mxreg, na.trim=FALSE))
+  expect_silent(regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),mxreg=mxreg, return.regressand=FALSE, return.as.zoo=FALSE,na.trim=FALSE))
+  ##used to yield error:
+  set.seed(123)
+  vY <- rnorm(20)
+  expect_silent(regressorsMean(vY, mc=TRUE, ar=1, ewma=list(length=2)))
+  
+})
 
 ##test 3:
 ##=======
 
 ##from 0.24: mxreg can be a data.frame
 set.seed(123)
-y <- rnorm(30)
-mxreg <- matrix(rnorm(30*5), 30, 5)
+y <- rnorm(10)
+mxreg <- matrix(rnorm(10*5), 10, 5)
 mxreg <- as.data.frame(mxreg)
 
 regressorsMean(y, mxreg=mxreg)
+
+test_that("Testing the regressorsMean() function - Test 3 on Dataframe",{
+  expect_silent(regressorsMean(y, mxreg=mxreg))
+})
 
 
 ##################################################
@@ -459,6 +573,7 @@ vxreg <- matrix(rnorm(5*iT), iT, 5)
 #vxreg <- cbind(rep(1, iT)); colnames(mX) <- "mconst"
 #vxreg[1:5,2] <- NA
 
+##for visual inspection:
 regressorsVariance(eps)
 regressorsVariance(eps, vc=FALSE)
 regressorsVariance(eps, arch=c(1,3))
@@ -479,7 +594,27 @@ regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),
 ##check naming when "" in colnames:
 colnames(vxreg) <- c("a", "", "c", "", "d")
 regressorsVariance(eps, vxreg=vxreg)
+
+##unit testing:  
+test_that("regressorsVariance() - Test 1",{
+  expect_silent(regressorsVariance(eps))
+  expect_silent(regressorsVariance(eps, vc=FALSE))
+  expect_silent(regressorsVariance(eps, arch=c(1,3)))
+  expect_silent(regressorsVariance(eps, log.ewma=5))
+  expect_silent(regressorsVariance(eps, log.ewma=c(2,4)))
+  expect_silent(regressorsVariance(eps, vxreg=vxreg))
+  expect_silent(regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),vxreg=vxreg))
+  expect_silent(regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),vxreg=vxreg, return.regressand=FALSE))
+  expect_silent(regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),vxreg=vxreg, return.as.zoo=FALSE))
+  expect_silent(regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),vxreg=vxreg, na.trim=FALSE))
+  expect_silent(regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),vxreg=vxreg, return.regressand=FALSE, return.as.zoo=FALSE,na.trim=FALSE))
   
+  ##check naming when "" in colnames:
+  colnames(vxreg) <- c("a", "", "c", "", "d")
+  expect_silent(regressorsVariance(eps, vxreg=vxreg))
+  
+})
+
 
 ##test 2:
 ##=======
@@ -493,6 +628,7 @@ vxreg <- ts(vxreg, frequency=4, end=c(2015,4))
 eps[1] <- NA; eps[iT] <- NA
 eps[3] <- 0
 
+##for visual inspection:
 regressorsVariance(eps)
 regressorsVariance(eps, vc=FALSE)
 regressorsVariance(eps, arch=c(1,3))
@@ -510,14 +646,32 @@ regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),
   vxreg=vxreg, return.regressand=FALSE, return.as.zoo=FALSE,
   na.trim=FALSE)
 
+##unit test:
+test_that("regressorsVariance() - Test 2",{
+  expect_silent(regressorsVariance(eps))
+  expect_silent(regressorsVariance(eps, vc=FALSE))
+  expect_silent(regressorsVariance(eps, arch=c(1,3)))
+  expect_silent(regressorsVariance(eps, log.ewma=c(2,4)))
+  expect_silent(regressorsVariance(eps, vxreg=vxreg))
+  expect_silent(regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),vxreg=vxreg))
+  expect_silent(regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),vxreg=vxreg, return.regressand=FALSE))
+  expect_silent(regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),vxreg=vxreg, return.as.zoo=FALSE))
+  expect_silent(regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),vxreg=vxreg, na.trim=FALSE))
+  expect_silent(regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),vxreg=vxreg, return.regressand=FALSE, return.as.zoo=FALSE,na.trim=FALSE))
+})
+
 
 ##test 3:
 ##=======
 
 ##from 0.24: vxreg can be a data.frame
 set.seed(123)
-eps <- rnorm(30)
-vxreg <- matrix(rnorm(30*5), 30, 5)
+eps <- rnorm(10)
+vxreg <- matrix(rnorm(10*5), 10, 5)
 vxreg <- as.data.frame(vxreg)
 
 regressorsVariance(eps, vxreg=vxreg)
+
+test_that("regressorsVariance() - Test 3 vxreg as data.frame",{
+  expect_silent(regressorsVariance(eps, vxreg=vxreg))
+})

@@ -27,8 +27,8 @@ require(zoo)
 rm(list=ls())
 
 ##load source:
-source("./gets/gets/R/gets-base-source.R")
-source("./gets/gets/R/gets-isat-source.R")
+source("./contents/gets/R/gets-base-source.R")
+source("./contents/gets/R/gets-isat-source.R")
 
 
 ##################################################
@@ -265,8 +265,6 @@ print(mod06)
 ## Rules arx: The returned result should be a list with at least three items
 ## named "coefficients", "df" and "vcov". The item named "df" is used to
 ## compute the p-values associated with the t-statistics: coef/std.err. 
-## The returned result should be a list with at least three items:
-## "coefficients", "df" and "vcov". 
 
 ##user-defined estimator (minimal):
 Gfun <- function(y, x, method=3){
@@ -294,7 +292,7 @@ fitted(mod07) #should be null
 fitted(mod07, spec="m")
 fitted(mod07, spec="v")
 fitted(mod07, spec="b") #should be NULL
-logLik(mod07) #should produce warning
+logLik(mod07) #should produce warning: 'object$logl' is NULL
 plot(mod07) #should return "...no plot produced"
 recursive(mod07) #should return the error-message "...Not available..."
 vcov(mod07)
@@ -312,7 +310,7 @@ mod08 <- arx(y, ar=1:4, mxreg=mX,
 summary(mod08)
 print(mod08)
 mod08 <- arx(y, ar=1:4, mxreg=mX,
-  user.estimator=list(name="Gfun"), plot=TRUE) #should produce warning
+  user.estimator=list(name="Gfun"), plot=TRUE) #should not work: "...no plot produced"
 summary(mod08)
 print(mod08)
 coef(mod08)

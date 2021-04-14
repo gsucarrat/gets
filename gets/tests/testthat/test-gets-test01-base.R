@@ -459,7 +459,7 @@ regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),vxreg=vxreg, retur
 regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),vxreg=vxreg, na.trim=FALSE)
 regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),vxreg=vxreg, return.regressand=FALSE, return.as.zoo=FALSE,na.trim=FALSE)
 
-test_that("regressorsVariance() - Test 1",{
+test_that("regressorsVariance() - Test 2",{
   expect_silent(regressorsVariance(eps))
   expect_silent(regressorsVariance(eps, vc=FALSE))
   expect_silent(regressorsVariance(eps, arch=c(1,3)))

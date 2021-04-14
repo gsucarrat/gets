@@ -16,7 +16,7 @@
 ##################################################
 
 ##set working directory:
-setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
+setwd("C:/Users/sucarrat/Documents/R/gs/gets/github/")
 #setwd(choose.dir()) #interactively
 
 ##load required packages:
@@ -27,16 +27,30 @@ require(zoo)
 rm(list=ls())
 
 ##load source:
-source("./gets/R/gets-base-source.R")
-source("./gets/R/gets-isat-source.R")
-source("./gets/R/gets-dlogitx-source.R")
+source("./contents/gets/R/gets-base-source.R")
+source("./contents/gets/R/gets-dlogitx-source.R")
 
 
 ##################################################
 ## 2 TEST dlogitxSim()
 ##################################################
 
+##generate some data:
+set.seed(123)
+n <- 20
+z <- rnorm(n)
 
+##for visual inspection:
+dlogitxSim(n)
+dlogitxSim(n, intercept=1)
+dlogitxSim(n, ar=c(0.2,0.1))
+dlogitxSim(n, xreg=0.5*z)
+dlogitxSim(n, verbose=TRUE)
+dlogitxSim(n, as.zoo=FALSE)
+dlogitxSim(n, intercept=1, ar=c(0.2,0.1), xreg=0.5*z, verbose=TRUE,
+  as.zoo=FALSE)
+    
+    
 ##################################################
 ## 3 TEST logit()
 ##################################################
@@ -50,6 +64,7 @@ y <- dlogitxSim(n, ar=1, as.zoo=FALSE)
 z <- rnorm(n)
 x <- cbind(1,z)
 
+##for visual inspection:
 logit(y,x)
 logit(y,x, initial.values=c(0,0))
 logit(y,x, lower=0)$coefficients
@@ -61,7 +76,7 @@ logit(y,x, method=3)$lag.length
 logit(y,x, method=3, lag.length=5)$lag.length
 logit(y,x, control=list(trace=1))$iterations
 logit(y,x, eps.tol=1) 
-logit(y,x, solve.tol=0.99)
+logit(y,x, solve.tol=0.99) #should return error
 
     
 ##basic checks of consistency:
@@ -74,22 +89,22 @@ x <- cbind(1,z)
 ##experiment 1:
 y <- dlogitxSim(10000, intercept=0.5, xreg=z)
 result <- logit(y, x)
-result$coefficients 
+result$coefficients #should be approx 0.5 and 1
 
 ##experiment 2:
 y <- dlogitxSim(10000, intercept=-1, xreg=2*z)
 result <- logit(y, x)
-result$coefficients 
+result$coefficients #should be approx -1 and 2
 
 ##experiment 3:
 y <- dlogitxSim(10000, intercept=0, xreg=1*z)
 result <- logit(y, x)
-result$coefficients 
+result$coefficients #should be approx 0 and 1
 
 ##experiment 4:
 y <- dlogitxSim(10000, intercept=1, xreg=0*z)
 result <- logit(y, x)
-result$coefficients 
+result$coefficients #should be approx 1 and 0
 
 ##simulations:
 ##============
@@ -133,6 +148,7 @@ for(i in 1:iReps){
 ##------------------
 
 colMeans(resultCoefs)
+round(colMeans(resultCoefs), digits=3) == c(theta1,theta2)
 
 ##check empirical size:
 ##---------------------
@@ -160,15 +176,18 @@ z <- rnorm(n)
 dlogitx(y)
 dlogitx(y, intercept=FALSE)
 dlogitx(y, ar=1)
-#to do: ewma
+dlogitx(y, ewma=list(length=c(2,4)))
+##ISSUE: the z-variable is labelled as "mxreg", but should probably be
+##labelled "xreg" or "z":
 dlogitx(y, xreg=z)
 dlogitx(y, vcov.type="ordinary")
-dlogitx(y, vcov.type="hac")
-dlogitx(y, vcov.type="hac", lag.length=5)
+dlogitx(y, vcov.type="robust")
+dlogitx(y, vcov.type="robust", lag.length=5)
 dlogitx(y, ar=1, initial.values=c(0,0))
 dlogitx(y, ar=1, lower=0)
 dlogitx(y, ar=1, upper=0.5)
 dlogitx(y, control=list(trace=1))$coefficients
+dlogitx(y, upper=0.5, control=list(trace=1))$coefficients
 dlogitx(y, eps.tol=1) 
 dlogitx(y, solve.tol=0.99)
 
@@ -217,4 +236,5 @@ y <- dlogitxSim(n, ar=c(0.3,0.2,0.1), xreg=1*z)
 xreg <- cbind(z, matrix(rnorm(n*29), n, 29))
 
 mymod <- dlogitx(y, ar=1:5, xreg=xreg)
+mymod
 gets(mymod, max.paths=5)

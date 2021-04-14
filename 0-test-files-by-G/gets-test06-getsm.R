@@ -25,8 +25,8 @@ require(zoo)
 rm(list=ls())
 
 ##load source:
-source("./gets/gets/R/gets-base-source.R")
-source("./gets/gets/R/gets-isat-source.R")
+source("./contents/gets/R/gets-base-source.R")
+#source("./contents/gets/R/gets-isat-source.R")
 
 
 ##################################################

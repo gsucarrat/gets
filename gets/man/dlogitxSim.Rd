@@ -4,7 +4,7 @@
 \title{Simulate from a dynamic logit-x model}
 
 \description{
-Simulate from a dynamic Autoregressive (AR) logit model with covariates ('X').
+Simulate from a dynamic Autoregressive (AR) logit model with covariates ('X'). This model is essentially a logit-version of the model of Kauppi and Saikkonen (2008).
 }
 
 \usage{
@@ -27,7 +27,9 @@ dlogitxSim(n, intercept = 0, ar = NULL, xreg = NULL, verbose = FALSE,
 A vector or matrix, depending on whether \code{verbose} is \code{FALSE} or \code{TRUE}, of class \code{\link{zoo}}, depending on whether \code{as.zoo} is \code{TRUE} or \code{FALSE}
 }
 
-\references{No references for the moment.}
+\references{
+Heikki Kauppi and Penti Saikkonen (2008): 'Predicting U.S. Recessions with Dynamic Binary Response Models'. The Review of Economic Statistics 90, pp. 777-791
+}
 
 \author{Genaro Sucarrat, \url{http://www.sucarrat.net/}}
 
@@ -36,7 +38,15 @@ A vector or matrix, depending on whether \code{verbose} is \code{FALSE} or \code
 }
 
 \examples{
-##no examples for the moment
+
+##simulate from ar(1):
+set.seed(123) #for reproducibility
+y <- dlogitxSim(100, ar=0.3)
+
+##more output (value, probability, logit):
+set.seed(123) #for reproducibility
+y <- dlogitxSim(100, ar=0.3, verbose=TRUE)
+
 }
 
 \keyword{Statistical Models}
