@@ -80,3 +80,14 @@ arx.lm <- function(lmobject, ar=NULL, ewma=NULL,
              user.diagnostics, tol, LAPACK, plot)
   return(out)
 }
+
+
+isat <- function(x) {
+  UseMethod("isat")
+}
+getsm <- function(x) {
+  UseMethod("getsm")
+}
+arx <- function(x) {
+  UseMethod("arx")
+}
