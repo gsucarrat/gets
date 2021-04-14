@@ -14,6 +14,8 @@ arx(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL, vc=FALSE,
   vc.adj=TRUE, vcov.type=c("ordinary", "white", "newey-west"),
   qstat.options=NULL, normality.JarqueB=FALSE, user.estimator=NULL,
   user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, plot=NULL)
+  
+  \method{arx}{lm}(lmobject, ...)
 }
 
 \arguments{

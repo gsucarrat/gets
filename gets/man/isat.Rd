@@ -18,6 +18,8 @@ isat(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL, iis=FALSE, sis=TRUE,
   include.empty=FALSE, max.paths=NULL, parallel.options=NULL, turbo=FALSE,
   tol=1e-07, LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE, plot=NULL,
   alarm=FALSE)
+  
+  \method{isat}{lm}(lmobject, ...)
 }
 
 \arguments{
