@@ -2163,6 +2163,7 @@ blocksFun <- function(y, x, untransformed.residuals=NULL,
 arx <- function(y, ...) {
   UseMethod("arx")
 }
+
 ##==================================================
 ##Estimate AR-X model with log-ARCH-X errors
 arx.default <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
@@ -4386,8 +4387,7 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
   out <- list()
   out$time.started <- date()
   out$time.finished <- NA ##added below, towards the end
-  #out$callorig <- sys.call() #used by coef.arx
-  out$call <- sys.call(which = -1)
+  out$callorig <- sys.call() #used by coef.arx
   
   ##add gum results and diagnostics to out:
   tmp <- matrix(0, NROW(object$mean.results), 2)

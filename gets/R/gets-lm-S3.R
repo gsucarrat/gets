@@ -64,7 +64,7 @@ isat.lm <- function(y, ar=NULL, ewma=NULL, iis=FALSE, sis=TRUE, tis=FALSE, uis=F
 #                      gof.function=NULL, gof.method=NULL, keep=NULL, include.gum=FALSE,
 #                      include.1cut=TRUE, include.empty=FALSE, max.paths=NULL, tol=1e-07,
 #                      turbo=FALSE, print.searchinfo=TRUE, plot=NULL, alarm=FALSE){
-#   #browser()
+#   #
 #   arx_object <- arx.lm(lmobject)
 #   out <- getsm(arx_object, t.pval, wald.pval, vcov.type,do.pet, ar.LjungB,arch.LjungB, 
 #                normality.JarqueB,user.diagnostics, info.method,gof.function, gof.method, keep, include.gum,
@@ -94,6 +94,7 @@ arx.lm <- function(y, ar=NULL, ewma=NULL,
   # Deal with intercept
   mc <- ifelse(attr(y$terms, "intercept")==1, TRUE, FALSE)
   mxreg <- mxreg[,!colnames(mxreg) == "(Intercept)"] # remove the intercept
+  
   out <- arx(y = dep_var, mxreg = mxreg, mc = mc, 
              ar, ewma,
              vc, arch, asym, log.ewma, vxreg,
@@ -114,7 +115,6 @@ gets.lm <- function(x, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
                     include.1cut=TRUE, include.empty=FALSE, max.paths=NULL, tol=1e-07,
                     turbo=FALSE, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...)
 {
-  browser()
   arx_object <- arx(x)
   out <- getsm(arx_object, t.pval, wald.pval, vcov.type,do.pet, ar.LjungB,arch.LjungB,
                normality.JarqueB,user.diagnostics, info.method,gof.function, gof.method, keep, include.gum,
