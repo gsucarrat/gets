@@ -107,6 +107,7 @@ arx.lm <- function(y, ar=NULL, ewma=NULL,
 
 
 
+
 gets.lm <- function(x, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
                     do.pet=TRUE, ar.LjungB=list(lag=NULL, pval=0.025),
                     arch.LjungB=list(lag=NULL, pval=0.025), normality.JarqueB=NULL,
@@ -121,9 +122,6 @@ gets.lm <- function(x, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
                include.1cut, include.empty, max.paths, tol,turbo, print.searchinfo, plot, alarm, ...)
   return(out)
 }
-
-
-
 
 
 
