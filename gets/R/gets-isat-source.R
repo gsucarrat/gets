@@ -34,8 +34,10 @@
 ####################################################
 
 ##==================================================
+isat <- function(y, ...) { UseMethod("isat") }
+
 ## indicator saturation
-isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
+isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   iis=FALSE, sis=TRUE, tis=FALSE, uis=FALSE, blocks=NULL,
   ratio.threshold=0.8, max.block.size=30, t.pval=0.001,
   wald.pval=t.pval, vcov.type=c("ordinary", "white", "newey-west"),
@@ -45,11 +47,12 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   gof.method=c("min","max"), include.gum=NULL,
   include.1cut=FALSE, include.empty=FALSE, max.paths=NULL,
   parallel.options=NULL, turbo=FALSE, tol=1e-07, LAPACK=FALSE,
-  max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE)
+  max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...)
 {
 
   ##arguments:
-  isat.call <- sys.call()
+  #isat.call <- sys.call()
+  isat.call <- sys.call(-1)
   vcov.type <- match.arg(vcov.type)
   info.method <- match.arg(info.method)
   gof.method <- match.arg(gof.method)
