@@ -43,10 +43,10 @@ test_that("Check coefficients are equal between lm and arx",{
   lm_model3 <- lm(cyl ~ log(mpg) + as.factor(gear) + log(carb) + hp + I(hp*hp) + lag(drat) + I(drat*carb) + mpg*carb + hp:drat, mtcars)
   lm_model4 <- lm(cyl ~ log(mpg) + as.factor(gear) + log(carb) + hp + I(hp*hp) + lag(drat) + I(drat*carb) + mpg*carb + hp:drat-1, mtcars)
   
-  arx_model1 <- arx.lm(lm_model1)
-  arx_model2 <- arx.lm(lm_model2)
-  arx_model3 <- arx.lm(lm_model3)
-  arx_model4 <- arx.lm(lm_model4)
+  arx_model1 <- arx(lm_model1)
+  arx_model2 <- arx(lm_model2)
+  arx_model3 <- arx(lm_model3)
+  arx_model4 <- arx(lm_model4)
   
   coef_lm_model1 <- coef(lm_model1)
   coef_lm_model2 <- coef(lm_model2)
@@ -82,10 +82,10 @@ test_that("Check that the coefficients are equal between lm and arx but with vco
   lm_model3 <- lm(cyl ~ log(mpg) + as.factor(gear) + log(carb) + hp + I(hp*hp) + lag(drat) + I(drat*carb) + mpg*carb + hp:drat, mtcars)
   lm_model4 <- lm(cyl ~ log(mpg) + as.factor(gear) + log(carb) + hp + I(hp*hp) + lag(drat) + I(drat*carb) + mpg*carb + hp:drat-1, mtcars)
   
-  arx_model1 <- arx.lm(lm_model1, vcov.type = "white")
-  arx_model2 <- arx.lm(lm_model2, vcov.type = "white")
-  arx_model3 <- arx.lm(lm_model3, vcov.type = "newey-west")
-  arx_model4 <- arx.lm(lm_model4, vcov.type = "newey-west")
+  arx_model1 <- arx(lm_model1, vcov.type = "white")
+  arx_model2 <- arx(lm_model2, vcov.type = "white")
+  arx_model3 <- arx(lm_model3, vcov.type = "newey-west")
+  arx_model4 <- arx(lm_model4, vcov.type = "newey-west")
   
   coef_lm_model1 <- coef(lm_model1)
   coef_lm_model2 <- coef(lm_model2)
@@ -118,9 +118,9 @@ test_that("Check that the coefficients are equal between lm and arx but with vco
 
 
 
-# getsm testing -----------------------------------------------------------
+# gets testing -----------------------------------------------------------
 
-test_that("Test that getsm works with lm models",{
+test_that("Test that gets works with lm models",{
   
   # A number of models with varying formula arguments
   lm_model1 <- lm(mpg~ cyl  + gear + carb + hp + drat, mtcars)
@@ -129,17 +129,17 @@ test_that("Test that getsm works with lm models",{
   lm_model4 <- lm(cyl ~ log(mpg) + as.factor(gear) + log(carb) + hp + I(hp*hp) + lag(drat) + I(drat*carb) + mpg*carb + hp:drat-1, mtcars)
   
   
-  getsm_model1 <- getsm.lm(lm_model1, print.searchinfo = FALSE)
-  getsm_model2 <- getsm.lm(lm_model2, print.searchinfo = FALSE)
-  getsm_model3 <- getsm.lm(lm_model3, print.searchinfo = FALSE)
-  getsm_model4 <- getsm.lm(lm_model4, print.searchinfo = FALSE)
+  gets_model1 <- gets(lm_model1, print.searchinfo = FALSE)
+  gets_model2 <- gets(lm_model2, print.searchinfo = FALSE)
+  gets_model3 <- gets(lm_model3, print.searchinfo = FALSE)
+  gets_model4 <- gets(lm_model4, print.searchinfo = FALSE)
   
-  expect_output(print(getsm_model1))
-  expect_output(print(getsm_model2))
-  expect_output(print(getsm_model3))
-  expect_output(print(getsm_model4))
+  expect_output(print(gets_model1))
+  expect_output(print(gets_model2))
+  expect_output(print(gets_model3))
+  expect_output(print(gets_model4))
   
-  # Check that all variable names in getsm are also in the lm object
+  # Check that all variable names in gets are also in the lm object
   coef_lm_model1 <- coef(lm_model1)
   coef_lm_model2 <- coef(lm_model2)
   coef_lm_model3 <- coef(lm_model3)
@@ -151,16 +151,16 @@ test_that("Test that getsm works with lm models",{
   names(coef_lm_model3)[which(names(coef_lm_model3)=="(Intercept)")] <- "mconst"
   names(coef_lm_model4)[which(names(coef_lm_model4)=="(Intercept)")] <- "mconst"
   
-  expect_true(all(names(coef(getsm_model1)) %in% names(coef_lm_model1)))
-  expect_true(all(names(coef(getsm_model2)) %in% names(coef_lm_model2)))
-  expect_true(all(names(coef(getsm_model3)) %in% names(coef_lm_model3)))
-  expect_true(all(names(coef(getsm_model4)) %in% names(coef_lm_model4)))
+  expect_true(all(names(coef(gets_model1)) %in% names(coef_lm_model1)))
+  expect_true(all(names(coef(gets_model2)) %in% names(coef_lm_model2)))
+  expect_true(all(names(coef(gets_model3)) %in% names(coef_lm_model3)))
+  expect_true(all(names(coef(gets_model4)) %in% names(coef_lm_model4)))
   
   # Check that the number of variables is always smaller than the original model
-  expect_true(length(coef(getsm_model1)) <= length(coef(lm_model1)))
-  expect_true(length(coef(getsm_model2)) <= length(coef(lm_model2)))
-  expect_true(length(coef(getsm_model3)) <= length(coef(lm_model3)))
-  expect_true(length(coef(getsm_model4)) <= length(coef(lm_model4)))
+  expect_true(length(coef(gets_model1)) <= length(coef(lm_model1)))
+  expect_true(length(coef(gets_model2)) <= length(coef(lm_model2)))
+  expect_true(length(coef(gets_model3)) <= length(coef(lm_model3)))
+  expect_true(length(coef(gets_model4)) <= length(coef(lm_model4)))
   
 })
 
@@ -169,11 +169,11 @@ test_that("Test that getsm works with lm models",{
 
 
 test_that("Test that isat works with lm models",{
-  
-  lm_model1 <- lm(GD ~ FMBASE + FSDJ + LHC + MU, gets::hpdata)
-  lm_model2 <- lm(log(GD) ~ log(FMBASE) + FSDJ + LHC + MU, gets::hpdata)
-  lm_model3 <- lm(log(GD) ~ log(FMBASE) + FSDJ*LHC + MU, gets::hpdata)
-  lm_model4 <- lm(GD ~ FMBASE + FSDJ + LHC + MU + I(MU*MU)-1, gets::hpdata)
+  data("hpdata", package = "gets")
+  lm_model1 <- lm(GD ~ FMBASE + FSDJ + LHC + MU, hpdata)
+  lm_model2 <- lm(log(GD) ~ log(FMBASE) + FSDJ + LHC + MU, hpdata)
+  lm_model3 <- lm(log(GD) ~ log(FMBASE) + FSDJ*LHC + MU, hpdata)
+  lm_model4 <- lm(GD ~ FMBASE + FSDJ + LHC + MU + I(MU*MU)-1, hpdata)
   
   # A number of models with varying formula arguments
   # lm_model1 <- lm(mpg~ cyl  + gear + carb + hp + drat, mtcars)
@@ -182,10 +182,10 @@ test_that("Test that isat works with lm models",{
   # lm_model4 <- lm(cyl ~ log(mpg) + as.factor(gear) + log(carb) + hp + I(hp*hp) + lag(drat) + I(drat*carb) + mpg*carb + hp:drat-1, mtcars)
   # 
   # 
-  isat_model1 <- isat.lm(lm_model1, print.searchinfo = FALSE, t.pval = 0.001)
-  isat_model2 <- isat.lm(lm_model2, print.searchinfo = FALSE, t.pval = 0.001)
-  isat_model3 <- isat.lm(lm_model3, print.searchinfo = FALSE, t.pval = 0.001)
-  isat_model4 <- isat.lm(lm_model4, print.searchinfo = FALSE, t.pval = 0.001, ar = 1) # adding ar term
+  isat_model1 <- isat(lm_model1, print.searchinfo = FALSE, t.pval = 0.001)
+  isat_model2 <- isat(lm_model2, print.searchinfo = FALSE, t.pval = 0.001)
+  isat_model3 <- isat(lm_model3, print.searchinfo = FALSE, t.pval = 0.001)
+  isat_model4 <- isat(lm_model4, print.searchinfo = FALSE, t.pval = 0.001, ar = 1) # adding ar term
   
   expect_output(print(isat_model1))
   expect_output(print(isat_model2))
@@ -218,7 +218,7 @@ test_that("Test that isat works with lm models",{
 
 test_that("Check that the error message displays when weights are used in lm",{
   lm_model5 <- lm(mpg~ cyl + hp, weights = rnorm(nrow(mtcars),mean = 100), mtcars)
-  expect_error(arx.lm(lm_model5),regexp = "Usage of weights is not yet implemented in arx. Please estimate the lm object without weights.")
+  expect_error(arx(lm_model5))
   
 })
 
@@ -233,11 +233,11 @@ test_that("Check that the error message displays when weights are used in lm",{
 # 
 # model3 <- lm(log(mpg)~ cyl  + as.factor(gear) + log(carb) + hp + I(hp*hp) + lag(drat) + I(drat*carb) + cyl*carb + hp:drat, mtcars)
 # summary(model3)
-# arx.lm(model3)
+# arx(model3)
 # 
-# getsm.lm(model3)
+# getsm(model3)
 # 
-# isat.lm(model3)
+# isat(model3)
 # 
 # 
 # 
@@ -245,7 +245,7 @@ test_that("Check that the error message displays when weights are used in lm",{
 # 
 # 
 # model1 <- lm(mpg~ cyl  + gear + carb + hp + drat, mtcars)
-# isat.model1 <- isat.lm(model1)
+# isat.model1 <- isat(model1)
 # 
 # varnames_lm <- names(model1$coefficients)
 # varnames_lm <- setdiff(varnames_lm,"(Intercept)")

@@ -106,7 +106,7 @@ S3method("vcov", "dlogitx")
 
 
 
-
+S3method("arx","default")
 S3method("isat","default")
 
 ##methods for class lm:
