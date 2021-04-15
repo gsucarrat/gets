@@ -2,6 +2,7 @@
 \alias{arx}
 \alias{arx.default}
 \alias{arx.lm}
+\alias{arx.isat}
 \title{Estimate an AR-X model with log-ARCH-X errors}
 
 \description{
@@ -18,6 +19,12 @@ The AR-X mean specification can contain an intercept, AR-terms, lagged moving av
   user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, plot=NULL, ...)
   
   \method{arx}{lm}(y, ar=NULL, ewma=NULL, vc=FALSE,
+  arch=NULL, asym=NULL, log.ewma=NULL, vxreg=NULL, zero.adj=0.1,
+  vc.adj=TRUE, vcov.type=c("ordinary", "white", "newey-west"),
+  qstat.options=NULL, normality.JarqueB=FALSE, user.estimator=NULL,
+  user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, plot=NULL, ...)
+  
+  \method{arx}{isat}(y, ar=NULL, ewma=NULL, vc=FALSE,
   arch=NULL, asym=NULL, log.ewma=NULL, vxreg=NULL, zero.adj=0.1,
   vc.adj=TRUE, vcov.type=c("ordinary", "white", "newey-west"),
   qstat.options=NULL, normality.JarqueB=FALSE, user.estimator=NULL,

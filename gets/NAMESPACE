@@ -50,7 +50,10 @@ export(
   "summary.dlogitx", "toLatex.dlogitx", "vcov.dlogitx",
   
   ##lm-class functions:
-  "isat.lm", "gets.lm","arx.lm"
+  "isat.lm", "gets.lm","arx.lm",
+  
+  #More functions
+  "gets.isat","arx.isat"
 
 )
 
@@ -93,6 +96,8 @@ S3method("residuals", "isat")
 S3method("sigma", "isat")
 S3method("summary", "isat")
 S3method("vcov", "isat")
+S3method("gets", "isat")
+S3method("arx", "isat")
 
 ##methods for class dlogitx:
 S3method("coef", "dlogitx")

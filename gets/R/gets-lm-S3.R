@@ -38,6 +38,8 @@ isat.lm <- function(y, ar=NULL, ewma=NULL, iis=FALSE, sis=TRUE, tis=FALSE, uis=F
 }
 
 
+
+
 isat.arx <- function(y, ar=NULL, ewma=NULL, iis=FALSE, sis=TRUE, tis=FALSE, uis=FALSE, blocks=NULL,
                     ratio.threshold=0.8, max.block.size=30, t.pval=0.001,
                     wald.pval=t.pval, vcov.type=c("ordinary", "white", "newey-west"),
@@ -63,6 +65,49 @@ isat.arx <- function(y, ar=NULL, ewma=NULL, iis=FALSE, sis=TRUE, tis=FALSE, uis=
   return(out)
 }
 
+
+
+
+
+arx.isat <- function(y, ar=NULL, ewma=NULL,
+                   vc=FALSE, arch=NULL, asym=NULL, log.ewma=NULL, vxreg=NULL,
+                   zero.adj=0.1, vc.adj=TRUE,
+                   vcov.type=c("ordinary", "white", "newey-west"),
+                   qstat.options=NULL, normality.JarqueB=FALSE, user.estimator=NULL,
+                   user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, plot=NULL, ...){
+  
+
+  dep_var <- data.frame(y$aux$y)
+  names(dep_var) <- y$aux$y.name 
+
+  mxreg <- y$aux$mX
+
+  out <- arx(y = dep_var, mxreg = mxreg, mc = FALSE, 
+             ar, ewma,
+             vc, arch, asym, log.ewma, vxreg,
+             zero.adj, vc.adj,
+             vcov.type,
+             qstat.options, normality.JarqueB, user.estimator,
+             user.diagnostics, tol, LAPACK, plot, ...)
+  return(out)
+}
+
+
+
+gets.isat <- function(x, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
+                    do.pet=TRUE, ar.LjungB=list(lag=NULL, pval=0.025),
+                    arch.LjungB=list(lag=NULL, pval=0.025), normality.JarqueB=NULL,
+                    user.diagnostics=NULL, info.method=c("sc","aic","aicc","hq"),
+                    gof.function=NULL, gof.method=NULL, keep=NULL, include.gum=FALSE,
+                    include.1cut=TRUE, include.empty=FALSE, max.paths=NULL, tol=1e-07,
+                    turbo=FALSE, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...)
+{
+  arx_object <- arx(x)
+  out <- getsm(arx_object, t.pval, wald.pval, vcov.type,do.pet, ar.LjungB,arch.LjungB,
+               normality.JarqueB,user.diagnostics, info.method,gof.function, gof.method, keep, include.gum,
+               include.1cut, include.empty, max.paths, tol,turbo, print.searchinfo, plot, alarm, ...)
+  return(out)
+}
 # isat.lm <- function(y, ...){
 #   
 #   # Checks
