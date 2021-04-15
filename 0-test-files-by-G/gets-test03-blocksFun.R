@@ -25,8 +25,8 @@ require(zoo)
 rm(list=ls())
 
 ##load source:
-source("./gets/gets/R/gets-base-source.R")
-source("./gets/gets/R/gets-isat-source.R")
+source("./contents/gets/R/gets-base-source.R")
+source("./contents/gets/R/gets-isat-source.R")
 
 
 ##################################################
@@ -74,7 +74,7 @@ blocksFun(vY, mX,
   include.gum=TRUE, include.1cut=TRUE, include.empty=TRUE)$specific.spec
 blocksFun(vY, mX, max.paths=1)$specific.spec
 blocksFun(vY, mX, parallel.options=2)$specific.spec
-blocksFun(vY, mX, parallel.options=5)$specific.spec #should return error
+blocksFun(vY, mX, parallel.options=9)$specific.spec #should return error if 9 > detectCores()
 blocksFun(vY, mX, turbo=TRUE)$specific.spec
 blocksFun(vY, mX, force.invertibility=FALSE)$specific.spec
 blocksFun(vY, mX, tol=1)$specific.spec

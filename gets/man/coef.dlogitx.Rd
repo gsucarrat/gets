@@ -42,11 +42,27 @@ Genaro Sucarrat, \url{http://www.sucarrat.net/}
 }
 
 \seealso{
-\code{\link{dlogitx}}
+\code{\link{dlogitx}}, \code{\link{dlogitxSim}}, \code{\link{gets.dlogitx}}
 }
 
 \examples{
-##no examples for the moment
+
+##simulate from ar(1):
+set.seed(123) #for reproducibility
+y <- dlogitxSim(100, ar=0.3)
+
+##estimate and store result:
+mymod <- dlogitx(y, ar=1)
+
+##extract stuff:
+coef(mymod)
+fitted(mymod)
+logLik(mymod)
+plot(mymod)
+print(mymod)
+summary(mymod)
+toLatex(mymod)
+
 }
 
 \keyword{Statistical Models}

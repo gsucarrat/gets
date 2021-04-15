@@ -24,8 +24,8 @@ require(zoo)
 rm(list=ls())
 
 ##load source:
-source("./gets/gets/R/gets-base-source.R")
-source("./gets/gets/R/gets-isat-source.R")
+source("./contents/gets/R/gets-base-source.R")
+#source("./contents/gets/R/gets-isat-source.R")
 
 
 ##################################################
@@ -62,7 +62,7 @@ getsv(vgum01, info.method="sc")
 getsv(vgum01, info.method="hq")
 getsv(vgum01, keep=1:3)
 getsv(vgum01, keep=c(1,3))
-##issue raised by Jonas Kurle/Moritz Schwarz in email
+##issue raised by J-bat and M-orca in email
 ##24 October 2019 sent to F-bear. If only a single non-keep
 ##regressor, then no search is undertaken. Solved in getsFun
 ##by G in 0.24:

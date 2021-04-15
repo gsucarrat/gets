@@ -1,6 +1,7 @@
 ##################################################
-## Test file for gets package. First created
-## 26 June 2017, Zaragoza.
+## This file tests the getsFun() function.
+##
+## First created 26 June 2017, Zaragoza.
 ##
 ## 1 INITIATE 
 ## 2 TEST MAIN getsFun ARGUMENTS
@@ -29,8 +30,8 @@ require(zoo)
 rm(list=ls())
 
 ##load source:
-source("./gets/gets/R/gets-base-source.R")
-source("./gets/gets/R/gets-isat-source.R")
+source("./contents/gets/R/gets-base-source.R")
+#source("./contents/gets/R/gets-isat-source.R")
 
 
 ##################################################
@@ -244,10 +245,10 @@ getsFun(vY, mX, #should work
 ## 5 TEST USER-DEFINED ESTIMATION
 ##################################################
 
-## Rules: The returned result, a list, should contain at least six items
-## named "coefficients", "df", "vcov", "logl", "n" and "k". The first
-## three items are used to compute the p-values associated with the
-## t-statistics coef/std.err, and the PETs. "logl", "n" and "k" are
+## General rules: The returned result, a list, should contain at least
+## six items named "coefficients", "df", "vcov", "logl", "n" and "k".
+## The first three items are used to compute the p-values associated with
+## the t-statistics coef/std.err, and the PETs. "logl", "n" and "k" are
 ## needed in order to compute the information criterion. Finally, the
 ## estimator MUST be able to handle situations where the regressor-matrix
 ## x is NULL or NCOL(x)=0
@@ -331,8 +332,9 @@ colnames(mX) <- paste("x",1:NCOL(mX),sep="")
 
 system.time(getsFun(vY,mX))
 system.time(getsFun(vY,mX, user.estimator=list(name="ols2")))
-##Conclusion: ols2 can be substantially faster than ols when
-##T is large
+##Conclusions:
+## - for small T, ols is usually faster than ols2
+## - for large T, ols2 can be substantially faster
 
 ##S3 method for lm:
 gets.lm <- function(object, ...){
