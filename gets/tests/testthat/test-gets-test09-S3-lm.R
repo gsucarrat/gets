@@ -213,6 +213,44 @@ test_that("Test that isat works with lm models",{
   
 })
 
+
+
+test_that("Test that isat works with arx models",{
+  data("hpdata", package = "gets")
+  arx_model1 <- arx(y = hpdata$GD, mxreg = hpdata[,c("FMBASE","FSDJ","LHC","MU")])
+  arx_model2 <- arx(y = log(hpdata$GD), mxreg = hpdata[,c("FMBASE","FSDJ","LHC","MU")])
+  arx_model3 <- arx(y = hpdata$GD, mxreg = hpdata[,c("FMBASE","FSDJ","LHC","MU")])
+  
+  # A number of models with varying formula arguments
+  # lm_model1 <- lm(mpg~ cyl  + gear + carb + hp + drat, mtcars)
+  # lm_model2 <- lm(log(mpg)~ cyl  + as.factor(gear) + carb + hp + I(hp*hp) + drat + I(drat*carb), mtcars)
+  # lm_model3 <- lm(cyl ~ log(mpg) + as.factor(gear) + log(carb) + hp + I(hp*hp) + lag(drat) + I(drat*carb) + mpg*carb + hp:drat, mtcars)
+  # lm_model4 <- lm(cyl ~ log(mpg) + as.factor(gear) + log(carb) + hp + I(hp*hp) + lag(drat) + I(drat*carb) + mpg*carb + hp:drat-1, mtcars)
+  # 
+  # 
+  isat_model1 <- isat(arx_model1, print.searchinfo = FALSE, t.pval = 0.001)
+  isat_model2 <- isat(arx_model2, print.searchinfo = FALSE, t.pval = 0.001)
+  isat_model3 <- isat(arx_model3, print.searchinfo = FALSE, t.pval = 0.001)
+  
+  expect_output(print(isat_model1))
+  expect_output(print(isat_model2))
+  expect_output(print(isat_model3))
+  
+  # Check that all variable names in isat are also in the lm object
+  coef_arx_model1 <- coef(arx_model1)
+  coef_arx_model2 <- coef(arx_model2)
+  coef_arx_model3 <- coef(arx_model3)
+
+  
+  # Check that the number of variables is always equal or larger than the original model
+  expect_true(length(coef(isat_model1)) >= length(coef(arx_model1)))
+  expect_true(length(coef(isat_model2)) >= length(coef(arx_model2)))
+  expect_true(length(coef(isat_model3)) >= length(coef(arx_model3)))
+  
+})
+
+
+
 # Special case testing ----------------------------------------------------
 
 

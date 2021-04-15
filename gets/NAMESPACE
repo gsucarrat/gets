@@ -29,7 +29,7 @@ export(
   ##arx-class functions:
   "arx", "coef.arx", "ES", "fitted.arx", "gets.arx", "logLik.arx", "plot.arx",
   "predict.arx", "print.arx", "recursive", "rsquared", "residuals.arx",
-  "sigma.arx", "summary.arx", "toLatex.arx", "VaR", "vcov.arx", 
+  "sigma.arx", "summary.arx", "toLatex.arx", "VaR", "vcov.arx",
   
   ##gets-class functions:
   "getsm", "getsv", "coef.gets", "fitted.gets", "paths",
@@ -41,8 +41,8 @@ export(
   "predict.isat", "print.isat", "residuals.isat", "sigma.isat",
   "summary.isat", "vcov.isat", "biascorr", "isattest", "isatvar",
   "isvarcor", "isvareffcor", "iim", "sim", "tim", "isatdates",
-  "isatloop", "isatvarcorrect", "mvrnormsim", "outlierscaletest","isat.default",
-  "outliertest", "vargaugeiis",
+  "isatloop", "isatvarcorrect", "mvrnormsim", "outlierscaletest",
+  "outliertest", "vargaugeiis","isat.arx",
 
   ##dlogitx-class function:
   "dlogitxSim", "logit", "dlogitx", "coef.dlogitx", "fitted.dlogitx",
@@ -67,6 +67,7 @@ S3method("sigma", "arx")
 S3method("summary", "arx")
 S3method("toLatex", "arx")
 S3method("vcov", "arx")
+S3method("isat", "arx")
 
 ##methods for class gets:
 S3method("coef", "gets")

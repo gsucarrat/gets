@@ -37,6 +37,32 @@ isat.lm <- function(y, ar=NULL, ewma=NULL, iis=FALSE, sis=TRUE, tis=FALSE, uis=F
   return(out)
 }
 
+
+isat.arx <- function(y, ar=NULL, ewma=NULL, iis=FALSE, sis=TRUE, tis=FALSE, uis=FALSE, blocks=NULL,
+                    ratio.threshold=0.8, max.block.size=30, t.pval=0.001,
+                    wald.pval=t.pval, vcov.type=c("ordinary", "white", "newey-west"),
+                    do.pet=FALSE, ar.LjungB=NULL, arch.LjungB=NULL,
+                    normality.JarqueB=NULL, info.method=c("sc", "aic", "hq"),
+                    user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL,
+                    gof.method=c("min","max"), include.gum=NULL,
+                    include.1cut=FALSE, include.empty=FALSE, max.paths=NULL,
+                    parallel.options=NULL, turbo=FALSE, tol=1e-07, LAPACK=FALSE,
+                    max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...){
+  
+  out <- isat(y = y$aux$y, mxreg = y$aux$mX, mc = FALSE,
+              ar, ewma, iis, sis, tis, uis, blocks,
+              ratio.threshold, max.block.size, t.pval,
+              wald.pval, vcov.type,
+              do.pet, ar.LjungB, arch.LjungB,
+              normality.JarqueB, info.method,
+              user.diagnostics, user.estimator, gof.function,
+              gof.method, include.gum,
+              include.1cut, include.empty, max.paths,
+              parallel.options, turbo, tol, LAPACK,
+              max.regs, print.searchinfo, plot, alarm, ...)
+  return(out)
+}
+
 # isat.lm <- function(y, ...){
 #   
 #   # Checks
