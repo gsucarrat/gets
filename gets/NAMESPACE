@@ -98,6 +98,7 @@ S3method("summary", "isat")
 S3method("vcov", "isat")
 S3method("gets", "isat")
 S3method("arx", "isat")
+S3method("gets", "isat")
 
 ##methods for class dlogitx:
 S3method("coef", "dlogitx")
