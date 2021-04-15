@@ -90,31 +90,28 @@ arx.isat <- function(y, ar=NULL, ewma=NULL,
 
 
 
-gets.isat <- function(x, t.pval=0.05, wald.pval=t.pval, vcov.type,
+gets.isat <- function(x, t.pval=0.05, wald.pval=t.pval, vcov.type = NULL,
                       do.pet=TRUE, ar.LjungB=list(lag=NULL, pval=0.025),
                       arch.LjungB=list(lag=NULL, pval=0.025), normality.JarqueB=NULL,
                       user.diagnostics=NULL, info.method=c("sc","aic","aicc","hq"),
                       gof.function=NULL, gof.method=NULL, keep=NULL, include.gum=FALSE,
                       include.1cut=TRUE, include.empty=FALSE, max.paths=NULL, tol=1e-07,
-                      turbo=FALSE, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...)
+                      turbo=FALSE, print.searchinfo=TRUE, plot=NULL, alarm=FALSE,...)
 {
   
-  dep_var <- data.frame(y$aux$y)
-  names(dep_var) <- y$aux$y.name 
-  
-  mxreg <- y$aux$mX
-  
-  if(missing(vcov.type)){vcov.type <- y$aux$vcov.type}
+  if(missing(vcov.type)){vcov.type <- x$aux$vcov.type}
   if(missing(info.method)){info.method <- "sc"}
   
-  out <- isat(y = dep_var, mxreg = mxreg, mc = FALSE, 
-              t.pval = t.pval, wald.pval = wald.pval, vcov.type = vcov.type,do.pet = do.pet, 
-              ar.LjungB = ar.LjungB,arch.LjungB = arch.LjungB,normality.JarqueB = normality.JarqueB,
-              user.diagnostics = user.diagnostics, info.method = info.method,
-              gof.function = gof.function, gof.method = gof.method, keep = keep, 
-              include.1cut= include.1cut, include.empty = include.empty, 
-              max.paths = max.paths, tol = tol,turbo = turbo, print.searchinfo = print.searchinfo, 
-              plot = plot, alarm = alarm, ...)
+  object <- arx(x, vcov.type = vcov.type)
+ 
+  out <- getsm(object,
+               t.pval = t.pval, wald.pval = wald.pval, vcov.type = vcov.type,do.pet = do.pet, 
+               ar.LjungB = ar.LjungB,arch.LjungB = arch.LjungB,normality.JarqueB = normality.JarqueB,
+               user.diagnostics = user.diagnostics, info.method = info.method,
+               gof.function = gof.function, gof.method = gof.method, keep = keep, 
+               include.1cut= include.1cut, include.empty = include.empty, 
+               max.paths = max.paths, tol = tol,turbo = turbo, print.searchinfo = print.searchinfo, 
+               plot = plot, alarm = alarm)
   return(out)
 }
 
