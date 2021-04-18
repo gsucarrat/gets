@@ -7,7 +7,7 @@ isat.lm <- function(y, ar=NULL, ewma=NULL, iis=FALSE, sis=TRUE, tis=FALSE, uis=F
                     gof.method=c("min","max"), include.gum=NULL,
                     include.1cut=FALSE, include.empty=FALSE, max.paths=NULL,
                     parallel.options=NULL, turbo=FALSE, tol=1e-07, LAPACK=FALSE,
-                    max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...){
+                    max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE){
   
   # Checks
   if(!is.null(y$weights)){stop("Usage of weights is not yet implemented in isat. Please estimate the lm object without weights.")}
@@ -33,7 +33,7 @@ isat.lm <- function(y, ar=NULL, ewma=NULL, iis=FALSE, sis=TRUE, tis=FALSE, uis=F
               gof.method, include.gum,
               include.1cut, include.empty, max.paths,
               parallel.options, turbo, tol, LAPACK,
-              max.regs, print.searchinfo, plot, alarm, ...)
+              max.regs, print.searchinfo, plot, alarm)
   return(out)
 }
 
@@ -49,13 +49,26 @@ isat.arx <- function(y, ar=NULL, ewma=NULL, iis=FALSE, sis=TRUE, tis=FALSE, uis=
                      parallel.options=NULL, turbo=FALSE, tol=1e-07, LAPACK=FALSE,
                      max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...){
   
+  
+  # Check if one of these arguments is explicitly supplied to the function
+  # if not, then check if the original item has this arguemnt supplied
+  # if it does, take the setting of the original object
+  # if it does not, then take the default
+  if(missing(vcov.type)){vcov.type <- x$aux$vcov.type}
+  if(missing(normality.JarqueB)){normality.JarqueB <- ifelse(is.null(y$call$normality.JarqueB),FALSE,y$call$normality.JarqueB)}
+  if(missing(user.estimator)){user.estimator <- ifelse(is.null(y$call$user.estimator),NULL,y$call$user.estimator)}
+  if(missing(user.diagnostics)){user.diagnostics <- ifelse(is.null(y$call$user.diagnostics),NULL,y$call$user.diagnostics)}
+  if(missing(LAPACK)){LAPACK <- ifelse(is.null(y$call$LAPACK),FALSE,y$call$LAPACK)}
+  if(missing(plot)){plot <- ifelse(is.null(y$call$plot),NULL,y$call$plot)}
+  if(missing(tol)){tol <- ifelse(is.null(y$call$tol),1e-07,y$call$tol)}
+  
   out <- isat(y = y$aux$y, mxreg = y$aux$mX, mc = FALSE,
-              ar, ewma, iis, sis, tis, uis, blocks,
-              ratio.threshold, max.block.size, t.pval,
-              wald.pval, vcov.type,
-              do.pet, ar.LjungB, arch.LjungB,
-              normality.JarqueB, info.method,
-              user.diagnostics, user.estimator, gof.function,
+              ar = ar, ewma = ewma, iis = iis, sis = sis, tis = tis, uis = uis, blocks = blocks,
+              ratio.threshold = ratio.threshold, max.block.size = max.block.size, t.pval = t.pval,
+              wald.pval = wald.pval, vcov.type = vcov.type,
+              do.pet = do.pet, ar.LjungB = ar.LjungB, arch.LjungB = arch.LjungB,
+              normality.JarqueB = normality.JarqueB, info.method = info.method,
+              user.diagnostics = user.diagnostics, user.estimator = user.estimator, gof.function,
               gof.method, include.gum,
               include.1cut, include.empty, max.paths,
               parallel.options, turbo, tol, LAPACK,
