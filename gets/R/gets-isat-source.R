@@ -51,8 +51,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
 {
 
   ##arguments:
-  #isat.call <- sys.call()
-  isat.call <- sys.call(-1)
+  isat.call <- sys.call()
   vcov.type <- match.arg(vcov.type)
   info.method <- match.arg(info.method)
   gof.method <- match.arg(gof.method)
@@ -610,6 +609,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   getsis <-
     c(list(ISfinalmodels=ISfinalmodels, ISnames=ISnames), getsis, mod)
   getsis$aux$t.pval <- t.pval #needed for biascorr
+  getsis$aux$arguments <- mget(names(formals()),sys.frame(sys.nframe())) # added by M-orca April 2021 for S3 methods
   class(getsis) <- "isat"
   if(alarm){ alarm() }
   if( is.null(plot) ){ #determine whether to plot or not

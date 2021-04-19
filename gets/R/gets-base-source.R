@@ -2240,8 +2240,7 @@ arx.default <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
   
   ### INITIALISE ##########
   
-  #sysCall <- sys.call()
-  sysCall <- sys.call(which = -1)
+  sysCall <- sys.call()
   #for the future: make sure the following objects are part of the out-list?
   vcov.var <- NULL #make sure this object exists
   variance.results <- NULL #make sure this object exists
@@ -2430,6 +2429,7 @@ arx.default <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
   
   ##result:
   out <- c(list(call=sysCall, date=date(), aux=aux), out)
+  out$aux$arguments <- mget(names(formals()),sys.frame(sys.nframe())) # added by M-orca April 2021 for S3 methods
   class(out) <- "arx"
   
   ##plot:
@@ -4496,6 +4496,7 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
   
   ##finalise and return:
   out <- c(list(date=date(), gets.type="getsm"), out)
+  out$aux$arguments <- mget(names(formals()),sys.frame(sys.nframe())) # added by M-orca April 2021 for S3 methods
   class(out) <- "gets"
   if(alarm){ alarm() }
   if( is.null(plot) ){
