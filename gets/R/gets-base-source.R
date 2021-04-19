@@ -4344,7 +4344,9 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
   } #close if user estimator
   
   ##if( default estimator ):
-  if( is.null(object$call$user.estimator) ){
+  # changed by M-orca April 2021 - more reliable as this is not changed - sys.call is depending on the level
+  #if( is.null(object$call$user.estimator) ){
+  if( is.null(object$aux$arguments$user.estimator) ){ 
     
     ##determine ols method:
     if( is.null(vcov.type) ){ vcov.type <- object$aux$vcov.type }

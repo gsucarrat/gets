@@ -99,8 +99,8 @@ isat.arx <- function(
   
   out <- isat.default(
     y$aux$y,
-    FALSE,
-    ar,
+    FALSE, # mc would already be set in arx
+    NULL, # ar would already be set in arx
     ewma,
     mxreg,
     iis,
@@ -164,7 +164,6 @@ arx.isat <- function(y, ar=NULL, ewma=NULL,
   if(missing(plot)){plot <- if(is.null(y$aux$arguments[["plot"]])){NULL}else{y$aux$arguments[["plot"]]}}
   if(missing(tol)){tol <- if(is.null(y$aux$arguments[["tol"]])){1e-07}else{y$aux$arguments[["tol"]]}}
   
-  browser()
   dep_var <- matrix(y$aux$y)
   colnames(dep_var) <- y$aux$y.name 
   
@@ -222,8 +221,7 @@ gets.isat <- function(x, t.pval=0.05, wald.pval=t.pval, vcov.type = NULL,
   if(missing(plot)){plot <- if(is.null(x$aux$arguments[["plot"]])){NULL}else{x$aux$arguments[["plot"]]}}
   if(missing(tol)){tol <- if(is.null(x$aux$arguments[["tol"]])){1e-07}else{x$aux$arguments[["tol"]]}}
   
-  
-  object <- arx(x, plot = FALSE)
+  object <- arx(x, plot = FALSE, ar = FALSE, mc = FALSE) # some arguments pre-set because they will already be in isat if needed
 
   out <- getsm(
     object,

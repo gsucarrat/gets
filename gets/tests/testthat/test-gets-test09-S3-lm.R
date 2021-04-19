@@ -36,7 +36,7 @@ mtcars
 # arx testing -------------------------------------------------------------
 
 test_that("Check coefficients are equal between lm and arx",{
-
+  
   # A number of models with varying formula arguments
   lm_model1 <- lm(mpg~ cyl  + gear + carb + hp + drat, mtcars)
   lm_model2 <- lm(log(mpg)~ cyl  + as.factor(gear) + carb + hp + I(hp*hp) + drat + I(drat*carb), mtcars)
@@ -113,7 +113,7 @@ test_that("Check that the coefficients are equal between lm and arx but with vco
   expect_false(all(vcov(lm_model2)==vcov(arx_model2)))
   expect_false(all(vcov(lm_model3)==vcov(arx_model3)))
   expect_false(all(vcov(lm_model4)==vcov(arx_model4)))
-
+  
 })
 
 
@@ -240,7 +240,7 @@ test_that("Test that isat works with arx models",{
   coef_arx_model1 <- coef(arx_model1)
   coef_arx_model2 <- coef(arx_model2)
   coef_arx_model3 <- coef(arx_model3)
-
+  
   
   # Check that the number of variables is always equal or larger than the original model
   expect_true(length(coef(isat_model1)) >= length(coef(arx_model1)))
@@ -263,20 +263,20 @@ test_that("Options testing",{
   gets(isat_object)
   
   
-  mtcars %>% 
-    lm(mpg ~ cyl+lag(cyl) + hp + drat,.) %>% 
-    gets
+  lm_object <- lm(mpg ~ cyl+lag(cyl) + hp + drat,mtcars)
+  gets(lm_object)
   
   
-  mtcars %>% 
-    lm(mpg ~ cyl+ I(cyl*10)+ hp + drat,.) %>% 
-    arx(ar = 1, arch = 1:4) %>% 
-    isat %>% 
-    gets
+  
+  lm_object <- lm(mpg ~ cyl+ I(cyl*10)+ hp + drat,mtcars)
+  arx_object <- arx(lm_object, ar = 1)
+  isat_object <- isat(arx_object)
+  gets(isat_object)
+  plot(gets(isat_object))
   
   
-  lm_object <- lm(mpg ~ cyl+ I(cyl*10)+ hp + drat,mtcars) %>% # creating a perfectly linear term
-    arx(lm_object)
+  lm_object <- lm(mpg ~ cyl+ I(cyl*10)+ hp + drat,mtcars) # creating a perfectly linear term
+  arx(lm_object)
 })
 
 
@@ -288,6 +288,19 @@ test_that("Check that the error message displays when weights are used in lm",{
   expect_error(arx(lm_model5))
   
 })
+
+
+# To work on!!!
+
+test_that("Test currently failing - NEED WORK",{
+  lm_object <- lm(mpg ~ cyl+ I(cyl*10)+ hp + drat,mtcars)
+  arx_object <- arx(lm_object, ar = 1)
+  isat_object <- isat(arx_object, print.searchinfo = FALSE)
+  gets_object <- gets(isat_object, print.searchinfo = FALSE)
+  expect_message(plot(gets_object)) # should output a plot!! does not at the moment
+})
+
+
 
 # 
 # 
