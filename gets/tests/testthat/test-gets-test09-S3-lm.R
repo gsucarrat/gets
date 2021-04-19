@@ -250,6 +250,35 @@ test_that("Test that isat works with arx models",{
 })
 
 
+# Option testing ----------------------------------------------------------
+
+test_that("Options testing",{
+  lm_object <- lm(mpg ~ cyl+lag(cyl) + hp + drat,mtcars) 
+  isat_object <- isat(lm_object,iis = TRUE, sis = FALSE, tis = FALSE, plot = TRUE, t.pval = 0.1) 
+  expect_silent(arx(isat_object))
+  arx(isat_object)
+  
+  lm_object <- lm(mpg ~ cyl+lag(cyl) + hp + drat,mtcars) 
+  isat_object <- isat(lm_object, iis = TRUE, sis = FALSE, tis = FALSE, plot = TRUE, t.pval = 0.1) 
+  gets(isat_object)
+  
+  
+  mtcars %>% 
+    lm(mpg ~ cyl+lag(cyl) + hp + drat,.) %>% 
+    gets
+  
+  
+  mtcars %>% 
+    lm(mpg ~ cyl+ I(cyl*10)+ hp + drat,.) %>% 
+    arx(ar = 1, arch = 1:4) %>% 
+    isat %>% 
+    gets
+  
+  
+  lm_object <- lm(mpg ~ cyl+ I(cyl*10)+ hp + drat,mtcars) %>% # creating a perfectly linear term
+    arx(lm_object)
+})
+
 
 # Special case testing ----------------------------------------------------
 
