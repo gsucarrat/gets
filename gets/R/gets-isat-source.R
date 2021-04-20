@@ -34,6 +34,7 @@
 ####################################################
 
 ##==================================================
+## indicator saturation
 isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
                  iis=FALSE, sis=TRUE, tis=FALSE, uis=FALSE, blocks=NULL,
                  ratio.threshold=0.8, max.block.size=30, t.pval=0.001,
@@ -46,7 +47,6 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
                  parallel.options=NULL, turbo=FALSE, tol=1e-07, LAPACK=FALSE,
                  max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE) { UseMethod("isat") }
 
-## indicator saturation
 isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   iis=FALSE, sis=TRUE, tis=FALSE, uis=FALSE, blocks=NULL,
   ratio.threshold=0.8, max.block.size=30, t.pval=0.001,

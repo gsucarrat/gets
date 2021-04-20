@@ -42,7 +42,7 @@ export(
   "summary.isat", "vcov.isat", "biascorr", "isattest", "isatvar",
   "isvarcor", "isvareffcor", "iim", "sim", "tim", "isatdates",
   "isatloop", "isatvarcorrect", "mvrnormsim", "outlierscaletest",
-  "outliertest", "vargaugeiis","isat.arx",
+  "outliertest", "vargaugeiis",
 
   ##dlogitx-class function:
   "dlogitxSim", "logit", "dlogitx", "coef.dlogitx", "fitted.dlogitx",
@@ -52,8 +52,8 @@ export(
   ##lm-class functions:
   "isat.lm", "gets.lm","arx.lm",
   
-  #More functions
-  "gets.isat","arx.isat"
+  ##Cross S3 methods
+  "isat.arx","gets.isat","arx.isat"
 
 )
 
@@ -98,7 +98,6 @@ S3method("summary", "isat")
 S3method("vcov", "isat")
 S3method("gets", "isat")
 S3method("arx", "isat")
-S3method("gets", "isat")
 
 ##methods for class dlogitx:
 S3method("coef", "dlogitx")
@@ -111,8 +110,7 @@ S3method("summary", "dlogitx")
 S3method("toLatex", "dlogitx")
 S3method("vcov", "dlogitx")
 
-
-
+##default methods 
 S3method("arx","default")
 S3method("isat","default")
 

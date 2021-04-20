@@ -2181,7 +2181,7 @@ arx.default <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
   zero.adj=0.1, vc.adj=TRUE,
   vcov.type=c("ordinary", "white", "newey-west"),
   qstat.options=NULL, normality.JarqueB=FALSE, user.estimator=NULL,
-                        user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, plot=NULL)
+  user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, plot=NULL)
 {
   ### ARGUMENTS: ###########
 
