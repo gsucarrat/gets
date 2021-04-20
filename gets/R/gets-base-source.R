@@ -413,8 +413,8 @@ leqwma <- function(x, length=5, k=1, p=2, as.vector=FALSE,
 ##==================================================
 ##Create the mean regressors of an arx model:
 regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
-  prefix="m", return.regressand=TRUE, return.as.zoo=TRUE, na.trim=TRUE,
-  na.omit=FALSE)
+                           prefix="m", return.regressand=TRUE, return.as.zoo=TRUE, na.trim=TRUE,
+                           na.omit=FALSE)
 {
   
   ##regressand:
@@ -484,20 +484,20 @@ regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
     xregLabel <- paste0( prefix, "xreg" )
     if(is.null(mxreg.names)){
       mxreg.names <- paste(xregLabel, 1:NCOL(mxreg), sep="")
-#OLD:
-#      mxreg.names <- paste("mxreg", 1:NCOL(mxreg), sep="")
+      #OLD:
+      #      mxreg.names <- paste("mxreg", 1:NCOL(mxreg), sep="")
     }
     if( any(mxreg.names == "") ){
       missing.colnames <- which(mxreg.names == "")
       for(i in 1:length(missing.colnames)){
         mxreg.names[missing.colnames[i]] <- paste0(xregLabel, i)
-#OLD:
-#        mxreg.names[missing.colnames[i]] <- paste0("mxreg", i)
+        #OLD:
+        #        mxreg.names[missing.colnames[i]] <- paste0("mxreg", i)
       }
     }
-##for the future?:
-##    mxreg.names <- make.names(mxreg.names)
-##(alternatively, we should consider some check for uniqueness of names)
+    ##for the future?:
+    ##    mxreg.names <- make.names(mxreg.names)
+    ##(alternatively, we should consider some check for uniqueness of names)
     mXnames <- c(mXnames, mxreg.names)
     mxreg <- window(mxreg, start=t1, end=t2)
     mxreg <- cbind(coredata(mxreg))
