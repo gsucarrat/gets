@@ -1,13 +1,14 @@
-isat.lm <- function(y, ar=NULL, ewma=NULL, iis=FALSE, sis=TRUE, tis=FALSE, uis=FALSE, blocks=NULL,
+isat.lm <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
+                    iis=FALSE, sis=TRUE, tis=FALSE, uis=FALSE, blocks=NULL,
                     ratio.threshold=0.8, max.block.size=30, t.pval=0.001,
                     wald.pval=t.pval, vcov.type=c("ordinary", "white", "newey-west"),
                     do.pet=FALSE, ar.LjungB=NULL, arch.LjungB=NULL,
-                    normality.JarqueB=NULL, info.method=c("sc", "aic", "hq"),
-                    user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL,
+                    normality.JarqueB=NULL, info.method=c("sc", "aic", "hq"), 
+                    user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL, 
                     gof.method=c("min","max"), include.gum=NULL,
                     include.1cut=FALSE, include.empty=FALSE, max.paths=NULL,
                     parallel.options=NULL, turbo=FALSE, tol=1e-07, LAPACK=FALSE,
-                    max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...){
+                    max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE){
   
   # Checks
   if(!is.null(y$weights)){stop("Usage of weights is not yet implemented in isat. Please estimate the lm object without weights.")}
@@ -16,9 +17,12 @@ isat.lm <- function(y, ar=NULL, ewma=NULL, iis=FALSE, sis=TRUE, tis=FALSE, uis=F
   dep_var <- data.frame(y = data[,1])
   names(dep_var) <- names(data)[1]
   
+  if(!missing(mxreg)){ # if the user specifies a new mxreg, this will be used
+    message("New mxreg specified - predictors (x variables) from the lm object will be ignored.")
+  } else {
+    mxreg <- stats::model.matrix(y$terms, data)
+  }
   
-  x_vars <- data[,2:ncol(data)]
-  mxreg <- stats::model.matrix(y$terms, data)
   # Deal with intercept
   mc <- ifelse(attr(y$terms, "intercept")==1, TRUE, FALSE)
   mxreg <- mxreg[,!colnames(mxreg) == "(Intercept)"] # remove the intercept
@@ -38,42 +42,17 @@ isat.lm <- function(y, ar=NULL, ewma=NULL, iis=FALSE, sis=TRUE, tis=FALSE, uis=F
 }
 
 
-isat.arx <- function(
-  y,
-  ar = NULL,
-  ewma = NULL,
-  iis = FALSE,
-  sis = TRUE,
-  tis = FALSE,
-  uis = FALSE,
-  blocks = NULL,
-  ratio.threshold = 0.8,
-  max.block.size = 30,
-  t.pval = 0.001,
-  wald.pval = t.pval,
-  vcov.type = c("ordinary", "white", "newey-west"),
-  do.pet = FALSE,
-  ar.LjungB = NULL,
-  arch.LjungB = NULL,
-  normality.JarqueB = NULL,
-  info.method = c("sc", "aic", "hq"),
-  user.diagnostics = NULL,
-  user.estimator = NULL,
-  gof.function = NULL,
-  gof.method = c("min", "max"),
-  include.gum = NULL,
-  include.1cut = FALSE,
-  include.empty = FALSE,
-  max.paths = NULL,
-  parallel.options = NULL,
-  turbo = FALSE,
-  tol = 1e-07,
-  LAPACK = FALSE,
-  max.regs = NULL,
-  print.searchinfo = TRUE,
-  plot = NULL,
-  alarm = FALSE,
-  ...
+isat.arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
+                     iis=FALSE, sis=TRUE, tis=FALSE, uis=FALSE, blocks=NULL,
+                     ratio.threshold=0.8, max.block.size=30, t.pval=0.001,
+                     wald.pval=t.pval, vcov.type=c("ordinary", "white", "newey-west"),
+                     do.pet=FALSE, ar.LjungB=NULL, arch.LjungB=NULL,
+                     normality.JarqueB=NULL, info.method=c("sc", "aic", "hq"), 
+                     user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL, 
+                     gof.method=c("min","max"), include.gum=NULL,
+                     include.1cut=FALSE, include.empty=FALSE, max.paths=NULL,
+                     parallel.options=NULL, turbo=FALSE, tol=1e-07, LAPACK=FALSE,
+                     max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE
 ){
   
   # warnings and checks (mainly for variance specification)
@@ -94,8 +73,14 @@ isat.arx <- function(
   if(missing(plot)){plot <- if(is.null(y$aux$arguments[["plot"]])){NULL}else{y$aux$arguments[["plot"]]}}
   if(missing(tol)){tol <- if(is.null(y$aux$arguments[["tol"]])){1e-07}else{y$aux$arguments[["tol"]]}}
   
-  mxreg <- y$aux$mX
-  colnames(mxreg) <- y$aux$mXnames
+  
+  if(!missing(mxreg)){ # if the user specifies a new mxreg, this will be used
+    message("New mxreg specified - predictors (x variables) from the arx object will be ignored.")
+  } else {
+    mxreg <- y$aux$mX
+    colnames(mxreg) <- y$aux$mXnames
+  }
+  
   
   out <- isat.default(
     y$aux$y,
@@ -135,21 +120,18 @@ isat.arx <- function(
     plot,
     alarm
   )
-  # if(plot){
-  #   plot(out)
-  # }
   
   return(out)
 }
 
 
 
-arx.isat <- function(y, ar=NULL, ewma=NULL,
+arx.isat <- function(y, mc = FALSE, ar=NULL, ewma=NULL, mxreg = NULL,
                      vc=FALSE, arch=NULL, asym=NULL, log.ewma=NULL, vxreg=NULL,
                      zero.adj=0.1, vc.adj=TRUE,
                      vcov.type=c("ordinary", "white", "newey-west"),
                      qstat.options=NULL, normality.JarqueB=FALSE, user.estimator=NULL,
-                     user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, plot=NULL, ...){
+                     user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, plot=NULL){
   
   # Check if one of these arguments is explicitly supplied to the function
   # if not, then check if the original item has this arguemnt supplied
@@ -167,6 +149,9 @@ arx.isat <- function(y, ar=NULL, ewma=NULL,
   dep_var <- matrix(y$aux$y)
   colnames(dep_var) <- y$aux$y.name 
   
+  if(!missing(mxreg)){stop("Specifying a new mxreg is not sensible. Please use this function without a new mxreg argument.")}
+  if(!missing(mc)){warning("Specifying a new intercept specificaion is not sensible - the existing specification from the provided 'isat' object is used.")}
+  
   mxreg <- y$aux$mX
   
   out <- arx(
@@ -174,7 +159,7 @@ arx.isat <- function(y, ar=NULL, ewma=NULL,
     FALSE,
     ar,
     ewma,
-    mxreg = mxreg,
+    mxreg,
     vc,
     arch,
     asym,
@@ -221,8 +206,8 @@ gets.isat <- function(x, t.pval=0.05, wald.pval=t.pval, vcov.type = NULL,
   if(missing(plot)){plot <- if(is.null(x$aux$arguments[["plot"]])){NULL}else{x$aux$arguments[["plot"]]}}
   if(missing(tol)){tol <- if(is.null(x$aux$arguments[["tol"]])){1e-07}else{x$aux$arguments[["tol"]]}}
   
-  object <- arx(x, plot = FALSE, ar = FALSE, mc = FALSE) # some arguments pre-set because they will already be in isat if needed
-
+  object <- arx(x, plot = FALSE, ar = FALSE) # some arguments pre-set because they will already be in isat if needed
+  
   out <- getsm(
     object,
     t.pval,
@@ -251,12 +236,13 @@ gets.isat <- function(x, t.pval=0.05, wald.pval=t.pval, vcov.type = NULL,
 }
 
 
-arx.lm <- function(y, ar=NULL, ewma=NULL,
+arx.lm <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
                    vc=FALSE, arch=NULL, asym=NULL, log.ewma=NULL, vxreg=NULL,
                    zero.adj=0.1, vc.adj=TRUE,
                    vcov.type=c("ordinary", "white", "newey-west"),
                    qstat.options=NULL, normality.JarqueB=FALSE, user.estimator=NULL,
-                   user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, plot=NULL, ...){
+                   user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, plot=NULL){
+  
   # Checks
   if(!is.null(y$weights)){stop("Usage of weights is not yet implemented in arx. Please estimate the lm y without weights.")}
   
@@ -267,13 +253,19 @@ arx.lm <- function(y, ar=NULL, ewma=NULL,
   
   x_vars <- data[,2:ncol(data)]
   
-  mxreg <- stats::model.matrix(y$terms, data)
-  invalid_variables_in_lm <- names(y$coef)[is.na(y$coef)]
-  mxreg <- mxreg[,!colnames(mxreg) %in% invalid_variables_in_lm]
+  if(!missing(mxreg)){ # if the user specifies a new mxreg, this will be used
+    message("New mxreg specified - predictors (x variables) from the lm object will be ignored.")
+  } else {
+    mxreg <- stats::model.matrix(y$terms, data)
+    invalid_variables_in_lm <- names(y$coef)[is.na(y$coef)] # delete variables with NA coefficients (collinear)
+    mxreg <- mxreg[,!colnames(mxreg) %in% invalid_variables_in_lm]  
+  }
+  
   
   # Deal with intercept
   mc <- ifelse(attr(y$terms, "intercept")==1, TRUE, FALSE)
   mxreg <- mxreg[,!colnames(mxreg) == "(Intercept)"] # remove the intercept
+  
   
   out <- arx.default(
     dep_var,

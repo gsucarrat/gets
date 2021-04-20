@@ -254,25 +254,26 @@ test_that("Test that isat works with arx models",{
 
 test_that("Options testing",{
   lm_object <- lm(mpg ~ cyl+lag(cyl) + hp + drat,mtcars) 
-  isat_object <- isat(lm_object,iis = TRUE, sis = FALSE, tis = FALSE, plot = TRUE, t.pval = 0.1) 
+  isat_object <- isat(lm_object,iis = TRUE, sis = FALSE, tis = FALSE, plot = TRUE, t.pval = 0.1, print.searchinfo = FALSE) 
   expect_silent(arx(isat_object))
   arx(isat_object)
   
   lm_object <- lm(mpg ~ cyl+lag(cyl) + hp + drat,mtcars) 
-  isat_object <- isat(lm_object, iis = TRUE, sis = FALSE, tis = FALSE, plot = TRUE, t.pval = 0.1) 
-  gets(isat_object)
+  isat_object <- isat(lm_object, iis = TRUE, sis = FALSE, tis = FALSE, plot = TRUE, t.pval = 0.1, print.searchinfo = FALSE) 
+  gets(isat_object, print.searchinfo = FALSE)
   
   
   lm_object <- lm(mpg ~ cyl+lag(cyl) + hp + drat,mtcars)
-  gets(lm_object)
+  gets(lm_object, print.searchinfo = FALSE)
   
   
   
   lm_object <- lm(mpg ~ cyl+ I(cyl*10)+ hp + drat,mtcars)
   arx_object <- arx(lm_object, ar = 1)
-  isat_object <- isat(arx_object)
-  gets(isat_object)
-  plot(gets(isat_object))
+  isat_object <- isat(arx_object, print.searchinfo = FALSE)
+  expect_silent(plot(isat_object))
+  gets_object <- gets(isat_object, print.searchinfo = FALSE)
+  expect_silent(plot(gets_object))
   
   
   lm_object <- lm(mpg ~ cyl+ I(cyl*10)+ hp + drat,mtcars) # creating a perfectly linear term
@@ -286,20 +287,15 @@ test_that("Options testing",{
 test_that("Check that the error message displays when weights are used in lm",{
   lm_model5 <- lm(mpg~ cyl + hp, weights = rnorm(nrow(mtcars),mean = 100), mtcars)
   expect_error(arx(lm_model5))
+})
+
+test_that("Check that a message is displayed when a new mxreg is specified",{
+  lm_model6 <- lm(mpg~ cyl + hp, mtcars)
   
+  x <- matrix(rnorm(nrow(mtcars)*3),nrow = nrow(mtcars))
+  colnames(x) <- c("x1","x2","x3")
+  expect_message(arx(lm_model6, mxreg = x), regexp = "mxreg specified")
 })
-
-
-# To work on!!!
-
-test_that("Test currently failing - NEED WORK",{
-  lm_object <- lm(mpg ~ cyl+ I(cyl*10)+ hp + drat,mtcars)
-  arx_object <- arx(lm_object, ar = 1)
-  isat_object <- isat(arx_object, print.searchinfo = FALSE)
-  gets_object <- gets(isat_object, print.searchinfo = FALSE)
-  expect_message(plot(gets_object)) # should output a plot!! does not at the moment
-})
-
 
 
 # 

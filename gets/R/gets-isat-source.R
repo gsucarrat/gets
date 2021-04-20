@@ -34,7 +34,17 @@
 ####################################################
 
 ##==================================================
-isat <- function(y,...) { UseMethod("isat") }
+isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
+                 iis=FALSE, sis=TRUE, tis=FALSE, uis=FALSE, blocks=NULL,
+                 ratio.threshold=0.8, max.block.size=30, t.pval=0.001,
+                 wald.pval=t.pval, vcov.type=c("ordinary", "white", "newey-west"),
+                 do.pet=FALSE, ar.LjungB=NULL, arch.LjungB=NULL,
+                 normality.JarqueB=NULL, info.method=c("sc", "aic", "hq"), 
+                 user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL, 
+                 gof.method=c("min","max"), include.gum=NULL,
+                 include.1cut=FALSE, include.empty=FALSE, max.paths=NULL,
+                 parallel.options=NULL, turbo=FALSE, tol=1e-07, LAPACK=FALSE,
+                 max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE) { UseMethod("isat") }
 
 ## indicator saturation
 isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
@@ -47,7 +57,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   gof.method=c("min","max"), include.gum=NULL,
   include.1cut=FALSE, include.empty=FALSE, max.paths=NULL,
   parallel.options=NULL, turbo=FALSE, tol=1e-07, LAPACK=FALSE,
-  max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...)
+  max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE)
 {
 
   ##arguments:
@@ -367,7 +377,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
 
       ##apply dropvar:
       mXis <- dropvar(mXis, tol=tol, LAPACK=LAPACK,
-        silent=print.searchinfo)
+        silent=!print.searchinfo)
 
       ##print info:
       if(is.null(parallel.options)){
@@ -487,7 +497,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
         mXis <- cbind(mX,ISmatrices[[i]][,isNames])
         colnames(mXis) <- mXisNames
         mXis <- dropvar(mXis, tol=tol, LAPACK=LAPACK,
-          silent=print.searchinfo)
+          silent=!print.searchinfo)
 
         getsis <- getsFun(y, mXis, untransformed.residuals=NULL,
           user.estimator=userEstArg, gum.result=NULL, t.pval=t.pval,
@@ -542,7 +552,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     } #end for loop
 
     mXis <- dropvar(cbind(mX,mIS), tol=tol, LAPACK=LAPACK,
-      silent=print.searchinfo)
+      silent=!print.searchinfo)
 
   } #end if(length(ISfinalmodels)>0)
 

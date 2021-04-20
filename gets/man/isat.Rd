@@ -11,6 +11,17 @@ The \code{\link{isat}} function undertakes multi-path indicator saturation to de
 }
 
 \usage{
+isat(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL, iis=FALSE, sis=TRUE,
+  tis=FALSE, uis=FALSE, blocks=NULL, ratio.threshold=0.8, max.block.size=30,
+  t.pval=0.001, wald.pval=t.pval,
+  vcov.type= c("ordinary","white","newey-west"), do.pet=FALSE, ar.LjungB=NULL,
+  arch.LjungB=NULL, normality.JarqueB=NULL, info.method=c("sc","aic","hq"),
+  user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL,
+  gof.method = c("min", "max"), include.gum=NULL, include.1cut=FALSE,
+  include.empty=FALSE, max.paths=NULL, parallel.options=NULL, turbo=FALSE,
+  tol=1e-07, LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE, plot=NULL,
+  alarm=FALSE)
+  
 \method{isat}{default}(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL, iis=FALSE, sis=TRUE,
   tis=FALSE, uis=FALSE, blocks=NULL, ratio.threshold=0.8, max.block.size=30,
   t.pval=0.001, wald.pval=t.pval,
@@ -20,9 +31,9 @@ The \code{\link{isat}} function undertakes multi-path indicator saturation to de
   gof.method = c("min", "max"), include.gum=NULL, include.1cut=FALSE,
   include.empty=FALSE, max.paths=NULL, parallel.options=NULL, turbo=FALSE,
   tol=1e-07, LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE, plot=NULL,
-  alarm=FALSE, ...)
+  alarm=FALSE)
   
-  \method{isat}{lm}(y, ar=NULL, ewma=NULL, iis=FALSE, sis=TRUE,
+  \method{isat}{lm}(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL, iis=FALSE, sis=TRUE,
   tis=FALSE, uis=FALSE, blocks=NULL, ratio.threshold=0.8, max.block.size=30,
   t.pval=0.001, wald.pval=t.pval,
   vcov.type= c("ordinary","white","newey-west"), do.pet=FALSE, ar.LjungB=NULL,
@@ -31,9 +42,9 @@ The \code{\link{isat}} function undertakes multi-path indicator saturation to de
   gof.method = c("min", "max"), include.gum=NULL, include.1cut=FALSE,
   include.empty=FALSE, max.paths=NULL, parallel.options=NULL, turbo=FALSE,
   tol=1e-07, LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE, plot=NULL,
-  alarm=FALSE, ...)
+  alarm=FALSE)
   
-  \method{isat}{arx}(y, ar=NULL, ewma=NULL, iis=FALSE, sis=TRUE,
+  \method{isat}{arx}(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL, iis=FALSE, sis=TRUE,
   tis=FALSE, uis=FALSE, blocks=NULL, ratio.threshold=0.8, max.block.size=30,
   t.pval=0.001, wald.pval=t.pval,
   vcov.type= c("ordinary","white","newey-west"), do.pet=FALSE, ar.LjungB=NULL,
@@ -42,11 +53,11 @@ The \code{\link{isat}} function undertakes multi-path indicator saturation to de
   gof.method = c("min", "max"), include.gum=NULL, include.1cut=FALSE,
   include.empty=FALSE, max.paths=NULL, parallel.options=NULL, turbo=FALSE,
   tol=1e-07, LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE, plot=NULL,
-  alarm=FALSE, ...)
+  alarm=FALSE)
 }
 
 \arguments{
-  \item{y}{numeric vector, time-series, \code{\link{zoo}}, or object of class \code{\link{lm}} or 'arx'. Missing values in the beginning and at the end of the series is allowed, as they are removed with the \code{\link{na.trim}} command}
+  \item{y}{numeric vector, time-series, \code{\link{zoo}}, or object of class \code{\link{lm}} or \code{\link{arx}}. Missing values in the beginning and at the end of the series is allowed, as they are removed with the \code{\link{na.trim}} command}
   \item{mc}{logical. \code{TRUE} (default) includes an intercept in the mean specification, whereas FALSE does not}
   \item{ar}{integer vector, say, c(2,4) or 1:4. The AR-lags to include in the mean specification}
   \item{ewma}{either NULL (default) or a list with arguments sent to the \code{\link{eqwma}} function. In the latter case a lagged moving average of y is included as a regressor}
@@ -82,7 +93,6 @@ The \code{\link{isat}} function undertakes multi-path indicator saturation to de
   \item{print.searchinfo}{logical. If \code{TRUE} (default), then a print is returned whenever simiplification along a new path is started, and whenever regressors are dropped due to exact multicolinearity}
   \item{plot}{NULL or logical. If \code{TRUE}, then the fitted values and the residuals of the final model are plotted after model selection. If NULL (default), then the value set by \code{\link{options}} determines whether a plot is produced or not.}
   \item{alarm}{logical. If \code{TRUE}, then a sound is emitted (in order to alert the user) when the model selection ends}
-  \item{...}{Further arguments (Currently no further arguments available.)}
 }
 
 \details{Multi-path indicator saturation using impulses (IIS), step-shifts (SIS), or trend-indicators (TIS). Indicators are partitioned into sequential blocks (as of beta version 0.7) where the block intervals are defined by the ratio of variables to observations in each block and a specified maximum block size. Indicators are selected over using the \code{\link{getsm}} function. Retained indicators in each block are combined and re-selected over. Fixed covariates that are not selected over can be included in the regression model either in the mxreg matrix, or for auto-regressive terms through the ar specification. See Hendry, Johansen and Santos (2007) and Castle, Doornik, Hendry, and Pretis (2015)}

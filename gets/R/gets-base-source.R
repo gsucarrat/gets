@@ -2165,7 +2165,12 @@ blocksFun <- function(y, x, untransformed.residuals=NULL,
 ##2 ARX FUNCTIONS
 ####################################################
 
-arx <- function(y, ...) {
+arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
+                vc=FALSE, arch=NULL, asym=NULL, log.ewma=NULL, vxreg=NULL,
+                zero.adj=0.1, vc.adj=TRUE,
+                vcov.type=c("ordinary", "white", "newey-west"),
+                qstat.options=NULL, normality.JarqueB=FALSE, user.estimator=NULL,
+                user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, plot=NULL) {
   UseMethod("arx")
 }
 
@@ -2176,7 +2181,7 @@ arx.default <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
   zero.adj=0.1, vc.adj=TRUE,
   vcov.type=c("ordinary", "white", "newey-west"),
   qstat.options=NULL, normality.JarqueB=FALSE, user.estimator=NULL,
-                        user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, plot=NULL, ...)
+                        user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, plot=NULL)
 {
   ### ARGUMENTS: ###########
 
@@ -4452,9 +4457,12 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
     }else{
       normality.JarqueB <- TRUE
     }
-        
+       
     ##if( default estimator ):
-    if( is.null(object$call$user.estimator) ){
+    # 
+    # if( is.null(object$call$user.estimator) ){
+    # changed by M-orca April 2021 - more reliable as this is not changed - sys.call is depending on the level
+    if( is.null(object$aux$arguments$user.estimator) ){
       ##estimate specific model:
       est <- arx(yadj, mxreg=mXadj, vc=object$aux$vc,
         arch=object$aux$arch, asym=object$aux$asym,
@@ -4468,7 +4476,9 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
     } #end if( default estimator )
 
     ##if( user-defined estimator ):
-    if( !is.null(object$call$user.estimator) ){
+    # if( !is.null(object$call$user.estimator) ){
+    # changed by M-orca April 2021 - more reliable as this is not changed - sys.call is depending on the level
+    if( !is.null(object$aux$arguments$user.estimator) ){
       ##estimate specific:
       est <- arx(yadj, mxreg=mXadj, user.estimator=user.estimator,
         qstat.options=c(ar.LjungB[1],arch.LjungB[1]),
