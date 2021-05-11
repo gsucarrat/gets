@@ -1143,8 +1143,6 @@ getsFun <- function(y, x, untransformed.residuals=NULL,
   ## 1 arguments
   ##-----------------------
 
-  print("successful change")
-  
   gof.method <- match.arg(gof.method)
 
   ##y, x, make auxiliary list:
