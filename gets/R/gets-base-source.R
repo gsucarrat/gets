@@ -194,10 +194,20 @@ diagnostics <- function(x, ar.LjungB=c(1,0.025), arch.LjungB=c(1,0.025),
       userVals <- do.call(user.fun$name, c(list(x=x),userFunArg),
         envir=user.fun$envir)
     }
-    userVals <- rbind(userVals)
+    if (!is.null(attr(userVals, "is.reject.bad"))) {
+      is.reject.bad <- attr(userVals, "is.reject.bad")
+      userVals <- rbind(userVals) # this deletes the attributes
+    } else {
+      userVals <- rbind(userVals)
+      is.reject.bad <- rep(TRUE, NROW(userVals))
+    }
     if( !is.null(user.fun$pval) ){
-      userFunPval <- as.numeric(userVals[,3])
-      if( any(userFunPval <= user.fun$pval) ){
+      userFunPval.reject.bad <- as.numeric(userVals[is.reject.bad, 3])
+      userFunPval.reject.good <- as.numeric(userVals[!is.reject.bad, 3])
+      if( any(userFunPval.reject.bad <= user.fun$pval[is.reject.bad]) ){
+        diagnosticsGood <- FALSE
+      }
+      if ( any(userFunPval.reject.good > user.fun$pval[!is.reject.bad]) ){
         diagnosticsGood <- FALSE
       }
     }
