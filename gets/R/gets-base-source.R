@@ -2392,6 +2392,7 @@ arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
     p.val <- pt(abs(t.stat), out$df, lower.tail=FALSE)*2
     out$mean.results <- as.data.frame(cbind(out$coefficients,
       stderrs, t.stat, p.val))
+    print(out$mean.results)
     colnames(out$mean.results) <- c("coef", "std.error",
       "t-stat", "p-value")
     rownames(out$mean.results) <- aux$mXnames

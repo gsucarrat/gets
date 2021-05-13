@@ -557,7 +557,6 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
 
   ##make return object:
   ##-------------------
-
   ##do final gets:
   getsis <- getsFun(y, mXis, untransformed.residuals=NULL,
     user.estimator=userEstArg, gum.result=NULL, t.pval=t.pval,
@@ -1041,7 +1040,6 @@ print.isat <- function(x, signif.stars=TRUE, ...)
     #  }
     #
     ####### END the part commented out 17 July 2019 by G-man  
-    
     ##specific model:
     if(!is.null(x$specific.spec)){
       cat("\n")
