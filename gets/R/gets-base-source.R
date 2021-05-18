@@ -186,6 +186,9 @@ diagnostics <- function(x, ar.LjungB=c(1,0.025), arch.LjungB=c(1,0.025),
     userFunArg$name <- NULL
     userFunArg$envir <- NULL
     userFunArg$pval <- NULL
+    ##new: named list element "is.reject.bad" of user.fun allows user to specify
+    ##whether a rejection of the test means that diagnostics fail or not
+    userFunArg$is.reject.bad <- NULL
     if( length(userFunArg)==0 ){ userFunArg <- NULL }
     ##'do' user diagnostics:
     if( is.null(user.fun$envir) ){
@@ -194,11 +197,10 @@ diagnostics <- function(x, ar.LjungB=c(1,0.025), arch.LjungB=c(1,0.025),
       userVals <- do.call(user.fun$name, c(list(x=x),userFunArg),
         envir=user.fun$envir)
     }
-    if (!is.null(attr(userVals, "is.reject.bad"))) {
-      is.reject.bad <- attr(userVals, "is.reject.bad")
-      userVals <- rbind(userVals) # this deletes the attributes
-    } else {
-      userVals <- rbind(userVals)
+    userVals <- rbind(userVals)
+    if (!is.null(user.fun$is.reject.bad)) {
+      is.reject.bad <- user.fun$is.reject.bad
+    } else { # default is that rejection is bad and leads to failure of diagn
       is.reject.bad <- rep(TRUE, NROW(userVals))
     }
     if( !is.null(user.fun$pval) ){
@@ -2203,7 +2205,7 @@ arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
   if( NCOL(tmp)>1 ){
     aux$mX <- cbind(coredata(tmp[,-1]))
     aux$mXnames <- colnames(tmp)[-1]
-    #colnames(aux$mX) <- NULL
+    colnames(aux$mX) <- NULL
     aux$mXncol <- NCOL(aux$mX)
   }
 
@@ -2352,6 +2354,12 @@ arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
 
   if( !is.null(user.estimator) ){
 
+    ##give aux$mX its column names back (some user estimators might need names)
+    ##can only do so if aux$mX is not NULL
+    if ( !is.null(aux$mX) ){
+      colnames(aux$mX) <- aux$mXnames
+    }
+    
     ##make user-estimator argument:
     if( is.null(user.estimator$envir) ){ user.estimator$envir <- .GlobalEnv }
     userEstArg <- user.estimator
