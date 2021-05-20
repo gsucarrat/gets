@@ -197,20 +197,26 @@ diagnostics <- function(x, ar.LjungB=c(1,0.025), arch.LjungB=c(1,0.025),
       userVals <- do.call(user.fun$name, c(list(x=x),userFunArg),
         envir=user.fun$envir)
     }
-    userVals <- rbind(userVals)
-    if (!is.null(user.fun$is.reject.bad)) {
-      is.reject.bad <- user.fun$is.reject.bad
-    } else { # default is that rejection is bad and leads to failure of diagn
-      is.reject.bad <- rep(TRUE, NROW(userVals))
-    }
-    if( !is.null(user.fun$pval) ){
-      userFunPval.reject.bad <- as.numeric(userVals[is.reject.bad, 3])
-      userFunPval.reject.good <- as.numeric(userVals[!is.reject.bad, 3])
-      if( any(userFunPval.reject.bad <= user.fun$pval[is.reject.bad]) ){
-        diagnosticsGood <- FALSE
+    if (is.null(userVals)) {
+      # the user diagnostic function has not returned a matrix
+      # treat as if diagnostics had not been specified
+      remove(userVals) # remove so that does not try to add to "result" later
+    } else {
+      userVals <- rbind(userVals)
+      if (!is.null(user.fun$is.reject.bad)) {
+        is.reject.bad <- user.fun$is.reject.bad
+      } else { # default is that rejection is bad and leads to failure of diagn
+        is.reject.bad <- rep(TRUE, NROW(userVals))
       }
-      if ( any(userFunPval.reject.good > user.fun$pval[!is.reject.bad]) ){
-        diagnosticsGood <- FALSE
+      if( !is.null(user.fun$pval) ){
+        userFunPval.reject.bad <- as.numeric(userVals[is.reject.bad, 3])
+        userFunPval.reject.good <- as.numeric(userVals[!is.reject.bad, 3])
+        if( any(userFunPval.reject.bad <= user.fun$pval[is.reject.bad]) ){
+          diagnosticsGood <- FALSE
+        }
+        if ( any(userFunPval.reject.good > user.fun$pval[!is.reject.bad]) ){
+          diagnosticsGood <- FALSE
+        }
       }
     }
   } #end if( user.fun )
