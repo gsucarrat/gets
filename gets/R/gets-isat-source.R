@@ -344,7 +344,7 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       ISblocks[[i]] <- tmp
 
     } #end if(!blocks.is.list)
-
+    
     ##make blocks function for lapply/parLapply:
     ISblocksFun <- function(j, i, ISmatrices, ISblocks, mX,
       parallel.options, y, userEstArg, t.pval, wald.pval, do.pet,
@@ -389,6 +389,8 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
         max.paths=max.paths, turbo=turbo, tol=tol, LAPACK=LAPACK,
         max.regs=max.regs, print.searchinfo=print.searchinfo,
         alarm=FALSE)
+      
+      counter <<- counter + getsis$no.of.estimations
 
       if(is.null(getsis$specific.spec)){
         ISspecific.models <- NULL
@@ -404,6 +406,11 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       return(ISspecific.models)
 
     } #close ISblocksFun
+
+    
+    # initialise counter for overall number of estimations
+    counter <- 0
+
 
     ##do gets on each block: no parallel computing
     if(is.null(parallel.options)){
@@ -497,6 +504,8 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
           max.paths=max.paths, turbo=turbo, tol=tol, LAPACK=LAPACK,
           max.regs=max.regs, print.searchinfo=print.searchinfo,
           alarm=FALSE)
+        
+        counter <- counter + getsis$no.of.estimations
 
         ISfinalmodels[[i]] <- names(getsis$specific.spec)
       }
@@ -559,6 +568,7 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   ##-------------------
 
   ##do final gets:
+
   getsis <- getsFun(y, mXis, untransformed.residuals=NULL,
     user.estimator=userEstArg, gum.result=NULL, t.pval=t.pval,
     wald.pval=wald.pval, do.pet=do.pet, ar.LjungB=arLjungB,
@@ -569,6 +579,9 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     max.paths=max.paths, turbo=turbo, tol=tol, LAPACK=LAPACK,
     max.regs=max.regs, print.searchinfo=print.searchinfo,
     alarm=FALSE)
+  
+  counter <- counter + getsis$no.of.estimations
+  getsis$no.of.estimations <- counter
   ##messages from final gets:
   if( print.searchinfo && !is.null(getsis$messages)){
     message(getsis$messages)
@@ -614,6 +627,7 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     if( is.null(plot) ){ plot <- FALSE }
   }
   if(plot){ plot.isat(getsis, coef.path=TRUE) }
+
   return(getsis)
 
 } #close isat function
