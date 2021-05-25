@@ -409,7 +409,7 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       return(ISspecific.models)
 
     } #close ISblocksFun
-    
+
     # initialise counter for number of estimations of this type of indicator
     estimations.counter <- 0
     getsFun.counter <- 0
@@ -507,6 +507,7 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
           max.regs=max.regs, print.searchinfo=print.searchinfo,
           alarm=FALSE)
         
+
         # only done if at least one indicator of this type has been retained
         # so if no search was done (because failed diagnostics), then not here
         estimations.counter <- estimations.counter + getsis$no.of.estimations
@@ -592,6 +593,7 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   getsis$no.of.estimations <- estimations.total
   getsFun.total <- getsFun.total + 1
   getsis$no.of.getsFun.calls <- getsFun.total
+
   ##messages from final gets:
   if( print.searchinfo && !is.null(getsis$messages)){
     message(getsis$messages)
