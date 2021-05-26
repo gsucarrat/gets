@@ -35,7 +35,7 @@
 
 ##==================================================
 ## indicator saturation
-isat <- function(x, ...) { UseMethod("isat") }
+isat <- function(x, ...){ UseMethod("isat") }
 
 isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   iis=FALSE, sis=TRUE, tis=FALSE, uis=FALSE, blocks=NULL,
