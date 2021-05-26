@@ -16,6 +16,7 @@ importFrom("parallel", "detectCores", "makeCluster", "clusterExport",
   "parLapply", "stopCluster")
 
 export(
+  
   ##generic method:
   "gets", "isat",
   
