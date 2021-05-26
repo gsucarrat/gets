@@ -38,7 +38,7 @@ export(
   "summary.gets", "terminals", "toLatex.gets", "vcov.gets",
   
   ##isat-class functions:
-  "isat", "coef.isat", "fitted.isat", "logLik.isat", "plot.isat",
+  "coef.isat", "fitted.isat", "logLik.isat", "plot.isat",
   "predict.isat", "print.isat", "residuals.isat", "sigma.isat",
   "summary.isat", "vcov.isat", "biascorr", "isattest", "isatvar",
   "isvarcor", "isvareffcor", "iim", "sim", "tim", "isatdates",
@@ -54,7 +54,7 @@ export(
   "isat.lm", "gets.lm","arx.lm",
   
   ##Cross S3 methods
-  "isat.arx","gets.isat","arx.isat"
+  "isat.arx","isat.default","gets.isat","arx.isat"
 
 )
 
