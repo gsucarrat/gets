@@ -47,7 +47,13 @@ export(
   ##dlogitx-class function:
   "dlogitxSim", "logit", "dlogitx", "coef.dlogitx", "fitted.dlogitx",
   "gets.dlogitx", "logLik.dlogitx", "plot.dlogitx", "print.dlogitx",
-  "summary.dlogitx", "toLatex.dlogitx", "vcov.dlogitx"
+  "summary.dlogitx", "toLatex.dlogitx", "vcov.dlogitx",
+  
+  ##lm-class functions:
+  "isat.lm", "gets.lm","arx.lm",
+  
+  ##Cross S3 methods
+  "isat.arx","gets.isat","arx.isat"
 
 )
 
@@ -64,6 +70,7 @@ S3method("sigma", "arx")
 S3method("summary", "arx")
 S3method("toLatex", "arx")
 S3method("vcov", "arx")
+S3method("isat", "arx")
 
 ##methods for class gets:
 S3method("coef", "gets")
@@ -89,6 +96,8 @@ S3method("residuals", "isat")
 S3method("sigma", "isat")
 S3method("summary", "isat")
 S3method("vcov", "isat")
+S3method("gets", "isat")
+S3method("arx", "isat")
 
 ##methods for class dlogitx:
 S3method("coef", "dlogitx")
@@ -100,3 +109,12 @@ S3method("print", "dlogitx")
 S3method("summary", "dlogitx")
 S3method("toLatex", "dlogitx")
 S3method("vcov", "dlogitx")
+
+##default methods 
+S3method("arx","default")
+S3method("isat","default")
+
+##methods for class lm:
+S3method("isat","lm")
+S3method("gets","lm")
+S3method("arx","lm")

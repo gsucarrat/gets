@@ -1,5 +1,8 @@
 \name{isat}
 \alias{isat}
+\alias{isat.default}
+\alias{isat.lm}
+\alias{isat.arx}
 
 \title{Indicator Saturation}
 
@@ -18,10 +21,43 @@ isat(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL, iis=FALSE, sis=TRUE,
   include.empty=FALSE, max.paths=NULL, parallel.options=NULL, turbo=FALSE,
   tol=1e-07, LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE, plot=NULL,
   alarm=FALSE)
+  
+\method{isat}{default}(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL, iis=FALSE, sis=TRUE,
+  tis=FALSE, uis=FALSE, blocks=NULL, ratio.threshold=0.8, max.block.size=30,
+  t.pval=0.001, wald.pval=t.pval,
+  vcov.type= c("ordinary","white","newey-west"), do.pet=FALSE, ar.LjungB=NULL,
+  arch.LjungB=NULL, normality.JarqueB=NULL, info.method=c("sc","aic","hq"),
+  user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL,
+  gof.method = c("min", "max"), include.gum=NULL, include.1cut=FALSE,
+  include.empty=FALSE, max.paths=NULL, parallel.options=NULL, turbo=FALSE,
+  tol=1e-07, LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE, plot=NULL,
+  alarm=FALSE)
+  
+  \method{isat}{lm}(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL, iis=FALSE, sis=TRUE,
+  tis=FALSE, uis=FALSE, blocks=NULL, ratio.threshold=0.8, max.block.size=30,
+  t.pval=0.001, wald.pval=t.pval,
+  vcov.type= c("ordinary","white","newey-west"), do.pet=FALSE, ar.LjungB=NULL,
+  arch.LjungB=NULL, normality.JarqueB=NULL, info.method=c("sc","aic","hq"),
+  user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL,
+  gof.method = c("min", "max"), include.gum=NULL, include.1cut=FALSE,
+  include.empty=FALSE, max.paths=NULL, parallel.options=NULL, turbo=FALSE,
+  tol=1e-07, LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE, plot=NULL,
+  alarm=FALSE)
+  
+  \method{isat}{arx}(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL, iis=FALSE, sis=TRUE,
+  tis=FALSE, uis=FALSE, blocks=NULL, ratio.threshold=0.8, max.block.size=30,
+  t.pval=0.001, wald.pval=t.pval,
+  vcov.type= c("ordinary","white","newey-west"), do.pet=FALSE, ar.LjungB=NULL,
+  arch.LjungB=NULL, normality.JarqueB=NULL, info.method=c("sc","aic","hq"),
+  user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL,
+  gof.method = c("min", "max"), include.gum=NULL, include.1cut=FALSE,
+  include.empty=FALSE, max.paths=NULL, parallel.options=NULL, turbo=FALSE,
+  tol=1e-07, LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE, plot=NULL,
+  alarm=FALSE)
 }
 
 \arguments{
-  \item{y}{numeric vector, time-series or \code{\link{zoo}} object. Missing values in the beginning and at the end of the series is allowed, as they are removed with the \code{\link{na.trim}} command}
+  \item{y}{numeric vector, time-series, \code{\link{zoo}}, or object of class \code{\link{lm}} or \code{\link{arx}}. Missing values in the beginning and at the end of the series is allowed, as they are removed with the \code{\link{na.trim}} command}
   \item{mc}{logical. \code{TRUE} (default) includes an intercept in the mean specification, whereas FALSE does not}
   \item{ar}{integer vector, say, c(2,4) or 1:4. The AR-lags to include in the mean specification}
   \item{ewma}{either NULL (default) or a list with arguments sent to the \code{\link{eqwma}} function. In the latter case a lagged moving average of y is included as a regressor}

@@ -1,5 +1,8 @@
 \name{arx}
 \alias{arx}
+\alias{arx.default}
+\alias{arx.lm}
+\alias{arx.isat}
 \title{Estimate an AR-X model with log-ARCH-X errors}
 
 \description{
@@ -14,10 +17,29 @@ arx(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL, vc=FALSE,
   vc.adj=TRUE, vcov.type=c("ordinary", "white", "newey-west"),
   qstat.options=NULL, normality.JarqueB=FALSE, user.estimator=NULL,
   user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, plot=NULL)
+
+
+\method{arx}{default}(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL, vc=FALSE,
+  arch=NULL, asym=NULL, log.ewma=NULL, vxreg=NULL, zero.adj=0.1,
+  vc.adj=TRUE, vcov.type=c("ordinary", "white", "newey-west"),
+  qstat.options=NULL, normality.JarqueB=FALSE, user.estimator=NULL,
+  user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, plot=NULL)
+  
+  \method{arx}{lm}(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL, vc=FALSE,
+  arch=NULL, asym=NULL, log.ewma=NULL, vxreg=NULL, zero.adj=0.1,
+  vc.adj=TRUE, vcov.type=c("ordinary", "white", "newey-west"),
+  qstat.options=NULL, normality.JarqueB=FALSE, user.estimator=NULL,
+  user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, plot=NULL)
+  
+  \method{arx}{isat}(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL, vc=FALSE,
+  arch=NULL, asym=NULL, log.ewma=NULL, vxreg=NULL, zero.adj=0.1,
+  vc.adj=TRUE, vcov.type=c("ordinary", "white", "newey-west"),
+  qstat.options=NULL, normality.JarqueB=FALSE, user.estimator=NULL,
+  user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, plot=NULL)
 }
 
 \arguments{
-  \item{y}{numeric vector, time-series or \code{\link{zoo}} object. Missing values in the beginning and at the end of the series is allowed, as they are removed with the \code{\link{na.trim}} command}
+  \item{y}{numeric vector, time-series, \code{\link{zoo}}, \code{\link{isat}}, or \code{\link{lm}} object. Missing values in the beginning and at the end of the series is allowed, as they are removed with the \code{\link{na.trim}} command}
   \item{mc}{logical. \code{TRUE} includes an intercept in the mean specification, whereas \code{FALSE} (default) does not}
   \item{ar}{either \code{NULL} (default) or an integer vector, say, \code{c(2,4)} or \code{1:4}. The AR-lags to include in the mean specification. If \code{NULL}, then no lags are included}
   \item{ewma}{either \code{NULL} (default) or a \code{\link{list}} with arguments sent to the \code{\link{eqwma}} function. In the latter case a lagged moving average of \code{y} is included as a regressor}
