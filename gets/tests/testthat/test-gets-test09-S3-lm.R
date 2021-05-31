@@ -43,10 +43,10 @@ test_that("Check coefficients are equal between lm and arx",{
   lm_model3 <- lm(cyl ~ log(mpg) + as.factor(gear) + log(carb) + hp + I(hp*hp) + lag(drat) + I(drat*carb) + mpg*carb + hp:drat, mtcars)
   lm_model4 <- lm(cyl ~ log(mpg) + as.factor(gear) + log(carb) + hp + I(hp*hp) + lag(drat) + I(drat*carb) + mpg*carb + hp:drat-1, mtcars)
   
-  arx_model1 <- arx(lm_model1)
-  arx_model2 <- arx(lm_model2)
-  arx_model3 <- arx(lm_model3)
-  arx_model4 <- arx(lm_model4)
+  arx_model1 <- as.arx(lm_model1)
+  arx_model2 <- as.arx(lm_model2)
+  arx_model3 <- as.arx(lm_model3)
+  arx_model4 <- as.arx(lm_model4)
   
   coef_lm_model1 <- coef(lm_model1)
   coef_lm_model2 <- coef(lm_model2)
@@ -82,10 +82,10 @@ test_that("Check that the coefficients are equal between lm and arx but with vco
   lm_model3 <- lm(cyl ~ log(mpg) + as.factor(gear) + log(carb) + hp + I(hp*hp) + lag(drat) + I(drat*carb) + mpg*carb + hp:drat, mtcars)
   lm_model4 <- lm(cyl ~ log(mpg) + as.factor(gear) + log(carb) + hp + I(hp*hp) + lag(drat) + I(drat*carb) + mpg*carb + hp:drat-1, mtcars)
   
-  arx_model1 <- arx(lm_model1, vcov.type = "white")
-  arx_model2 <- arx(lm_model2, vcov.type = "white")
-  arx_model3 <- arx(lm_model3, vcov.type = "newey-west")
-  arx_model4 <- arx(lm_model4, vcov.type = "newey-west")
+  arx_model1 <- as.arx(lm_model1, vcov.type = "white")
+  arx_model2 <- as.arx(lm_model2, vcov.type = "white")
+  arx_model3 <- as.arx(lm_model3, vcov.type = "newey-west")
+  arx_model4 <- as.arx(lm_model4, vcov.type = "newey-west")
   
   coef_lm_model1 <- coef(lm_model1)
   coef_lm_model2 <- coef(lm_model2)
@@ -255,8 +255,8 @@ test_that("Test that isat works with arx models",{
 test_that("Options testing",{
   lm_object <- lm(mpg ~ cyl+lag(cyl) + hp + drat,mtcars) 
   isat_object <- isat(lm_object,iis = TRUE, sis = FALSE, tis = FALSE, plot = TRUE, t.pval = 0.1, print.searchinfo = FALSE) 
-  expect_silent(arx(isat_object))
-  arx(isat_object)
+  expect_silent(as.arx(isat_object))
+  as.arx(isat_object)
   
   lm_object <- lm(mpg ~ cyl+lag(cyl) + hp + drat,mtcars) 
   isat_object <- isat(lm_object, iis = TRUE, sis = FALSE, tis = FALSE, plot = TRUE, t.pval = 0.1, print.searchinfo = FALSE) 
@@ -269,7 +269,7 @@ test_that("Options testing",{
   
   
   lm_object <- lm(mpg ~ cyl+ I(cyl*10)+ hp + drat,mtcars)
-  arx_object <- arx(lm_object, ar = 1)
+  arx_object <- as.arx(lm_object, ar = 1)
   isat_object <- isat(arx_object, print.searchinfo = FALSE)
   expect_silent(plot(isat_object))
   gets_object <- gets(isat_object, print.searchinfo = FALSE)
@@ -277,7 +277,7 @@ test_that("Options testing",{
   
   
   lm_object <- lm(mpg ~ cyl+ I(cyl*10)+ hp + drat,mtcars) # creating a perfectly linear term
-  arx(lm_object)
+  as.arx(lm_object)
 })
 
 
@@ -286,15 +286,7 @@ test_that("Options testing",{
 
 test_that("Check that the error message displays when weights are used in lm",{
   lm_model5 <- lm(mpg~ cyl + hp, weights = rnorm(nrow(mtcars),mean = 100), mtcars)
-  expect_error(arx(lm_model5))
-})
-
-test_that("Check that a message is displayed when a new mxreg is specified",{
-  lm_model6 <- lm(mpg~ cyl + hp, mtcars)
-  
-  x <- matrix(rnorm(nrow(mtcars)*3),nrow = nrow(mtcars))
-  colnames(x) <- c("x1","x2","x3")
-  expect_message(arx(lm_model6, mxreg = x), regexp = "mxreg specified")
+  expect_error(as.arx(lm_model5))
 })
 
 

@@ -2165,18 +2165,9 @@ blocksFun <- function(y, x, untransformed.residuals=NULL,
 ##2 ARX FUNCTIONS
 ####################################################
 
-arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
-                vc=FALSE, arch=NULL, asym=NULL, log.ewma=NULL, vxreg=NULL,
-                zero.adj=0.1, vc.adj=TRUE,
-                vcov.type=c("ordinary", "white", "newey-west"),
-                qstat.options=NULL, normality.JarqueB=FALSE, user.estimator=NULL,
-                user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, plot=NULL) {
-  UseMethod("arx")
-}
-
 ##==================================================
 ##Estimate AR-X model with log-ARCH-X errors
-arx.default <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
+arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
   vc=FALSE, arch=NULL, asym=NULL, log.ewma=NULL, vxreg=NULL,
   zero.adj=0.1, vc.adj=TRUE,
   vcov.type=c("ordinary", "white", "newey-west"),
