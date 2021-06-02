@@ -17,7 +17,7 @@ importFrom("parallel", "detectCores", "makeCluster", "clusterExport",
 
 export(
   ##generic method:
-  "gets",
+  "gets","isat.default",
   
   ##base functions:
   "blocksFun", "diagnostics", "dropvar", "eqwma", "getsFun", "gmm", "info.criterion",

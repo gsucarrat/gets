@@ -5409,6 +5409,13 @@ as.lm <- function(object)
   if(!classOK){
     stop("'object' must be of class 'arx', 'gets' or 'isat'")
   }
+  
+  if(object$aux$vcov.type!="ordinary"){
+    warning("Input object contains a robustified variance co-variance matrix (i.e. robust Standard Errors). The resulting 'lm' object will not. Standard Errors will therefore not be identical.")
+  }
+  if(isTRUE(object$aux$vc.adj)){
+    warning("Input object contains a variance specification. The resulting 'lm' object will not. Results might therefore not be identical.")
+  }
 
   ##class OK:
   if(classOK){
