@@ -119,6 +119,13 @@ gets <- function(x, ...){ UseMethod("gets") }
 ##for the future?:
 #isat.default <- today's isat function
 
+##### NEW FUNCTION -> no conflict
+newfun <- function(x) {
+  print(x)
+}
+
+##### changing default argument of diagnostics (2 lags autocorr test)
+
 
 ####################################################
 ##2 BASE FUNCTIONS
@@ -126,7 +133,7 @@ gets <- function(x, ...){ UseMethod("gets") }
 
 ##==================================================
 ##diagnostics checking
-diagnostics <- function(x, ar.LjungB=c(1,0.025), arch.LjungB=c(1,0.025),
+diagnostics <- function(x, ar.LjungB=c(2,0.025), arch.LjungB=c(1,0.025),
   normality.JarqueB=NULL, verbose=TRUE, user.fun=NULL, ...)
 {
   ##initiate:
