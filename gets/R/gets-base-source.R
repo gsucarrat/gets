@@ -126,7 +126,7 @@ gets <- function(x, ...){ UseMethod("gets") }
 
 ##==================================================
 ##diagnostics checking
-diagnostics <- function(x, ar.LjungB=c(1,0.025), arch.LjungB=c(1,0.025),
+diagnostics <- function(x, ar.LjungB=c(3,0.025), arch.LjungB=c(1,0.025),
   normality.JarqueB=NULL, verbose=TRUE, user.fun=NULL, ...)
 {
   ##initiate:
