@@ -2,15 +2,17 @@
 {
   ##set start-up message:
   txt <- c("\n",
-    paste(sQuote("gets"), "version 0.27\n"),
+    paste(sQuote("gets"), "version 0.28\n"),
     "\n",
     paste0("General-to-Specific (GETS) and Indicator Saturation (ISAT) methods,",
-    " type help(", dQuote("gets-package", q=FALSE), ") for details"),
+    " type help(", dQuote("gets-package", q=FALSE), ") for details and browseVignettes(", dQuote("gets", q=FALSE), ") for an introduction"),
     "\n",
     paste("CRAN website: https://CRAN.R-project.org/package=gets"),
-    paste0("Type browseVignettes(", dQuote("gets", q=FALSE), ") for an introduction"),
+    paste("Github (issues, discussions): https://github.com/gsucarrat/gets"),
     "\n",
-    paste("For automatic plotting, set plot=TRUE in options: options(plot = TRUE)"),
+    paste("* For automatic plotting, set plot = TRUE in options: options(plot = TRUE)"),
+    "\n",
+    paste("* WARNING: New default 'mc = TRUE' in arx() as of version 0.28"),
     "\n")
   
   ##print message:

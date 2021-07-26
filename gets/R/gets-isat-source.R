@@ -2,8 +2,6 @@
 ## This file contains the isat-source of the gets
 ## package.
 ##
-## Current version: 0.24
-##
 ## CONTENTS:
 ##
 ## isat
@@ -35,7 +33,7 @@
 
 ##==================================================
 ## indicator saturation
-isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
+isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   iis=FALSE, sis=TRUE, tis=FALSE, uis=FALSE, blocks=NULL,
   ratio.threshold=0.8, max.block.size=30, t.pval=0.001,
   wald.pval=t.pval, vcov.type=c("ordinary", "white", "newey-west"),
@@ -45,7 +43,7 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   gof.method=c("min","max"), include.gum=NULL,
   include.1cut=FALSE, include.empty=FALSE, max.paths=NULL,
   parallel.options=NULL, turbo=FALSE, tol=1e-07, LAPACK=FALSE,
-  max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE)
+  max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...)
 {
 
   ##arguments:
@@ -590,7 +588,7 @@ isat <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   }else{
     normalityArg <- as.numeric(normality.JarqueB)  
   }
-  mod <- arx(y, mxreg=mXis, vcov.type=vcov.type,
+  mod <- arx(y, mc=FALSE, mxreg=mXis, vcov.type=vcov.type,
     qstat.options=qstat.options, normality.JarqueB=normalityArg,
     user.estimator=userEstArgArx, user.diagnostics=user.diagnostics,
     tol=tol, LAPACK=LAPACK, plot=FALSE)
@@ -868,7 +866,9 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
       objectNew$call$mc <- TRUE
       indxCounter <- indxCounter + 1
     }else{
-      objectNew$call$mc <- NULL
+      objectNew$call$mc <- FALSE
+#OLD (until version 0.27):      
+#      objectNew$call$mc <- NULL
     }
 
     ##ar argument:

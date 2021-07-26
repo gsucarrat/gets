@@ -2,8 +2,6 @@
 ## This file contains the base-source of the gets
 ## package.
 ##
-## Current version: 0.25
-##
 ## CONTENTS:
 ##
 ## 1 INITIATE
@@ -41,7 +39,7 @@
 ####################################################
 ##
 ## arx
-## coef.arx         #extraction functions
+## coef.arx         #extraction/conversion functions
 ## ES               #(some are S3 methods)
 ## fitted.arx
 ## gets.arx
@@ -95,21 +93,15 @@
 ####################################################
                                                        
 ##==================================================
-##create S3 generic/method 'gets':
+##create the generic 'gets':
 gets <- function(x, ...){ UseMethod("gets") }
-###test the method:
-#set.seed(123); y <- arima.sim(list(ar=0.4, ma=0.1), 100)
-#mod01 <- arima(y, order=c(1,0,1))
-#gets.Arima <- function(x){ print("It works - cool!") }
-#gets(mod01)
 
 ##for the future?:
 #gets.default <- function(x, ...){ print("It works!") }
 
-##for the future?:
 ##==================================================
-##create S3 method 'isat':
-#isat <- function(x, ...){ UseMethod("isat") }
+##create the generic 'isat':
+isat <- function(y, ...){ UseMethod("isat") }
 ###test the method:
 #set.seed(123); y <- arima.sim(list(ar=0.4, ma=0.1), 100)
 #mod01 <- arima(y, order=c(1,0,1))
@@ -416,6 +408,8 @@ regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
   prefix="m", return.regressand=TRUE, return.as.zoo=TRUE, na.trim=TRUE,
   na.omit=FALSE)
 {
+
+  ##idea: use model.matrix() to create dummy-variables of factors?
 
   ##regressand:
   y.name <- deparse(substitute(y))
@@ -1425,14 +1419,10 @@ getsFun <- function(y, x, untransformed.residuals=NULL,
   ## 6 multi-path search
   ##-----------------------
 
-#OLD (already set under 'gum'):
-#insig.regs <- NULL
 pathsTerminals <- list()
 if( gumDiagnosticsOK && delete.n>0 ){
 
-  ##number of paths:
-#OLD:
-#  insig.regs <- setdiff( which(gum.pval > t.pval), keep)
+  ##re-define insig.regs due to max.paths?
   if( !is.null(max.paths) ){
     if(max.paths < length(insig.regs)){
       pvalRanksInv <- rank( 1-gum.pval[insig.regs] )
@@ -1550,7 +1540,6 @@ if( gumDiagnosticsOK && delete.n>0 ){
         } ### end turbo
 
         ## estimate model:
-        #regsAdj <- union(delete.adj, keep.adj)
         mXadj <- cbind(x[, union(delete.adj,keep.adj) ])
         if( is.null(user.estimator$envir) ){
           est <- do.call(user.estimator$name, c(list(y,mXadj),
@@ -1583,15 +1572,7 @@ if( gumDiagnosticsOK && delete.n>0 ){
           if( length(delete.adj)==0 ){
             spec.adj <- sort(keep.adj)
             break
-          } #end if(length(..)==0)
-
-          #for the future?:
-          #if( is.null(est$vcov) ){
-          #  est$vcov <- vcovFun(est, method="ordinary")
-          #}
-          #this will speed up estimation whenever diagnosticsOK
-          #turns out to be FALSE. Also, it will provide the user
-          #with more flexibility in choosing the covariance matrix
+          }
 
           ##compute stderrs, t-stats, p-vals:
           stderrs <- sqrt(diag(est$vcov))
@@ -1599,11 +1580,14 @@ if( gumDiagnosticsOK && delete.n>0 ){
           p.val <- pt(abs(t.stat), est$df, lower.tail=FALSE)*2
 
           ## try deleting a regressor:
-          if( any( p.val[1:c(length(delete.adj))] > t.pval) > 0 ){
+          if( any( p.val[1:c(length(delete.adj))] > t.pval) ){
+#OLD:
+#          if( any( p.val[1:c(length(delete.adj))] > t.pval) > 0 ){
 
             reg.no <- which.max( p.val[1:c(length(delete.adj))] )
 
             ## do pet test (i.e. wald-test):
+            petOK <- TRUE
             if(do.pet){
               deleted <- setdiff(delete, delete.adj[-reg.no])
               deleted <- sort(deleted) #sort() needed for correct restrictions
@@ -1612,9 +1596,7 @@ if( gumDiagnosticsOK && delete.n>0 ){
               mRestq <- mR %*% cbind(gum.coefs)
               wald.stat <- t(mRestq)%*%qr.solve(mR%*%gum.varcovmat%*%t(mR), tol=tol) %*% mRestq
               petOK <- as.logical(wald.pval < pchisq(wald.stat, n.deleted, lower.tail = FALSE))
-            }else{
-              petOK <- TRUE
-            } #end if(do.pet)else..
+            }
 
             ## delete regressor if(petOK), else move to keep:
             if( petOK ){
@@ -1731,7 +1713,6 @@ if( gumDiagnosticsOK && delete.n>0 ){
   return(out)
 
 } #close getsFun function
-
 
 ##==================================================
 ##do block-based gets with full flexibility (for advanced users)
@@ -2167,22 +2148,52 @@ blocksFun <- function(y, x, untransformed.residuals=NULL,
 
 ##==================================================
 ##Estimate AR-X model with log-ARCH-X errors
-arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
+arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   vc=FALSE, arch=NULL, asym=NULL, log.ewma=NULL, vxreg=NULL,
   zero.adj=0.1, vc.adj=TRUE,
   vcov.type=c("ordinary", "white", "newey-west"),
   qstat.options=NULL, normality.JarqueB=FALSE, user.estimator=NULL,
-  user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, plot=NULL)
+  user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, singular.ok=TRUE,
+  plot=NULL)
 {
   ### ARGUMENTS: ###########
 
   vcov.type <- match.arg(vcov.type)
 
+  ##mc.warning about new default:
+  mc.warning <- getOption("mc.warning")
+  if(is.null(mc.warning)){
+    mc.warning <- TRUE
+    options(mc.warning = FALSE)
+  }
+  if(mc.warning){
+    warning(
+      "\n\n",
+      "New default 'mc = TRUE' in arx() as of version 0.28\n",
+      "This warning only appears the first time arx() is invoked\n",
+      "To suppress this warning, set options(mc.warning = FALSE)\n"
+    )
+  }
+
   ##regressand, regressors:
   tmp <- regressorsMean(y, mc=mc, ar=ar, ewma=ewma, mxreg=mxreg,
     return.regressand=TRUE, return.as.zoo=TRUE,
-    na.trim=TRUE,
-    na.omit=FALSE)
+    na.trim=TRUE, na.omit=FALSE)
+
+  ##singularity ok?:
+  if( singular.ok && NCOL(tmp)>2 ){
+    tmpx <-
+      colnames(dropvar(tmp[,-1], tol=tol, LAPACK=LAPACK, silent=TRUE))
+    droppedXs <- which( (colnames(tmp[,-1]) %in% tmpx)==FALSE )
+    if( length(droppedXs)>0 ){
+      droppedXsNames <- colnames(tmp)[c(1+droppedXs)]
+      tmp <- tmp[,-c(1+droppedXs)]
+      warning(
+        "Regressor(s) removed due to singularity:\n",
+        paste(" ", droppedXsNames)
+      )            
+    } #end if( length(droppedXs)>0 )
+  } #end if( singular.ok )
   
   ##aux: auxiliary list, also used by getsm/getsv
   aux <- list()
@@ -2280,11 +2291,13 @@ arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
     #out$rss <- NULL
 
     ##re-organise stuff related to mean spec:
-    colnames(out$vcov) <- aux$mXnames
-    rownames(out$vcov) <- aux$mXnames
     outNames <- names(out)
     whereIs <- which(outNames=="vcov")
-    if( length(whereIs) > 0 ){ names(out)[whereIs] <- "vcov.mean" }
+    if( length(whereIs) > 0 ){
+      colnames(out[["vcov"]]) <- aux$mXnames
+      rownames(out[["vcov"]]) <- aux$mXnames
+      names(out)[whereIs] <- "vcov.mean"
+    }
     whereIs <- which(outNames=="fit")
     names(out)[whereIs] <- "mean.fit"
 
@@ -3147,7 +3160,10 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
       coefs <- coef.arx(object, spec="mean")
   
       ##mc:
-      if(!is.null(object$call$mc)){
+      ##NEW by M-orca:
+      if( is.null(object$call$mc) || isTRUE(object$call$mc) ){
+#      OLD:
+#      if(!is.null(object$call$mc)){
         mconst <- as.numeric(coefs[1])
         mconstIndx <- 1
       }else{
@@ -3365,7 +3381,7 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
 
   ##check special case:
   if( plotArg && spec=="variance" && specVar==FALSE ){
-    message("Set 'vc = TRUE' to enable a plot of the variance predictions")
+    message("To enable a plot of the variance predictions, set 'vc = TRUE' during estimation")
     plotArg <- FALSE #change argument
   }
 
@@ -4294,6 +4310,7 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
   include.1cut=TRUE, include.empty=FALSE, max.paths=NULL, tol=1e-07,
   turbo=FALSE, print.searchinfo=TRUE, plot=NULL, alarm=FALSE)
 {
+
   ## contents:
   ## 1 arguments
   ## 2 gets modelling
@@ -4406,9 +4423,9 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
     include.1cut=include.1cut, include.empty=include.empty,
     max.paths=max.paths, turbo=turbo, tol=tol, max.regs=NULL,
     print.searchinfo=print.searchinfo, alarm=alarm)
+  out$time.finished <- date()
   est$time.started <- NULL
   est$time.finished <- NULL
-  out$time.finished <- date()
   est$call <- NULL
   out <- c(out, est)
 
@@ -4449,7 +4466,7 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
     ##if( default estimator ):
     if( is.null(object$call$user.estimator) ){
       ##estimate specific model:
-      est <- arx(yadj, mxreg=mXadj, vc=object$aux$vc,
+      est <- arx(yadj, mc=FALSE, mxreg=mXadj, vc=object$aux$vc,
         arch=object$aux$arch, asym=object$aux$asym,
         log.ewma=object$aux$log.ewma, vxreg=object$aux$vxreg,
         zero.adj=object$aux$zero.adj,
@@ -4463,7 +4480,8 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
     ##if( user-defined estimator ):
     if( !is.null(object$call$user.estimator) ){
       ##estimate specific:
-      est <- arx(yadj, mxreg=mXadj, user.estimator=user.estimator,
+      est <- arx(yadj, mc=FALSE, mxreg=mXadj,
+        user.estimator=user.estimator,
         qstat.options=c(ar.LjungB[1],arch.LjungB[1]),
         normality.JarqueB=normality.JarqueB,
         user.diagnostics=user.diagnostics, tol=object$aux$tol,
@@ -4512,6 +4530,7 @@ getsv <- function(object, t.pval=0.05, wald.pval=t.pval,
   max.paths=NULL, tol=1e-07, turbo=FALSE, print.searchinfo=TRUE,
   plot=NULL, alarm=FALSE)
 {
+
   ### ARGUMENTS ###########
 
   ##obligatory:
@@ -4622,7 +4641,7 @@ getsv <- function(object, t.pval=0.05, wald.pval=t.pval,
   }
 
   ## estimate model:
-  est <- arx(e, vc=TRUE, vxreg=vXadj,
+  est <- arx(e, mc=FALSE, vc=TRUE, vxreg=vXadj,
     zero.adj=object$aux$zero.adj, vc.adj=object$aux$vc.adj,
     qstat.options=c(ar.LjungB[1],arch.LjungB[1]),
     normality.JarqueB=normality.JarqueB,
@@ -4661,6 +4680,7 @@ getsv <- function(object, t.pval=0.05, wald.pval=t.pval,
   }
   if(plot){ plot.gets(out) }
   return(out)
+  
 } #close getsv function
 
 ##==================================================
@@ -4689,11 +4709,7 @@ logLik.gets <- function(object, ...)
 ## extract paths
 paths <- function(object, ...)
 {
-  if(class(object)=="gets" || class(object)=="isat"){
     return(object$paths)
-  }else{
-    stop("object not of class 'gets' or 'isat'")
-  }
 } #end paths
 
 ##==================================================
@@ -4729,6 +4745,8 @@ predict.gets <- function(object, spec=NULL, n.ahead=12,
   if( length(coefsMean)==0 ){
 
     objectNew$call$mc <- NULL
+    ##should be?:
+    #objectNew$call$mc <- FALSE
     objectNew$call$ar <- NULL
     objectNew$call$ewma <- NULL
     objectNew$call$mxreg <- NULL
@@ -4747,7 +4765,9 @@ predict.gets <- function(object, spec=NULL, n.ahead=12,
       objectNew$call$mc <- TRUE
       indxCounter <- indxCounter + 1
     }else{
-      objectNew$call$mc <- NULL
+      objectNew$call$mc <- FALSE
+#OLD:
+#      objectNew$call$mc <- NULL
     }
     
     ##ar argument:
@@ -5088,11 +5108,7 @@ summary.gets <- function(object, ...)
 ## extract terminal models
 terminals <- function(object, ...)
 {
-  if(class(object)=="gets" || class(object)=="isat"){
-    return(object$terminals)
-  }else{
-    stop("object not of class 'gets' or 'isat'")
-  }
+  return(object$terminals)
 } #end terminals
 
 ##==================================================
