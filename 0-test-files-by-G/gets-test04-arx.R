@@ -4,7 +4,7 @@
 ##
 ## 1 INITIATE
 ## 2 TEST MAIN arx() ARGUMENTS
-## 3 MORE TESTS OF predict.arx
+## 3 MORE TESTS OF predict.arx()
 ## 3 TEST USER-DEFINED DIAGNOSTICS
 ## 4 TEST USER-DEFINED ESTIMATION
 ## 5 SIMULATIONS (FOR THE FUTURE)
@@ -16,19 +16,19 @@
 ##################################################
 
 ##set working directory:
-setwd("C:/Users/sucarrat/Documents/R/gs/gets/github/")
+setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
 #setwd(choose.dir())
 
 ##load required packages:
 require(parallel)
 require(zoo)
 
-##remove everything in workspace (.GlobaleEnv:
+##remove everything in workspace (.GlobalEnv):
 rm(list=ls())
 
 ##load source:
-source("./contents/gets/R/gets-base-source.R")
-source("./contents/gets/R/gets-isat-source.R")
+source("./gets/R/gets-base-source.R")
+#source("./gets/R/gets-isat-source.R") #needed for sim()
 
 
 ##################################################
@@ -57,19 +57,19 @@ mX <- cbind(as.zoo(mX), as.zoo(stepdum1), as.zoo(stepdum2))
 y[1] <- NA; y[y.n] <- NA
 
 ##test each argument separately and together:
-arx(y) #should return "Warning message: In plot.arx(out) : No estimated...etc."
-arx(y, normality.JarqueB=TRUE)
+arx(y, mc=FALSE) #should return "Warning message: In plot.arx(out) : No estimated...etc."
+arx(y, mc=FALSE, normality.JarqueB=TRUE)
 arx(y, mc=TRUE)
-arx(y, ar=c(1,3))
-arx(y, ewma=list(length=c(2,4)))
-arx(y, mxreg=mX)
+arx(y, mc=FALSE, ar=c(1,3))
+arx(y, mc=FALSE, ewma=list(length=c(2,4)))
+arx(y, mc=FALSE, mxreg=mX)
 arx(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)), mxreg=mX)
-arx(y, vc=TRUE)
-arx(y, arch=c(2,4))
-arx(y, asym=c(1,3))
-arx(y, log.ewma=list(length=c(3,5)))
-arx(y, vxreg=cbind(log(mX[,1:2]^2), mX[,3:4]))
-arx(y, vc=TRUE, arch=c(2,4), asym=c(1,3),
+arx(y, mc=FALSE, vc=TRUE)
+arx(y, mc=FALSE, arch=c(2,4))
+arx(y, mc=FALSE, asym=c(1,3))
+arx(y, mc=FALSE, log.ewma=list(length=c(3,5)))
+arx(y, mc=FALSE, vxreg=cbind(log(mX[,1:2]^2), mX[,3:4]))
+arx(y, mc=FALSE, vc=TRUE, arch=c(2,4), asym=c(1,3),
   log.ewma=list(length=c(3,5)),
   vxreg=cbind(log(mX[,1:2]^2), mX[,3:4]))
 arx(y, mc=TRUE, ar=c(1,3), vcov.type="o")
@@ -78,12 +78,12 @@ arx(y, mc=TRUE, ar=c(1,3), vcov.type="n")
 arx(y, mc=TRUE, ar=c(1,3), qstat.options=c(5,5))
 arx(y, mc=TRUE, ar=c(1,3), tol=1e-15)
 arx(y, mc=TRUE, ar=c(1,3), tol=1, LAPACK=TRUE)
-arx(y, mc=TRUE, ar=c(1,3), tol=1, LAPACK=FALSE) #should crash
+arx(y, mc=TRUE, ar=c(1,3), tol=1, LAPACK=FALSE) #should give warning about removed regressors
 
 ##only mean specification:
-mod01 <- arx(y, ar=1:4, mxreg=mX)
+mod01 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX)
 print(mod01)
-print(mod01, signif.stars=TRUE)
+print(mod01, signif.stars=FALSE)
 coef(mod01)
 coef(mod01, spec="m")
 coef(mod01, spec="v") #should be NULL
@@ -116,12 +116,12 @@ recursive(mod01, return=FALSE) #only plot
 recursive(mod01, plot=FALSE) #only return (values)
 recursive(mod01, plot=FALSE, return=FALSE) #return nothing
 recursive(mod01, std.errors=FALSE)
-recursive(arx(y)) #should return the error-message: No mean-equation
-recursive(arx(y), spec="variance") #should return the error-message No variance-equation
+recursive(arx(y, mc=FALSE)) #should return the error-message: No mean-equation
+recursive(arx(y, mc=FALSE), spec="variance") #should return the error-message No variance-equation
 recursive(arx(y, mc=TRUE, plot=FALSE))
 recursive(arx(y, mc=TRUE, plot=FALSE), return=FALSE)
-recursive(arx(y, ar=1, plot=FALSE))
-recursive(arx(y, mxreg=mX, plot=FALSE))
+recursive(arx(y, mc=FALSE, ar=1, plot=FALSE))
+recursive(arx(y, mc=FALSE, mxreg=mX, plot=FALSE))
 plot(cbind(residuals(mod01),
   residuals(mod01, std=FALSE),
   residuals(mod01, std=TRUE)))
@@ -138,7 +138,7 @@ mX <- mX[,1:2]
 mod02 <- arx(y, mc=TRUE, ar=1:3, mxreg=mX,
   arch=1:4,asym=1:2, vxreg=log(mX^2))
 print(mod02)
-print(mod02, signif.stars=TRUE)
+print(mod02, signif.stars=FALSE)
 coef(mod02)
 coef(mod02, spec="m")
 coef(mod02, spec="v")
@@ -186,9 +186,9 @@ vcov(mod02, spec="m")
 vcov(mod02, spec="v")
 
 ##only variance specification:
-mod03 <- arx(y, arch=1:4, asym=1:2, log.ewma=3, vxreg=log(mX^2))
+mod03 <- arx(y, mc=FALSE, arch=1:4, asym=1:2, log.ewma=3, vxreg=log(mX^2))
 print(mod03)
-print(mod03, signif.stars=TRUE)
+print(mod03, signif.stars=FALSE)
 coef(mod03)
 coef(mod03, spec="m") #should be NULL
 coef(mod03, spec="v")
@@ -216,7 +216,8 @@ summary(mod03)
 plot(VaR(mod03, level=c(0.99,0.95,0.9)), #value-at-risk
   plot.type="single", col=c("blue","red","green4"))
 vcov(mod03)
-##ISSUE!!! DISCOVERED 11/8-2020 BY G.:
+##this used to erroneously be non-NULL,
+##solved in version 0.28:
 vcov(mod03, spec="m") #should return NULL
 vcov(mod03, spec="v")
 
@@ -231,10 +232,11 @@ SWtest <- function(x, ...){
   result <- c(tmp$statistic, NA, tmp$p.value)
   return(result)
 }
-mod06 <- arx(y, ar=1:4, mxreg=mX, user.diagnostics=list(name="SWtest"))
+mod06 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX,
+  user.diagnostics=list(name="SWtest"))
 print(mod06)
 print(mod06, signif.stars=TRUE)
-mod06 <- arx(y, ar=1:4, mxreg=mX,
+mod06 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX,
   user.diagnostics=list(name="SWtest", pval=0.025))
   #the pval argument is ignored (as it should), I think
 print(mod06)
@@ -251,9 +253,9 @@ assign("SWtest",
   return(result)
   },
   envir=myenv) #end function
-mod06 <- arx(y, ar=1:4, mxreg=mX, #should not work
+mod06 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX, #should not work
   user.diagnostics=list(name="SWtest"))
-mod06 <- arx(y, ar=1:4, mxreg=mX, #should work
+mod06 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX, #should work
   user.diagnostics=list(name="SWtest", envir=myenv))
 print(mod06)
 
@@ -273,11 +275,11 @@ Gfun <- function(y, x, method=3){
   return(tmp)
 }
 
-mod07 <- arx(y, ar=1:4, mxreg=mX,
+mod07 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX,
   user.estimator=list(name="Gfun"), plot=FALSE)
 summary(mod07)
 print(mod07)
-mod07 <- arx(y, ar=1:4, mxreg=mX, #should work but produce warning
+mod07 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX, #should work but produce warning
   user.estimator=list(name="Gfun"), plot=TRUE) 
 summary(mod07)
 print(mod07)
@@ -305,11 +307,11 @@ Gfun <- function(y, x, ...){
   tmp$mean.fit <- tmp$fit
   return(tmp)
 }
-mod08 <- arx(y, ar=1:4, mxreg=mX,
+mod08 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX,
   user.estimator=list(name="Gfun"), plot=FALSE)
 summary(mod08)
 print(mod08)
-mod08 <- arx(y, ar=1:4, mxreg=mX,
+mod08 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX,
   user.estimator=list(name="Gfun"), plot=TRUE) #should not work: "...no plot produced"
 summary(mod08)
 print(mod08)
@@ -358,11 +360,11 @@ ols2 <- function(y, x){
 	  return(out)            
 }
 
-mod09 <- arx(y, ar=1:4, mxreg=mX,
+mod09 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX,
   user.estimator=list(name="ols2"), plot=FALSE)
 summary(mod09)
 print(mod09)
-mod09 <- arx(y, ar=1:4, mxreg=mX,
+mod09 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX,
   user.estimator=list(name="ols2"), plot=TRUE) #should produce warning
 summary(mod09)
 print(mod09)
@@ -389,8 +391,27 @@ z <- matrix(rnorm(10*54), 54,10)
 colnames(z) <- paste0("z", 1:NCOL(z))
 mod10 <- arx(y, mc=TRUE, ar=1:4, mxreg=mX,
   user.estimator=list(name="gmm", z=z), plot=FALSE)
+mod10
 
 
 ##################################################
-## 5 SIMULATIONS (FOR THE FUTURE)
+## 5 SIMULATIONS
 ##################################################
+
+##sigma() vs. log-arch estimates of intercept:
+##--------------------------------------------
+
+set.seed(123)
+y <- rnorm(5000)
+
+##for large T, they are approximately equal:
+mymodel <- arx(y, vc=TRUE, plot=FALSE)
+value1 <- round(sigma(mymodel)^2, digits=3)
+value2 <- round(exp(coef(mymodel, spec="variance")[1]), digits=3)
+value1 == value2
+
+##for small T, they differ:
+mymodel <- arx(y[1:50], vc=TRUE, plot=FALSE)
+value1 <- round(sigma(mymodel)^2, digits=3)
+value2 <- round(exp(coef(mymodel, spec="variance")[1]), digits=3)
+value1 == value2
