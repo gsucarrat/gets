@@ -85,6 +85,7 @@ gets.lm <- function(x, keep=NULL, print.searchinfo=TRUE, ...)
   ## 2 print start (gum) model
   ##-----------------------------
   
+  gum <- NULL #make sure 'gum' exists
   if( print.searchinfo ){
   
     ##create gum matrix:

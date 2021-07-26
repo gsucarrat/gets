@@ -1,9 +1,10 @@
-Version 0.28 (24 July 2021):
+Version 0.28 (26 July 2021):
 ============================
 
 * arx():
 - new default 'mc = TRUE'; this necessitated changes (not visible to the user) in several other files, including predict.arx(), predict.gets(), isat() and predict.isat()
 - new argument: singular.ok
+- when 'user.estimator' is not NULL, column-names equal to the names of the regressors are added to the regressor matrix before it is passed on to the user-defined estimator
 
 * the function 'isat' changed name to 'isat.default'
 

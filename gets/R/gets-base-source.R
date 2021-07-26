@@ -2156,9 +2156,20 @@ arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, singular.ok=TRUE,
   plot=NULL)
 {
-  ### ARGUMENTS: ###########
+  ## contents:
+  ##
+  ## 1 selected arguments
+  ## 2 prepare aux list
+  ## 3 estimation
+  ##   a) default estimator
+  ##   b) user-defined estimator:
+  ## 4 prepare result
+  ## 5 finalise and return result
 
-  vcov.type <- match.arg(vcov.type)
+
+  ##-----------------------------------
+  ## 1 selected arguments
+  ##-----------------------------------
 
   ##mc.warning about new default:
   mc.warning <- getOption("mc.warning")
@@ -2180,6 +2191,11 @@ arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     return.regressand=TRUE, return.as.zoo=TRUE,
     na.trim=TRUE, na.omit=FALSE)
 
+  ##determine vcov:
+  types <- c("ordinary", "white", "newey-west")
+  whichType <- charmatch(vcov.type[1], types)
+  vcov.type <- types[ whichType ]
+
   ##singularity ok?:
   if( singular.ok && NCOL(tmp)>2 ){
     tmpx <-
@@ -2194,7 +2210,12 @@ arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       )            
     } #end if( length(droppedXs)>0 )
   } #end if( singular.ok )
+
   
+  ##-----------------------------------
+  ## 2 prepare aux list
+  ##-----------------------------------
+
   ##aux: auxiliary list, also used by getsm/getsv
   aux <- list()
   aux$y <- coredata(tmp[,1])
@@ -2245,16 +2266,15 @@ arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   aux$tol <- tol
   aux$LAPACK <- LAPACK
 
-  ### INITIALISE ##########
+
+  ##-----------------------------------
+  ## 3 estimation
+  ##-----------------------------------
 
   sysCall <- sys.call()
   #for the future: make sure the following objects are part of the out-list?
   vcov.var <- NULL #make sure this object exists
   variance.results <- NULL #make sure this object exists
-
-  #### for the future regarding user.estimator: check if
-  #### user.estimator$spec is NULL, "mean", "variance" or "both"
-  #### in order to determine what kind of estimator it is
 
   ##check if mean and log-garch spec:
   meanSpec <- !is.null(aux$mX)
@@ -2262,7 +2282,8 @@ arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     && is.null(asym) && is.null(log.ewma)
     && is.null(vxreg) ){ FALSE }else{ TRUE }
 
-  #### DEFAULT ESTIMATOR ###############
+  ## a) default estimator:
+  ##----------------------
 
   if( is.null(user.estimator) ){
 
@@ -2281,14 +2302,8 @@ arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     ##delete some unneeded entries:
     #out$n <- NULL #this might have to be changed in order to enable gum.result in getsFun
     #out$k <- NULL ##this might have to be changed in order to enable gum.result in getsFun
-    #out$df <- NULL: Do not delete!
-    out$qr <- NULL
-    out$rank <- NULL
-    out$qraux <- NULL
-    out$pivot <- NULL
-    out$xtxinv <- NULL
-    out$residuals2 <- NULL
-    #out$rss <- NULL
+    #out$df <- NULL: do not delete!
+    out[c("qr","rank","qraux","pivot","xtxinv","residuals2")] <- NULL
 
     ##re-organise stuff related to mean spec:
     outNames <- names(out)
@@ -2349,19 +2364,28 @@ arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     } #close if( varianceSpec )
         
   } #close if( is.null(user.estimator) )
-  
 
-  #### USER-DEFINED ESTIMATOR ###############
+  ## b) user-defined estimator:
+  ##---------------------------
+  
+  ##for the future?: check if user.estimator$spec is NULL,
+  ##"mean", "variance" or "both" in order to determine what
+  ##kind of estimator it is
 
   if( !is.null(user.estimator) ){
 
     ##make user-estimator argument:
-    if( is.null(user.estimator$envir) ){ user.estimator$envir <- .GlobalEnv }
+    if( is.null(user.estimator$envir) ){
+      user.estimator$envir <- .GlobalEnv
+    }
     userEstArg <- user.estimator
     userEstArg$name <- NULL
     userEstArg$envir <- NULL
     if( length(userEstArg)==0 ){ userEstArg <- NULL }
 
+    ##add colnames to mX:
+    colnames(aux$mX) <- aux$mXnames
+    
     ##user-defined estimator:
     if( is.null(user.estimator$envir) ){
       out <- do.call(user.estimator$name,
@@ -2369,7 +2393,6 @@ arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     }else{
       out <- do.call(user.estimator$name,
         c(list(aux$y,aux$mX), userEstArg), envir=user.estimator$envir)
-#        c(list(y=aux$y,x=aux$mX), userEstArg), envir=user.estimator$envir)
     }
     
 #delete?:
@@ -2381,9 +2404,11 @@ arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   } #end if( user.estimator )
 
 
-  ### OUTPUT: ######################
+  ##-----------------------------------
+  ## 4 prepare result
+  ##-----------------------------------
 
-  ##mean estimation results (a data frame):
+  ##mean estimation result (a data frame):
   if( meanSpec ){
     if( !is.null(out$vcov) ){
       coefvar <- out$vcov
@@ -2436,7 +2461,11 @@ arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     out$std.residuals <- zoo(out$std.residuals, order.by=aux$y.index)
   }
 
-  ##result:
+
+  ##-----------------------------------
+  ## 5 finalise and return result
+  ##-----------------------------------
+
   out <- c(list(call=sysCall, date=date(), aux=aux), out)
   class(out) <- "arx"
 
