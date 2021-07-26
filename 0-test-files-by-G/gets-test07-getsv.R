@@ -12,8 +12,7 @@
 ##1 INITIATE
 ##################################################
 
-##set working directory:
-setwd("C:/Users/sucarrat/Documents/R/gs/gets/github/")
+setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
 #setwd(choose.dir())
 
 ##load required packages:
@@ -24,8 +23,8 @@ require(zoo)
 rm(list=ls())
 
 ##load source:
-source("./contents/gets/R/gets-base-source.R")
-#source("./contents/gets/R/gets-isat-source.R")
+source("./gets/R/gets-base-source.R")
+#source("./gets/R/gets-isat-source.R")
 
 
 ##################################################
@@ -48,7 +47,7 @@ options(plot=TRUE)
 #options(plot=NULL)
 
 ##only variance spec:
-vgum01 <- arx(y, arch=1:3, asym=1:2, vxreg=vX)
+vgum01 <- arx(y, mc=FALSE, arch=1:3, asym=1:2, vxreg=vX)
 vgum01
 getsv(vgum01)
 getsv(vgum01, t.pval=0.10)
@@ -115,7 +114,7 @@ SWtest <- function(x, ...){
   result <- c(tmp$statistic, NA, tmp$p.value)
   return(result)
 }
-vgum01 <- arx(y, arch=1:3, asym=1:2, vxreg=vX,
+vgum01 <- arx(y, mc=FALSE, arch=1:3, asym=1:2, vxreg=vX,
   user.diagnostics=list(name="SWtest", pval=0.025))
 vgum01
 getsv01 <- getsv(vgum01,
@@ -123,7 +122,7 @@ getsv01 <- getsv(vgum01,
 getsv01
 
 ##both mean and variance specs:
-vgum02 <- arx(y, mc=TRUE, ar=1:2, mxreg=mX,
+vgum02 <- arx(y, ar=1:2, mxreg=mX,
   arch=1:3, asym=1:2, vxreg=vX)
 vgum02
 vgets02 <- getsv(vgum02)

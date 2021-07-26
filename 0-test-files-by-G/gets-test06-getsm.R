@@ -5,7 +5,8 @@
 ## 1 INITIATE
 ## 2 TEST ARGUMENTS OF getsm()
 ## 3 TEST USER DEFINED ESTIMATION
-## 4 SIMULATIONS (FOR THE FUTURE)
+## 4 FURTHER TESTS OF predict.gets()
+## 5 SIMULATIONS (FOR THE FUTURE)
 ##
 ##################################################
 
@@ -14,7 +15,7 @@
 ##################################################
 
 ##set working directory:
-setwd("C:/Users/sucarrat/Documents/R/gs/gets/github/")
+setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
 #setwd(choose.dir())
 
 ##load required packages:
@@ -25,8 +26,8 @@ require(zoo)
 rm(list=ls())
 
 ##load source:
-source("./contents/gets/R/gets-base-source.R")
-#source("./contents/gets/R/gets-isat-source.R")
+source("./gets/R/gets-base-source.R")
+#source("./gets/R/gets-isat-source.R")
 
 
 ##################################################
@@ -48,7 +49,7 @@ options(plot=TRUE)
 #y <- zooreg(y, frequency=4, start=c(1990,2))
 
 ##only mean equation:
-gum01 <- arx(y, mc=TRUE, ar=1:3, mxreg=mX)
+gum01 <- arx(y, ar=1:3, mxreg=mX)
 gum01
 getsm01 <- getsm(gum01)
 getsm(gum01)
@@ -228,11 +229,12 @@ gum04 <- arx(y, mc=TRUE, ar=1:3, mxreg=mX, arch=1:2, asym=1,
   log.ewma=list(length=3), vxreg=log(mX^2), vcov.type="n")
 getsm(gum04)
 
-##issue #22 (by M-orca) on Github (6/9-2020):
+##issue #22 (closed), created 6/9-2020 by M-orca:
+##https://github.com/gsucarrat/gets/issues/22
 set.seed(123)
 yy <- arima.sim(list(ar=0.9), 80)
 xregs <- matrix(rnorm(2*80), 80, 2)
-object <- arx(yy, mxreg = xregs)
+object <- arx(yy, mc=FALSE, mxreg = xregs)
 ##gum does not pass one or more diagnostics tests:
 tmp <- getsm(object)
 print(tmp)
@@ -287,6 +289,133 @@ myspecific <- getsm(gum01,
 
 
 ##################################################
-## 4 SIMULATIONS (FOR THE FUTURE)
+## 4 FURTHER TESTS OF predict.gets()
+##################################################
+
+##------------------------------------------------
+## the main purpose of the experiments that follow
+## is to test the 'mc' argument (in 0.28 the
+## default was changed to 'TRUE' in arx())
+##------------------------------------------------
+
+##some data
+set.seed(123)
+y <- rnorm(50)
+
+##experiment:
+##-----------
+
+##predictions by predict.arx():
+gum <- arx(y, ar=1)
+correctVals <- predict(gum, n.ahead=3)
+
+##predictions by predict.gets():
+myspecific <- gets(gum, keep=1:length(coef(gum)))
+functionVals <- predict(myspecific, n.ahead=3)
+
+##do they correspond?:
+all( functionVals == correctVals )
+
+##experiment:
+##-----------
+
+##predictions by predict.arx():
+gum <- arx(y, mc=FALSE, ar=1)
+correctVals <- predict(gum, n.ahead=3)
+
+##predictions by predict.gets():
+myspecific <- getsm(gum, keep=1:length(coef(gum)))
+functionVals <- predict(myspecific, n.ahead=3)
+
+##do they correspond?:
+all( functionVals == correctVals )
+
+##experiment:
+##-----------
+
+##predictions by predict.arx():
+gum <- arx(y, vc=TRUE)
+correctVals <- predict(gum, spec="variance", n.ahead=3)
+
+##predictions by predict.gets():
+myspecific <- getsv(gum, keep=1)
+functionVals <- predict(myspecific, n.ahead=3)
+
+##do they correspond?:
+all( functionVals == correctVals )
+
+##experiment:
+##-----------
+
+##predictions by predict.arx():
+gum <- arx(y, mc=TRUE, vc=TRUE)
+correctVals <- predict(gum, spec="variance", n.ahead=3)
+
+##predictions by predict.gets():
+myspecific <- getsv(gum, keep=1)
+functionVals <- predict(myspecific, n.ahead=3)
+
+##do they correspond?:
+all( functionVals == correctVals )
+
+##experiment:
+##-----------
+
+##predictions by predict.arx():
+gum <- arx(y, mc=FALSE, vc=TRUE)
+correctVals <- predict(gum, spec="variance", n.ahead=3)
+
+##predictions by predict.gets():
+myspecific <- getsv(gum, keep=1)
+functionVals <- predict(myspecific, n.ahead=3)
+
+##do they correspond?:                                                  
+all( functionVals == correctVals )
+
+##experiment:
+##-----------
+
+##predictions by predict.arx():
+gum <- arx(y, vc=TRUE, arch=1)
+correctVals <- predict(gum, spec="variance", n.ahead=1)
+
+##predictions by predict.gets():
+myspecific <- getsv(gum, keep=1:2)
+functionVals <- predict(myspecific, n.ahead=1)
+
+##do they correspond?:                                                  
+all( functionVals == correctVals )
+
+##experiment:
+##-----------
+
+##predictions by predict.arx():
+gum <- arx(y, mc=TRUE, vc=TRUE, arch=1)
+correctVals <- predict(gum, spec="variance", n.ahead=1)
+
+##predictions by predict.gets():
+myspecific <- getsv(gum, keep=1:2)
+functionVals <- predict(myspecific, n.ahead=1)
+
+##do they correspond?:                                                  
+all( functionVals == correctVals )
+
+##experiment:
+##-----------
+
+##predictions by predict.arx():
+gum <- arx(y, mc=FALSE, vc=TRUE, arch=1)
+correctVals <- predict(gum, spec="variance", n.ahead=1)
+
+##predictions by predict.gets():
+myspecific <- getsv(gum, keep=1:2)
+functionVals <- predict(myspecific, n.ahead=1)
+
+##do they correspond?:                                                  
+all( functionVals == correctVals )
+
+
+##################################################
+## 5 SIMULATIONS (FOR THE FUTURE)
 ##################################################
 
