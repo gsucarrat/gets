@@ -2,7 +2,7 @@
 {
   ##set start-up message:
   txt <- c("\n",
-    paste(sQuote("gets"), "version 0.26\n"),
+    paste(sQuote("gets"), "version 0.27\n"),
     "\n",
     paste0("General-to-Specific (GETS) and Indicator Saturation (ISAT) methods,",
     " type help(", dQuote("gets-package", q=FALSE), ") for details"),

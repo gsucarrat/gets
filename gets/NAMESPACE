@@ -1,9 +1,9 @@
 import(zoo)
 
 importFrom("stats", "Box.test", "coef", "cycle", "deltat", "dnorm",
-  "fitted", "frequency", "lm", "logLik", "pchisq", "pnorm", "poisson.test",
-  "printCoefmat", "pt", "qnorm", "qt", "quantile", "residuals", "rnorm",
-  "runif", "sigma", "var", "vcov", "window")
+  "fitted", "frequency", "lm", "logLik", "nlminb", "pchisq", "pnorm",
+  "poisson.test", "printCoefmat", "pt", "qnorm", "qt", "quantile",
+  "residuals", "rnorm", "runif", "sigma", "var", "vcov", "window")
 
 importFrom("graphics", "abline", "legend", "lines", "mtext", "par",
   "plot", "points", "polygon", "text", "title")
@@ -42,7 +42,12 @@ export(
   "summary.isat", "vcov.isat", "biascorr", "isattest", "isatvar",
   "isvarcor", "isvareffcor", "iim", "sim", "tim", "isatdates",
   "isatloop", "isatvarcorrect", "mvrnormsim", "outlierscaletest",
-  "outliertest", "vargaugeiis"
+  "outliertest", "vargaugeiis",
+
+  ##dlogitx-class function:
+  "dlogitxSim", "logit", "dlogitx", "coef.dlogitx", "fitted.dlogitx",
+  "gets.dlogitx", "logLik.dlogitx", "plot.dlogitx", "print.dlogitx",
+  "summary.dlogitx", "toLatex.dlogitx", "vcov.dlogitx"
 
 )
 
@@ -84,3 +89,14 @@ S3method("residuals", "isat")
 S3method("sigma", "isat")
 S3method("summary", "isat")
 S3method("vcov", "isat")
+
+##methods for class dlogitx:
+S3method("coef", "dlogitx")
+S3method("fitted", "dlogitx")
+S3method("gets", "dlogitx")
+S3method("logLik", "dlogitx")
+S3method("plot", "dlogitx")
+S3method("print", "dlogitx")
+S3method("summary", "dlogitx")
+S3method("toLatex", "dlogitx")
+S3method("vcov", "dlogitx")
