@@ -1,9 +1,10 @@
 import(zoo)
 
 importFrom("stats", "Box.test", "coef", "cycle", "deltat", "dnorm",
-  "fitted", "frequency", "lm", "logLik", "nlminb", "pchisq", "pnorm",
-  "poisson.test", "printCoefmat", "pt", "qnorm", "qt", "quantile",
-  "residuals", "rnorm", "runif", "sigma", "var", "vcov", "window")
+  "fitted", "as.formula", "frequency", "lm", "logLik", "model.matrix",
+  "nlminb", "pchisq", "pnorm", "poisson.test", "printCoefmat", "pt",
+  "qnorm", "qt", "quantile", "residuals", "rnorm", "runif", "sd", "sigma",
+  "var", "vcov", "window")
 
 importFrom("graphics", "abline", "legend", "lines", "mtext", "par",
   "plot", "points", "polygon", "text", "title")
@@ -16,12 +17,13 @@ importFrom("parallel", "detectCores", "makeCluster", "clusterExport",
   "parLapply", "stopCluster")
 
 export(
-  ##generic method:
-  "gets",
+  ##generic functions:
+  "gets", "isat",
   
   ##base functions:
-  "blocksFun", "diagnostics", "dropvar", "eqwma", "getsFun", "gmm", "info.criterion",
-  "infocrit", "leqwma", "ols", "regressorsMean", "regressorsVariance",  
+  "blocksFun", "diagnostics", "dropvar", "eqwma", "getsFun", "gmm",
+  "info.criterion", "infocrit", "leqwma", "ols", "regressorsMean",
+  "regressorsVariance",  
   
   ##convenience functions:
   "periodicdummies", "eviews", "stata", "printtex", "as.lm",
@@ -36,8 +38,8 @@ export(
   "plot.gets", "predict.gets", "print.gets", "residuals.gets", "sigma.gets",
   "summary.gets", "terminals", "toLatex.gets", "vcov.gets",
   
-  ##isat-class functions:
-  "isat", "coef.isat", "fitted.isat", "logLik.isat", "plot.isat",
+  ##isat functions:
+  "isat.default", "coef.isat", "fitted.isat", "logLik.isat", "plot.isat",
   "predict.isat", "print.isat", "residuals.isat", "sigma.isat",
   "summary.isat", "vcov.isat", "biascorr", "isattest", "isatvar",
   "isvarcor", "isvareffcor", "iim", "sim", "tim", "isatdates",
@@ -47,7 +49,10 @@ export(
   ##dlogitx-class function:
   "dlogitxSim", "logit", "dlogitx", "coef.dlogitx", "fitted.dlogitx",
   "gets.dlogitx", "logLik.dlogitx", "plot.dlogitx", "print.dlogitx",
-  "summary.dlogitx", "toLatex.dlogitx", "vcov.dlogitx"
+  "summary.dlogitx", "toLatex.dlogitx", "vcov.dlogitx",
+
+  ##lm-class functions:
+  "as.arx", "gets.lm"
 
 )
 
@@ -78,6 +83,9 @@ S3method("summary", "gets")
 S3method("toLatex", "gets")
 S3method("vcov", "gets")
 
+##default methods generic isat:
+S3method("isat", "default")
+
 ##methods for class isat:
 S3method("coef", "isat")
 S3method("fitted", "isat")
@@ -100,3 +108,6 @@ S3method("print", "dlogitx")
 S3method("summary", "dlogitx")
 S3method("toLatex", "dlogitx")
 S3method("vcov", "dlogitx")
+
+##methods for class lm:
+S3method("gets", "lm")
