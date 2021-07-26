@@ -9,16 +9,17 @@ The AR-X mean specification can contain an intercept, AR-terms, lagged moving av
 }
 
 \usage{
-arx(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL, vc=FALSE,
+arx(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL, vc=FALSE,
   arch=NULL, asym=NULL, log.ewma=NULL, vxreg=NULL, zero.adj=0.1,
   vc.adj=TRUE, vcov.type=c("ordinary", "white", "newey-west"),
   qstat.options=NULL, normality.JarqueB=FALSE, user.estimator=NULL,
-  user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, plot=NULL)
+  user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, singular.ok=TRUE,
+  plot=NULL)
 }
 
 \arguments{
   \item{y}{numeric vector, time-series or \code{\link{zoo}} object. Missing values in the beginning and at the end of the series is allowed, as they are removed with the \code{\link{na.trim}} command}
-  \item{mc}{logical. \code{TRUE} includes an intercept in the mean specification, whereas \code{FALSE} (default) does not}
+  \item{mc}{logical. \code{TRUE} (default) includes an intercept in the mean specification, whereas \code{FALSE} does not}
   \item{ar}{either \code{NULL} (default) or an integer vector, say, \code{c(2,4)} or \code{1:4}. The AR-lags to include in the mean specification. If \code{NULL}, then no lags are included}
   \item{ewma}{either \code{NULL} (default) or a \code{\link{list}} with arguments sent to the \code{\link{eqwma}} function. In the latter case a lagged moving average of \code{y} is included as a regressor}
   \item{mxreg}{either \code{NULL} (default) or a numeric vector or matrix, say, a \code{\link{zoo}} object, of conditioning variables. Note that, if both \code{y} and \code{mxreg} are \code{zoo} objects, then their samples are chosen to match}
@@ -36,6 +37,7 @@ arx(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL, vc=FALSE,
   \item{user.diagnostics}{\code{NULL} (default) or a \code{\link{list}} with two entries, \code{name} and \code{pval}, see the \code{user.fun} argument in \code{\link{diagnostics}} }
   \item{tol}{numeric value (\code{default = 1e-07}). The tolerance for detecting linear dependencies in the columns of the regressors (see \code{\link{qr}} function). Only used if \code{LAPACK} is \code{FALSE} (default) and \code{user.estimator} is \code{NULL}.}
   \item{LAPACK}{logical. If \code{TRUE}, then use LAPACK. If \code{FALSE} (default), then use LINPACK (see \code{\link{qr}} function). Only used if \code{user.estimator} is \code{NULL}.}
+  \item{singular.ok}{logical. If \code{TRUE}, then the regressors are checked for singularity, and the ones causing it are automatically removed. }
   \item{plot}{\code{NULL} or logical. If \code{TRUE}, then the fitted values and the residuals are plotted. If \code{NULL} (default), then the value set by \code{\link{options}} determines whether a plot is produced or not.}
 }
 
@@ -82,29 +84,30 @@ xregs <- matrix(rnorm(4*70), 70, 4)
 
 ##estimate an AR(2) with intercept and four conditioning
 ##regressors in the mean:
-arx(y, mc=TRUE, ar=1:2, mxreg=xregs)
+arx(y, ar=1:2, mxreg=xregs)
 
 ##estimate a log-variance specification with a log-ARCH(4)
 ##structure:
-arx(y, arch=1:4)
+arx(y, mc=FALSE, arch=1:4)
 
 ##estimate a log-variance specification with a log-ARCH(4)
 ##structure and an asymmetry/leverage term:
-arx(y, arch=1:4, asym=1)
+arx(y, mc=FALSE, arch=1:4, asym=1)
 
 ##estimate a log-variance specification with a log-ARCH(4)
 ##structure, an asymmetry or leverage term, a 10-period log(EWMA) as
 ##volatility proxy, and the log of the squareds of the conditioning
 ##regressors in the log-variance specification:
-arx(y, arch=1:4, asym=1, log.ewma=list(length=10), vxreg=log(xregs^2))
+arx(y, mc=FALSE,
+  arch=1:4, asym=1, log.ewma=list(length=10), vxreg=log(xregs^2))
 
 ##estimate an AR(2) with intercept and four conditioning regressors
 ##in the mean, and a log-variance specification with a log-ARCH(4)
 ##structure, an asymmetry or leverage term, a 10-period log(EWMA) as
 ##volatility proxy, and the log of the squareds of the conditioning
 ##regressors in the log-variance specification:
-arx(y, mc=TRUE, ar=1:2, mxreg=xregs, arch=1:4, asym=1,
-  log.ewma=list(length=10), vxreg=log(xregs^2))
+arx(y, ar=1:2, mxreg=xregs,
+  arch=1:4, asym=1, log.ewma=list(length=10), vxreg=log(xregs^2))
 }
 
 \keyword{Statistical Models}

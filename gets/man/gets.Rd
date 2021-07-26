@@ -16,8 +16,8 @@ gets(x, ...)
 
 \arguments{
   \item{x}{an object of class 'arx' used to select a method}
-  \item{...}{further arguments passed to or from other methods}
   \item{spec}{\code{NULL} (default), \code{"mean"} or \code{"variance"}. If \code{"mean"}, then \code{\link{getsm}} is called. If \code{"variance"}, then \code{\link{getsv}} is called. If \code{NULL}, then it is automatically determined whether GETS-modelling of the mean or log-variance specification should be undertaken.}
+  \item{...}{further arguments passed to or from other methods}
 }
 
 \details{
