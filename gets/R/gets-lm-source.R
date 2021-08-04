@@ -4,15 +4,15 @@
 ##
 ## CONTENTS:
 ##
-## as.arx
+## as.arx.lm
 ## gets.lm
+## isat.lm
 ##
 ####################################################
 
-
 ##==================================================
-## convert 'lm' to 'arx':
-as.arx <- function(object, ...)
+## S3 method: convert 'lm' object to 'arx' object:
+as.arx.lm <- function(object, ...)
 { 
   ##'lm' object?:
   if( class(object)!="lm" ){
@@ -31,7 +31,7 @@ as.arx <- function(object, ...)
     mc <- FALSE
   }else{
     x <- model.matrix(object)
-    attr(x, "assign") <- NULL #remove attribute
+    attr(x, "assign") <- NULL #remove 'assign' attribute
     mc <- ifelse(colnames(x)[1] == "(Intercept)", TRUE, FALSE)
     if(mc){ x <- cbind(x[,-1]) }
     if(NCOL(x)==0){ x <- NULL }
@@ -165,12 +165,30 @@ gets.lm <- function(x, keep=NULL, print.searchinfo=TRUE, ...)
   getsResult <- getsFun(y, x,
     user.estimator=list(name="lmFun", listOfArgs=listOfArgs,
     envir=environment()), keep=keep,
-    print.searchinfo=print.searchinfo, ...)
+    print.searchinfo=print.searchinfo)#, ...)
   getsResult$call <- NULL
   getsResult$start.model <- gum
 
-  ##print the retained regressors:
+  ##print paths, terminals and retained regressors:
   if( print.searchinfo ){
+
+    ##paths:
+    message("")
+    message("Paths:")
+    message("")
+    if( length(getsResult$paths)==0 ){
+      message("  none")
+    }else{
+      print(getsResult$paths)
+    }
+    
+    ##terminals:
+    message("")
+    message("Terminal models:")
+    message("")
+    print(getsResult$terminals.results)    
+      
+    ##retained regressors:
     message("")
     message("Retained regressors:")
     message("")
@@ -179,6 +197,7 @@ gets.lm <- function(x, keep=NULL, print.searchinfo=TRUE, ...)
     }else{
       message(paste0("  ", xNames[as.numeric(getsResult$specific.spec)]))
     }
+
   }
   
   ##-----------------------------
@@ -238,3 +257,45 @@ gets.lm <- function(x, keep=NULL, print.searchinfo=TRUE, ...)
   return(result)
 
 } #close gets.lm()
+
+##==================================================
+## isat modelling of 'lm' objects:
+isat.lm <- function(y, ar=NULL, ewma=NULL, 
+                    iis=FALSE, sis=TRUE, tis=FALSE, uis=FALSE, blocks=NULL,
+                    ratio.threshold=0.8, max.block.size=30, t.pval=0.001,
+                    wald.pval=t.pval, vcov.type=c("ordinary", "white", "newey-west"),
+                    do.pet=FALSE, ar.LjungB=NULL, arch.LjungB=NULL,
+                    normality.JarqueB=NULL, info.method=c("sc", "aic", "hq"), 
+                    user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL, 
+                    gof.method=c("min","max"), include.gum=NULL,
+                    include.1cut=FALSE, include.empty=FALSE, max.paths=NULL,
+                    parallel.options=NULL, turbo=FALSE, tol=1e-07, LAPACK=FALSE,
+                    max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...){
+
+  # Checks
+  if(!is.null(y$weights)){stop("Usage of weights is not yet implemented in isat. Please estimate the lm object without weights.")}
+
+  data <- stats::model.frame(y)
+  dep_var <- data.frame(y = data[,1])
+  names(dep_var) <- names(data)[1]
+
+  mxreg <- stats::model.matrix(y$terms, data)
+
+  # Deal with intercept
+  mc <- ifelse(attr(y$terms, "intercept")==1, TRUE, FALSE)
+  mxreg <- mxreg[,!colnames(mxreg) == "(Intercept)"] # remove the intercept
+
+  out <- isat(y = dep_var, mxreg = mxreg, mc = mc,
+              ar, ewma, iis, sis, tis, uis, blocks,
+              ratio.threshold, max.block.size, t.pval,
+              wald.pval, vcov.type,
+              do.pet, ar.LjungB, arch.LjungB,
+              normality.JarqueB, info.method,
+              user.diagnostics, user.estimator, gof.function,
+              gof.method, include.gum,
+              include.1cut, include.empty, max.paths,
+              parallel.options, turbo, tol, LAPACK,
+              max.regs, print.searchinfo, plot, alarm)
+  return(out)
+  
+} #close isat.lm() function

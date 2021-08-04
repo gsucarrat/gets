@@ -1,6 +1,8 @@
 \name{isat}
 \alias{isat}
 \alias{isat.default}
+\alias{isat.lm}
+\alias{isat.arx}
 
 \title{Indicator Saturation}
 
@@ -22,10 +24,35 @@ isat(y, ...)
   include.empty=FALSE, max.paths=NULL, parallel.options=NULL, turbo=FALSE,
   tol=1e-07, LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE, plot=NULL,
   alarm=FALSE, ...)
-}
+  
+##S3 method for objects of class 'lm':
+\method{isat}{lm}(y, ar=NULL, ewma=NULL, iis=FALSE, sis=TRUE,
+  tis=FALSE, uis=FALSE, blocks=NULL, ratio.threshold=0.8, max.block.size=30,
+  t.pval=0.001, wald.pval=t.pval,
+  vcov.type= c("ordinary","white","newey-west"), do.pet=FALSE, ar.LjungB=NULL,
+  arch.LjungB=NULL, normality.JarqueB=NULL, info.method=c("sc","aic","hq"),
+  user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL,
+  gof.method = c("min", "max"), include.gum=NULL, include.1cut=FALSE,
+  include.empty=FALSE, max.paths=NULL, parallel.options=NULL, turbo=FALSE,
+  tol=1e-07, LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE, plot=NULL,
+  alarm=FALSE, ...)
 
+##S3 method for objects of class 'arx':
+\method{isat}{arx}(y, mc=TRUE, ar=NULL, ewma=NULL, iis=FALSE, sis=TRUE,
+  tis=FALSE, uis=FALSE, blocks=NULL, ratio.threshold=0.8, max.block.size=30,
+  t.pval=0.001, wald.pval=t.pval,
+  vcov.type= c("ordinary","white","newey-west"), do.pet=FALSE, ar.LjungB=NULL,
+  arch.LjungB=NULL, normality.JarqueB=NULL, info.method=c("sc","aic","hq"),
+  user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL,
+  gof.method = c("min", "max"), include.gum=NULL, include.1cut=FALSE,
+  include.empty=FALSE, max.paths=NULL, parallel.options=NULL, turbo=FALSE,
+  tol=1e-07, LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE, plot=NULL,
+  alarm=FALSE, ...)
+
+}
+  
 \arguments{
-  \item{y}{numeric vector, time-series or \code{\link{zoo}} object. Missing values in the beginning and at the end of the series is allowed, as they are removed with the \code{\link{na.trim}} command}
+  \item{y}{numeric vector, time-series, \code{\link{zoo}}, or object of class \code{\link{lm}} or \code{\link{arx}}. Missing values in the beginning and at the end of the series is allowed, as they are removed with the \code{\link{na.trim}} command}
   \item{mc}{logical. \code{TRUE} (default) includes an intercept in the mean specification, whereas FALSE does not}
   \item{ar}{integer vector, say, c(2,4) or 1:4. The AR-lags to include in the mean specification}
   \item{ewma}{either NULL (default) or a list with arguments sent to the \code{\link{eqwma}} function. In the latter case a lagged moving average of y is included as a regressor}
@@ -66,7 +93,7 @@ isat(y, ...)
 
 \details{Multi-path indicator saturation using impulses (IIS), step-shifts (SIS), or trend-indicators (TIS). Indicators are partitioned into sequential blocks (as of beta version 0.7) where the block intervals are defined by the ratio of variables to observations in each block and a specified maximum block size. Indicators are selected over using the \code{\link{getsm}} function. Retained indicators in each block are combined and re-selected over. Fixed covariates that are not selected over can be included in the regression model either in the mxreg matrix, or for auto-regressive terms through the ar specification. See Hendry, Johansen and Santos (2007) and Castle, Doornik, Hendry, and Pretis (2015)}
 
-\value{A list of class 'gets'}
+\value{A list of class 'isat'}
 
 \references{
 Castle, Jennifer, L., Doornik, Jurgen, A., Hendry, David F., and Pretis, Felix (2015): 'Detecting Location Shifts during Model Selection by Step-Indicator Saturation', Econometrics, vol 3:2, 240-264.
@@ -77,14 +104,16 @@ Pretis, Felix, Reade, James and Sucarrat, Genaro (2018): 'Automated General-to-S
 }
 
 \author{
+Jonas Kurle, \url{https://www.jonaskurle.com/}\cr
 Felix Pretis, \url{http://www.felixpretis.org/}\cr
-James Reade, \url{https://sites.google.com/site/jjamesreade/}\cr
-Genaro Sucarrat, \url{http://www.sucarrat.net/}
+James Reade,  \url{https://sites.google.com/site/jjamesreade/}\cr
+Moritz Schwarz, \url{https://www.inet.ox.ac.uk/people/moritz-schwarz/}\cr
+Genaro Sucarrat \url{http://www.sucarrat.net/}\cr\cr
 }
 
 \seealso{
-Extraction functions for 'gets' objects: \code{\link{coef.gets}}, \code{\link{fitted.gets}}, \code{\link{paths}}, \code{\link{plot.gets}}, \code{\link{print.gets}},\cr
-\code{\link{residuals.gets}}, \code{\link{summary.gets}}, \code{\link{terminals}}, \code{\link{vcov.gets}}\cr
+Extraction functions for 'isat' objects: \code{\link{coef.isat}}, \code{\link{fitted.isat}}, \code{\link{paths}}, \code{\link{plot.isat}}, \code{\link{print.isat}},\cr
+\code{\link{residuals.isat}}, \code{\link{summary.isat}}, \code{\link{terminals}}, \code{\link{vcov.isat}}\cr
 
 Related functions: \code{\link{arx}}, \code{\link{eqwma}}, \code{\link{leqwma}}, \code{\link{zoo}}, \code{\link{getsFun}}
 }

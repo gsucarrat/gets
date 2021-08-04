@@ -14,8 +14,10 @@
 ##1 INITIATE
 ####################################################
 ##
-## create S3 generics/methods:
+## create generic functions for S3 methods:
 ## - gets
+## - isat
+## - as.arx
 ##
 ####################################################
 ##2 BASE FUNCTIONS
@@ -43,7 +45,9 @@
 ## ES               #(some are S3 methods)
 ## fitted.arx
 ## gets.arx
+## isat.arx
 ## logLik.arx
+## model.matrix.arx
 ## plot.arx
 ## predict.arx
 ## print.arx
@@ -96,21 +100,13 @@
 ##create the generic 'gets':
 gets <- function(x, ...){ UseMethod("gets") }
 
-##for the future?:
-#gets.default <- function(x, ...){ print("It works!") }
-
 ##==================================================
 ##create the generic 'isat':
 isat <- function(y, ...){ UseMethod("isat") }
-###test the method:
-#set.seed(123); y <- arima.sim(list(ar=0.4, ma=0.1), 100)
-#mod01 <- arima(y, order=c(1,0,1))
-#isat.Arima <- function(x){ print("Cool!") }
-#isat(mod01)
 
-##for the future?:
-#isat.default <- today's isat function
-
+###==================================================
+###create the generic 'as.arx':
+as.arx <- function(object, ...){ UseMethod("as.arx") }
 
 ####################################################
 ##2 BASE FUNCTIONS
@@ -2633,6 +2629,85 @@ gets.arx <- function(x, spec=NULL, ...)
 } #close gets.arx()
 
 ##==================================================
+## isat on 'arx' objects:
+isat.arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, 
+                     iis=FALSE, sis=TRUE, tis=FALSE, uis=FALSE, blocks=NULL,
+                     ratio.threshold=0.8, max.block.size=30, t.pval=0.001,
+                     wald.pval=t.pval, vcov.type=c("ordinary", "white", "newey-west"),
+                     do.pet=FALSE, ar.LjungB=NULL, arch.LjungB=NULL,
+                     normality.JarqueB=NULL, info.method=c("sc", "aic", "hq"), 
+                     user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL, 
+                     gof.method=c("min","max"), include.gum=NULL,
+                     include.1cut=FALSE, include.empty=FALSE, max.paths=NULL,
+                     parallel.options=NULL, turbo=FALSE, tol=1e-07, LAPACK=FALSE,
+                     max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...
+){
+
+  # warnings and checks (mainly for variance specification)
+  if(!is.null(y$variance.results)){
+    warning("Input object contains variance specification. Note that 'isat' is not configured for variance specifications.\nVariance specification in 'isat' are dropped.")
+  }
+
+  # Check if one of these arguments is explicitly supplied to the function
+  # if not, then check if the original item has this arguemnt supplied
+  # if it does, take the setting of the original object
+  # if it does not, then take the default
+  if(missing(ar)){ar <- if(is.null(y$aux$arguments[["ar"]])) {NULL} else{y$aux$arguments[["ar"]]}}
+  if(missing(vcov.type)){vcov.type <- y$aux[["vcov.type"]]}
+  if(missing(normality.JarqueB)){normality.JarqueB <- if(is.null(y$aux$arguments[["normality.JarqueB"]])){FALSE}else{y$aux$arguments[["normality.JarqueB"]]}}
+  if(missing(user.estimator)){user.estimator <- if(is.null(y$aux$arguments[["user.estimator"]])){NULL}else{y$aux$arguments[["user.estimator"]]}}
+  if(missing(user.diagnostics)){user.diagnostics <- if(is.null(y$aux$arguments[["user.diagnostics"]])){NULL}else{y$aux$arguments[["user.diagnostics"]]}}
+  if(missing(LAPACK)){LAPACK <- if(is.null(y$aux$arguments[["LAPACK"]])){FALSE}else{y$aux$arguments[["LAPACK"]]}}
+  if(missing(plot)){plot <- if(is.null(y$aux$arguments[["plot"]])){NULL}else{y$aux$arguments[["plot"]]}}
+  if(missing(tol)){tol <- if(is.null(y$aux$arguments[["tol"]])){1e-07}else{y$aux$arguments[["tol"]]}}
+
+  mxreg <- y$aux$mX
+  colnames(mxreg) <- y$aux$mXnames
+
+  out <- isat.default(
+    y$aux$y,
+    FALSE, # mc would already be set in arx
+    NULL, # ar would already be set in arx
+    ewma,
+    mxreg,
+    iis,
+    sis,
+    tis,
+    uis,
+    blocks,
+    ratio.threshold,
+    max.block.size,
+    t.pval,
+    wald.pval,
+    vcov.type,
+    do.pet,
+    ar.LjungB,
+    arch.LjungB,
+    normality.JarqueB,
+    info.method,
+    user.diagnostics,
+    user.estimator,
+    gof.function,
+    gof.method,
+    include.gum,
+    include.1cut,
+    include.empty,
+    max.paths,
+    parallel.options,
+    turbo,
+    tol,
+    LAPACK,
+    max.regs,
+    print.searchinfo,
+    plot,
+    alarm
+  )
+
+  return(out)
+  
+} #close isat.arx()
+
+##==================================================
 logLik.arx <- function(object, ...)
 {
   ## in the future: add a df.method argument with
@@ -2651,6 +2726,40 @@ logLik.arx <- function(object, ...)
   return(result)
 
 } #close logLik.arx
+
+##==================================================
+##extract regressors and regressand from 'arx' object
+model.matrix.arx <- function(object, spec=c("mean","variance"),
+  response=FALSE, as.zoo=TRUE, ...)
+{
+  spec <- match.arg(spec)
+  result <- NULL
+  
+  if( spec=="mean" ){
+    result <- object$aux$mX
+    if( !is.null(result) ){ colnames(result) <- object$aux$mXnames }
+    if( !is.null(result) && response==TRUE ){
+      y <- cbind(object$aux$y)
+      colnames(y) <- object$aux$y.name
+      result <- cbind(y,result)
+    }
+  }
+
+  if( spec=="variance" ){
+    result <- object$aux$vX
+    if( !is.null(result) ){ colnames(result) <- object$aux$vXnames }
+    if( !is.null(result) && response==TRUE ){
+      loge2 <- cbind(object$aux$loge2)
+      colnames(loge2) <- "loge2"
+      result <- cbind(loge2,result)
+    }
+  }
+    
+  if( !is.null(result) && as.zoo==TRUE ){
+    result <- zoo(result, order.by=object$aux$y.index)
+  }
+  return(result)
+} #close model.matrix.arx() function
 
 ##==================================================
 ##plot results from arx

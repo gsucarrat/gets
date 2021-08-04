@@ -4,9 +4,10 @@
 ##
 ## CONTENTS:
 ##
-## isat
+## isat.default
 ## coef.isat        #extraction functions
 ## fitted.isat      #(all are S3 methods)
+## gets.isat
 ## logLik.isat
 ## plot.isat
 ## predict.isat
@@ -633,6 +634,82 @@ fitted.isat <- function(object, ...)
   if(is.null(result)){ result <- object$fit }
   return(result)
 } #end fitted.isat
+
+##==================================================
+## gets modelling of 'isat' objects:
+gets.isat <- function(x, t.pval=0.05, wald.pval=t.pval, vcov.type = NULL,
+                      do.pet=TRUE, ar.LjungB=list(lag=NULL, pval=0.025),
+                      arch.LjungB=list(lag=NULL, pval=0.025), normality.JarqueB=NULL,
+                      user.diagnostics=NULL, info.method=c("sc","aic","aicc","hq"),
+                      gof.function=NULL, gof.method=NULL, keep=NULL, include.gum=FALSE,
+                      include.1cut=TRUE, include.empty=FALSE, max.paths=NULL, tol=1e-07,
+                      turbo=FALSE, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...)
+{
+
+  # Check if one of these arguments is explicitly supplied to the function
+  # if not, then check if the original item has this argument supplied
+  # if it does, take the setting of the original object
+  # if it does not, then take the default
+  if(missing(t.pval)){t.pval <- if(is.null(x$aux$arguments[["t.pval"]])) {0.05} else{x$aux$arguments[["t.pval"]]}}
+  if(missing(vcov.type)){vcov.type <- x$aux[["vcov.type"]]}
+  if(missing(normality.JarqueB)){normality.JarqueB <- if(is.null(x$aux$arguments[["normality.JarqueB"]])){FALSE}else{x$aux$arguments[["normality.JarqueB"]]}}
+  if(missing(user.diagnostics)){user.diagnostics <- if(is.null(x$aux$arguments[["user.diagnostics"]])){NULL}else{x$aux$arguments[["user.diagnostics"]]}}
+  if(missing(plot)){plot <- if(is.null(x$aux$arguments[["plot"]])){NULL}else{x$aux$arguments[["plot"]]}}
+  if(missing(tol)){tol <- if(is.null(x$aux$arguments[["tol"]])){1e-07}else{x$aux$arguments[["tol"]]}}
+
+  ##create an arx-like object:
+  y <- object$aux$y
+  y <- as.matrix(y)
+  colnames(y) <- object$aux$y.name
+  mxreg <- object$aux$mX
+  colnames(mxreg) <- object$aux$mXnames
+
+  mc <- FALSE # because would be in mxreg already
+
+  # Check if one of these arguments is explicitly supplied to the function
+  # if not, then check if the original item has this argument supplied
+  # if it does, take the setting of the original object
+  # if it does not, then take the default
+  if(missing(vcov.type)){vcov.type <- object$aux[["vcov.type"]]}
+  if(missing(normality.JarqueB)){normality.JarqueB <- if(is.null(object$aux$arguments[["normality.JarqueB"]])){FALSE}else{object$aux$arguments[["normality.JarqueB"]]}}
+  if(missing(user.estimator)){user.estimator <- if(is.null(object$aux$arguments[["user.estimator"]])){NULL}else{object$aux$arguments[["user.estimator"]]}}
+  if(missing(user.diagnostics)){user.diagnostics <- if(is.null(object$aux$arguments[["user.diagnostics"]])){NULL}else{object$aux$arguments[["user.diagnostics"]]}}
+  if(missing(plot)){plot <- if(is.null(object$aux$arguments[["plot"]])){NULL}else{object$aux$arguments[["plot"]]}}
+  if(missing(tol)){tol <- if(is.null(object$aux$arguments[["tol"]])){1e-07}else{object$aux$arguments[["tol"]]}}
+
+  object <- arx(y,mc,ar=NULL,mxreg,vcov.type,normality.JarqueB,
+    user.estimator,user.diagnostics,tol,plot=FALSE)
+  ##github version:             
+  #object <- as.arx(x, plot = FALSE, ar = FALSE) # some arguments pre-set because they will already be in isat if needed
+
+  ##return result:
+  out <- getsm(
+    object,
+    t.pval,
+    wald.pval,
+    vcov.type,
+    do.pet,
+    ar.LjungB,
+    arch.LjungB,
+    normality.JarqueB,
+    user.diagnostics,
+    info.method,
+    gof.function,
+    gof.method,
+    keep,
+    include.gum,
+    include.1cut,
+    include.empty,
+    max.paths,
+    tol,
+    turbo,
+    print.searchinfo,
+    plot,
+    alarm
+  )
+  return(out)
+  
+} #close gets.isat() function
 
 ##==================================================
 logLik.isat <- function(object, ...)
@@ -2866,9 +2943,3 @@ outlierscaletest <- function(x, nsim = 10000){
   return(out)
   
 } ###function closed
-
-
-
-
-
-

@@ -5,6 +5,7 @@
 ## 1 INITIATE
 ## 2 TEST as.arx()
 ## 3 TEST gets.lm()
+## 3 TEST isat.lm()
 ##
 ##################################################
 
@@ -27,10 +28,11 @@ rm(list=ls())
 ##load source:
 source("./gets/R/gets-base-source.R")
 source("./gets/R/gets-lm-source.R")
+source("./gets/R/gets-isat-source.R") #to test isat.lm()
 
 
 ##################################################
-## 2 TEST as.arx()
+## 2 TEST as.arx.lm()
 ##################################################
 
 getOption("plot")
@@ -101,3 +103,14 @@ weights <- 0.1 + runif(length(v))
 mymodel <- lm(v ~ w, weights=weights)
 mymodel
 gets(mymodel, keep=c(1,3,6))
+
+##################################################
+## 4 TEST isat.lm()
+##################################################
+
+##use same data:
+mymodel <- lm(v ~ w)
+mymodel
+
+##basic test:
+isat(mymodel)

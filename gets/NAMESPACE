@@ -18,7 +18,7 @@ importFrom("parallel", "detectCores", "makeCluster", "clusterExport",
 
 export(
   ##generic functions:
-  "gets", "isat",
+  "gets", "isat", "as.arx",
   
   ##base functions:
   "blocksFun", "diagnostics", "dropvar", "eqwma", "getsFun", "gmm",
@@ -29,9 +29,10 @@ export(
   "periodicdummies", "eviews", "stata", "printtex", "as.lm",
   
   ##arx-class functions:
-  "arx", "coef.arx", "ES", "fitted.arx", "gets.arx", "logLik.arx", "plot.arx",
-  "predict.arx", "print.arx", "recursive", "rsquared", "residuals.arx",
-  "sigma.arx", "summary.arx", "toLatex.arx", "VaR", "vcov.arx",
+  "arx", "coef.arx", "ES", "fitted.arx", "gets.arx", "logLik.arx",
+  "model.matrix.arx", "plot.arx", "predict.arx", "print.arx", "recursive",
+  "rsquared", "residuals.arx", "sigma.arx", "summary.arx", "toLatex.arx",
+  "VaR", "vcov.arx",
   
   ##gets-class functions:
   "getsm", "getsv", "coef.gets", "fitted.gets", "paths",
@@ -44,7 +45,7 @@ export(
   "summary.isat", "vcov.isat", "biascorr", "isattest", "isatvar",
   "isvarcor", "isvareffcor", "iim", "sim", "tim", "isatdates",
   "isatloop", "isatvarcorrect", "mvrnormsim", "outlierscaletest",
-  "outliertest", "vargaugeiis",
+  "outliertest", "vargaugeiis", "gets.isat", "isat.lm", "isat.arx",
 
   ##dlogitx-class function:
   "dlogitxSim", "logit", "dlogitx", "coef.dlogitx", "fitted.dlogitx",
@@ -52,7 +53,7 @@ export(
   "summary.dlogitx", "toLatex.dlogitx", "vcov.dlogitx",
 
   ##lm-class functions:
-  "as.arx", "gets.lm"
+  "as.arx.lm", "gets.lm"
 
 )
 
@@ -60,7 +61,9 @@ export(
 S3method("coef", "arx")
 S3method("fitted", "arx")
 S3method("gets", "arx")
+S3method("isat", "arx")
 S3method("logLik", "arx")
+S3method("model.matrix", "arx")
 S3method("plot", "arx")
 S3method("predict", "arx")
 S3method("print", "arx")
@@ -83,12 +86,13 @@ S3method("summary", "gets")
 S3method("toLatex", "gets")
 S3method("vcov", "gets")
 
-##default methods generic isat:
+##default method for generic isat:
 S3method("isat", "default")
 
 ##methods for class isat:
 S3method("coef", "isat")
 S3method("fitted", "isat")
+S3method("gets", "isat")
 S3method("logLik", "isat")
 S3method("plot", "isat")
 S3method("predict", "isat")
@@ -110,4 +114,6 @@ S3method("toLatex", "dlogitx")
 S3method("vcov", "dlogitx")
 
 ##methods for class lm:
+S3method("as.arx", "lm")
 S3method("gets", "lm")
+S3method("isat", "lm")

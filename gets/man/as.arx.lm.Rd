@@ -1,15 +1,23 @@
 \name{as.arx}
 \alias{as.arx}
+\alias{as.arx.lm}
 
-\title{Convert 'lm' object to 'arx}
+\title{Convert an object to class 'arx'}
 
-\description{Convert an object of class \code{\link{lm}} to an object of class \code{\link{arx}}}
+\description{
+The function \code{as.arx} is a generic function and its methods returns an object of class \code{\link{arx}}.
+}
 
-\usage{as.arx(object, ...)}
+\usage{
+as.arx(object, ...)
+
+##S3 method for objects of class 'lm':
+\method{as.arx}{lm}(object, ...) 
+}
 
 \arguments{
   \item{object}{object of class \code{\link{lm}} }
-  \item{...}{arguments passed on to \code{\link{arx}} }
+  \item{...}{arguments passed on to and from other methods }
 }
 
 \value{Object of class \code{\link{arx}} }

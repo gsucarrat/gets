@@ -1,5 +1,5 @@
-Version 0.28 (26 July 2021):
-============================
+Version 0.28 (4 August 2021):
+=============================
 
 * arx():
 - new default 'mc = TRUE'; this necessitated changes (not visible to the user) in several other files, including predict.arx(), predict.gets(), isat() and predict.isat()
@@ -8,16 +8,21 @@ Version 0.28 (26 July 2021):
 
 * the function 'isat' changed name to 'isat.default'
 
-* new generic: 'isat'
+* new generics: 'isat', 'as.arx'
 
 * new functions:
-- as.arx()
+- as.arx.lm()
 - gets.lm()
+- gets.isat()
+- isat.lm()
+- isat.arx()
+- model.matrix.arx()
 
 Fixes:
 - predict.arx() did not work when 'mc' was explicitly set to FALSE in arx()
 - paths() and terminals() can now be applied more generally (i.e. not only objects of class "arx", "gets" and "isat")
 - the value (a list) returned by arx() when a log-variance specification has been specified, but not a mean specification, does not erroneously contain an item named 'vcov.mean' anymore
+- isat.Rd: the manual of "isat.default()" now correctly states that the value returned is of class "isat", and the extensions of the relevant functions in the "See also" field has been corrected to ".isat"
 
 
 Version 0.27 (20 February 2021):
