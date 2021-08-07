@@ -1,10 +1,12 @@
-Version 0.28 (4 August 2021):
+Version 0.28 (7 August 2021):
 =============================
 
 * arx():
 - new default 'mc = TRUE'; this necessitated changes (not visible to the user) in several other files, including predict.arx(), predict.gets(), isat() and predict.isat()
 - new argument: singular.ok
 - when 'user.estimator' is not NULL, column-names equal to the names of the regressors are added to the regressor matrix before it is passed on to the user-defined estimator
+
+* vignette: minor modifications throughout to accommodate the new default 'TRUE' in the 'mc' argument in the function arx()
 
 * the function 'isat' changed name to 'isat.default'
 
@@ -17,6 +19,12 @@ Version 0.28 (4 August 2021):
 - isat.lm()
 - isat.arx()
 - model.matrix.arx()
+
+* getsm(), getsv(), gets.arx():
+- the arguments ar.LjungB and arch.Ljung can now also be speficied as two element numeric vectors, just as in diagnostics(), where the first element contains the lag and the second the p-value
+- now prints search-info during the specification search (set print.searchinfo=FALSE to turn off)
+
+* print.gets(): now returns less info
 
 Fixes:
 - predict.arx() did not work when 'mc' was explicitly set to FALSE in arx()

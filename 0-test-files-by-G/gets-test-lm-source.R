@@ -28,7 +28,6 @@ rm(list=ls())
 ##load source:
 source("./gets/R/gets-base-source.R")
 source("./gets/R/gets-lm-source.R")
-source("./gets/R/gets-isat-source.R") #to test isat.lm()
 
 
 ##################################################
@@ -85,6 +84,7 @@ mymodel <- lm(v ~ w)
 mymodel
 gets(mymodel)
 gets(mymodel, t.pval=0.2)
+gets(mymodel, t.pval=0.9999)
 gets(mymodel, wald.pval=0.2)
 gets(mymodel, keep=c(1,5))
 gets(mymodel, keep=c(1,5), do.pet=FALSE)
@@ -104,9 +104,13 @@ mymodel <- lm(v ~ w, weights=weights)
 mymodel
 gets(mymodel, keep=c(1,3,6))
 
+
 ##################################################
 ## 4 TEST isat.lm()
 ##################################################
+
+##load 'isat' source:
+source("./gets/R/gets-isat-source.R")
 
 ##use same data:
 mymodel <- lm(v ~ w)

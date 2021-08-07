@@ -11,7 +11,7 @@
 ##START not in jstatsoft code:
 
 ##set working directory:
-setwd("C:/Users/sucarrat/Documents/R/gs/gets/github/")
+setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
 #setwd(choose.dir())
 
 ##load required packages:
@@ -574,17 +574,16 @@ plot(as.zoo(cbind(y, yy, eps)))
 ## 4.2. arx: Estimation
 ##---------------------
 
-##library("gets") #this line is not commented out in the jstatsoftcode
 mod01 <- arx(y, ar = 1)
 mod01
 mX <- matrix(rnorm(100 * 5), 100, 5)
-mod02 <- arx(y, mc = TRUE, ar = 1:2, mxreg = mX, vcov.type = "white")
+mod02 <- arx(y, ar = 1:2, mxreg = mX, vcov.type = "white")
 mod02
-mod03 <- arx(eps, arch = 1)
+mod03 <- arx(eps, mc = FALSE, arch = 1)
 mod03
-mod04 <- arx(eps, arch = 1:3, asym = 2, vxreg = log(mX^2))
+mod04 <- arx(eps, mc = FALSE, arch = 1:3, asym = 2, vxreg = log(mX^2))
 mod04
-mod05 <- arx(yy, mc = TRUE, ar = 1:2, mxreg = mX, arch = 1:3, asym = 2, 
+mod05 <- arx(yy, ar = 1:2, mxreg = mX, arch = 1:3, asym = 2, 
   vxreg = log(mX^2), vcov.type = "white")
 mod05
 
@@ -594,10 +593,10 @@ mod05
 
 data("infldata", package = "gets")
 infldata <- zooreg(infldata[, -1], frequency = 4, start = c(1989, 1))
-inflMod01 <- inflMod01 <- arx(infldata[, "infl"], mc = TRUE, ar = 1:4, mxreg = infldata[, 
+inflMod01 <- inflMod01 <- arx(infldata[, "infl"], ar = 1:4, mxreg = infldata[, 
   2:4], vcov.type = "white")
 inflMod01
-inflMod02 <- inflMod02 <- arx(infldata[, "infl"], mc = TRUE, ar = 1:4, mxreg = infldata[, 
+inflMod02 <- inflMod02 <- arx(infldata[, "infl"], ar = 1:4, mxreg = infldata[, 
   2:4], arch = 1:4, vxreg = infldata[, 2:4], vcov.type = "white")
 inflMod02
 info.criterion(as.numeric(logLik(inflMod01)), n = 104, k = 8 + 1)
@@ -635,7 +634,7 @@ dThu <- zoo(as.numeric(weekdays(sp500Index) == days[3]), order.by = sp500Index)
 dFri <- zoo(as.numeric(weekdays(sp500Index) == days[4]), order.by = sp500Index)
 
 ## estimate log-arch(5)-x
-sp500Mod01 <- arx(sp500Ret, arch = 1:5, log.ewma = c(5, 20, 60, 120), asym = 1, vxreg = cbind(volproxylag, 
+sp500Mod01 <- arx(sp500Ret, mc=FALSE, arch = 1:5, log.ewma = c(5, 20, 60, 120), asym = 1, vxreg = cbind(volproxylag, 
   volumedifflag, dTue, dWed, dThu, dFri))
 sp500Mod01
 
@@ -644,7 +643,7 @@ library("lgarch")
 sp500Mod02 <- lgarch(sp500Ret)
 sp500Mod02
 logLik(sp500Mod02)
-info.criterion(as.numeric(logLik(sp500Mod01)), n = 8235, k = 17)
+info.criterion(as.numeric(logLik(sp500Mod01)), n = 8120, k = 17)
 info.criterion(as.numeric(logLik(sp500Mod02)), n = 8240, k = 3)
 
 
@@ -667,7 +666,7 @@ getsm05b
 
 getsv05 <- getsv(mod05)
 getsv05
-mod06 <- arx(residuals(getsm05), arch = 1:3, asym = 2, vxreg = log(mX^2))
+mod06 <- arx(residuals(getsm05), mc = FALSE, arch = 1:3, asym = 2, vxreg = log(mX^2))
 getsv06 <- getsv(mod06)
 getsv06
 getsv06b <- getsv(mod06, keep = 1:4, ar.LjungB = NULL)
@@ -679,12 +678,12 @@ getsv06b
 ## gets modeling
 inflMod03 <- getsm(inflMod02)
 inflMod03
-inflMod04 <- arx(residuals(inflMod03), arch = 1:4, vxreg = infldata[, 2:4])
+inflMod04 <- arx(residuals(inflMod03), mc = FALSE, arch = 1:4, vxreg = infldata[, 2:4])
 inflMod05 <- getsv(inflMod04, ar.LjungB = list(lag = 5, pval = 0.025))
 inflMod05
 
 ## out-of-sample forecasts of sd
-inflMod06 <- inflMod06 <- arx(infldata[, "infl"], mc = TRUE, ar = c(1, 4), arch = 1:2, 
+inflMod06 <- inflMod06 <- arx(infldata[, "infl"], ar = c(1, 4), arch = 1:2, 
   vxreg = infldata[, 2:4], vcov.type = "white")
 inflMod06
 newvxreg <- matrix(0, 4, 3)
@@ -696,15 +695,15 @@ set.seed(123)  # for reproducability
 predict(inflMod06, n.ahead = 4, spec = "variance", newvxreg = newvxreg)
 2 - 2 * sqrt(1.0448239)
 2 + 2 * sqrt(1.0448239)
-2 - 2 * sqrt(0.2101471)
-2 + 2 * sqrt(0.2101471)
+2 - 2 * sqrt(0.2075531)
+2 + 2 * sqrt(0.2075531)
 
 ## 5.5. Example: A parsimonious model of daily SP500 volatility
 ##--------------------------------------------------
 
 sp500Mod03 <- getsv(sp500Mod01, t.pval = 0.001, arch.LjungB = NULL)
 sp500Mod03
-info.criterion(as.numeric(logLik(sp500Mod03)), n = 8235, k = 7)
+info.criterion(as.numeric(logLik(sp500Mod03)), n = 8120, k = 7)
 
 
 ##=====================================================

@@ -2,11 +2,11 @@
 ## This file contains the lm-source of the gets
 ## package.
 ##
-## CONTENTS:
+## FUNCTIONS:
 ##
-## as.arx.lm
-## gets.lm
-## isat.lm
+## as.arx.lm()
+## gets.lm()
+## isat.lm()
 ##
 ####################################################
 
@@ -46,7 +46,8 @@ as.arx.lm <- function(object, ...)
 
 ##==================================================
 ## gets modelling of 'lm' objects:
-gets.lm <- function(x, keep=NULL, print.searchinfo=TRUE, ...)
+gets.lm <- function(x, keep=NULL, include.1cut=TRUE,
+  print.searchinfo=TRUE, ...)
 {
   ## contents:
   ## 1 initiate
@@ -60,8 +61,9 @@ gets.lm <- function(x, keep=NULL, print.searchinfo=TRUE, ...)
   ## 1 initiate
   ##-----------------------------
 
-  ##re-name x:
+  ##re-name x, create start model object:
   object <- x
+  xGUM <- x
   
   ##re-define x:
   x <- model.matrix(object)
@@ -81,11 +83,11 @@ gets.lm <- function(x, keep=NULL, print.searchinfo=TRUE, ...)
   listOfArgs$data <- NULL
   if( length(listOfArgs)==0 ){ listOfArgs <- list() }
     
-  ##-----------------------------
-  ## 2 print start (gum) model
-  ##-----------------------------
+  ##------------------------------
+  ## 2 print start model (the gum)
+  ##------------------------------
   
-  gum <- NULL #make sure 'gum' exists
+  gum <- NULL #make sure the 'gum' exists
   if( print.searchinfo ){
   
     ##create gum matrix:
@@ -108,11 +110,12 @@ gets.lm <- function(x, keep=NULL, print.searchinfo=TRUE, ...)
     gum <- as.data.frame(gum)
     
     ##print gum:
-    message("")
-    message("Start model:")
-    message("")
-    printCoefmat(gum, cs.ind=c(3,4), tst.ind=c(5), signif.stars=TRUE)
-    message("")
+    cat("\n")
+    cat("Start model (GUM):\n")
+    cat("\n")
+    printCoefmat(gum, cs.ind=c(3,4), tst.ind=c(5), signif.stars=TRUE,
+      P.values=TRUE)
+    cat("\n")
 
   } #end if( print.searchinfo )
      
@@ -165,95 +168,119 @@ gets.lm <- function(x, keep=NULL, print.searchinfo=TRUE, ...)
   getsResult <- getsFun(y, x,
     user.estimator=list(name="lmFun", listOfArgs=listOfArgs,
     envir=environment()), keep=keep,
-    print.searchinfo=print.searchinfo)#, ...)
+    print.searchinfo=print.searchinfo, ...)
+##for testing purposes:
+#    print.searchinfo=print.searchinfo)
   getsResult$call <- NULL
   getsResult$start.model <- gum
 
   ##print paths, terminals and retained regressors:
-  if( print.searchinfo ){
+  if( print.searchinfo && !is.null(getsResult$terminals.results) ){
 
     ##paths:
-    message("")
-    message("Paths:")
-    message("")
-    if( length(getsResult$paths)==0 ){
-      message("  none")
-    }else{
-      print(getsResult$paths)
+    if( length(getsResult$paths)>0 ){
+      cat("\n")
+      for(i in 1:length(getsResult$paths)){
+        txt <- paste0(getsResult$paths[[i]], collapse=" ")
+        txt <- paste0("  Path ", i, ": ", txt)    
+        cat(txt, "\n")
+      }
     }
-    
+
     ##terminals:
-    message("")
-    message("Terminal models:")
-    message("")
+    cat("\n")
+    cat("Terminal models:\n")
+    cat("\n")
     print(getsResult$terminals.results)    
       
     ##retained regressors:
-    message("")
-    message("Retained regressors:")
-    message("")
+    cat("\n")
+    cat("Retained regressors (final model):\n")
+    cat("\n")
     if( length(getsResult$specific.spec)==0 ){
-      message("  none")
+      cat("  none\n")
     }else{
-      message(paste0("  ", xNames[as.numeric(getsResult$specific.spec)]))
+      cat(paste0("  ", xNames[as.numeric(getsResult$specific.spec)]), "\n")
     }
 
+  } #end if( print.searchinfo )
+
+  ##messages:
+  if( print.searchinfo && !is.null(getsResult$messages) ){
+    cat("\n")
+    cat("Messages:\n")
+    cat("\n")
+    cat(getsResult$messages)
+    cat("\n")
   }
   
   ##-----------------------------
   ## 5 estimate final model
   ##-----------------------------
-  
-  ##create re-named y-variable:
-  assign(yName, y)
-  
-  ##if empty final model:
-  ##---------------------
-  if( length(getsResult$specific.spec)==0 ){
-    lmformula <- paste0(yName, " ~ NULL - 1")
+
+  ##search not undertaken:
+  ##----------------------
+
+  if( is.null(getsResult$terminals.result) ){
+    result <- xGUM
+    result <- c(getsResult, xGUM)  
   }
+
+  ##search undertaken:
+  ##------------------
   
-  ##if non-empty final model:
-  ##-------------------------
-  if( length(getsResult$specific.spec)>0 ){
-    
-    ##is the intercept retained?
-    retainedXs <- getsResult$specific.spec
-    whereIntercept <- which( xNames[retainedXs] == "(Intercept)" )
-    if( length(whereIntercept)>0 ){
-      retainedXs <- retainedXs[ -whereIntercept ]
-    }
-
-    ##create remaining X's and lm-formula:
-    xNames <- make.names(xNames, unique=TRUE)
-    lmformula <- paste0(yName, " ~ ")
-    if( length(retainedXs)==0 ){
-      lmformula <- paste0(lmformula, " NULL")
-    }else{
-      for(i in 1:length(retainedXs)){
-        if( i>1 ){ lmformula <- paste0(lmformula, " + ") } 
-        lmformula <- paste0(lmformula, xNames[retainedXs[i]])
-        assign(xNames[retainedXs[i]], x[,retainedXs[i]])
-      }
-    }
-              
-    ##no intercept?:
-    if( length(whereIntercept)==0 ){
-      lmformula <- paste0(lmformula, "- 1")
-    }    
-
-  } #end if(non-empty)
+  if( !is.null(getsResult$terminals.result) ){
       
-  ##estimate final model:
-  listOfArgs$formula <- as.formula(lmformula)
-  result <- do.call("lm", listOfArgs)
-  result <- c(getsResult, result)  
-  class(result) <- "lm"
+    ##create re-named y-variable:
+    assign(yName, y)
     
+    ##if empty final model:
+    if( length(getsResult$specific.spec)==0 ){
+      lmformula <- paste0(yName, " ~ NULL - 1")
+    }
+    
+    ##if non-empty final model:
+    if( length(getsResult$specific.spec)>0 ){
+      
+      ##is the intercept retained?
+      retainedXs <- getsResult$specific.spec
+      whereIntercept <- which( xNames[retainedXs] == "(Intercept)" )
+      if( length(whereIntercept)>0 ){
+        retainedXs <- retainedXs[ -whereIntercept ]
+      }
+  
+      ##create remaining X's and lm-formula:
+      xNames <- make.names(xNames, unique=TRUE)
+      lmformula <- paste0(yName, " ~ ")
+      if( length(retainedXs)==0 ){
+        lmformula <- paste0(lmformula, " NULL")
+      }else{
+        for(i in 1:length(retainedXs)){
+          if( i>1 ){ lmformula <- paste0(lmformula, " + ") } 
+          lmformula <- paste0(lmformula, xNames[retainedXs[i]])
+          assign(xNames[retainedXs[i]], x[,retainedXs[i]])
+        }
+      }
+                
+      ##no intercept?:
+      if( length(whereIntercept)==0 ){
+        lmformula <- paste0(lmformula, "- 1")
+      }    
+  
+    } #end if(non-empty)
+        
+    ##estimate final model:
+    listOfArgs$formula <- as.formula(lmformula)
+    result <- do.call("lm", listOfArgs)
+    result <- c(getsResult, result)  
+
+  } #end if( !is.null(getsResult$terminals.result) )    
+  
   ##-----------------------------
   ## 6 return result
   ##-----------------------------
   
+  class(result) <- "lm"
   return(result)
 
 } #close gets.lm()

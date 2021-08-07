@@ -4,23 +4,22 @@
 ##
 ## CONTENTS:
 ##
-## 1 INITIATE
+## 1 GENERIC FUNCTIONS
 ## 2 BASE FUNCTIONS
 ## 3 ARX FUNCTIONS
 ## 4 GETS FUNCTIONS
 ## 5 ADDITIONAL CONVENIENCE FUNCTIONS
 ##                       
 ####################################################
-##1 INITIATE
+## 1 GENERIC FUNCTIONS
 ####################################################
 ##
-## create generic functions for S3 methods:
-## - gets
-## - isat
-## - as.arx
+## as.arx
+## gets
+## isat
 ##
 ####################################################
-##2 BASE FUNCTIONS
+## 2 BASE FUNCTIONS
 ####################################################
 ##
 ## diagnostics
@@ -93,9 +92,13 @@
 
 
 ####################################################
-## 1 INITIATE
+## 1 GENERIC FUNCTIONS
 ####################################################
                                                        
+###==================================================
+###create the generic 'as.arx':
+as.arx <- function(object, ...){ UseMethod("as.arx") }
+
 ##==================================================
 ##create the generic 'gets':
 gets <- function(x, ...){ UseMethod("gets") }
@@ -104,12 +107,8 @@ gets <- function(x, ...){ UseMethod("gets") }
 ##create the generic 'isat':
 isat <- function(y, ...){ UseMethod("isat") }
 
-###==================================================
-###create the generic 'as.arx':
-as.arx <- function(object, ...){ UseMethod("as.arx") }
-
 ####################################################
-##2 BASE FUNCTIONS
+## 2 BASE FUNCTIONS
 ####################################################
 
 ##==================================================
@@ -2139,7 +2138,7 @@ blocksFun <- function(y, x, untransformed.residuals=NULL,
 
 
 ####################################################
-##2 ARX FUNCTIONS
+## 2 ARX FUNCTIONS
 ####################################################
 
 ##==================================================
@@ -4448,12 +4447,11 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
   include.1cut=TRUE, include.empty=FALSE, max.paths=NULL, tol=1e-07,
   turbo=FALSE, print.searchinfo=TRUE, plot=NULL, alarm=FALSE)
 {
-
   ## contents:
   ## 1 arguments
   ## 2 gets modelling
   ## 3 estimate specific
-  ## 4 output
+  ## 4 result
   
   ##------------------
   ## 1 arguments
@@ -4467,15 +4465,25 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
     stop("'max.paths' cannot be smaller than 1")
   }
 
-  ##diagnostics: determine ar and arch lags:
-  if(!is.null(ar.LjungB) && is.null(ar.LjungB$lag)){
+  ##diagnostics: ar argument
+  if( !is.null(ar.LjungB) && is.vector(ar.LjungB, mode="double") ){
+      ar.LjungB <- list(lag=ar.LjungB[1], pval=ar.LjungB[2])
+  }
+  if( !is.null(ar.LjungB) && is.null(ar.LjungB$lag) ){
     ar.LjungB$lag <- object$aux$qstat.options[1]
   }
   ar.LjungB <- c(ar.LjungB$lag[1], ar.LjungB$pval[1])
-  if(!is.null(arch.LjungB) && is.null(arch.LjungB$lag)){
+  ##(NULL if ar.LjungB is NULL)
+
+  ##diagnostics: arch argument
+  if( !is.null(arch.LjungB) && is.vector(arch.LjungB, mode="double") ){
+      arch.LjungB <- list(lag=arch.LjungB[1], pval=arch.LjungB[2])
+  }
+  if( !is.null(arch.LjungB) && is.null(arch.LjungB$lag) ){
     arch.LjungB$lag <- object$aux$qstat.options[2]
   }
   arch.LjungB <- c(arch.LjungB$lag[1], arch.LjungB$pval[1])
+  ##(NULL if arch.LjungB is NULL)
 
   ##user-defined diagnostics?:
   if( is.null(user.diagnostics) ){
@@ -4551,6 +4559,31 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
   out$gum.variance <- object$variance.results
   out$gum.diagnostics <- object$diagnostics
 
+  ##print start model (gum) info:
+  if( print.searchinfo ){
+    if( !is.null(out$gum.mean) ){
+      cat("\n")
+      cat("GUM mean equation:\n")
+      cat("\n")
+      printCoefmat(out$gum.mean, cs.ind=c(3,4), tst.ind=c(5),
+        signif.stars=TRUE, P.values=TRUE)
+      cat("\n")
+    }
+    if( !is.null(out$gum.variance) ){
+      cat("GUM log-variance equation:\n")
+      cat("\n")
+      printCoefmat(out$gum.variance, cs.ind=c(1,2), tst.ind=c(3),
+        signif.stars=TRUE, P.values=TRUE)
+    }
+    if( !is.null(out$gum.diagnostics) ){
+      cat("\n")
+      cat("Diagnostics:\n")
+      cat("\n")
+      printCoefmat(out$gum.diagnostics, tst.ind=2, signif.stars=TRUE)
+      cat("\n")
+    }
+  } #end if( print.searchinfo )
+
   ##do the gets:
   est <- getsFun(object$aux$y, object$aux$mX,
     user.estimator=user.estimator, gum.result=NULL, t.pval=t.pval,
@@ -4566,6 +4599,46 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
   est$time.finished <- NULL
   est$call <- NULL
   out <- c(out, est)
+
+  ##print paths, terminals and retained regressors:
+  if( print.searchinfo && !is.null(est$terminals.results) ){
+
+    ##paths:
+    if( length(est$paths)>0 ){
+      cat("\n")
+      for(i in 1:length(est$paths)){
+        txt <- paste0(est$paths[[i]], collapse=" ")
+        txt <- paste0("  Path ", i, ": ", txt)    
+        cat(txt, "\n")
+      }
+    }
+
+    ##print terminals:
+    cat("\n")
+    cat("Terminal models:\n")
+    cat("\n")
+    print(est$terminals.results)    
+
+    ##retained regressors:
+    cat("\n")
+    cat("Retained regressors (final model):\n")
+    cat("\n")
+    if( length(est$specific.spec)==0 ){
+      cat("  none\n")
+    }else{
+      cat(paste0("  ", object$aux$mXnames[as.numeric(est$specific.spec)]), "\n")
+    }
+    
+  } #end if( print.searchinfo )
+
+  ##messages:
+  if( print.searchinfo && !is.null(est$messages) ){
+    cat("\n")
+    cat("Messages:\n")
+    cat("\n")
+    cat(est$messages)
+    cat("\n")
+  }
 
   ##---------------------
   ## 3 estimate specific
@@ -4640,10 +4713,10 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
   } #end if( !is.null(out$terminals.results) )
 
   ##------------------
-  ## 4 output
+  ## 4 result
   ##------------------
 
-  ##finalise and return:
+  ##finalise and return result:
   out <- c(list(date=date(), gets.type="getsm"), out)
   class(out) <- "gets"
   if(alarm){ alarm() }
@@ -4654,7 +4727,7 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
   if(plot){ plot.gets(out) }
   return(out)
 
-} #close getsm function
+} #close getsm() function
 
 ##==================================================
 ## Multi-path GETS modelling of log-variance
@@ -4668,8 +4741,15 @@ getsv <- function(object, t.pval=0.05, wald.pval=t.pval,
   max.paths=NULL, tol=1e-07, turbo=FALSE, print.searchinfo=TRUE,
   plot=NULL, alarm=FALSE)
 {
-
-  ### ARGUMENTS ###########
+  ## contents:
+  ## 1 arguments
+  ## 2 gets modelling
+  ## 3 estimate specific
+  ## 4 result
+  
+  ##------------------
+  ## 1 arguments
+  ##------------------
 
   ##obligatory:
   vc=TRUE
@@ -4684,16 +4764,25 @@ getsv <- function(object, t.pval=0.05, wald.pval=t.pval,
   eadj.n <- length(eadj)
   eadj.index <- e.index[c(e.n-object$aux$loge2.n+1):e.n]
 
-  ##diagnostics options, max.regs:
-  if(!is.null(ar.LjungB) && is.null(ar.LjungB$lag)){
+  ##diagnostics: ar argument
+  if( !is.null(ar.LjungB) && is.vector(ar.LjungB, mode="double") ){
+      ar.LjungB <- list(lag=ar.LjungB[1], pval=ar.LjungB[2])
+  }
+  if( !is.null(ar.LjungB) && is.null(ar.LjungB$lag) ){
     ar.LjungB$lag <- object$aux$qstat.options[1]
   }
   ar.LjungB <- c(ar.LjungB$lag[1], ar.LjungB$pval[1])
-  if(!is.null(arch.LjungB) && is.null(arch.LjungB$lag)){
+  ##(NULL if ar.LjungB is NULL)
+
+  ##diagnostics: arch argument
+  if( !is.null(arch.LjungB) && is.vector(arch.LjungB, mode="double") ){
+      arch.LjungB <- list(lag=arch.LjungB[1], pval=arch.LjungB[2])
+  }
+  if( !is.null(arch.LjungB) && is.null(arch.LjungB$lag) ){
     arch.LjungB$lag <- object$aux$qstat.options[2]
   }
   arch.LjungB <- c(arch.LjungB$lag[1], arch.LjungB$pval[1])
-  #if(is.null(max.regs)){ max.regs <- 10*object$aux$y.n }
+  ##(NULL if arch.LjungB is NULL)
 
   ##gof arguments:
   if( is.null(gof.function) ){
@@ -4706,9 +4795,11 @@ getsv <- function(object, t.pval=0.05, wald.pval=t.pval,
     gof.method <- "min"
   }
 
+  ##------------------
+  ## 2 gets modelling
+  ##------------------
 
-  ### INITIALISE ##########
-
+  ##out list:
   out <- list()
   out$time.started <- date()
   out$time.finished <- NA
@@ -4730,8 +4821,22 @@ getsv <- function(object, t.pval=0.05, wald.pval=t.pval,
   out$gum.variance <- cbind(tmp, object$variance.results)
   out$gum.diagnostics <- object$diagnostics
 
-
-  ### DO MULTI-PATH GETS ##########
+  ##print start model (gum) info:
+  if( print.searchinfo ){
+    if( !is.null(out$gum.variance) ){
+      cat("GUM log-variance equation:\n")
+      cat("\n")
+      printCoefmat(out$gum.variance, cs.ind=c(3,4), tst.ind=c(5),
+        signif.stars=TRUE, P.values=TRUE)
+    }
+    if( !is.null(out$gum.diagnostics) ){
+      cat("\n")
+      cat("Diagnostics:\n")
+      cat("\n")
+      printCoefmat(out$gum.diagnostics, tst.ind=2, signif.stars=TRUE)
+      cat("\n")
+    }
+  } #end if( print.searchinfo )
 
   ##do the gets:
   est <- getsFun(loge2, mX,
@@ -4750,14 +4855,55 @@ getsv <- function(object, t.pval=0.05, wald.pval=t.pval,
   est$call <- NULL
   out <- c(out, est)
 
+  ##print paths, terminals and retained regressors:
+  if( print.searchinfo && !is.null(est$terminals.results) ){
+
+    ##paths:
+    if( length(est$paths)>0 ){
+      cat("\n")
+      for(i in 1:length(est$paths)){
+        txt <- paste0(est$paths[[i]], collapse=" ")
+        txt <- paste0("  Path ", i, ": ", txt)    
+        cat(txt, "\n")
+      }
+    }
+
+    ##print terminals:
+    cat("\n")
+    cat("Terminal models:\n")
+    cat("\n")
+    print(est$terminals.results)    
+
+    ##retained regressors:
+    cat("\n")
+    cat("Retained regressors (final model):\n")
+    cat("\n")
+    if( length(est$specific.spec)==0 ){
+      cat("  none\n")
+    }else{
+      cat(paste0("  ", object$aux$vXnames[as.numeric(est$specific.spec)]), "\n")
+    }
+    
+  } #end if( print.searchinfo )
+
+  ##messages:
+  if( print.searchinfo && !is.null(est$messages) ){
+    cat("\n")
+    cat("Messages:\n")
+    cat("\n")
+    cat(est$messages)
+    cat("\n")
+  }
+
+  ##---------------------
+  ## 3 estimate specific
+  ##---------------------
+
   ## if no search has been undertaken:
   if(is.null(est$terminals.results)){
     out$aux <- object$aux
     out$aux$vcov.type <- vcov.type
   }
-
-
-  ### ESTIMATE SPECIFIC ################
 
   ## prepare estimation:
   e <- zoo(cbind(eadj), order.by=eadj.index)
@@ -4802,7 +4948,9 @@ getsv <- function(object, t.pval=0.05, wald.pval=t.pval,
   est <- unclass(est)
   out <- c(out,est)
 
-  ### OUTPUT ########
+  ##------------------
+  ## 4 result
+  ##------------------
 
   out$aux$vXnames.gum <- object$aux$vXnames
   out$aux$call.gum <- object$call
@@ -4819,7 +4967,7 @@ getsv <- function(object, t.pval=0.05, wald.pval=t.pval,
   if(plot){ plot.gets(out) }
   return(out)
   
-} #close getsv function
+} #close getsv() function
 
 ##==================================================
 coef.gets <- function(object, spec=NULL, ...)
@@ -5104,61 +5252,62 @@ print.gets <- function(x, signif.stars=TRUE, ...)
     cat("Sample:", startAsChar, "to", endAsChar, "\n")
   } #end if(!is.null..)
 
-  ##gum:
-  if( specType=="mean" && !is.null(x$gum.mean) ){
-    cat("\n")
-    cat("GUM mean equation:\n")
-    cat("\n")
-    printCoefmat(x$gum.mean, tst.ind=c(1,2),
-      signif.stars=signif.stars)
-  }
-  if( !is.null(x$gum.variance) ){
-    cat("\n")
-    cat("GUM log-variance equation:\n")
-    cat("\n")
-    if(specType=="mean"){
-      printCoefmat(x$gum.variance, signif.stars=FALSE)
-    }
-    if(specType=="variance"){
-      printCoefmat(x$gum.variance, tst.ind=c(1,2),
-        signif.stars=signif.stars)
-    }
-  }
-  if( !is.null(x$gum.diagnostics) ){
-    cat("\n")
-    cat("Diagnostics:\n")
-    cat("\n")
-    printCoefmat(x$gum.diagnostics, tst.ind=2, has.Pvalue = TRUE, signif.stars=signif.stars)
-  }
-
-  ##paths:
-  cat("\n")
-  cat("Paths searched: \n")
-  cat("\n")
-  if( is.null(x$paths) || length(x$paths)==0 ){
-    print(NULL)
-  }else{
-    for(i in 1:length(x$paths)){
-      cat("path",i,":",x$paths[[i]],"\n")
-    }
-  } #end if(is.null(x$paths))
-
-  ##terminal models and results:
-  if( !is.null(x$terminals) && length(x$terminals)>0 ){
-    cat("\n")
-    cat("Terminal models: \n")
-    if(!is.null(x$terminals)){
-      cat("\n")
-      for(i in 1:length(x$terminals)){
-        cat("spec",i,":",x$terminals[[i]],"\n")
-      }
-    }
-  }
-  if( !is.null(x$terminals.results) ){
-    cat("\n")
-    printCoefmat(x$terminals.results, dig.tst=0, tst.ind=c(3,4),
-      signif.stars=FALSE)
-  }
+##OLD:
+#  ##gum:
+#  if( specType=="mean" && !is.null(x$gum.mean) ){
+#    cat("\n")
+#    cat("GUM mean equation:\n")
+#    cat("\n")
+#    printCoefmat(x$gum.mean, tst.ind=c(1,2),
+#      signif.stars=signif.stars)
+#  }
+#  if( !is.null(x$gum.variance) ){
+#    cat("\n")
+#    cat("GUM log-variance equation:\n")
+#    cat("\n")
+#    if(specType=="mean"){
+#      printCoefmat(x$gum.variance, signif.stars=FALSE)
+#    }
+#    if(specType=="variance"){
+#      printCoefmat(x$gum.variance, tst.ind=c(1,2),
+#        signif.stars=signif.stars)
+#    }
+#  }
+#  if( !is.null(x$gum.diagnostics) ){
+#    cat("\n")
+#    cat("Diagnostics:\n")
+#    cat("\n")
+#    printCoefmat(x$gum.diagnostics, tst.ind=2, has.Pvalue = TRUE, signif.stars=signif.stars)
+#  }
+#
+#  ##paths:
+#  cat("\n")
+#  cat("Paths searched: \n")
+#  cat("\n")
+#  if( is.null(x$paths) || length(x$paths)==0 ){
+#    print(NULL)
+#  }else{
+#    for(i in 1:length(x$paths)){
+#      cat("path",i,":",x$paths[[i]],"\n")
+#    }
+#  } #end if(is.null(x$paths))
+#
+#  ##terminal models and results:
+#  if( !is.null(x$terminals) && length(x$terminals)>0 ){
+#    cat("\n")
+#    cat("Terminal models: \n")
+#    if(!is.null(x$terminals)){
+#      cat("\n")
+#      for(i in 1:length(x$terminals)){
+#        cat("spec",i,":",x$terminals[[i]],"\n")
+#      }
+#    }
+#  }
+#  if( !is.null(x$terminals.results) ){
+#    cat("\n")
+#    printCoefmat(x$terminals.results, dig.tst=0, tst.ind=c(3,4),
+#      signif.stars=FALSE)
+#  }
   
   ##specific mean model:
   if( specType=="mean" && !is.null(x$terminals.results) ){
@@ -5219,7 +5368,7 @@ print.gets <- function(x, signif.stars=TRUE, ...)
     message(x$messages)
   }
 
-} #close print.gets
+} #close print.gets()
 
 ##==================================================
 ## extract residuals of specific model

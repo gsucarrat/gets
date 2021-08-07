@@ -110,15 +110,22 @@ if( doDelete ){
 
 ##non-automatic approach no. 1:
 #library(tools)
-#compactPDF( paste0(getwd(), "/introduction.pdf"), gs_quality = "ebook")
-#compactPDF( paste0(getwd(), "/introduction.pdf") )
-#compactPDF( paste0(getwd(), "/introduction.pdf"),
-#  qpdf=paste0( getwd(), "/qpdf-10.1.0/bin/qpdf.exe" ))
+##reduce size:
+#compactPDF( paste0(getwd(), "/vignettes-tex/introduction.pdf"))
+##reduce size ("printer" = 300dpi):
+#compactPDF( paste0(getwd(), "/vignettes-tex/introduction.pdf"), gs_quality = "printer")
+##reduce size ("ebook" = 150dpi):
+#compactPDF( paste0(getwd(), "/vignettes-tex/intro/introduction.pdf"), gs_quality = "ebook")
+##reduce size ("screen" = 72dpi):
+#compactPDF( paste0(getwd(), "/vignettes-tex/introduction.pdf"), gs_quality = "screen")
 
 ##non-automatic approach no. 2:
 ## - compress introduction.pdf
 ## - put it, together with introduction.Rnw, in the gets/inst/doc folder
 ## - make sure the --no-build-vignettes is used when invoking R CMD build
+
+#compactPDF( paste0(getwd(),
+#  "/vignettes-tex/user-defined-gets/user-defined-gets.pdf"), gs_quality = "printer")
 
 ##build tarball:
 ##==============
@@ -136,9 +143,6 @@ system( paste0("R CMD build ", whereFolder, " --no-build-vignettes --resave-data
 ##   better compression, but it is not obligatory.
 ## - In principle, the latest development version of R should be
 ##   used for the build, but this sometimes leads to spurious errors.
-## - I have not been able to make the "--compact-vignettes" option
-##   work yet, since it seems I have not been able to properly enable
-##   qpdf for R
 
 ##check tarball (needs internet):
 ##===============================

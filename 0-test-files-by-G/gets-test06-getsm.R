@@ -53,17 +53,20 @@ gum01 <- arx(y, ar=1:3, mxreg=mX)
 gum01
 getsm01 <- getsm(gum01)
 getsm(gum01)
-getsm(gum01, t.pval=0.01)
-getsm(gum01, wald.pval=0.01)
+getsm(gum01, t.pval=0.3)
+getsm(gum01, wald.pval=0.6)
 getsm(gum01, vcov.type="o")
 getsm(gum01, vcov.type="w")
-getsm(gum01, vcov.type="n")
+getsm(gum01, vcov.type="n")                     
 getsm(gum01, do.pet=FALSE)
+getsm(gum01, t.pval=0.6, do.pet=FALSE)
 getsm(gum01, ar.LjungB=list(lag=6,pval=0.2))
 getsm(gum01, ar.LjungB=list(lag=NULL,pval=0.2))
+getsm(gum01, ar.LjungB=c(2,0.05))
 getsm(gum01, ar.LjungB=NULL)
 getsm(gum01, arch.LjungB=list(lag=6,pval=0.2))
 getsm(gum01, arch.LjungB=list(lag=NULL,pval=0.2))
+getsm(gum01, arch.LjungB=c(2,0.05))
 getsm(gum01, arch.LjungB=NULL)
 getsm(gum01, normality.JarqueB=0.025)
 getsm(gum01, ar.LjungB=NULL, arch.LjungB=NULL,
@@ -239,7 +242,6 @@ object <- arx(yy, mc=FALSE, mxreg = xregs)
 tmp <- getsm(object)
 print(tmp)
 
-
 ##################################################
 ## 3 TEST USER DEFINED ESTIMATION
 ##################################################
@@ -266,8 +268,9 @@ gum01 <- arx(y, mc=TRUE, ar=1:3, mxreg=mX,
   user.estimator=list(name="Gfun"), plot=FALSE)
 summary(gum01)
 print(gum01)
-myspecific <- getsm(gum01)
+myspecific <- getsm(gum01) #should work
 suppressMessages( myspecific <- getsm(gum01) )
+suppressMessages( myspecific <- getsm(gum01, print.searchinfo=TRUE) )
 summary(myspecific)
 myspecific
 

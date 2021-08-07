@@ -8,12 +8,13 @@ General-to-Specific (GETS) Modelling of a objects of class \code{\link{lm}}.
 }
 
 \usage{
-\method{gets}{lm}(x, keep = NULL, print.searchinfo = TRUE, ...) 
+\method{gets}{lm}(x, keep = NULL, include.1cut = TRUE, print.searchinfo = TRUE, ...) 
 }
 
 \arguments{
   \item{x}{an object of class 'lm', see \code{\link{lm}} }
   \item{keep}{\code{NULL} or a vector of integers that determines which regressors to be excluded from removal in the specification search }
+  \item{include.1cut}{\code{logical}. If \code{TRUE} (default), then the 1-cut model is added to the list of terminal models. If \code{FALSE}, then the 1-cut is not added, unless it is a terminal model in one of the paths }
   \item{print.searchinfo}{\code{logical}. If \code{TRUE} (default), then selected info is printed during search }
   \item{\dots}{further arguments passed on to \code{\link{getsFun}} }
 }
