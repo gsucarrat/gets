@@ -647,41 +647,44 @@ gets.isat <- function(x, t.pval=0.05, wald.pval=t.pval, vcov.type = NULL,
 {
 
   # Check if one of these arguments is explicitly supplied to the function
-  # if not, then check if the original item has this argument supplied
+  # if not, then check if the original item has this arguemnt supplied
   # if it does, take the setting of the original object
   # if it does not, then take the default
-  if(missing(t.pval)){t.pval <- if(is.null(x$aux$arguments[["t.pval"]])) {0.05} else{x$aux$arguments[["t.pval"]]}}
   if(missing(vcov.type)){vcov.type <- x$aux[["vcov.type"]]}
-  if(missing(normality.JarqueB)){normality.JarqueB <- if(is.null(x$aux$arguments[["normality.JarqueB"]])){FALSE}else{x$aux$arguments[["normality.JarqueB"]]}}
-  if(missing(user.diagnostics)){user.diagnostics <- if(is.null(x$aux$arguments[["user.diagnostics"]])){NULL}else{x$aux$arguments[["user.diagnostics"]]}}
-  if(missing(plot)){plot <- if(is.null(x$aux$arguments[["plot"]])){NULL}else{x$aux$arguments[["plot"]]}}
-  if(missing(tol)){tol <- if(is.null(x$aux$arguments[["tol"]])){1e-07}else{x$aux$arguments[["tol"]]}}
-
+  if(missing(user.diagnostics)){user.diagnostics <- x$aux[["user.diagnostics"]]}
+  if(missing(tol)){tol <- x$aux$tol}
+  if(missing(normality.JarqueB)){if(is.null(x$call$normality.JarqueB)){normality.JarqueB <- FALSE}else{normality.JarqueB <- x$call$normality.JarqueB}}
+  if(missing(arch.LjungB)){arch.LjungB <- x$call$arch.LjungB}
+  if(missing(ar.LjungB)){ar.LjungB <- x$call$ar.LjungB}
+  
+  user.estimator <- x$aux$user.estimator
+  LAPACK <- x$aux$LAPACK
+  
   ##create an arx-like object:
-  y <- object$aux$y
+  y <- x$aux$y
   y <- as.matrix(y)
-  colnames(y) <- object$aux$y.name
-  mxreg <- object$aux$mX
-  colnames(mxreg) <- object$aux$mXnames
+  colnames(y) <- x$aux$y.name
+  mxreg <- x$aux$mX
+  colnames(mxreg) <- x$aux$mXnames
 
-  mc <- FALSE # because would be in mxreg already
+  object <- do.call("arx", 
+                    list(y = y, mxreg = mxreg,
+                         ewma = NULL, mc = FALSE, ar = NULL, log.ewma = NULL, # would be in mxreg already
+                         vc = FALSE, arch = NULL, asym = NULL, # currently not possible via isat
+                         vxreg = NULL, zero.adj = 0.1, # currently not possible via isat
+                         vc.adj = TRUE, qstat.options = NULL,  # currently not possible via isat
+                         vcov.type = vcov.type,
+                         normality.JarqueB = normality.JarqueB,
+                         user.estimator = user.estimator,
+                         user.diagnostics = user.diagnostics,
+                         tol = tol,
+                         LAPACK = LAPACK, 
+                         singular.ok = TRUE,
+                         plot = NULL))
 
-  # Check if one of these arguments is explicitly supplied to the function
-  # if not, then check if the original item has this argument supplied
-  # if it does, take the setting of the original object
-  # if it does not, then take the default
-  if(missing(vcov.type)){vcov.type <- object$aux[["vcov.type"]]}
-  if(missing(normality.JarqueB)){normality.JarqueB <- if(is.null(object$aux$arguments[["normality.JarqueB"]])){FALSE}else{object$aux$arguments[["normality.JarqueB"]]}}
-  if(missing(user.estimator)){user.estimator <- if(is.null(object$aux$arguments[["user.estimator"]])){NULL}else{object$aux$arguments[["user.estimator"]]}}
-  if(missing(user.diagnostics)){user.diagnostics <- if(is.null(object$aux$arguments[["user.diagnostics"]])){NULL}else{object$aux$arguments[["user.diagnostics"]]}}
-  if(missing(plot)){plot <- if(is.null(object$aux$arguments[["plot"]])){NULL}else{object$aux$arguments[["plot"]]}}
-  if(missing(tol)){tol <- if(is.null(object$aux$arguments[["tol"]])){1e-07}else{object$aux$arguments[["tol"]]}}
-
-  object <- arx(y,mc,ar=NULL,mxreg,vcov.type,normality.JarqueB,
-    user.estimator,user.diagnostics,tol,plot=FALSE)
   ##github version:             
   #object <- as.arx(x, plot = FALSE, ar = FALSE) # some arguments pre-set because they will already be in isat if needed
-
+  
   ##return result:
   out <- getsm(
     object,
