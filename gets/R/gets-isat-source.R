@@ -589,11 +589,19 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   }else{
     normalityArg <- as.numeric(normality.JarqueB)  
   }
+  
+  # Save original arx mc warning setting and disable it here
+  tmpmc <- getOption("mc.warning")
+  options(mc.warning = FALSE)
+  
   mod <- arx(y, mc=FALSE, mxreg=mXis, vcov.type=vcov.type,
     qstat.options=qstat.options, normality.JarqueB=normalityArg,
     user.estimator=userEstArgArx, user.diagnostics=user.diagnostics,
     tol=tol, LAPACK=LAPACK, plot=FALSE)
   mod$call <- NULL
+  
+  # Set the old arx mc warning again
+  options(mc.warning = tmpmc)
    
   ##complete the returned object (result):
   ISnames <- setdiff(mXisNames, mXnames) #names of retained impulses
