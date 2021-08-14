@@ -303,6 +303,8 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   ##loop on ISmatrices:
   ##-------------------
   
+  estimations.total <- 0
+  getsFun.total <- 0
   ISfinalmodels <- list()
   for(i in 1:length(ISmatrices)){
 
@@ -343,7 +345,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       ISblocks[[i]] <- tmp
 
     } #end if(!blocks.is.list)
-
+    
     ##make blocks function for lapply/parLapply:
     ISblocksFun <- function(j, i, ISmatrices, ISblocks, mX,
       parallel.options, y, userEstArg, t.pval, wald.pval, do.pet,
@@ -388,6 +390,12 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
         max.paths=max.paths, turbo=turbo, tol=tol, LAPACK=LAPACK,
         max.regs=max.regs, print.searchinfo=print.searchinfo,
         alarm=FALSE)
+      
+
+      #estimations.counter counts the number of estimations for a single type of indicators
+      estimations.counter <<- estimations.counter + getsis$no.of.estimations
+      getsFun.counter <<- getsFun.counter + 1
+
 
       if(is.null(getsis$specific.spec)){
         ISspecific.models <- NULL
@@ -403,6 +411,13 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       return(ISspecific.models)
 
     } #close ISblocksFun
+
+    
+
+    # initialise counter for number of estimations of this type of indicator
+    estimations.counter <- 0
+    getsFun.counter <- 0
+
 
     ##do gets on each block: no parallel computing
     if(is.null(parallel.options)){
@@ -496,11 +511,22 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
           max.paths=max.paths, turbo=turbo, tol=tol, LAPACK=LAPACK,
           max.regs=max.regs, print.searchinfo=print.searchinfo,
           alarm=FALSE)
+        
+
+        # only done if at least one indicator of this type has been retained
+        # so if no search was done (because failed diagnostics), then not here
+        estimations.counter <- estimations.counter + getsis$no.of.estimations
+        getsFun.counter <- getsFun.counter + 1
+
 
         ISfinalmodels[[i]] <- names(getsis$specific.spec)
       }
 
     } #end if(length(ISspecific.models > 0)
+    
+  # before go to next type of indicator, save the number of estimations done
+  estimations.total <- estimations.total + estimations.counter
+  getsFun.total <- getsFun.total + getsFun.counter
 
   } #end for(i) loop (on ISmatrices)
 
@@ -558,6 +584,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   ##-------------------
 
   ##do final gets:
+
   getsis <- getsFun(y, mXis, untransformed.residuals=NULL,
     user.estimator=userEstArg, gum.result=NULL, t.pval=t.pval,
     wald.pval=wald.pval, do.pet=do.pet, ar.LjungB=arLjungB,
@@ -568,6 +595,13 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     max.paths=max.paths, turbo=turbo, tol=tol, LAPACK=LAPACK,
     max.regs=max.regs, print.searchinfo=print.searchinfo,
     alarm=FALSE)
+  
+
+  estimations.total <- estimations.total + getsis$no.of.estimations
+  getsis$no.of.estimations <- estimations.total
+  getsFun.total <- getsFun.total + 1
+  getsis$no.of.getsFun.calls <- getsFun.total
+
   ##messages from final gets:
   if( print.searchinfo && !is.null(getsis$messages)){
     message(getsis$messages)
@@ -621,6 +655,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     if( is.null(plot) ){ plot <- FALSE }
   }
   if(plot){ plot.isat(getsis, coef.path=TRUE) }
+
   return(getsis)
 
 } #close isat function
