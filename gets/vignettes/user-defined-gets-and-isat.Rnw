@@ -1,0 +1,208 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[greek, british, english]{babel}
+\usepackage{natbib}
+\usepackage{amssymb} %enable \mathbb, \subsetneq commands
+\usepackage{amsmath}
+
+\usepackage{hyperref} %see http://en.wikibooks.org/wiki/LaTeX/Hyperlinks and http://www.tug.org/applications/hyperref/manual.html#x1-120003.8
+\hypersetup{
+	%    bookmarks=true,         % show bookmarks bar?
+	%    unicode=false,          % non-Latin characters in Acrobat?s bookmarks
+	%    pdftoolbar=true,        % show Acrobat?s toolbar?
+	%    pdfmenubar=true,        % show Acrobat?s menu?
+	%    pdffitwindow=false,     % window fit to page when opened
+	pdfstartview={FitH},    % fits the width of the page to the window
+	%    pdftitle={My title},    % title
+	%    pdfauthor={Author},     % author
+	%    pdfsubject={Subject},   % subject of the document
+	%    pdfcreator={Creator},   % creator of the document
+	%    pdfproducer={Producer}, % producer of the document
+	%    pdfkeywords={keyword1} {key2} {key3}, % list of keywords
+	%    pdfnewwindow=true,      % links in new window
+	colorlinks,       % false: boxed links; true: colored links
+	linkcolor=blue, %red,          % color of internal links (change box color with linkbordercolor)
+	citecolor=blue, %green,        % color of links to bibliography
+	%    filecolor=magenta,      % color of file links
+	urlcolor=blue %cyan           % color of external links
+}
+
+%%%%%% BOLD MATH-SYMBOLS:
+\newcommand{\bx}{\boldsymbol{x}}
+\newcommand{\bbeta}{\boldsymbol{\beta}}
+\newcommand{\pkg}{\textbf}
+\newcommand{\CRANpkg}{\textbf}
+
+%%%%%%% MARGIN RELATED COMMANDS:
+\setlength\textheight{23cm} %height of the body without header and footer
+\setlength\textwidth{17cm} %width of the body
+\addtolength{\voffset}{-2.5cm}
+\addtolength{\hoffset}{-1.5cm} %move text horisontally 0.5cm
+
+%%%%%% ORDINARY FONT-SIZES:
+%\Huge \huge \LARGE \Large \large \normalsize \small \footnotesize \scriptsize \tiny
+
+
+\begin{document}
+
+%\SweaveOpts{engine=R,eps=FALSE}
+%\VignetteIndexEntry{User-Specified General-to-Specific and Indicator Saturation Methods}
+%\VignetteDepends{gets}
+%\VignetteKeywords{general-to-specific, indicator saturation, user-defined methods}
+%\VignettePackage{gets}
+	
+\begin{center}
+	{\bf\Large User Specified General-to-Specific and Indicator Saturation Methods}%
+	\footnote{
+%			I am grateful to ..., participants at ... and ... for their helpful comments, suggestions and questions.
+This vignette was originally published as ``User-Specified General-to-Specific and Indicator Saturation Methods'' in \href{https://journal.r-project.org}{The R Journal} (2020) 12:2, pages 388-401: \url{https://journal.r-project.org/archive/2021/RJ-2021-024/}
+	}
+	
+	\medskip
+	Genaro Sucarrat\footnote{Department of Economics, BI Norwegian Business School, Nydalsveien 37, 0484 Oslo, Norway. Webpage: \url{http://www.sucarrat.net/}.} \\
+	
+	\smallskip
+	{\small This version: \selectlanguage{british}\today}\\
+	%	{\footnotesize [First version: 15 October 2018]}
+\end{center}
+
+\begin{abstract}
+\noindent General-to-Specific (GETS) modelling provides a comprehensive, systematic and cumulative approach to modelling that is ideally suited for conditional forecasting and counterfactual analysis, whereas Indicator Saturation (ISAT) is a powerful and flexible approach to the detection and estimation of structural breaks (e.g.\ changes in parameters), and to the detection of outliers. To these ends, multi-path backwards elimination, single and multiple hypothesis tests on the coefficients, diagnostics tests and goodness-of-fit measures are combined to produce a parsimonious final model. In many situations a specific model or estimator is needed, a specific set of diagnostics tests may be required, or a specific fit criterion is preferred. In these situations, if the combination of estimator/model, diagnostics tests and fit criterion is not offered in a pre-programmed way by publicly available software, then the implementation of user-specified GETS and ISAT methods puts a large programming-burden on the user. Generic functions and procedures that facilitate the implementation of user-specified GETS and ISAT methods for specific problems can therefore be of great benefit. The R package \pkg{gets} is the first software -- both inside and outside the R universe -- to provide a complete set of facilities for user-specified GETS and ISAT methods: User-specified model/estimator, user-specified diagnostics and user-specified goodness-of-fit criteria. The aim of this article is to illustrate how user-specified GETS and ISAT methods can be implemented with the R package \textbf{gets}.
+%	
+%\medskip
+%\noindent {\it JEL Classification:} C01, C13, C22, C32, C58\\
+%\noindent {\it Keywords:} ARCH
+\end{abstract}
+
+%table of contents:
+\begin{center}
+	\parbox[t]{0.9\linewidth}{
+		%		\renewcommand{\contentsname}{Contents:}
+		\renewcommand{\contentsname}{} %{} means no name
+		\tableofcontents
+	}
+\end{center}
+
+\section{Introduction }
+	
+General-to-Specific (GETS) modelling provides a comprehensive, systematic and cumulative approach to modelling that is ideally suited for scenario analysis, e.g.\ conditional forecasting and counterfactual analysis. To this end, well-known ingredients (tests of coefficients, multi-path backwards elimination, diagnostics tests and fit criteria) are combined to produce a parsimonious final model that passes the chosen diagnostics. GETS modelling originated at the London School of Economics (LSE) during the 1960s, and gained widespread acceptance and usage in economics during the 1980s and 1990s. The two-volume article collection by \citet{CamposEricssonHendry2005} provides a comprehensive historical overview of key-developments in GETS modelling. Software-wise, a milestone was reached in 1999, when the data-mining experiment of \citet{Lovell83} was re-visited by \citet{Hooveretal99}. They showed that automated GETS modelling could improve substantially upon the then prevalent modelling approaches. The study spurred numerous new studies and developments, including Indicator Saturation (ISAT) methods, see \citet{HendryJohansenSantos2008} and \citet{CastleDoornikHendryPretis2015}. ISAT methods provide a powerful and flexible approach to the detection and estimation of structural breaks (e.g.\ changes in parameters), and to the detection of outliers.
+
+On CRAN, there are two packages that provide GETS methods. The second, named \CRANpkg{gets}, is simply the successor of the first, which is named \CRANpkg{AutoSEARCH}.\footnote{Both packages were created by me. Originally, I simply wanted to rename the first to the name of the second. This, however, is inconvenient in practice I was told, so I was instead asked by CRAN to publish a ``new" package with the new name.} Since October 2014 the development of \pkg{AutoSEARCH} is frozen, and all development efforts have been directed towards \pkg{gets} together with Dr.\ Felix Pretis and Dr.\ James Reade.\footnote{Recently, Jonas Kurle and Moritz Schwarz have also made contributions. See the Gitub page for the current development version of the package: \url{https://github.com/gsucarrat/gets/}.} An introduction to the \pkg{gets} package is provided by \cite{PretisReadeSucarrat2018}. However, it does does not cover the user-specification capabilities of the package, some of which were not available at the time.
+
+At the time of writing (September 2020), the publicly available softwares that provide GETS and ISAT methods are contained in Table \ref{table:software:comparison}. Although they offer GETS and ISAT methods for some of the most popular models in applications, in many situations a specific model or estimator will be needed, a specific set of diagnostics tests may be required, or a specific fit criterion is preferred. In these situations, if the combination of estimator/model, diagnostics tests and fit criterion is not offered in a pre-programmed way by the publicly available softwares, then the implementation of user-specified GETS and ISAT methods puts a large programming-burden on the user. Generic functions and procedures that facilitate the implementation of user-specified GETS and ISAT methods for specific problems can therefore be of great benefit. The R package \pkg{gets}, since version 0.20 (September 2019), is the first software -- both inside and outside the R universe -- to provide a complete set of facilities for user-specified GETS and ISAT methods: User-specified model/estimator, user-specified diagnostics and user-specified goodness-of-fit criteria. The aim of this article is to illustrate how user-specified GETS and ISAT methods can be implemented.
+
+\begin{table}[t!]
+	\centering
+	\setlength{\tabcolsep}{3pt} %needed to ensure table fits on page
+	\begin{tabular}{lccccccc}
+		\hline
+		& & $\underset{(\text{MATLAB})}{\text{HP1999}}$ &  $\underset{(\text{OxMetrics})}{\text{Autometrics}}$ & $\underset{(\text{Scilab})}{\text{Grocer}}$ & $\underset{(\text{STATA})}{ \text{genspec} }$ & EViews$^*$ & $\underset{(\text{R})}{ \text{ \pkg{gets} } }$ \\
+		\hline
+		More than 10 paths & & & Yes & Yes & Yes & Yes & Yes \\[1mm] 
+		GETS of linear regression & & Yes & Yes & Yes & Yes & Yes & Yes \\[1mm]
+		GETS of variance models & & & & & & & Yes \\[1mm]
+		GETS of logit/count models & & & Yes & & & & \\[1mm]
+		GETS of probit models & & & Yes & Yes & & & \\[1mm]
+		GETS of panel models & & & & Yes & Yes & & \\[1mm]
+		GETS of MIDAS models & & & & & & Yes & \\[1mm]
+		ISAT of linear regression & & & Yes & Yes & & Yes & Yes \\[1mm]
+		User-specified GETS & &  &  & Yes & & & Yes \\[1mm]
+		User-specified ISAT &  &  &  & & & & Yes \\[1mm]
+		User-specified diagnostics &  & & & Yes & & & Yes \\[1mm]
+		User-specified goodness-of-fit & & & & & & & Yes \\[1mm]
+		Menu-based GUI &  & & Yes & & & Yes & \\[1mm]		
+		Free and open source & & Yes$^{**}$ & & Yes & Yes$^{**}$ & & Yes \\[1mm]
+		\hline
+	\end{tabular}\\
+	\caption{
+		\label{table:software:comparison}
+		A comparison of publicly available GETS and ISAT softwares with emphasis on user-specification capabilities. HP1999, the MATLAB code of \citet{Hooveretal99}. Autometrics, OxMetrics version 15, see \citet{DoornikHendry2018}. Grocer, version 1.8, see \citet{DuboisMichaux2019}. genspec, version 1.2.2, see \citet{Clarke2014}. EViews, version 12, see \citet{EViews2020}. \pkg{gets}, version 0.25, see \cite{SucarratKurlePretisReadeSchwarz2020getsV025}, and \citet{PretisReadeSucarrat2018}.\\
+		$^{*}$To be included in version 12 (November 2020).\\
+		$^{**}$The modules in themselves are free and open source, but they run in non-free and closed source software environments (MATLAB and STATA, respectively).
+	}
+\end{table}
+
+The rest of this article contains four sections. In the next section the model selection properties of GETS and ISAT methods are summarised. This is followed by a section that outlines the general principles of how user-specified estimation, user-specified diagnostics and user-specified goodness-of-fit measures are implemented. Next, a section with four illustrations follows. The final section contains a summary.
+
+\clearpage
+
+%%\renewcommand\refname{References}
+%\bibliographystyle{chicago}
+%\bibliography{C:/tex/gs041004}
+
+\begin{thebibliography}{}
+	
+	\bibitem[\protect\citeauthoryear{Campos, Hendry, and Ericsson}{Campos
+		et~al.}{2005}]{CamposEricssonHendry2005}
+	Campos, J., D.~F. Hendry, and N.~R. Ericsson (Eds.) (2005).
+	\newblock {\em General-to-{S}pecific {M}odeling. {V}olumes 1 and 2}.
+	\newblock Cheltenham: Edward Elgar Publishing.
+	
+	\bibitem[\protect\citeauthoryear{Castle, Doornik, Hendry, and Pretis}{Castle
+		et~al.}{2015}]{CastleDoornikHendryPretis2015}
+	Castle, J., J.~Doornik, D.~F. Hendry, and F.~Pretis (2015).
+	\newblock {D}etecting {L}ocation {S}hifts {D}uring {M}odel {S}election by
+	{S}tep-{I}ndicator {S}aturation.
+	\newblock {\em Econometrics\/}~{\em 3}, 240--264.
+	\newblock DOI: https://doi.org/10.3390/econometrics3020240.
+	
+	\bibitem[\protect\citeauthoryear{Clarke}{Clarke}{2014}]{Clarke2014}
+	Clarke, D. (2014).
+	\newblock {G}eneral-to-specific modeling in {S}tata.
+	\newblock {\em The Stata Journal\/}~{\em 14}, 895--908.
+	\newblock \url{https://www.stata-journal.com/article.html?article=st0365}.
+	
+	\bibitem[\protect\citeauthoryear{Doornik and Hendry}{Doornik and
+		Hendry}{2018}]{DoornikHendry2018}
+	Doornik, J.~A. and D.~F. Hendry (2018).
+	\newblock {\em {E}mpirical {E}conometric {M}odelling - {P}c{G}ive 15}.
+	\newblock London: Timberlake Consultants Ltd.
+	
+	\bibitem[\protect\citeauthoryear{Dubois and Michaux}{Dubois and
+		Michaux}{2019}]{DuboisMichaux2019}
+	Dubois, {\'E}. and E.~Michaux (2019).
+	\newblock Grocer 1.8: an econometric toolbox for {S}cilab.
+	\newblock \url{http://dubois.ensae.net/grocer.html}.
+	
+	\bibitem[\protect\citeauthoryear{Hendry, Johansen, and Santos}{Hendry
+		et~al.}{2008}]{HendryJohansenSantos2008}
+	Hendry, D.~F., S.~Johansen, and C.~Santos (2008).
+	\newblock Automatic selection of indicators in a fully saturated regression.
+	\newblock {\em Computational Statistics\/}~{\em 23}, 317--335.
+	\newblock DOI 10.1007/s00180-007-0054-z.
+	
+	\bibitem[\protect\citeauthoryear{Hoover and Perez}{Hoover and
+		Perez}{1999}]{Hooveretal99}
+	Hoover, K.~D. and S.~J. Perez (1999).
+	\newblock Data {M}ining {R}econsidered: {E}ncompassing and the
+	{G}eneral-to-{S}pecific {A}pproach to {S}pecification {S}earch.
+	\newblock {\em Econometrics Journal\/}~{\em 2}, 167--191.
+	\newblock Dataset and code:
+	\url{http://www.csus.edu/indiv/p/perezs/Data/data.htm}.
+	
+	\bibitem[\protect\citeauthoryear{{IHS Markit}}{{IHS Markit}}{2020}]{EViews2020}
+	{IHS Markit} (2020).
+	\newblock {\em EViews Version 11}.
+	\newblock Irvine: IHS Markit.
+	
+	\bibitem[\protect\citeauthoryear{Lovell}{Lovell}{1983}]{Lovell83}
+	Lovell, M.~C. (1983).
+	\newblock Data {M}ining.
+	\newblock {\em The {R}eview of {E}conomics and {S}tatistics\/}~{\em 65}, 1--12.
+	
+	\bibitem[\protect\citeauthoryear{Pretis, Reade, and Sucarrat}{Pretis
+		et~al.}{2018}]{PretisReadeSucarrat2018}
+	Pretis, F., J.~Reade, and G.~Sucarrat (2018).
+	\newblock {A}utomated {G}eneral-to-{S}pecific ({GETS}) {R}egression {M}odeling
+	and {I}ndicator {S}aturation for {O}utliers and {S}tructural {B}reaks.
+	\newblock {\em Journal of Statistical Software\/}~{\em 86}, 1--44.
+	
+	\bibitem[\protect\citeauthoryear{Sucarrat, Kurle, Pretis, Reade, and
+		Schwarz}{Sucarrat et~al.}{2020}]{SucarratKurlePretisReadeSchwarz2020getsV025}
+	Sucarrat, G., J.~Kurle, F.~Pretis, J.~Reade, and M.~Schwarz (2020).
+	\newblock {\em {gets}: {G}eneral-to-{S}pecific ({GETS}) {M}odelling and
+		{I}ndicator {S}aturation ({ISAT}) {M}ethods}.
+	\newblock R package version 0.25.
+	
+\end{thebibliography}
+
+\end{document} 

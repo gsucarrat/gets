@@ -1,5 +1,5 @@
-Version 0.28 (7 August 2021):
-=============================
+Version 0.28 (14 August 2021):
+==============================
 
 * arx():
 - new default 'mc = TRUE'; this necessitated changes (not visible to the user) in several other files, including predict.arx(), predict.gets(), isat() and predict.isat()
