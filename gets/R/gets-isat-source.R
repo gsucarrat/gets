@@ -366,7 +366,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
 
       ##apply dropvar:
       mXis <- dropvar(mXis, tol=tol, LAPACK=LAPACK,
-        silent=print.searchinfo)
+        silent=!print.searchinfo)
 
       ##print info:
       if(is.null(parallel.options)){
@@ -499,7 +499,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
         mXis <- cbind(mX,ISmatrices[[i]][,isNames])
         colnames(mXis) <- mXisNames
         mXis <- dropvar(mXis, tol=tol, LAPACK=LAPACK,
-          silent=print.searchinfo)
+          silent=!print.searchinfo)
 
         getsis <- getsFun(y, mXis, untransformed.residuals=NULL,
           user.estimator=userEstArg, gum.result=NULL, t.pval=t.pval,
@@ -565,7 +565,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     } #end for loop
 
     mXis <- dropvar(cbind(mX,mIS), tol=tol, LAPACK=LAPACK,
-      silent=print.searchinfo)
+      silent=!print.searchinfo)
 
   } #end if(length(ISfinalmodels)>0)
 
