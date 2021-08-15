@@ -1,4 +1,4 @@
-Version 0.28 (14 August 2021):
+Version 0.28 (19 August 2021):
 ==============================
 
 * arx():
@@ -6,7 +6,9 @@ Version 0.28 (14 August 2021):
 - new argument: singular.ok
 - when 'user.estimator' is not NULL, column-names equal to the names of the regressors are added to the regressor matrix before it is passed on to the user-defined estimator
 
-* vignette: minor modifications throughout to accommodate the new default 'TRUE' in the 'mc' argument in the function arx()
+* vignettes:
+- "Introduction to the gets package": minor modifications throughout to accommodate the new default 'TRUE' in the 'mc' argument in the function arx()
+- new vignette: "User-Specified General-to-Specific (GETS) and Indicator Saturation (ISAT) Methods"
 
 * the function 'isat' changed name to 'isat.default'
 
@@ -25,6 +27,8 @@ Version 0.28 (14 August 2021):
 - now prints search-info during the specification search (set print.searchinfo=FALSE to turn off)
 
 * print.gets(): now returns less info
+
+* blocksFun.Rd: minor changes
 
 Fixes:
 - predict.arx() did not work when 'mc' was explicitly set to FALSE in arx()
