@@ -4,7 +4,7 @@
 \title{ Block-based General-to-Specific (GETS) modelling }
 
 \description{
-Auxiliary function (i.e. not intended for the average user) that enables block-based GETS-modelling with user-specified estimators, diagnostics and goodness-of-fit criteria.
+Auxiliary function (i.e. not intended for the average user) that enables block-based GETS-modelling with user-specified estimator, diagnostics and goodness-of-fit criterion.
 }
 
 \usage{
@@ -28,7 +28,7 @@ blocksFun(y, x, untransformed.residuals=NULL, blocks=NULL,
   \item{no.of.blocks}{\code{NULL} (default) or \code{integer}. If \code{NULL}, then the number of blocks is determined automatically by an internal algorithm }
   \item{max.block.size}{\code{integer} that controls the size of blocks }
   \item{ratio.threshold}{\code{numeric} between 0 and 1 that controls the minimum ratio of variables in each block to total observations }
-  \item{gets.of.union}{\code{logical}. If \code{TRUE}, then GETS modelling is undertaken of the union of retained variables. Otherwise it is not }
+  \item{gets.of.union}{\code{logical}. If \code{TRUE} (default), then GETS modelling is undertaken of the union of retained variables. Otherwise it is not }
   \item{force.invertibility}{\code{logical}. If \code{TRUE}, then the x-matrix is ensured to have full row-rank before it is passed on to \code{\link{getsFun}} }
   \item{user.estimator}{\code{list}, see \code{\link{getsFun}} for the details }
   \item{t.pval}{\code{numeric} value between 0 and 1. The significance level used for the two-sided coefficient significance t-tests }
@@ -67,7 +67,7 @@ The algorithm of \code{blocksFun} is similar to that of \code{\link{isat}}, but 
 \references{
 F. Pretis, J. Reade and G. Sucarrat (2018): 'Automated General-to-Specific (GETS) Regression Modeling and Indicator Saturation for Outliers and Structural Breaks'. Journal of Statistical Software 86, Number 3, pp. 1-44
 
-G. sucarrat (2019): 'User-Specified General-to-Specific and Indicator Saturation Methods', Munich Personal RePEc Archive: \url{https://mpra.ub.uni-muenchen.de/96653/}
+G. sucarrat (2020): 'User-Specified General-to-Specific and Indicator Saturation Methods'.  The R Journal 12 issue 2, pp. 388-401, \url{https://journal.r-project.org/archive/2021/RJ-2021-024/}
 }
 
 \author{
@@ -75,7 +75,7 @@ Genaro Sucarrat, with contributions from Jonas kurle, Felix Pretis and James Rea
 }
 
 \seealso{
-\code{\link{ols}}, \code{\link{diagnostics}}, \code{\link{infocrit}} and \code{\link{isat}}
+\code{\link{getsFun}}, \code{\link{ols}}, \code{\link{diagnostics}}, \code{\link{infocrit}} and \code{\link{isat}}
 }
 
 \examples{

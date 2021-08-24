@@ -1,8 +1,8 @@
-Version 0.28 (19 August 2021):
+Version 0.28 (24 August 2021):
 ==============================
 
 * arx():
-- new default 'mc = TRUE'; this necessitated changes (not visible to the user) in several other files, including predict.arx(), predict.gets(), isat() and predict.isat()
+- new default 'mc = TRUE'; this necessitated changes (not visible to the user) in several other files, including predict.arx(), predict.gets(), isat.default() and predict.isat()
 - new argument: singular.ok
 - when 'user.estimator' is not NULL, column-names equal to the names of the regressors are added to the regressor matrix before it is passed on to the user-defined estimator
 
@@ -31,7 +31,7 @@ Version 0.28 (19 August 2021):
 * blocksFun.Rd: minor changes
 
 Fixes:
-- predict.arx() did not work when 'mc' was explicitly set to FALSE in arx()
+- predict.arx() now works when 'mc' is explicitly set to FALSE in arx()
 - paths() and terminals() can now be applied more generally (i.e. not only objects of class "arx", "gets" and "isat")
 - the value (a list) returned by arx() when a log-variance specification has been specified, but not a mean specification, does not erroneously contain an item named 'vcov.mean' anymore
 - isat.Rd: the manual of "isat.default()" now correctly states that the value returned is of class "isat", and the extensions of the relevant functions in the "See also" field has been corrected to ".isat"

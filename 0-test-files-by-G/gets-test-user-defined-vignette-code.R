@@ -220,6 +220,10 @@ library(gets)
   ##INTERESTINGLY, this does not work very well:
   blocksFun(y, x, user.estimator = list(name = "lmFun"))
 
+  #x as list:
+  xlist <- list(x1=x[,5:30], x2=x[,26:50])
+  blocksFun(y,xlist)
+  
 
 ###########################################################
 ## USER-SPECIFIED GETS AND ISAT METHODS: ILLUSTRATIONS

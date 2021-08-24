@@ -18,7 +18,7 @@ setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
 require(parallel)
 require(zoo)
 
-##remove everything in workspace (.GlobalEnv:
+##remove everything in workspace (.GlobalEnv):
 rm(list=ls())
 
 ##load source:
@@ -599,7 +599,9 @@ inflMod01
 inflMod02 <- inflMod02 <- arx(infldata[, "infl"], ar = 1:4, mxreg = infldata[, 
   2:4], arch = 1:4, vxreg = infldata[, 2:4], vcov.type = "white")
 inflMod02
+##2.53 in paper:
 info.criterion(as.numeric(logLik(inflMod01)), n = 104, k = 8 + 1)
+##2.38 in paper:
 info.criterion(as.numeric(logLik(inflMod02)), n = 100, k = 8 + 8)
 
 ## 4.5. Example: A model of daily SP500 volatility
@@ -643,7 +645,9 @@ library("lgarch")
 sp500Mod02 <- lgarch(sp500Ret)
 sp500Mod02
 logLik(sp500Mod02)
+##2.72 in paper:
 info.criterion(as.numeric(logLik(sp500Mod01)), n = 8120, k = 17)
+##2.77 in paper:
 info.criterion(as.numeric(logLik(sp500Mod02)), n = 8240, k = 3)
 
 
@@ -693,16 +697,21 @@ newvxreg[3, "q3dum"] <- 1
 newvxreg[4, "q4dum"] <- 1
 set.seed(123)  # for reproducability
 predict(inflMod06, n.ahead = 4, spec = "variance", newvxreg = newvxreg)
+##in the paper the forecasts are:
+##1.0448239 0.3453098 0.4712113 0.2101471
 2 - 2 * sqrt(1.0448239)
 2 + 2 * sqrt(1.0448239)
 2 - 2 * sqrt(0.2075531)
 2 + 2 * sqrt(0.2075531)
+##in the paper, the range goes from 0 to 4
+##specifically, in q4, the range is 1.1 to 2.9
 
 ## 5.5. Example: A parsimonious model of daily SP500 volatility
-##--------------------------------------------------
+##-------------------------------------------------------------
 
 sp500Mod03 <- getsv(sp500Mod01, t.pval = 0.001, arch.LjungB = NULL)
 sp500Mod03
+##2.71 in the paper:
 info.criterion(as.numeric(logLik(sp500Mod03)), n = 8120, k = 7)
 
 

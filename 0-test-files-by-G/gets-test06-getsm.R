@@ -22,7 +22,7 @@ setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
 require(parallel)
 require(zoo)
 
-##remove everything in workspace (.GlobaleEnv:
+##remove everything in workspace (.GlobaleEnv):
 rm(list=ls())
 
 ##load source:
@@ -241,6 +241,7 @@ object <- arx(yy, mc=FALSE, mxreg = xregs)
 ##gum does not pass one or more diagnostics tests:
 tmp <- getsm(object)
 print(tmp)
+
 
 ##################################################
 ## 3 TEST USER DEFINED ESTIMATION

@@ -312,7 +312,7 @@ mod08 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX,
 summary(mod08)
 print(mod08)
 mod08 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX,
-  user.estimator=list(name="Gfun"), plot=TRUE) #should not work: "...no plot produced"
+  user.estimator=list(name="Gfun"), plot=TRUE) #should return: "...no plot produced"
 summary(mod08)
 print(mod08)
 coef(mod08)
