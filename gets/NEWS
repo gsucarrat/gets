@@ -1,5 +1,7 @@
-Version 0.28 (24 August 2021):
-==============================
+Version 0.29 (2 September 2021):
+================================
+
+* note: version 0.28 was unsubmitted by CRAN, since it did not pass a Debian check 
 
 * arx():
 - new default 'mc = TRUE'; this necessitated changes (not visible to the user) in several other files, including predict.arx(), predict.gets(), isat.default() and predict.isat()
@@ -8,7 +10,6 @@ Version 0.28 (24 August 2021):
 
 * vignettes:
 - "Introduction to the gets package": minor modifications throughout to accommodate the new default 'TRUE' in the 'mc' argument in the function arx()
-- new vignette: "User-Specified General-to-Specific (GETS) and Indicator Saturation (ISAT) Methods"
 
 * the function 'isat' changed name to 'isat.default'
 
