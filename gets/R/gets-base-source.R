@@ -4676,6 +4676,11 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
         
     ##if( default estimator ):
     if( is.null(object$call$user.estimator) ){
+      
+      # Save original arx mc warning setting and disable it here
+      tmpmc <- getOption("mc.warning")
+      options(mc.warning = FALSE)
+      
       ##estimate specific model:
       est <- arx(yadj, mc=FALSE, mxreg=mXadj, vc=object$aux$vc,
         arch=object$aux$arch, asym=object$aux$asym,
@@ -4686,10 +4691,19 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
         normality.JarqueB=normality.JarqueB,
         user.diagnostics=user.diagnostics, tol=object$aux$tol,
         LAPACK=object$aux$LAPACK, plot=FALSE)
+      
+      # Set the old arx mc warning again
+      options(mc.warning = tmpmc)
+      
     } #end if( default estimator )
 
     ##if( user-defined estimator ):
     if( !is.null(object$call$user.estimator) ){
+      
+      # Save original arx mc warning setting and disable it here
+      tmpmc <- getOption("mc.warning")
+      options(mc.warning = FALSE)
+      
       ##estimate specific:
       est <- arx(yadj, mc=FALSE, mxreg=mXadj,
         user.estimator=user.estimator,
@@ -4697,6 +4711,10 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
         normality.JarqueB=normality.JarqueB,
         user.diagnostics=user.diagnostics, tol=object$aux$tol,
         LAPACK=object$aux$LAPACK, plot=FALSE)
+      
+      # Set the old arx mc warning again
+      options(mc.warning = tmpmc)
+      
     } #end if( user-defined estimator )
 
     ##delete, rename, add:
@@ -4924,6 +4942,11 @@ getsv <- function(object, t.pval=0.05, wald.pval=t.pval,
     normality.JarqueB <- TRUE
   }
 
+  
+  # Save original arx mc warning setting and disable it here
+  tmpmc <- getOption("mc.warning")
+  options(mc.warning = FALSE)
+  
   ## estimate model:
   est <- arx(e, mc=FALSE, vc=TRUE, vxreg=vXadj,
     zero.adj=object$aux$zero.adj, vc.adj=object$aux$vc.adj,
@@ -4931,6 +4954,9 @@ getsv <- function(object, t.pval=0.05, wald.pval=t.pval,
     normality.JarqueB=normality.JarqueB,
     user.diagnostics=user.diagnostics, tol=object$aux$tol,
     LAPACK=object$aux$LAPACK, plot=FALSE)
+  
+  # Set the old arx mc warning again
+  options(mc.warning = tmpmc)
 
   ## delete, rename and change various stuff:
   est$call <- est$date <- NULL
