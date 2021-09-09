@@ -113,11 +113,16 @@ distorttest <- function(x, coef="all"){
   }
   
   p.test <- pchisq(HtestOLS10, df = rel.df, lower.tail = FALSE)
-  rval_chi <- list(statistic = HtestOLS10, p.value = p.test, estimate=NULL, null.value = NULL, alternative = NULL, method="Jiao-Pretis Outlier Distortion Test", data.name="Difference between IIS and OLS Estimates", coef.diff = cf_diff, var.diff = eavarOLS10, iis=x, ols=ols.y)
+  rval_chi <- list(statistic = HtestOLS10, p.value = p.test, estimate=NULL, null.value = NULL, 
+                   # alternative = NULL, # we should specify this!
+                   alternative = "Difference between IIS and OLS Estimates is 0.", # M-Orca attempt
+                   method="Jiao-Pretis-Schwarz Outlier Distortion Test", 
+                   #data.name="Difference between IIS and OLS Estimates", # M-orca should be changed
+                   data.name=deparse(substitute(x)), # M-orca should be changed
+                   coef.diff = cf_diff, var.diff = eavarOLS10, iis=x, ols=ols.y)
   attr(rval_chi, "class") <- "htest"
   
   out <- return(rval_chi)
-  
   
 }
 
