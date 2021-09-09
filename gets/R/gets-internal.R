@@ -9,7 +9,7 @@
     paste("CRAN website: https://CRAN.R-project.org/package=gets"),
     paste("Github (issues, discussions): https://github.com/gsucarrat/gets"),
     "\n",
-    paste("* Type help(", dQuote("gets-package", q=FALSE), ") for details and browseVignettes(", dQuote("gets", q=FALSE), ") for an introduction", sep=""),
+    #paste("* Type help(", dQuote("gets-package", q=FALSE), ") for details and browseVignettes(", dQuote("gets", q=FALSE), ") for an introduction", sep=""),
     "\n",
     paste("* For automatic plotting, set plot = TRUE in options: options(plot = TRUE)"),
     "\n",

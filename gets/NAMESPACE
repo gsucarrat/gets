@@ -53,7 +53,10 @@ export(
   "summary.dlogitx", "toLatex.dlogitx", "vcov.dlogitx",
 
   ##lm-class functions:
-  "as.arx.lm", "gets.lm"
+  "as.arx.lm", "gets.lm",
+  
+  ##outlier-distortion functions:
+  "distorttest", "distorttest.boot"
 
 )
 
