@@ -1,5 +1,5 @@
 \name{distorttest}
-%\alias{as.arx.lm}
+\alias{distorttest}
 
 \title{Jiao-Pretis-Schwarz Outlier Distortion Test}
 

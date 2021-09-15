@@ -347,7 +347,7 @@ distorttest.boot <- function(
 
 
 
-print.distorttest.boot <- function(x){
+print.distorttest.boot <- function(x, ...){
   
   
   print(x$dist.full)

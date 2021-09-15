@@ -16,11 +16,11 @@ distorttest(x, nboot = 199, clean.sample = TRUE, parametric = FALSE, scale.t.pva
   \item{nboot}{numeric. Number of bootstrap replications. Default is 199 replications.}
   \item{clean.sample}{logical. Whether the sample should be cleaned of outliers before resampling.}
   \item{parametric}{logical.}
-  \item{scale.t.pval}{logical. Default is 1. }
+  \item{scale.t.pval}{logical. Default is 1.}
   \item{parallel.options}{NULL (Default) or an integer, i.e. the number of cores/threads to be used for parallel computing (implemented w/makeCluster and parLapply).}
   \item{...}{Further arguments passed to \code{\link{isat}}.}}
 
-\value{Object of class \code{\link{h-test}} }
+\value{A list including an object of class \code{\link{h-test}}.}
 
 \author{
   Felix Pretis \url{https://felixpretis.climateeconometrics.org/}\cr\cr
