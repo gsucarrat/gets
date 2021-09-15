@@ -115,10 +115,10 @@ distorttest <- function(x, coef="all"){
   p.test <- pchisq(HtestOLS10, df = rel.df, lower.tail = FALSE)
   rval_chi <- list(statistic = HtestOLS10, p.value = p.test, estimate=NULL, null.value = NULL, 
                    # alternative = NULL, # we should specify this!
-                   alternative = "Difference between IIS and OLS Estimates is 0.", # M-Orca attempt
+                   alternative = "Difference between IIS and OLS Estimates is not 0.", # M-Orca attempt
                    method="Jiao-Pretis-Schwarz Outlier Distortion Test", 
                    #data.name="Difference between IIS and OLS Estimates", # M-orca should be changed
-                   data.name=deparse(substitute(x)), # M-orca should be changed
+                   data.name=deparse(substitute(x)), # M-orca changed
                    coef.diff = cf_diff, var.diff = eavarOLS10, iis=x, ols=ols.y)
   attr(rval_chi, "class") <- "htest"
   
@@ -133,8 +133,9 @@ distorttest.boot <- function(
   clean.sample = TRUE,
   parametric = FALSE,
   scale.t.pval = 1,
-  parallel = FALSE,
-  ncore = detectCores()[1] - 1,
+  parallel.options = NULL,
+  #parallel = FALSE,
+  #ncore = detectCores()[1] - 1,
   ...
 ){
   
@@ -170,9 +171,6 @@ distorttest.boot <- function(
     
   } #i closed
   
-  # MORITZ: Can I move this lower to be called only when parallel = TRUE?
-  require(foreach)
-  require(doParallel)
   
   boot.tpval <- x$aux$t.pval*scale.t.pval #bootstrap level of significance of selection
   
@@ -189,10 +187,16 @@ distorttest.boot <- function(
   }
   
   
-  if (parallel){
+  if (!is.null(parallel.options)){
+    if(!is.numeric(parallel.options)){stop("parallel.options must either be NULL or a numeric value.")}
+    
+    require(foreach)
+    require(doParallel)
+    
     #ncore=7
     #  boot.tpval <- 0.05
-    cl <- makeCluster(ncore) #not to overload your computer
+    #cl <- makeCluster(ncore) #not to overload your computer
+    cl <- makeCluster(parallel.options) #not to overload your computer
     registerDoParallel(cl)
     coefdist.sample <- foreach(i=1:nboot, .combine=rbind) %dopar% {
       require(gets)
@@ -327,12 +331,42 @@ distorttest.boot <- function(
   
   
   out$dist.full <- dist.full
+  out$dist.full$method <- "Bootstrap Jiao-Pretis-Schwarz Outlier Distortion Test"
+  
+  out$args <- list(parametric = parametric, 
+                   nboot = nboot, 
+                   scale.t.pval = scale.t.pval,
+                   clean.sample = clean.sample)
   
   class(out) <- "distorttest.boot"
   
   return(out)
   
 }
+
+
+
+
+print.distorttest.boot <- function(x){
+  
+  
+  print(x$dist.full)
+  cat("\n")
+  cat("Bootstrap Details")
+  cat("\n")
+  cat(paste0("Number of Bootstrap Replications: ",x$args$nboot))
+  cat("\n")
+  cat(paste0("Prop Full: ",x$prop.full))
+  cat("\n")
+  cat(paste0("Sample cleaned (always TRUE with parametric Bootstraps): ",x$args$clean.sample))
+  cat("\n")
+  cat(paste0("Parametric Bootstrap (residual resampling): ",x$args$parametric))
+}
+
+
+
+
+
 
 
 isvarcor.isat <- function(isatobject){
