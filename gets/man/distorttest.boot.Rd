@@ -1,5 +1,5 @@
-\name{distorttest.boot}
-%\alias{as.arx.lm}
+\name{boot.distorttest}
+\alias{boot.distorttest}
 
 \title{Bootstrapped Jiao-Pretis-Schwarz Outlier Distortion Test}
 

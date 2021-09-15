@@ -120,14 +120,14 @@ distorttest <- function(x, coef="all"){
                    #data.name="Difference between IIS and OLS Estimates", # M-orca should be changed
                    data.name=deparse(substitute(x)), # M-orca changed
                    coef.diff = cf_diff, var.diff = eavarOLS10, iis=x, ols=ols.y)
-  attr(rval_chi, "class") <- "htest"
+  attr(rval_chi, "class") <- c("htest", "distorttest")
   
   out <- return(rval_chi)
   
 }
 
 
-distorttest.boot <- function(
+boot.distorttest <- function(
   x,
   nboot = 199,
   clean.sample = TRUE,
@@ -144,8 +144,9 @@ distorttest.boot <- function(
   # nboot=199
   #
   ####compute distortion on full model
-  dist.full <- distorttest(x)
-  
+  #dist.full <- distorttest(x)
+  dist.full <- x
+  x <- x$iis
   #names(dist.full$coef.diff)
   
   out.full <- outliertest(x)
@@ -186,58 +187,108 @@ distorttest.boot <- function(
     return( dist.res)
   }
   
+  overall_fun <- function(i){
+    boot.samp <-  boot.samples[[i]]
+    
+    if (parametric==TRUE){ #parametric bootstrap (residual resampling)
+      x.boot <- x$aux$mX[, !(colnames(x$aux$mX) %in% x$ISnames)]
+      res.boot <- as.vector(x$residuals)[boot.samp]
+      y.boot <-   x.boot %*% coefficients(x)[!(colnames(x$aux$mX) %in% x$ISnames)] + res.boot
+      
+    } else { #nonparametric
+      y.boot <- x$aux$y[boot.samp]
+      x.boot <- x$aux$mX[boot.samp, !(colnames(x$aux$mX) %in% x$ISnames)]
+    }
+    
+    tempMatrix =   dist.boot.temp(y.boot, x.boot, boot.tpval)
+  }
+  
+  
+  
+  lapply(1:nboot, overall_fun)
+  
   
   if (!is.null(parallel.options)){
     if(!is.numeric(parallel.options)){stop("parallel.options must either be NULL or a numeric value.")}
     
-    require(foreach)
-    require(doParallel)
+    if(is.numeric(parallel.options)){
+      clusterSpec <- parallel.options
+      OScores <- detectCores()
+      if(parallel.options > OScores){
+        stop("parallel.options > number of cores/threads")
+      }
+    }
+    
+    
+    
+    
+    #require(foreach)
+    #require(doParallel)
     
     #ncore=7
     #  boot.tpval <- 0.05
     #cl <- makeCluster(ncore) #not to overload your computer
     cl <- makeCluster(parallel.options) #not to overload your computer
-    registerDoParallel(cl)
-    coefdist.sample <- foreach(i=1:nboot, .combine=rbind) %dopar% {
-      require(gets)
-      boot.samp <-  boot.samples[[i]]
-      
-      
-      if (parametric==TRUE){ #parametric bootstrap (residual resampling)
-        x.boot <- x$aux$mX[, !(colnames(x$aux$mX) %in% x$ISnames)]
-        res.boot <- as.vector(x$residuals)[boot.samp]
-        y.boot <-   x.boot %*% coefficients(x)[!(colnames(x$aux$mX) %in% x$ISnames)] + res.boot
-        
-      } else { #nonparametric
-        y.boot <- x$aux$y[boot.samp]
-        x.boot <- x$aux$mX[boot.samp, !(colnames(x$aux$mX) %in% x$ISnames)]
-      }
-      
-      tempMatrix =   dist.boot.temp(y.boot, x.boot, boot.tpval)
-      
-    }
-    #stop cluster
-    stopCluster(cl)
+    #doParallel::registerDoParallel(cl)
+    #browser()
+    coefdist.sample.list <- parLapply(cl = cl, 
+                                      X = 1:nboot,
+                                      fun = overall_fun)
+    
+    coefdist.sample <- do.call(rbind, coefdist.sample.list)
+    #names(coefdist.sample) <- names(coefdist.sample.list[[1]])
+    
+    #`%dopar%` <- foreach::`%dopar%`
+    
+    # coefdist.sample <- foreach::foreach(i=1:nboot, .combine=rbind) %dopar% {
+    #   require(gets)
+    #   boot.samp <-  boot.samples[[i]]
+    #   
+    #   
+    #   if (parametric==TRUE){ #parametric bootstrap (residual resampling)
+    #     x.boot <- x$aux$mX[, !(colnames(x$aux$mX) %in% x$ISnames)]
+    #     res.boot <- as.vector(x$residuals)[boot.samp]
+    #     y.boot <-   x.boot %*% coefficients(x)[!(colnames(x$aux$mX) %in% x$ISnames)] + res.boot
+    #     
+    #   } else { #nonparametric
+    #     y.boot <- x$aux$y[boot.samp]
+    #     x.boot <- x$aux$mX[boot.samp, !(colnames(x$aux$mX) %in% x$ISnames)]
+    #   }
+    #   
+    #   tempMatrix =   dist.boot.temp(y.boot, x.boot, boot.tpval)
+    #   
+    # }
+    # #stop cluster
+    # parallel::stopCluster(cl)
     
   } else { #if not using parallel
-    coefdist.sample <-foreach(i=1:nboot,.combine=rbind) %do% {
-      boot.samp <-  boot.samples[[i]]
-      
-      
-      if (parametric==TRUE){ #parametric bootstrap (residual resampling)
-        x.boot <- x$aux$mX[, !(colnames(x$aux$mX) %in% x$ISnames)]
-        res.boot <- as.vector(x$residuals)[boot.samp]
-        y.boot <-   x.boot %*% coefficients(x)[!(colnames(x$aux$mX) %in% x$ISnames)] + res.boot
-        
-      } else { #nonparametric
-        y.boot <- x$aux$y[boot.samp]
-        x.boot <- x$aux$mX[boot.samp, !(colnames(x$aux$mX) %in% x$ISnames)]
-      }
-      #  y.boot <- x$aux$y[boot.samp]
-      # x.boot <- x$aux$mX[boot.samp, !(colnames(x$aux$mX) %in% x$ISnames)]
-      #
-      dist.boot.temp(y.boot, x.boot, boot.tpval)
-    }
+    #`%do%` <- foreach::`%do%`
+    
+    coefdist.sample.list <- lapply(
+      X = 1:nboot,
+      FUN = overall_fun)
+    
+    coefdist.sample <- do.call(rbind, coefdist.sample.list)
+    
+    
+    # coefdist.sample <-for(i in c(1:nboot),.combine=rbind) %do% {
+    #   boot.samp <-  boot.samples[[i]]
+    #   
+    #   
+    #   if (parametric==TRUE){ #parametric bootstrap (residual resampling)
+    #     x.boot <- x$aux$mX[, !(colnames(x$aux$mX) %in% x$ISnames)]
+    #     res.boot <- as.vector(x$residuals)[boot.samp]
+    #     y.boot <-   x.boot %*% coefficients(x)[!(colnames(x$aux$mX) %in% x$ISnames)] + res.boot
+    #     
+    #   } else { #nonparametric
+    #     y.boot <- x$aux$y[boot.samp]
+    #     x.boot <- x$aux$mX[boot.samp, !(colnames(x$aux$mX) %in% x$ISnames)]
+    #   }
+    #   #  y.boot <- x$aux$y[boot.samp]
+    #   # x.boot <- x$aux$mX[boot.samp, !(colnames(x$aux$mX) %in% x$ISnames)]
+    #   #
+    #   dist.boot.temp(y.boot, x.boot, boot.tpval)
+    # }
   } #parallel if closed
   
   # end.time <- Sys.time()
@@ -338,7 +389,7 @@ distorttest.boot <- function(
                    scale.t.pval = scale.t.pval,
                    clean.sample = clean.sample)
   
-  class(out) <- "distorttest.boot"
+  class(out) <- "boot.distorttest"
   
   return(out)
   
@@ -347,7 +398,7 @@ distorttest.boot <- function(
 
 
 
-print.distorttest.boot <- function(x, ...){
+print.boot.distorttest <- function(x, ...){
   
   
   print(x$dist.full)

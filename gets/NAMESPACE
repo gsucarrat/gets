@@ -56,7 +56,7 @@ export(
   "as.arx.lm", "gets.lm",
   
   ##outlier-distortion functions:
-  "distorttest", "distorttest.boot", "print.distorttest.boot"
+  "distorttest", "boot.distorttest", "print.boot.distorttest"
 
 )
 
@@ -122,4 +122,5 @@ S3method("gets", "lm")
 S3method("isat", "lm")
 
 ##methods for class distorttest.boot
-S3method("print","distorttest.boot")
+S3method("print","boot.distorttest")
+#S3method("boot","distorttest")
