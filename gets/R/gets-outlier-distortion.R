@@ -5,8 +5,9 @@ distorttest <- function(x, coef="all"){
   if (is.null(x)){stop("Object is NULL - please make sure to pass an isat object.")}
   if (class(x)!="isat"){ stop("x must be an isat object")}
   if (any(x$call$sis, x$call$tis, x$call$uis)==TRUE){stop("Test only valid for iis - not valid for sis, uis, or tis.")} 
-  if (coef != "all" && any(!coef %in% names(coef(x)))){stop("The 'coef' variable or vector contains one or more regressors not in the isat object.")}
+  if (all(coef != "all") && any(!coef %in% names(coef(x)))){stop("The 'coef' variable or vector contains one or more regressors not in the isat object.")}
   if (x$call$iis != TRUE){stop("The isat object has not selected iis = TRUE. This is necessary for this test. Re-estimate isat with iis = TRUE.")}
+  # WRONG CHECK - Therefore commented out: if (is.null(x$ISnames)){stop("IIS did not identify any Indicators (Outliers). Therefore OLS = IIS and no distortion is detectable.")}
   
   ISnames <- c(x$ISnames[grep("iis", x$ISnames)])
   noutl = length(ISnames)
@@ -56,8 +57,14 @@ distorttest <- function(x, coef="all"){
   nOLS_rob <- length(x$aux$y) - length(x$ISnames)
   
   # This is the GUM
+  # Save original arx mc warning setting and disable it here
+  tmpmc <- getOption("mc.warning")
+  options(mc.warning = FALSE)
+  
   ols.y <- arx(y, mxreg=mx, mc=FALSE, plot=FALSE, ar=FALSE)
   
+  # Set the old arx mc warning again
+  options(mc.warning = tmpmc)
   
   if (NROW(coef)==1){
     if (coef=="all"){ #if testing on all coefficients
@@ -71,7 +78,6 @@ distorttest <- function(x, coef="all"){
       
       betaOLS1 <- coef(x)[coef]
       betaOLS <- coef(ols.y)[coef]
-      
       
       V <- (nOLS_rob/nOLS) * (rhoc1)^(-1)*(varsigmac)^(-1) * x$vcov.mean[coef, coef]
       
@@ -113,13 +119,22 @@ distorttest <- function(x, coef="all"){
   }
   
   p.test <- pchisq(HtestOLS10, df = rel.df, lower.tail = FALSE)
-  rval_chi <- list(statistic = HtestOLS10, p.value = p.test, estimate=NULL, null.value = NULL, 
-                   # alternative = NULL, # we should specify this!
-                   alternative = "Difference between IIS and OLS Estimates is not 0.", # M-Orca attempt
-                   method="Jiao-Pretis-Schwarz Outlier Distortion Test", 
-                   #data.name="Difference between IIS and OLS Estimates", # M-orca should be changed
-                   data.name=deparse(substitute(x)), # M-orca changed
-                   coef.diff = cf_diff, var.diff = eavarOLS10, iis=x, ols=ols.y)
+  #attr(cf_diff,"names") <- "Difference in Estimates"
+  attr(HtestOLS10,"names") <- "Chi-squared Overall Test"
+  rval_chi <- list(
+    #statistic = HtestOLS10, p.value = p.test, estimate=NULL, null.value = NULL, # Felix
+    statistic = HtestOLS10, p.value = p.test, estimate=cf_diff, null.value = NULL, # Moritz
+    # alternative = NULL, # Felix
+    alternative = "Difference between IIS and OLS Estimates is not 0.", # M-Orca attempt
+    
+    method="Jiao-Pretis-Schwarz Outlier Distortion Test", # Moritz
+    #data.name="Difference between IIS and OLS Estimates", # Felix
+    
+    data.name=deparse(substitute(x)), # M-orca changed
+    coef.diff = cf_diff, 
+    var.diff = eavarOLS10, 
+    iis=x, 
+    ols=ols.y)
   attr(rval_chi, "class") <- c("htest", "distorttest")
   
   out <- return(rval_chi)
@@ -147,7 +162,10 @@ boot.distorttest <- function(
   #
   ####compute distortion on full model
   #dist.full <- distorttest(x)
+  
   dist.full <- x
+  #coef_name <- attr(x$coef.diff, "names") # FUTURE DEVELOPMENT. Current error stopping below: 
+  if(!identical(attr(x$coef.diff,"names"),x$iis$aux$mXnames[!x$iis$aux$mXnames %in% x$iis$ISnames])){stop("Bootstrap on distorttest currently must be coef = 'all'.")}
   x <- x$iis
   #names(dist.full$coef.diff)
   

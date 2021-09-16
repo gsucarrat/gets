@@ -56,7 +56,7 @@ export(
   "as.arx.lm", "gets.lm",
   
   ##outlier-distortion functions:
-  "distorttest", "boot.distorttest", "print.boot.distorttest"
+  "boot","distorttest", "boot.distorttest", "print.boot.distorttest"
 
 )
 

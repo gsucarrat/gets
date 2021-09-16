@@ -33,7 +33,6 @@
 data(Nile)
 Nile[10] <- Nile[10]+1000 # to ensure there is an indicator retained
 nile <- isat(Nile, sis=FALSE, iis=TRUE, plot=TRUE, t.pval=0.005)
-
 distorttest(nile)
 
 data("hpdata")

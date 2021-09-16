@@ -1,5 +1,6 @@
 \name{boot.distorttest}
 \alias{boot.distorttest}
+\alias{boot}
 \alias{print.boot.distorttest}
 
 \title{Bootstrapped Jiao-Pretis-Schwarz Outlier Distortion Test}
@@ -10,8 +11,12 @@
 }
 
 \usage{
-boot.distorttest(x, nboot = 199, clean.sample = TRUE, parametric = FALSE, 
-scale.t.pval = 1, parallel.options = NULL, ...)
+boot(x, ...)
+
+##S3 method for objects of class 'distorttest':
+\method{boot}{distorttest(x, nboot = 199, clean.sample = TRUE, 
+parametric = FALSE, scale.t.pval = 1, parallel.options = NULL, ...)}
+##S3 printing method for objects of class 'boot.distorttest':
 \method{print}{boot.distorttest}(x, ...)
 }
 
@@ -42,7 +47,8 @@ scale.t.pval = 1, parallel.options = NULL, ...)
   nile <- isat(Nile, sis=FALSE, iis=TRUE, plot=TRUE, t.pval=0.005)
   
   distorttest(nile)
-  boot(distorttest(nile), nboot = 10)
+  # bootstrap (with nboot = 2 to save time)
+  boot(distorttest(nile), nboot = 2)
   
   data("hpdata")
   # Another example with co-variates
@@ -58,12 +64,12 @@ scale.t.pval = 1, parallel.options = NULL, ...)
   distorttest(m3, coef = "GNPQ")
   distorttest(m4, coef = c("ar1", "FSDJ"))
   
-  # bootstrap
-  db1 <- boot(distorttest(m1), nboot = 10)
-  db2 <- boot(distorttest(m2), nboot = 10)
-  db3 <- boot(distorttest(m3), nboot = 10)
-  db4 <- boot(distorttest(m4), nboot = 10)
-  db4.clean <- boot(distorttest(m4), nboot = 10, clean.sample = TRUE)
+  # bootstrap (with nboot = 2 to save time)
+  boot(distorttest(m1), nboot = 2)
+  boot(distorttest(m2), nboot = 2)
+  boot(distorttest(m3), nboot = 2)
+  boot(distorttest(m4), nboot = 2)
+  boot(distorttest(m4), nboot = 2, clean.sample = TRUE)
 
   
 }
