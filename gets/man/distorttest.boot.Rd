@@ -1,5 +1,6 @@
 \name{boot.distorttest}
 \alias{boot.distorttest}
+\alias{print.boot.distorttest}
 
 \title{Bootstrapped Jiao-Pretis-Schwarz Outlier Distortion Test}
 
@@ -9,7 +10,10 @@
 }
 
 \usage{
-distorttest(x, nboot = 199, clean.sample = TRUE, parametric = FALSE, scale.t.pval = 1, parallel.options = NULL, ...)}
+boot.distorttest(x, nboot = 199, clean.sample = TRUE, parametric = FALSE, 
+scale.t.pval = 1, parallel.options = NULL, ...)
+\method{print}{boot.distorttest}(x, ...)
+}
 
 \arguments{
   \item{x}{object of class \code{\link{isat}} }
@@ -20,7 +24,7 @@ distorttest(x, nboot = 199, clean.sample = TRUE, parametric = FALSE, scale.t.pva
   \item{parallel.options}{NULL (Default) or an integer, i.e. the number of cores/threads to be used for parallel computing (implemented w/makeCluster and parLapply).}
   \item{...}{Further arguments passed to \code{\link{isat}}.}}
 
-\value{A list including an object of class \code{\link{h-test}}.}
+\value{A list including an object of class \code{h-test}.}
 
 \author{
   Felix Pretis \url{https://felixpretis.climateeconometrics.org/}\cr\cr
@@ -38,9 +42,9 @@ distorttest(x, nboot = 199, clean.sample = TRUE, parametric = FALSE, scale.t.pva
   nile <- isat(Nile, sis=FALSE, iis=TRUE, plot=TRUE, t.pval=0.005)
   
   distorttest(nile)
-  distorttest.boot(nile, nboot = 10)
+  boot(distorttest(nile), nboot = 10)
   
-  
+  data("hpdata")
   # Another example with co-variates
   dat <- hpdata[,c("GD", "GNPQ", "FSDJ")]
   Y <- ts(dat$GD,start = 1959, frequency = 4)
@@ -50,16 +54,16 @@ distorttest(x, nboot = 199, clean.sample = TRUE, parametric = FALSE, scale.t.pva
   m3 <- isat(y = Y, mxreg = mxreg, mc = TRUE, sis = FALSE, iis = TRUE)
   m4 <- isat(y = Y, mxreg = mxreg, mc = TRUE, sis = FALSE, iis = TRUE, ar = 1)
   distorttest(m1, coef = "all")
-  distorttest(m2, coef = "GNPQ")
+  distorttest(m2, coef = "all")
   distorttest(m3, coef = "GNPQ")
-  distorttest(m4, coef = c("AR1", "FSDJ"))
+  distorttest(m4, coef = c("ar1", "FSDJ"))
   
   # bootstrap
-  db1 <- distorttest.boot(m1, nboot = 10)
-  db2 <- distorttest.boot(m2, nboot = 10)
-  db3 <- distorttest.boot(m3, nboot = 10)
-  db4 <- distorttest.boot(m4, nboot = 10)
-  db4.clean <- distorttest.boot(m4, nboot = 10, clean.sample = TRUE)
+  db1 <- boot(distorttest(m1), nboot = 10)
+  db2 <- boot(distorttest(m2), nboot = 10)
+  db3 <- boot(distorttest(m3), nboot = 10)
+  db4 <- boot(distorttest(m4), nboot = 10)
+  db4.clean <- boot(distorttest(m4), nboot = 10, clean.sample = TRUE)
 
   
 }

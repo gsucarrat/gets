@@ -123,4 +123,4 @@ S3method("isat", "lm")
 
 ##methods for class distorttest.boot
 S3method("print","boot.distorttest")
-#S3method("boot","distorttest")
+S3method("boot","distorttest")

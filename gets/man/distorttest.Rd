@@ -25,7 +25,7 @@
 }
 
 \seealso{
-  \code{\link{isat}, \link{distorttest.boot}}
+  \code{\link{isat}, \link{boot.distorttest}}
 }
 
 \examples{
@@ -36,7 +36,7 @@ nile <- isat(Nile, sis=FALSE, iis=TRUE, plot=TRUE, t.pval=0.005)
 
 distorttest(nile)
 
-
+data("hpdata")
 # Another example with co-variates
 dat <- hpdata[,c("GD", "GNPQ", "FSDJ")]
 Y <- ts(dat$GD,start = 1959, frequency = 4)
@@ -46,9 +46,9 @@ m2 <- isat(y = Y, mc = TRUE, sis = FALSE, iis = TRUE, ar = 1)
 m3 <- isat(y = Y, mxreg = mxreg, mc = TRUE, sis = FALSE, iis = TRUE)
 m4 <- isat(y = Y, mxreg = mxreg, mc = TRUE, sis = FALSE, iis = TRUE, ar = 1)
 distorttest(m1, coef = "all")
-distorttest(m2, coef = "GNPQ")
+distorttest(m2, coef = "all")
 distorttest(m3, coef = "GNPQ")
-distorttest(m4, coef = c("AR1", "FSDJ"))
+distorttest(m4, coef = c("ar1", "FSDJ"))
   
 }
 

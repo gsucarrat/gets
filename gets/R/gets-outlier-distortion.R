@@ -5,7 +5,7 @@ distorttest <- function(x, coef="all"){
   if (is.null(x)){stop("Object is NULL - please make sure to pass an isat object.")}
   if (class(x)!="isat"){ stop("x must be an isat object")}
   if (any(x$call$sis, x$call$tis, x$call$uis)==TRUE){stop("Test only valid for iis - not valid for sis, uis, or tis.")} 
-  if (coef != "all" && any(!coef %in% names(coefficients(x)))){stop("The 'coef' variable or vector conatins one or more regressors not in the isat object.")}
+  if (coef != "all" && any(!coef %in% names(coef(x)))){stop("The 'coef' variable or vector contains one or more regressors not in the isat object.")}
   if (x$call$iis != TRUE){stop("The isat object has not selected iis = TRUE. This is necessary for this test. Re-estimate isat with iis = TRUE.")}
   
   ISnames <- c(x$ISnames[grep("iis", x$ISnames)])
@@ -33,7 +33,7 @@ distorttest <- function(x, coef="all"){
   # n.null <-  x$aux$y.index[!(x$aux$y.index %in% x.date)]
   n.null <-  !(x$aux$y.index %in% x.date)
   
-  keep <- which(!(names(coefficients(x)) %in%  x$ISnames))
+  keep <- which(!(names(coef(x)) %in%  x$ISnames))
   
   y.null <-  x$aux$y[n.null]
   
@@ -62,15 +62,15 @@ distorttest <- function(x, coef="all"){
   if (NROW(coef)==1){
     if (coef=="all"){ #if testing on all coefficients
       
-      betaOLS1 <- coefficients(x)[keep]
-      betaOLS <- coefficients(ols.y)
+      betaOLS1 <- coef(x)[keep]
+      betaOLS <- coef(ols.y)
       
       V <- (nOLS_rob/nOLS) * (rhoc1)^(-1)*(varsigmac)^(-1) * x$vcov.mean[keep, keep]
       
     } else { #testing on subset of coefficients
       
-      betaOLS1 <- coefficients(x)[coef]
-      betaOLS <- coefficients(ols.y)[coef]
+      betaOLS1 <- coef(x)[coef]
+      betaOLS <- coef(ols.y)[coef]
       
       
       V <- (nOLS_rob/nOLS) * (rhoc1)^(-1)*(varsigmac)^(-1) * x$vcov.mean[coef, coef]
@@ -79,8 +79,8 @@ distorttest <- function(x, coef="all"){
     
   } else {
     
-    betaOLS1 <- coefficients(x)[coef]
-    betaOLS <- coefficients(ols.y)[coef]
+    betaOLS1 <- coef(x)[coef]
+    betaOLS <- coef(ols.y)[coef]
     
     V <- (nOLS_rob/nOLS) * (rhoc1)^(-1)*(varsigmac)^(-1) * x$vcov.mean[coef, coef]
     
@@ -126,6 +126,8 @@ distorttest <- function(x, coef="all"){
   
 }
 
+
+boot <- function(x, ...){ UseMethod("boot") }
 
 boot.distorttest <- function(
   x,
@@ -193,7 +195,7 @@ boot.distorttest <- function(
     if (parametric==TRUE){ #parametric bootstrap (residual resampling)
       x.boot <- x$aux$mX[, !(colnames(x$aux$mX) %in% x$ISnames)]
       res.boot <- as.vector(x$residuals)[boot.samp]
-      y.boot <-   x.boot %*% coefficients(x)[!(colnames(x$aux$mX) %in% x$ISnames)] + res.boot
+      y.boot <-   x.boot %*% coef(x)[!(colnames(x$aux$mX) %in% x$ISnames)] + res.boot
       
     } else { #nonparametric
       y.boot <- x$aux$y[boot.samp]
@@ -219,50 +221,18 @@ boot.distorttest <- function(
       }
     }
     
-    
-    
-    
-    #require(foreach)
-    #require(doParallel)
-    
     #ncore=7
     #  boot.tpval <- 0.05
-    #cl <- makeCluster(ncore) #not to overload your computer
+    
     cl <- makeCluster(parallel.options) #not to overload your computer
-    #doParallel::registerDoParallel(cl)
-    #browser()
+    
     coefdist.sample.list <- parLapply(cl = cl, 
                                       X = 1:nboot,
                                       fun = overall_fun)
     
     coefdist.sample <- do.call(rbind, coefdist.sample.list)
-    #names(coefdist.sample) <- names(coefdist.sample.list[[1]])
-    
-    #`%dopar%` <- foreach::`%dopar%`
-    
-    # coefdist.sample <- foreach::foreach(i=1:nboot, .combine=rbind) %dopar% {
-    #   require(gets)
-    #   boot.samp <-  boot.samples[[i]]
-    #   
-    #   
-    #   if (parametric==TRUE){ #parametric bootstrap (residual resampling)
-    #     x.boot <- x$aux$mX[, !(colnames(x$aux$mX) %in% x$ISnames)]
-    #     res.boot <- as.vector(x$residuals)[boot.samp]
-    #     y.boot <-   x.boot %*% coefficients(x)[!(colnames(x$aux$mX) %in% x$ISnames)] + res.boot
-    #     
-    #   } else { #nonparametric
-    #     y.boot <- x$aux$y[boot.samp]
-    #     x.boot <- x$aux$mX[boot.samp, !(colnames(x$aux$mX) %in% x$ISnames)]
-    #   }
-    #   
-    #   tempMatrix =   dist.boot.temp(y.boot, x.boot, boot.tpval)
-    #   
-    # }
-    # #stop cluster
-    # parallel::stopCluster(cl)
     
   } else { #if not using parallel
-    #`%do%` <- foreach::`%do%`
     
     coefdist.sample.list <- lapply(
       X = 1:nboot,
@@ -270,25 +240,6 @@ boot.distorttest <- function(
     
     coefdist.sample <- do.call(rbind, coefdist.sample.list)
     
-    
-    # coefdist.sample <-for(i in c(1:nboot),.combine=rbind) %do% {
-    #   boot.samp <-  boot.samples[[i]]
-    #   
-    #   
-    #   if (parametric==TRUE){ #parametric bootstrap (residual resampling)
-    #     x.boot <- x$aux$mX[, !(colnames(x$aux$mX) %in% x$ISnames)]
-    #     res.boot <- as.vector(x$residuals)[boot.samp]
-    #     y.boot <-   x.boot %*% coefficients(x)[!(colnames(x$aux$mX) %in% x$ISnames)] + res.boot
-    #     
-    #   } else { #nonparametric
-    #     y.boot <- x$aux$y[boot.samp]
-    #     x.boot <- x$aux$mX[boot.samp, !(colnames(x$aux$mX) %in% x$ISnames)]
-    #   }
-    #   #  y.boot <- x$aux$y[boot.samp]
-    #   # x.boot <- x$aux$mX[boot.samp, !(colnames(x$aux$mX) %in% x$ISnames)]
-    #   #
-    #   dist.boot.temp(y.boot, x.boot, boot.tpval)
-    # }
   } #parallel if closed
   
   # end.time <- Sys.time()
