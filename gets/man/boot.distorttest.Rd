@@ -1,6 +1,6 @@
 \name{boot.distorttest}
-\alias{boot.distorttest}
 \alias{boot}
+\alias{boot.distorttest}
 \alias{print.boot.distorttest}
 
 \title{Bootstrapped Jiao-Pretis-Schwarz Outlier Distortion Test}
@@ -14,8 +14,8 @@
 boot(x, ...)
 
 ##S3 method for objects of class 'distorttest':
-\method{boot}{distorttest(x, nboot = 199, clean.sample = TRUE, 
-parametric = FALSE, scale.t.pval = 1, parallel.options = NULL, ...)}
+\method{boot}{distorttest}(x, nboot = 199, clean.sample = TRUE, 
+  parametric = FALSE, scale.t.pval = 1, parallel.options = NULL, ...)
 ##S3 printing method for objects of class 'boot.distorttest':
 \method{print}{boot.distorttest}(x, ...)
 }
@@ -41,7 +41,7 @@ parametric = FALSE, scale.t.pval = 1, parallel.options = NULL, ...)}
 }
 
 \examples{
-  
+  \dontrun{
   data(Nile)
   Nile[10] <- Nile[10]+1000 # to ensure there is an indicator retained
   nile <- isat(Nile, sis=FALSE, iis=TRUE, plot=TRUE, t.pval=0.005)
@@ -71,7 +71,7 @@ parametric = FALSE, scale.t.pval = 1, parallel.options = NULL, ...)}
   boot(distorttest(m4), nboot = 2)
   boot(distorttest(m4), nboot = 2, clean.sample = TRUE)
 
-  
+  }
 }
 
 \keyword{Statistical Models}
