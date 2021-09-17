@@ -23,9 +23,9 @@ parametric = FALSE, scale.t.pval = 1, parallel.options = NULL, ...)}
 \arguments{
   \item{x}{object of class \code{\link{isat}} }
   \item{nboot}{numeric. Number of bootstrap replications. Default is 199 replications.}
-  \item{clean.sample}{logical. Whether the sample should be cleaned of outliers before resampling.}
-  \item{parametric}{logical.}
-  \item{scale.t.pval}{logical. Default is 1.}
+  \item{clean.sample}{logical. Whether the outlier-removed sample should be used in resampling.}
+  \item{parametric}{logical. Whether to use a parametric bootstrap. Default is non-parametric (FALSE). Parametric currently not implemented for autoregressive models.}
+  \item{scale.t.pval}{numeric. Scaled target p-value. Default is 1.}
   \item{parallel.options}{NULL (Default) or an integer, i.e. the number of cores/threads to be used for parallel computing (implemented w/makeCluster and parLapply).}
   \item{...}{Further arguments passed to \code{\link{isat}}.}}
 
