@@ -209,6 +209,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     mSIS <- mSIS[,-1]
     ISmatrices <- c(ISmatrices,list(SIS=mSIS))
   }
+  
   if(tis){ #trend indicators
     mTIS <- matrix(0,y.n,y.n)
     v1n <- seq(1,y.n)
@@ -581,6 +582,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
 
   ##make return object:
   ##-------------------
+  
   ##do final gets:
 
   getsis <- getsFun(y, mXis, untransformed.residuals=NULL,
@@ -646,7 +648,6 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   getsis <-
     c(list(ISfinalmodels=ISfinalmodels, ISnames=ISnames), getsis, mod)
   getsis$aux$t.pval <- t.pval #needed for biascorr
-  getsis$aux$arguments <- mget(names(formals()),sys.frame(sys.nframe())) # added by M-orca April 2021 for S3 methods
   class(getsis) <- "isat"
   if(alarm){ alarm() }
   if( is.null(plot) ){ #determine whether to plot or not
@@ -1111,6 +1112,7 @@ print.isat <- function(x, signif.stars=TRUE, ...)
       endAsChar <- as.character(indexTrimmed[length(indexTrimmed)])
     }
     cat("Sample:", startAsChar, "to", endAsChar, "\n")
+    
     ####### START the part commented out 17 July 2019 by G-man:  
     #
     #  ##gum:
@@ -1162,6 +1164,7 @@ print.isat <- function(x, signif.stars=TRUE, ...)
     #  }
     #
     ####### END the part commented out 17 July 2019 by G-man  
+    
     ##specific model:
     if(!is.null(x$specific.spec)){
       cat("\n")
@@ -1184,6 +1187,7 @@ print.isat <- function(x, signif.stars=TRUE, ...)
         cat("Not estimated\n")
       }
     }
+    
     ##diagnostics and fit:
     if(!is.null(x$diagnostics)){
       
@@ -1204,7 +1208,7 @@ print.isat <- function(x, signif.stars=TRUE, ...)
       if(!is.null(x$call$iis)){
         #OLD:
         #      if (x$call$iis==TRUE){
-        # I would prefer this to be turned off or only printed if ols estimator has been used
+        # I would prefer this to be turned off or only printed if ols estimator has been used (J-bat)
         if (x$call$iis==TRUE){        outltest <- outliertest(x)
         mOutl <- matrix(NA, 2, 2)
         colnames(mOutl) <- c("Stat.", "p-value")
