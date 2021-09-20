@@ -5,7 +5,8 @@
 ## 1 INITIATE
 ## 2 TEST ARGUMENTS OF getsm()
 ## 3 TEST USER DEFINED ESTIMATION
-## 4 SIMULATIONS (FOR THE FUTURE)
+## 4 FURTHER TESTS OF predict.gets()
+## 5 SIMULATIONS (FOR THE FUTURE)
 ##
 ##################################################
 
@@ -14,19 +15,19 @@
 ##################################################
 
 ##set working directory:
-setwd("C:/Users/sucarrat/Documents/R/gs/gets/github/")
+setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
 #setwd(choose.dir())
 
 ##load required packages:
 require(parallel)
 require(zoo)
 
-##remove everything in workspace (.GlobaleEnv:
+##remove everything in workspace (.GlobaleEnv):
 rm(list=ls())
 
 ##load source:
-source("./contents/gets/R/gets-base-source.R")
-#source("./contents/gets/R/gets-isat-source.R")
+source("./gets/R/gets-base-source.R")
+#source("./gets/R/gets-isat-source.R")
 
 
 ##################################################
@@ -48,21 +49,24 @@ options(plot=TRUE)
 #y <- zooreg(y, frequency=4, start=c(1990,2))
 
 ##only mean equation:
-gum01 <- arx(y, mc=TRUE, ar=1:3, mxreg=mX)
+gum01 <- arx(y, ar=1:3, mxreg=mX)
 gum01
 getsm01 <- getsm(gum01)
 getsm(gum01)
-getsm(gum01, t.pval=0.01)
-getsm(gum01, wald.pval=0.01)
+getsm(gum01, t.pval=0.3)
+getsm(gum01, wald.pval=0.6)
 getsm(gum01, vcov.type="o")
 getsm(gum01, vcov.type="w")
-getsm(gum01, vcov.type="n")
+getsm(gum01, vcov.type="n")                     
 getsm(gum01, do.pet=FALSE)
+getsm(gum01, t.pval=0.6, do.pet=FALSE)
 getsm(gum01, ar.LjungB=list(lag=6,pval=0.2))
 getsm(gum01, ar.LjungB=list(lag=NULL,pval=0.2))
+getsm(gum01, ar.LjungB=c(2,0.05))
 getsm(gum01, ar.LjungB=NULL)
 getsm(gum01, arch.LjungB=list(lag=6,pval=0.2))
 getsm(gum01, arch.LjungB=list(lag=NULL,pval=0.2))
+getsm(gum01, arch.LjungB=c(2,0.05))
 getsm(gum01, arch.LjungB=NULL)
 getsm(gum01, normality.JarqueB=0.025)
 getsm(gum01, ar.LjungB=NULL, arch.LjungB=NULL,
@@ -228,11 +232,12 @@ gum04 <- arx(y, mc=TRUE, ar=1:3, mxreg=mX, arch=1:2, asym=1,
   log.ewma=list(length=3), vxreg=log(mX^2), vcov.type="n")
 getsm(gum04)
 
-##issue #22 (by M-orca) on Github (6/9-2020):
+##issue #22 (closed), created 6/9-2020 by M-orca:
+##https://github.com/gsucarrat/gets/issues/22
 set.seed(123)
 yy <- arima.sim(list(ar=0.9), 80)
 xregs <- matrix(rnorm(2*80), 80, 2)
-object <- arx(yy, mxreg = xregs)
+object <- arx(yy, mc=FALSE, mxreg = xregs)
 ##gum does not pass one or more diagnostics tests:
 tmp <- getsm(object)
 print(tmp)
@@ -264,8 +269,9 @@ gum01 <- arx(y, mc=TRUE, ar=1:3, mxreg=mX,
   user.estimator=list(name="Gfun"), plot=FALSE)
 summary(gum01)
 print(gum01)
-myspecific <- getsm(gum01)
+myspecific <- getsm(gum01) #should work
 suppressMessages( myspecific <- getsm(gum01) )
+suppressMessages( myspecific <- getsm(gum01, print.searchinfo=TRUE) )
 summary(myspecific)
 myspecific
 
@@ -287,6 +293,133 @@ myspecific <- getsm(gum01,
 
 
 ##################################################
-## 4 SIMULATIONS (FOR THE FUTURE)
+## 4 FURTHER TESTS OF predict.gets()
+##################################################
+
+##------------------------------------------------
+## the main purpose of the experiments that follow
+## is to test the 'mc' argument (in 0.28 the
+## default was changed to 'TRUE' in arx())
+##------------------------------------------------
+
+##some data
+set.seed(123)
+y <- rnorm(50)
+
+##experiment:
+##-----------
+
+##predictions by predict.arx():
+gum <- arx(y, ar=1)
+correctVals <- predict(gum, n.ahead=3)
+
+##predictions by predict.gets():
+myspecific <- gets(gum, keep=1:length(coef(gum)))
+functionVals <- predict(myspecific, n.ahead=3)
+
+##do they correspond?:
+all( functionVals == correctVals )
+
+##experiment:
+##-----------
+
+##predictions by predict.arx():
+gum <- arx(y, mc=FALSE, ar=1)
+correctVals <- predict(gum, n.ahead=3)
+
+##predictions by predict.gets():
+myspecific <- getsm(gum, keep=1:length(coef(gum)))
+functionVals <- predict(myspecific, n.ahead=3)
+
+##do they correspond?:
+all( functionVals == correctVals )
+
+##experiment:
+##-----------
+
+##predictions by predict.arx():
+gum <- arx(y, vc=TRUE)
+correctVals <- predict(gum, spec="variance", n.ahead=3)
+
+##predictions by predict.gets():
+myspecific <- getsv(gum, keep=1)
+functionVals <- predict(myspecific, n.ahead=3)
+
+##do they correspond?:
+all( functionVals == correctVals )
+
+##experiment:
+##-----------
+
+##predictions by predict.arx():
+gum <- arx(y, mc=TRUE, vc=TRUE)
+correctVals <- predict(gum, spec="variance", n.ahead=3)
+
+##predictions by predict.gets():
+myspecific <- getsv(gum, keep=1)
+functionVals <- predict(myspecific, n.ahead=3)
+
+##do they correspond?:
+all( functionVals == correctVals )
+
+##experiment:
+##-----------
+
+##predictions by predict.arx():
+gum <- arx(y, mc=FALSE, vc=TRUE)
+correctVals <- predict(gum, spec="variance", n.ahead=3)
+
+##predictions by predict.gets():
+myspecific <- getsv(gum, keep=1)
+functionVals <- predict(myspecific, n.ahead=3)
+
+##do they correspond?:                                                  
+all( functionVals == correctVals )
+
+##experiment:
+##-----------
+
+##predictions by predict.arx():
+gum <- arx(y, vc=TRUE, arch=1)
+correctVals <- predict(gum, spec="variance", n.ahead=1)
+
+##predictions by predict.gets():
+myspecific <- getsv(gum, keep=1:2)
+functionVals <- predict(myspecific, n.ahead=1)
+
+##do they correspond?:                                                  
+all( functionVals == correctVals )
+
+##experiment:
+##-----------
+
+##predictions by predict.arx():
+gum <- arx(y, mc=TRUE, vc=TRUE, arch=1)
+correctVals <- predict(gum, spec="variance", n.ahead=1)
+
+##predictions by predict.gets():
+myspecific <- getsv(gum, keep=1:2)
+functionVals <- predict(myspecific, n.ahead=1)
+
+##do they correspond?:                                                  
+all( functionVals == correctVals )
+
+##experiment:
+##-----------
+
+##predictions by predict.arx():
+gum <- arx(y, mc=FALSE, vc=TRUE, arch=1)
+correctVals <- predict(gum, spec="variance", n.ahead=1)
+
+##predictions by predict.gets():
+myspecific <- getsv(gum, keep=1:2)
+functionVals <- predict(myspecific, n.ahead=1)
+
+##do they correspond?:                                                  
+all( functionVals == correctVals )
+
+
+##################################################
+## 5 SIMULATIONS (FOR THE FUTURE)
 ##################################################
 

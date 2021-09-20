@@ -15,7 +15,7 @@
 ## - GETS modelling of Generalised Linear Models (GLMs)
 ## - Creating a gets method (S3) for the 'lm' class of models
 ## - Regression with ARMA error
-## - Faster ISAT when n is large
+## - Faster ISAT with large datasets
 ##
 ###########################################################
 
@@ -25,27 +25,29 @@
 ##################################################
 
 ##set working directory:
-setwd("C:/Users/sucarrat/Documents/R/gs/gets/github/")
+setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
 #setwd(choose.dir())
 
 ##load required packages:
 require(parallel)
 require(zoo)
 
-##remove everything in workspace (.GlobalEnv:
+##remove everything in workspace (.GlobalEnv):
 rm(list=ls())
 
 ##load source:
-source("./contents/gets/R/gets-base-source.R")
-source("./contents/gets/R/gets-isat-source.R")
+library(gets)
+#OLD:
+#source("./gets/R/gets-base-source.R")
+#source("./gets/R/gets-isat-source.R")
 
 
 ###########################################################
 ## USER-SPECIFICATION: GENERAL PRINCIPLES
 ###########################################################
 
-  ##The getsFun function:
-  ##=====================
+  ##The getsFun() function:
+  ##=======================
   
   n <- 40 #number of observations
   k <- 20 #number of Xs
@@ -54,7 +56,7 @@ source("./contents/gets/R/gets-isat-source.R")
   y <- rnorm(n) #generate Y
   x <- matrix(rnorm(n*k), n, k) #create matrix of Xs
 
-  #do gets w/default estimator (ols), store output in 'result':
+  #do gets w/default estimator ols(), store output in 'result':
   result <- getsFun(y, x)
 
   #items in result:
@@ -132,6 +134,7 @@ source("./contents/gets/R/gets-isat-source.R")
       result$residuals <- y
     }
 
+    ##return result: 
     return(result)
   }
 
@@ -201,6 +204,27 @@ source("./contents/gets/R/gets-isat-source.R")
     gof.function = list(name = "myGof"), gof.method = "max")
 
 
+  ##The blocksFun() function:
+  ##=========================
+  
+  n <- 40 #number of observations
+  k <- 60 #number of Xs
+  set.seed(123) #for reproducibility
+  y <- rnorm(n) #generate Y
+  x <- matrix(rnorm(n*k), n, k) #create matrix of Xs
+
+  #do block-based gets w/default estimator ols():
+  result <- blocksFun(y, x)
+
+  ##do block-based gets w/user-specified functions,
+  ##INTERESTINGLY, this does not work very well:
+  blocksFun(y, x, user.estimator = list(name = "lmFun"))
+
+  #x as list:
+  xlist <- list(x1=x[,5:30], x2=x[,26:50])
+  blocksFun(y,xlist)
+  
+
 ###########################################################
 ## USER-SPECIFIED GETS AND ISAT METHODS: ILLUSTRATIONS
 ###########################################################
@@ -252,6 +276,13 @@ source("./contents/gets/R/gets-isat-source.R")
   ##Creating a gets method (S3) for the 'lm' class of models:
   ##=========================================================
 
+  ##re-generate data from first experiment:
+  n <- 40 #number of observations
+  k <- 20 #number of Xs
+  set.seed(123) #for reproducibility
+  y <- rnorm(n) #generate Y
+  x <- matrix(rnorm(n*k), n, k) #create matrix of Xs
+
   ##make function:
   gets.lm <- function(object, ...){
 
@@ -297,6 +328,9 @@ source("./contents/gets/R/gets-isat-source.R")
   startmodel <- lm(y ~ x)
   finallm <- gets(startmodel)	
 
+  ##for comparison:
+  gets::gets.lm(startmodel)
+
 
   ##Regression with ARMA error:
   ##===========================
@@ -305,7 +339,7 @@ source("./contents/gets/R/gets-isat-source.R")
   eps <- arima.sim(list(ar = 0.4, ma = 0.1), 60) #epsilon
   x <- coredata(sim(eps, which.ones = 30)) #step-dummy at t = 30
   y <- 4*x + eps #the dgp
-  plot(y, col = "blue", lwd = 2)
+  plot(y, ylab="y", xlab="t", lwd = 2)
 
   ##make estimator:
   myEstimator <- function(y, x){
@@ -330,7 +364,9 @@ source("./contents/gets/R/gets-isat-source.R")
     result$df <- result$n - result$k
     result$logl <- tmp$loglik
 
+    ##return result:
     return(result)
+    
   }
 	
   ##make regressors, do gets:

@@ -2,13 +2,12 @@
 ## This file contains the isat-source of the gets
 ## package.
 ##
-## Current version: 0.24
-##
 ## CONTENTS:
 ##
-## isat
+## isat.default
 ## coef.isat        #extraction functions
 ## fitted.isat      #(all are S3 methods)
+## gets.isat
 ## logLik.isat
 ## plot.isat
 ## predict.isat
@@ -35,8 +34,6 @@
 
 ##==================================================
 ## indicator saturation
-isat <- function(y, ...){ UseMethod("isat") }
-
 isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   iis=FALSE, sis=TRUE, tis=FALSE, uis=FALSE, blocks=NULL,
   ratio.threshold=0.8, max.block.size=30, t.pval=0.001,
@@ -47,7 +44,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   gof.method=c("min","max"), include.gum=NULL,
   include.1cut=FALSE, include.empty=FALSE, max.paths=NULL,
   parallel.options=NULL, turbo=FALSE, tol=1e-07, LAPACK=FALSE,
-  max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE)
+  max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...)
 {
 
   ##arguments:
@@ -393,9 +390,11 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
         max.regs=max.regs, print.searchinfo=print.searchinfo,
         alarm=FALSE)
       
+
       #estimations.counter counts the number of estimations for a single type of indicators
       estimations.counter <<- estimations.counter + getsis$no.of.estimations
       getsFun.counter <<- getsFun.counter + 1
+
 
       if(is.null(getsis$specific.spec)){
         ISspecific.models <- NULL
@@ -412,9 +411,12 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
 
     } #close ISblocksFun
 
+    
+
     # initialise counter for number of estimations of this type of indicator
     estimations.counter <- 0
     getsFun.counter <- 0
+
 
     ##do gets on each block: no parallel computing
     if(is.null(parallel.options)){
@@ -515,6 +517,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
         estimations.counter <- estimations.counter + getsis$no.of.estimations
         getsFun.counter <- getsFun.counter + 1
 
+
         ISfinalmodels[[i]] <- names(getsis$specific.spec)
       }
 
@@ -591,6 +594,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     max.regs=max.regs, print.searchinfo=print.searchinfo,
     alarm=FALSE)
   
+
   estimations.total <- estimations.total + getsis$no.of.estimations
   getsis$no.of.estimations <- estimations.total
   getsFun.total <- getsFun.total + 1
@@ -617,11 +621,19 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   }else{
     normalityArg <- as.numeric(normality.JarqueB)  
   }
-  mod <- arx(y, mxreg=mXis, vcov.type=vcov.type,
+  
+  # Save original arx mc warning setting and disable it here
+  tmpmc <- getOption("mc.warning")
+  options(mc.warning = FALSE)
+  
+  mod <- arx(y, mc=FALSE, mxreg=mXis, vcov.type=vcov.type,
     qstat.options=qstat.options, normality.JarqueB=normalityArg,
     user.estimator=userEstArgArx, user.diagnostics=user.diagnostics,
     tol=tol, LAPACK=LAPACK, plot=FALSE)
   mod$call <- NULL
+  
+  # Set the old arx mc warning again
+  options(mc.warning = tmpmc)
    
   ##complete the returned object (result):
   ISnames <- setdiff(mXisNames, mXnames) #names of retained impulses
@@ -664,6 +676,85 @@ fitted.isat <- function(object, ...)
   if(is.null(result)){ result <- object$fit }
   return(result)
 } #end fitted.isat
+
+##==================================================
+## gets modelling of 'isat' objects:
+gets.isat <- function(x, t.pval=0.05, wald.pval=t.pval, vcov.type = NULL,
+                      do.pet=TRUE, ar.LjungB=list(lag=NULL, pval=0.025),
+                      arch.LjungB=list(lag=NULL, pval=0.025), normality.JarqueB=NULL,
+                      user.diagnostics=NULL, info.method=c("sc","aic","aicc","hq"),
+                      gof.function=NULL, gof.method=NULL, keep=NULL, include.gum=FALSE,
+                      include.1cut=TRUE, include.empty=FALSE, max.paths=NULL, tol=1e-07,
+                      turbo=FALSE, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...)
+{
+
+  # Check if one of these arguments is explicitly supplied to the function
+  # if not, then check if the original item has this arguemnt supplied
+  # if it does, take the setting of the original object
+  # if it does not, then take the default
+  if(missing(vcov.type)){vcov.type <- x$aux[["vcov.type"]]}
+  if(missing(user.diagnostics)){user.diagnostics <- x$aux[["user.diagnostics"]]}
+  if(missing(tol)){tol <- x$aux$tol}
+  if(missing(normality.JarqueB)){if(is.null(x$call$normality.JarqueB)){normality.JarqueB <- FALSE}else{normality.JarqueB <- x$call$normality.JarqueB}}
+  if(missing(arch.LjungB)){arch.LjungB <- x$call$arch.LjungB}
+  if(missing(ar.LjungB)){ar.LjungB <- x$call$ar.LjungB}
+  
+  user.estimator <- x$aux$user.estimator
+  LAPACK <- x$aux$LAPACK
+  
+  ##create an arx-like object:
+  y <- x$aux$y
+  y <- as.matrix(y)
+  colnames(y) <- x$aux$y.name
+  mxreg <- x$aux$mX
+  colnames(mxreg) <- x$aux$mXnames
+
+  object <- do.call("arx", 
+                    list(y = y, mxreg = mxreg,
+                         ewma = NULL, mc = FALSE, ar = NULL, log.ewma = NULL, # would be in mxreg already
+                         vc = FALSE, arch = NULL, asym = NULL, # currently not possible via isat
+                         vxreg = NULL, zero.adj = 0.1, # currently not possible via isat
+                         vc.adj = TRUE, qstat.options = NULL,  # currently not possible via isat
+                         vcov.type = vcov.type,
+                         normality.JarqueB = normality.JarqueB,
+                         user.estimator = user.estimator,
+                         user.diagnostics = user.diagnostics,
+                         tol = tol,
+                         LAPACK = LAPACK, 
+                         singular.ok = TRUE,
+                         plot = NULL))
+
+  ##github version:             
+  #object <- as.arx(x, plot = FALSE, ar = FALSE) # some arguments pre-set because they will already be in isat if needed
+  
+  ##return result:
+  out <- getsm(
+    object,
+    t.pval,
+    wald.pval,
+    vcov.type,
+    do.pet,
+    ar.LjungB,
+    arch.LjungB,
+    normality.JarqueB,
+    user.diagnostics,
+    info.method,
+    gof.function,
+    gof.method,
+    keep,
+    include.gum,
+    include.1cut,
+    include.empty,
+    max.paths,
+    tol,
+    turbo,
+    print.searchinfo,
+    plot,
+    alarm
+  )
+  return(out)
+  
+} #close gets.isat() function
 
 ##==================================================
 logLik.isat <- function(object, ...)
@@ -897,7 +988,9 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
       objectNew$call$mc <- TRUE
       indxCounter <- indxCounter + 1
     }else{
-      objectNew$call$mc <- NULL
+      objectNew$call$mc <- FALSE
+#OLD (until version 0.27):      
+#      objectNew$call$mc <- NULL
     }
 
     ##ar argument:
@@ -2893,9 +2986,3 @@ outlierscaletest <- function(x, nsim = 10000){
   return(out)
   
 } ###function closed
-
-
-
-
-
-

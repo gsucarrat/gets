@@ -1,9 +1,10 @@
 import(zoo)
 
 importFrom("stats", "Box.test", "coef", "cycle", "deltat", "dnorm",
-  "fitted", "frequency", "lm", "logLik", "nlminb", "pchisq", "pnorm",
-  "poisson.test", "printCoefmat", "pt", "qnorm", "qt", "quantile",
-  "residuals", "rnorm", "runif", "sigma", "var", "vcov", "window")
+  "fitted", "as.formula", "frequency", "lm", "logLik", "model.matrix",
+  "nlminb", "pchisq", "pnorm", "poisson.test", "printCoefmat", "pt",
+  "qnorm", "qt", "quantile", "residuals", "rnorm", "runif", "sd", "sigma",
+  "var", "vcov", "window")
 
 importFrom("graphics", "abline", "legend", "lines", "mtext", "par",
   "plot", "points", "polygon", "text", "title")
@@ -16,45 +17,43 @@ importFrom("parallel", "detectCores", "makeCluster", "clusterExport",
   "parLapply", "stopCluster")
 
 export(
-  
-  ##generic method:
-  "gets", "isat",
+  ##generic functions:
+  "gets", "isat", "as.arx",
   
   ##base functions:
-  "blocksFun", "diagnostics", "dropvar", "eqwma", "getsFun", "gmm", "info.criterion",
-  "infocrit", "leqwma", "ols", "regressorsMean", "regressorsVariance",  
+  "blocksFun", "diagnostics", "dropvar", "eqwma", "getsFun", "gmm",
+  "info.criterion", "infocrit", "leqwma", "ols", "regressorsMean",
+  "regressorsVariance",  
   
   ##convenience functions:
   "periodicdummies", "eviews", "stata", "printtex", "as.lm",
   
   ##arx-class functions:
-  "arx", "coef.arx", "ES", "fitted.arx", "gets.arx", "logLik.arx", "plot.arx",
-  "predict.arx", "print.arx", "recursive", "rsquared", "residuals.arx",
-  "sigma.arx", "summary.arx", "toLatex.arx", "VaR", "vcov.arx",
+  "arx", "coef.arx", "ES", "fitted.arx", "gets.arx", "logLik.arx",
+  "model.matrix.arx", "plot.arx", "predict.arx", "print.arx", "recursive",
+  "rsquared", "residuals.arx", "sigma.arx", "summary.arx", "toLatex.arx",
+  "VaR", "vcov.arx",
   
   ##gets-class functions:
   "getsm", "getsv", "coef.gets", "fitted.gets", "paths",
   "plot.gets", "predict.gets", "print.gets", "residuals.gets", "sigma.gets",
   "summary.gets", "terminals", "toLatex.gets", "vcov.gets",
   
-  ##isat-class functions:
-  "coef.isat", "fitted.isat", "logLik.isat", "plot.isat",
+  ##isat functions:
+  "isat.default", "coef.isat", "fitted.isat", "logLik.isat", "plot.isat",
   "predict.isat", "print.isat", "residuals.isat", "sigma.isat",
   "summary.isat", "vcov.isat", "biascorr", "isattest", "isatvar",
   "isvarcor", "isvareffcor", "iim", "sim", "tim", "isatdates",
   "isatloop", "isatvarcorrect", "mvrnormsim", "outlierscaletest",
-  "outliertest", "vargaugeiis",
+  "outliertest", "vargaugeiis", "gets.isat", "isat.lm", "isat.arx",
 
   ##dlogitx-class function:
   "dlogitxSim", "logit", "dlogitx", "coef.dlogitx", "fitted.dlogitx",
   "gets.dlogitx", "logLik.dlogitx", "plot.dlogitx", "print.dlogitx",
   "summary.dlogitx", "toLatex.dlogitx", "vcov.dlogitx",
-  
+
   ##lm-class functions:
-  "isat.lm", "gets.lm","arx.lm",
-  
-  ##Cross S3 methods
-  "isat.arx","isat.default","gets.isat","arx.isat"
+  "as.arx.lm", "gets.lm"
 
 )
 
@@ -62,7 +61,9 @@ export(
 S3method("coef", "arx")
 S3method("fitted", "arx")
 S3method("gets", "arx")
+S3method("isat", "arx")
 S3method("logLik", "arx")
+S3method("model.matrix", "arx")
 S3method("plot", "arx")
 S3method("predict", "arx")
 S3method("print", "arx")
@@ -86,9 +87,13 @@ S3method("summary", "gets")
 S3method("toLatex", "gets")
 S3method("vcov", "gets")
 
+##default method for generic isat:
+S3method("isat", "default")
+
 ##methods for class isat:
 S3method("coef", "isat")
 S3method("fitted", "isat")
+S3method("gets", "isat")
 S3method("logLik", "isat")
 S3method("plot", "isat")
 S3method("predict", "isat")
@@ -111,11 +116,7 @@ S3method("summary", "dlogitx")
 S3method("toLatex", "dlogitx")
 S3method("vcov", "dlogitx")
 
-##default methods 
-S3method("arx","default")
-S3method("isat","default")
-
 ##methods for class lm:
-S3method("isat","lm")
-S3method("gets","lm")
-S3method("arx","lm")
+S3method("as.arx", "lm")
+S3method("gets", "lm")
+S3method("isat", "lm")

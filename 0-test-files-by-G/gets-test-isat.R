@@ -20,19 +20,19 @@
 ##################################################
 
 ##set working directory:
-setwd("C:/Users/sucarrat/Documents/R/gs/gets/github/")
+setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
 #setwd(choose.dir())
 
 ##load required packages:
 require(parallel)
 require(zoo)
 
-##remove everything in workspace (.GlobaleEnv:
+##remove everything in workspace (.GlobalEnv):
 rm(list=ls())
 
 ##load source:
-source("./contents/gets/R/gets-base-source.R")
-source("./contents/gets/R/gets-isat-source.R")
+source("./gets/R/gets-base-source.R")
+source("./gets/R/gets-isat-source.R")
 
 
 ##################################################

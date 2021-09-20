@@ -12,20 +12,19 @@
 ##1 INITIATE
 ##################################################
 
-##set working directory:
-setwd("C:/Users/sucarrat/Documents/R/gs/gets/github/")
+setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
 #setwd(choose.dir())
 
 ##load required packages:
 require(parallel)
 require(zoo)
 
-##remove everything in workspace (.GlobaleEnv:
+##remove everything in workspace (.GlobaleEnv):
 rm(list=ls())
 
 ##load source:
-source("./contents/gets/R/gets-base-source.R")
-#source("./contents/gets/R/gets-isat-source.R")
+source("./gets/R/gets-base-source.R")
+#source("./gets/R/gets-isat-source.R")
 
 
 ##################################################
@@ -48,14 +47,20 @@ options(plot=TRUE)
 #options(plot=NULL)
 
 ##only variance spec:
-vgum01 <- arx(y, arch=1:3, asym=1:2, vxreg=vX)
+vgum01 <- arx(y, mc=FALSE, arch=1:3, asym=1:2, vxreg=vX)
 vgum01
 getsv(vgum01)
 getsv(vgum01, t.pval=0.10)
 getsv(vgum01, wald.pval=0.15)
 getsv(vgum01, do.pet=FALSE)
+getsv(vgum01, ar.LjungB=list(lag=NULL,pval=0.05))
 getsv(vgum01, ar.LjungB=list(lag=5, pval=0.05))
-getsv(vgum01, arch.LjungB=list(lag=4, pval=0.1))
+getsv(vgum01, ar.LjungB=c(2,0.05))
+getsv(vgum01, ar.LjungB=NULL)
+getsv(vgum01, arch.LjungB=list(lag=NULL,pval=0.2))
+getsv(vgum01, arch.LjungB=list(lag=3,pval=0.2))
+getsv(vgum01, arch.LjungB=c(2,0.05))
+getsv(vgum01, arch.LjungB=NULL)
 getsv(vgum01, ar.LjungB=NULL, arch.LjungB=NULL)
 getsv(vgum01, normality.JarqueB=0.05)
 getsv(vgum01, info.method="sc")
@@ -66,7 +71,7 @@ getsv(vgum01, keep=c(1,3))
 ##24 October 2019 sent to F-bear. If only a single non-keep
 ##regressor, then no search is undertaken. Solved in getsFun
 ##by G in 0.24:
-getsv(vgum01, keep=1:10)
+tmp <- getsv(vgum01, keep=1:10)
 getsv(vgum01, keep=NULL) #should return 'warning': "Regressor 1..."
 getsv(vgum01, include.gum=TRUE)
 getsv(vgum01, include.1cut=FALSE)
@@ -115,7 +120,7 @@ SWtest <- function(x, ...){
   result <- c(tmp$statistic, NA, tmp$p.value)
   return(result)
 }
-vgum01 <- arx(y, arch=1:3, asym=1:2, vxreg=vX,
+vgum01 <- arx(y, mc=FALSE, arch=1:3, asym=1:2, vxreg=vX,
   user.diagnostics=list(name="SWtest", pval=0.025))
 vgum01
 getsv01 <- getsv(vgum01,
@@ -123,7 +128,7 @@ getsv01 <- getsv(vgum01,
 getsv01
 
 ##both mean and variance specs:
-vgum02 <- arx(y, mc=TRUE, ar=1:2, mxreg=mX,
+vgum02 <- arx(y, ar=1:2, mxreg=mX,
   arch=1:3, asym=1:2, vxreg=vX)
 vgum02
 vgets02 <- getsv(vgum02)

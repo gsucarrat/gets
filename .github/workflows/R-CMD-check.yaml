@@ -80,6 +80,7 @@ jobs:
           tinytex::tlmgr_install("ae")
           tinytex::tlmgr_install("thumbpdf")
           tinytex::tlmgr_install("grfext")
+          tinytex::tlmgr_install("babel-greek")
         shell: Rscript {0}
       
       #### Comment: This is a super useful debug feature - not needed in standard mode. 

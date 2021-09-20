@@ -1,3 +1,48 @@
+Version 0.30 (4 September 2021):
+================================
+
+* New vignette: "User-Specified General-to-Specific (GETS) and Indicator Saturation (ISAT) Methods"
+
+Version 0.29 (2 September 2021):
+================================
+
+* note: version 0.28 was unsubmitted by CRAN, since it did not pass a Debian check 
+
+* arx():
+- new default 'mc = TRUE'; this necessitated changes (not visible to the user) in several other files, including predict.arx(), predict.gets(), isat.default() and predict.isat()
+- new argument: singular.ok
+- when 'user.estimator' is not NULL, column-names equal to the names of the regressors are added to the regressor matrix before it is passed on to the user-defined estimator
+
+* vignettes:
+- "Introduction to the gets package": minor modifications throughout to accommodate the new default 'TRUE' in the 'mc' argument in the function arx()
+
+* the function 'isat' changed name to 'isat.default'
+
+* new generics: 'isat', 'as.arx'
+
+* new functions:
+- as.arx.lm()
+- gets.lm()
+- gets.isat()
+- isat.lm()
+- isat.arx()
+- model.matrix.arx()
+
+* getsm(), getsv(), gets.arx():
+- the arguments ar.LjungB and arch.Ljung can now also be speficied as two element numeric vectors, just as in diagnostics(), where the first element contains the lag and the second the p-value
+- now prints search-info during the specification search (set print.searchinfo=FALSE to turn off)
+
+* print.gets(): now returns less info
+
+* blocksFun.Rd: minor changes
+
+Fixes:
+- predict.arx() now works when 'mc' is explicitly set to FALSE in arx()
+- paths() and terminals() can now be applied more generally (i.e. not only objects of class "arx", "gets" and "isat")
+- the value (a list) returned by arx() when a log-variance specification has been specified, but not a mean specification, does not erroneously contain an item named 'vcov.mean' anymore
+- isat.Rd: the manual of "isat.default()" now correctly states that the value returned is of class "isat", and the extensions of the relevant functions in the "See also" field has been corrected to ".isat"
+
+
 Version 0.27 (20 February 2021):
 ================================
 
