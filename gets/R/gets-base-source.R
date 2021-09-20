@@ -2159,15 +2159,6 @@ blocksFun <- function(y, x, untransformed.residuals=NULL,
 ## 2 ARX FUNCTIONS
 ####################################################
 
-arx <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
-                vc=FALSE, arch=NULL, asym=NULL, log.ewma=NULL, vxreg=NULL,
-                zero.adj=0.1, vc.adj=TRUE,
-                vcov.type=c("ordinary", "white", "newey-west"),
-                qstat.options=NULL, normality.JarqueB=FALSE, user.estimator=NULL,
-                user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, plot=NULL) {
-  UseMethod("arx")
-}
-
 ##==================================================
 ##Estimate AR-X model with log-ARCH-X errors
 arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
@@ -2495,7 +2486,6 @@ arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   ##-----------------------------------
 
   out <- c(list(call=sysCall, date=date(), aux=aux), out)
-  out$aux$arguments <- mget(names(formals()),sys.frame(sys.nframe())) # added by M-orca April 2021 for S3 methods
   class(out) <- "arx"
 
   ##plot:
@@ -4534,9 +4524,7 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
   } #close if user estimator
 
   ##if( default estimator ):
-  # changed by M-orca April 2021 - more reliable as this is not changed - sys.call is depending on the level
-  #if( is.null(object$call$user.estimator) ){
-  if( is.null(object$aux$arguments$user.estimator) ){ 
+  if( is.null(object$call$user.estimator) ){
 
     ##determine ols method:
     if( is.null(vcov.type) ){ vcov.type <- object$aux$vcov.type }
@@ -4709,12 +4697,8 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
     }else{
       normality.JarqueB <- TRUE
     }
-       
     ##if( default estimator ):
-    # 
-    # if( is.null(object$call$user.estimator) ){
-    # changed by M-orca April 2021 - more reliable as this is not changed - sys.call is depending on the level
-    if( is.null(object$aux$arguments$user.estimator) ){
+    if( is.null(object$call$user.estimator) ){
       ##estimate specific model:
       est <- arx(yadj, mc=FALSE, mxreg=mXadj, vc=object$aux$vc,
         arch=object$aux$arch, asym=object$aux$asym,
@@ -4728,9 +4712,7 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
     } #end if( default estimator )
 
     ##if( user-defined estimator ):
-    # if( !is.null(object$call$user.estimator) ){
-    # changed by M-orca April 2021 - more reliable as this is not changed - sys.call is depending on the level
-    if( !is.null(object$aux$arguments$user.estimator) ){
+    if( !is.null(object$call$user.estimator) ){
       ##estimate specific:
       est <- arx(yadj, mc=FALSE, mxreg=mXadj,
         user.estimator=user.estimator,
@@ -4759,7 +4741,6 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
 
   ##finalise and return result:
   out <- c(list(date=date(), gets.type="getsm"), out)
-  out$aux$arguments <- mget(names(formals()),sys.frame(sys.nframe())) # added by M-orca April 2021 for S3 methods
   class(out) <- "gets"
   if(alarm){ alarm() }
   if( is.null(plot) ){
