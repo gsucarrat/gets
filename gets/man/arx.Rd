@@ -1,8 +1,5 @@
 \name{arx}
 \alias{arx}
-\alias{arx.default}
-\alias{arx.lm}
-\alias{arx.isat}
 \title{Estimate an AR-X model with log-ARCH-X errors}
 
 \description{

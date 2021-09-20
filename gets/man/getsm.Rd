@@ -24,7 +24,6 @@ getsv(object, t.pval=0.05, wald.pval=t.pval,
     gof.function=NULL, gof.method=NULL, keep=c(1), include.gum=FALSE,
     include.1cut=TRUE, include.empty=FALSE, max.paths=NULL, tol=1e-07,
     turbo=FALSE, print.searchinfo=TRUE, plot=NULL, alarm=FALSE)
-    
 }
 
 \arguments{
