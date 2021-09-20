@@ -4697,6 +4697,7 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
     }else{
       normality.JarqueB <- TRUE
     }
+    
     ##if( default estimator ):
     if( is.null(object$call$user.estimator) ){
       ##estimate specific model:
