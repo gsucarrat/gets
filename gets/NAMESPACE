@@ -72,7 +72,6 @@ S3method("sigma", "arx")
 S3method("summary", "arx")
 S3method("toLatex", "arx")
 S3method("vcov", "arx")
-S3method("isat", "arx")
 
 ##methods for class gets:
 S3method("coef", "gets")
