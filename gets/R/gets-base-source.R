@@ -175,16 +175,17 @@ diagnostics <- function(x, ar.LjungB=c(1,0.025), arch.LjungB=c(1,0.025),
     userFunArg$pval <- NULL
     userFunArg$is.reject.bad <- NULL
     if( length(userFunArg)==0 ){ userFunArg <- NULL }
-    ##'do' user diagnostics:
+    ## 'do' user diagnostics:
     if( is.null(user.fun$envir) ){
       userVals <- do.call(user.fun$name, c(list(x=x),userFunArg))
     }else{
       userVals <- do.call(user.fun$name, c(list(x=x),userFunArg),
         envir=user.fun$envir)
     }
-    ##ensure userVals is a matrix:
+    ## ensure userVals is a matrix:
     if( !is.null(userVals) ){ userVals <- rbind(userVals) }
-    if( !is.null(user.fun$pval) ){
+    ## !is.null(userVals) is due to J-bat's ivgets code:
+    if( !is.null(user.fun$pval) && !is.null(userVals) ){
       ##create decision matrix:
       tmp <- matrix(NA, NROW(userVals), 3)
       colnames(tmp) <- c("userFunPval", "reject", "is.reject.bad")
