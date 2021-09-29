@@ -121,8 +121,9 @@ At the time of writing (August 2021), the publicly available softwares that prov
 		Free and open source & & Yes$^{*}$ & & Yes & Yes$^{*}$ & & Yes \\[1mm]
 		\hline
 	\end{tabular}\\
-	\caption{A comparison of publicly available GETS and ISAT softwares with emphasis on user-specification capabilities. HP1999, the MATLAB code of \citet{Hooveretal99}. Autometrics, OxMetrics version 15, see \citet{DoornikHendry2018}. Grocer, version 1.8, see \citet{DuboisMichaux2019}. genspec, version 1.2.2, see \citet{Clarke2014}. EViews, version 12, see \citet{EViews2020}. \textbf{gets}, version 0.29, see \cite{SucarratKurlePretisReadeSchwarz2021getsV029}, and \citet{PretisReadeSucarrat2018}.\\[2mm]
-	$^{*}$The modules in themselves are free and open source, but they run in non-free and closed source software environments (MATLAB and STATA, respectively). \label{table:software:comparison}}
+	\caption{A comparison of publicly available GETS and ISAT softwares with emphasis on user-specification capabilities. HP1999, the MATLAB code of \citet{Hooveretal99}. Autometrics, OxMetrics version 15, see \citet{DoornikHendry2018}. Grocer, version 1.8, see \citet{DuboisMichaux2019}. genspec, version 1.2.2, see \citet{Clarke2014}. EViews, version 12, see \citet{EViews2020}. \textbf{gets}, version 0.29, see \cite{SucarratKurlePretisReadeSchwarz2021getsV029}, and \citet{PretisReadeSucarrat2018}.
+	$^{*}$The modules in themselves are free and open source, but they run in non-free and closed source software environments (MATLAB and STATA, respectively).}
+	\label{table:software:comparison}
 \end{table}
 
 The rest of this vignette contains three sections. In the next the model selection properties of GETS and ISAT methods are summarised. This is followed by a section that outlines the general principles of how user-specified estimation, user-specified diagnostics and user-specified goodness-of-fit measures are implemented. Next, a section with four illustrations follows.
