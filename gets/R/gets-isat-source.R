@@ -209,7 +209,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     mSIS <- mSIS[,-1]
     ISmatrices <- c(ISmatrices,list(SIS=mSIS))
   }
-  
+
   if(tis){ #trend indicators
     mTIS <- matrix(0,y.n,y.n)
     v1n <- seq(1,y.n)
@@ -582,7 +582,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
 
   ##make return object:
   ##-------------------
-  
+
   ##do final gets:
 
   getsis <- getsFun(y, mXis, untransformed.residuals=NULL,
@@ -763,6 +763,8 @@ logLik.isat <- function(object, ...)
   result <- object$logl
   if(is.null(result)){
     result <- NA # numeric(0) will throw error, cannot replace cell with numeric vector of length 0
+    #OLD:
+    #result <- numeric(0)
     warning("'object$logl' is NULL")
   }else{
     attr(result, "df") <- length(object$coefficients)
@@ -1208,7 +1210,6 @@ print.isat <- function(x, signif.stars=TRUE, ...)
       if(!is.null(x$call$iis)){
         #OLD:
         #      if (x$call$iis==TRUE){
-        # I would prefer this to be turned off or only printed if ols estimator has been used (J-bat)
         if (x$call$iis==TRUE){        outltest <- outliertest(x)
         mOutl <- matrix(NA, 2, 2)
         colnames(mOutl) <- c("Stat.", "p-value")
@@ -1382,7 +1383,9 @@ residuals.isat <- function(object, std=FALSE, ...)
 sigma.isat <- function(object, ...)
 {
   if(is.null(object$residuals)){
-    result <- NA # should not set NULL otherwise cannot replace cell in matrix
+    result <- NA # J-bat: should not set NULL otherwise cannot replace cell in matrix
+    #OLD:
+    #result <- NULL
   }else{
     RSS <- sum(object$residuals^2)
     result <- sqrt(RSS/(object$n - object$k))

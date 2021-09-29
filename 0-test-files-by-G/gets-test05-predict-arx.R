@@ -195,7 +195,28 @@ y <- rnorm(50)
 ##predictions by predict.arx():
 mymodel <- arx(y, mc=FALSE, ar=1)
 functionVals <- predict(mymodel, n.ahead=3)
-all( !is.na(functionVals) ) #should return TRUE since version 0.28
+all( !is.na(functionVals) ) #TRUE since version 0.28
+
+##resolution of issue posted by mdwy62 on Github 18/9-2021
+##https://github.com/gsucarrat/gets/issues/50
+##========================================================
+
+##the problem: T was not recognised as TRUE
+##the following was erroneous before version 0.30:
+
+##ar(0) model w/constant:
+mymodel <- arx(vY, mc=T)
+
+##predictions of the mean:
+functionVals <- predict(mymodel, spec="mean", n.ahead=3)
+
+##correct predictions:
+yhat1 <- yhat2 <- yhat3 <- coef(mymodel)[1]
+correctVals <- c(yhat1,yhat2,yhat3)
+
+##do they correspond?:
+all( functionVals == correctVals ) #TRUE since version 0.30
+
 
 
 ##################################################

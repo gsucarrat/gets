@@ -61,7 +61,11 @@ Halbert White (1980): 'A Heteroskedasticity-Consistent Covariance Matrix Estimat
 Whitney K. Newey and Kenned D. West (1987): 'A Simple, Positive Semi-Definite, Heteroskedasticity and Autocorrelation Consistent Covariance Matrix', Econometrica 55, pp. 703-708
 }
 
-\author{Genaro Sucarrat, \url{http://www.sucarrat.net/}}
+\author{
+Genaro Sucarrat, \url{http://www.sucarrat.net/}
+Jonas Kurle, \url{https://www.jonaskurle.com/}\cr
+Moritz Schwarz, \url{https://www.inet.ox.ac.uk/people/moritz-schwarz/}\cr
+}
 
 \seealso{
 Extraction functions (mostly S3 methods): \code{\link{coef.arx}}, \code{\link{ES}}, \code{\link{fitted.arx}}, \code{\link{plot.arx}}, \cr

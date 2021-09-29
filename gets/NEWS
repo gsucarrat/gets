@@ -1,15 +1,19 @@
-Version 0.30 (4 September 2021):
-================================
+Version 0.30 (29 September 2021):
+=================================
 
 * New vignette: "User-Specified General-to-Specific (GETS) and Indicator Saturation (ISAT) Methods"
+
+* diagnostics(): new optional entry "reject.is.bad" in the 'user.fun' argument
+
+Fixes:
+- predict.arx() now works correctly when 'mc' is set to 'T' or 'F' in arx(), thanks to mdwy62 (on Github) for identifying this error
+
 
 Version 0.29 (2 September 2021):
 ================================
 
-* note: version 0.28 was unsubmitted by CRAN, since it did not pass a Debian check 
-
 * arx():
-- new default 'mc = TRUE'; this necessitated changes (not visible to the user) in several other files, including predict.arx(), predict.gets(), isat.default() and predict.isat()
+- new default 'mc = TRUE'; this necessitated changes (not visible to the average user) in several other files, including predict.arx(), predict.gets(), isat.default() and predict.isat()
 - new argument: singular.ok
 - when 'user.estimator' is not NULL, column-names equal to the names of the regressors are added to the regressor matrix before it is passed on to the user-defined estimator
 
@@ -41,6 +45,12 @@ Fixes:
 - paths() and terminals() can now be applied more generally (i.e. not only objects of class "arx", "gets" and "isat")
 - the value (a list) returned by arx() when a log-variance specification has been specified, but not a mean specification, does not erroneously contain an item named 'vcov.mean' anymore
 - isat.Rd: the manual of "isat.default()" now correctly states that the value returned is of class "isat", and the extensions of the relevant functions in the "See also" field has been corrected to ".isat"
+
+
+Version 0.28 (1 September 2021):
+================================
+
+* unsubmitted by CRAN, since it did not pass a Debian check 
 
 
 Version 0.27 (20 February 2021):

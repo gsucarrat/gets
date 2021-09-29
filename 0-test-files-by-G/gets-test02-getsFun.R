@@ -19,7 +19,8 @@
 ##################################################
 
 ##set working directory:
-setwd("C:/Users/sucarrat/Documents/R/gs/gets/github/")
+setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
+#setwd("C:/Users/sucarrat/Documents/R/gs/gets/20210902build/")
 #setwd(choose.dir())
 
 ##load required packages:
@@ -30,8 +31,7 @@ require(zoo)
 rm(list=ls())
 
 ##load source:
-source("./contents/gets/R/gets-base-source.R")
-#source("./contents/gets/R/gets-isat-source.R")
+source("./gets/R/gets-base-source.R")
 
 
 ##################################################
@@ -97,7 +97,6 @@ set.seed(123)
 vY <- rnorm(20)
 mX <- matrix(rnorm(length(vY)*5), length(vY), 5)
 colnames(mX) <- paste0("x", 1:NCOL(mX))
-
 tmp <- getsFun(vY, mX, keep=1:NCOL(mX))
 tmp
 tmp$specific.spec==1:NCOL(mX)
@@ -272,7 +271,7 @@ SWtest <- function(x, ...){
 ##should work:
 getsFun(vY, mX, user.estimator=list(name="myEstimator"),
   user.diagnostics=list(name="SWtest", pval=1e-10))
-##should work (recall: 'SWtest' defined in 'myenv' too above):
+##should work (recall: 'SWtest' defined in 'myenv' above):
 getsFun(vY, mX, user.estimator=list(name="myEstimator"),
   user.diagnostics=list(name="SWtest", pval=1e-10, envir=myenv))
 
@@ -336,46 +335,65 @@ system.time(getsFun(vY,mX, user.estimator=list(name="ols2")))
 ## - for small T, ols is usually faster than ols2
 ## - for large T, ols2 can be substantially faster
 
-##S3 method for lm:
-gets.lm <- function(object, ...){
+###S3 method for lm:
+#gets.lm <- function(object, ...){
+#
+#  ##regressand:
+#  y <- as.vector(object$model[,1])
+#  yName <- names(object$model)[1]
+#
+#  ##regressors:
+#  x <- as.matrix(object$model[,-1])
+#  xNames <- colnames(x)
+#  if(NCOL(x)==0){
+#    x <- NULL; xNames <- NULL
+#  }else{
+#    if(is.null(xNames)){
+#      xNames <- paste0("X", 1:NCOL(x))
+#      colnames(x) <- xNames
+#    }
+#  }
+#  
+#  ##is there an intercept?
+#  if( length(coef(object))>0 ){
+#    cTRUE <- names(coef(object))[1] == "(Intercept)"
+#    if(cTRUE){
+#      x <- cbind(rep(1,NROW(y)),x)
+#      xNames <- c("(Intercept)", xNames)
+#      colnames(x) <- xNames
+#    }
+#  }
+#
+#  ##do gets:
+#  myspecific <- getsFun(y, x, ...)
+#
+#  ##which are the retained regressors?:
+#  retainedXs <- xNames[myspecific$specific.spec]
+#  cat("Retained regressors:\n ", retainedXs, "\n")
+#
+#  ##return result
+#  return(myspecific)
+#
+#} #close gets.lm function
+#
+###simulate, again, from dgp1:
+#set.seed(123)
+#dgpn <- 40 #default: 20. Others: 40, 100
+#dgpk <- 20 #default: 5. Others: 20, 60
+#vY <- rnorm(dgpn)
+#mX <- matrix(rnorm(dgpn*dgpk), dgpn, dgpk)
+#colnames(mX) <- paste("x",1:NCOL(mX),sep="")
+#
+###estimate lm model, do gets:
+#mymodel <- lm(vY ~ mX)
+#mymodel
+#myspecific <- gets(mymodel)
+#myspecific
 
-  ##regressand:
-  y <- as.vector(object$model[,1])
-  yName <- names(object$model)[1]
 
-  ##regressors:
-  x <- as.matrix(object$model[,-1])
-  xNames <- colnames(x)
-  if(NCOL(x)==0){
-    x <- NULL; xNames <- NULL
-  }else{
-    if(is.null(xNames)){
-      xNames <- paste0("X", 1:NCOL(x))
-      colnames(x) <- xNames
-    }
-  }
-  
-  ##is there an intercept?
-  if( length(coef(object))>0 ){
-    cTRUE <- names(coef(object))[1] == "(Intercept)"
-    if(cTRUE){
-      x <- cbind(rep(1,NROW(y)),x)
-      xNames <- c("(Intercept)", xNames)
-      colnames(x) <- xNames
-    }
-  }
-
-  ##do gets:
-  myspecific <- getsFun(y, x, ...)
-
-  ##which are the retained regressors?:
-  retainedXs <- xNames[myspecific$specific.spec]
-  cat("Retained regressors:\n ", retainedXs, "\n")
-
-  ##return result
-  return(myspecific)
-
-} #close gets.lm function
+##################################################
+## 6 TEST USER-DEFINED GOF FUNCTION
+##################################################
 
 ##simulate, again, from dgp1:
 set.seed(123)
@@ -385,17 +403,7 @@ vY <- rnorm(dgpn)
 mX <- matrix(rnorm(dgpn*dgpk), dgpn, dgpk)
 colnames(mX) <- paste("x",1:NCOL(mX),sep="")
 
-##estimate lm model, do gets:
-mymodel <- lm(vY ~ mX)
-mymodel
-myspecific <- gets(mymodel)
-myspecific
-
-
-##################################################
-## 6 TEST USER-DEFINED GOF FUNCTION
-##################################################
-
+##default gof-function:
 getsFun(vY, mX, gof.function=list(name="infocrit", method="aic"))
 ##user-defined gof-function:
 myGofFun <- function(x, ...){ return( x$logl ) }

@@ -5,9 +5,9 @@
 ## 1 INITIATE
 ## 2 TEST MAIN arx() ARGUMENTS
 ## 3 MORE TESTS OF predict.arx()
-## 3 TEST USER-DEFINED DIAGNOSTICS
-## 4 TEST USER-DEFINED ESTIMATION
-## 5 SIMULATIONS (FOR THE FUTURE)
+## 4 TEST USER-DEFINED DIAGNOSTICS
+## 5 TEST USER-DEFINED ESTIMATION
+## 6 SIMULATIONS (FOR THE FUTURE)
 ##
 ##################################################
 
@@ -16,7 +16,9 @@
 ##################################################
 
 ##set working directory:
+#
 setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
+#setwd("C:/Users/sucarrat/Documents/R/gs/gets/20210902build/")
 #setwd(choose.dir())
 
 ##load required packages:
@@ -232,13 +234,15 @@ SWtest <- function(x, ...){
   result <- c(tmp$statistic, NA, tmp$p.value)
   return(result)
 }
+mod06 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX)
 mod06 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX,
   user.diagnostics=list(name="SWtest"))
 print(mod06)
-print(mod06, signif.stars=TRUE)
+##the pval argument is ignored (as it should):
 mod06 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX,
   user.diagnostics=list(name="SWtest", pval=0.025))
-  #the pval argument is ignored (as it should), I think
+mod06 <- arx(y, mc=FALSE, ar=1:4, mxreg=mX,
+  user.diagnostics=list(name="SWtest", pval=0.99))
 print(mod06)
 
 ##test the envir entry:

@@ -19,18 +19,18 @@
 ##################################################
 
 ##set working directory:
-setwd("C:/Users/sucarrat/Documents/R/gs/gets/github/")
+setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
 #setwd(choose.dir())
 
 ##load required packages:
 require(parallel)
 require(zoo)
 
-##remove everything in workspace (.GlobaleEnv:
+##remove everything in workspace (.GlobaleEnv):
 rm(list=ls())
 
 ##load source:
-source("./contents/gets/R/gets-base-source.R")
+source("./gets/R/gets-base-source.R")
 
 ##load library used for some of the tests:
 library(testthat)
@@ -284,9 +284,9 @@ diagnostics(x)
 
 ##check x for autocorrelation and ARCH, and indicate
 ##whether it passes the check:
-diagnostics(x, verbose=FALSE)
-diagnostics(x, ar.LjungB=c(1,0.96), verbose=FALSE)
-diagnostics(x, arch.LjungB=c(1,0.10), verbose=FALSE)
+diagnostics(x, verbose=FALSE) ##should be TRUE
+diagnostics(x, ar.LjungB=c(1,0.96), verbose=FALSE) ##should be FALSE
+diagnostics(x, arch.LjungB=c(1,0.10), verbose=FALSE) ##should be FALSE
 
 ##add the Jarque-Bera normality test to the diagnostics:
 diagnostics(x, normality.JarqueB=TRUE)
@@ -351,6 +351,7 @@ assign("SWtest",
   envir=myenv)
 diagnostics(x, user.fun=list(name="SWtest")) #should not work ("...could not find...")
 diagnostics(x, user.fun=list(name="SWtest", envir=myenv)) #should work
+rm("myenv") #clean up
 
 ##check whether variance.spec works (creates NAs in std.residuals):
 x <- ols(vY, mX, method=3, variance.spec=list(vc=TRUE, arch=1))
@@ -359,6 +360,40 @@ x <- ols(vY, mX, method=3, variance.spec=list(vc=TRUE, arch=1))
 test_that("check whether variance.spec works (creates NAs in std.residuals)",{
   expect_silent(diagnostics(x))
 })
+
+##check no. 1 of "is.rejection.bad" entry:
+SWtest <- function(x, ...){
+  tmp <- shapiro.test(x$residuals)
+  result <- c(tmp$statistic, NA, tmp$p.value)
+  result <- rbind( as.numeric(c(tmp$statistic, NA, tmp$p.value)) )
+  rownames(result) <- "Shapiro-test"
+  return(result)
+}
+diagnostics(x, user.fun=list(name="SWtest", pval=0.025))
+diagnostics(x,
+  user.fun=list(name="SWtest", pval=0.025),
+  verbose=FALSE) #should return TRUE
+diagnostics(x,
+  user.fun=list(name="SWtest", pval=0.85, is.reject.bad=FALSE),
+  verbose=FALSE) #should return FALSE
+
+##check no. 2 of "is.rejection.bad" entry:
+SWtest <- function(x, ...){
+  result <- matrix(NA, 2, 3)
+  tmp <- shapiro.test(x$residuals)
+  result[1,] <- c(tmp$statistic, NA, tmp$p.value)
+  tmp <- shapiro.test(x$residuals^2)
+  result[2,] <- c(tmp$statistic, NA, tmp$p.value)
+  rownames(result) <- c("Test 1", "Test 2")
+  return(result)
+}
+diagnostics(x, user.fun=list(name="SWtest", pval=0.025))
+diagnostics(x,
+  user.fun=list(name="SWtest", pval=0.025),
+  verbose=FALSE) #should return FALSE
+diagnostics(x,
+  user.fun=list(name="SWtest", pval=0.85, is.reject.bad=c(TRUE,FALSE)),
+  verbose=FALSE) #should return TRUE
 
 
 ##################################################

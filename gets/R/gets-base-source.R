@@ -168,13 +168,11 @@ diagnostics <- function(x, ar.LjungB=c(1,0.025), arch.LjungB=c(1,0.025),
   ##user-defined test(s):
   ##---------------------
   if( diagnosticsGood && !is.null(user.fun) ){
-    ##make user.fun argument:
+    ##prepare user-fun arguments:
     userFunArg <- user.fun
     userFunArg$name <- NULL
     userFunArg$envir <- NULL
     userFunArg$pval <- NULL
-    ##new: named list element "is.reject.bad" of user.fun allows user to specify
-    ##whether a rejection of the test means that diagnostics fail or not
     userFunArg$is.reject.bad <- NULL
     if( length(userFunArg)==0 ){ userFunArg <- NULL }
     ##'do' user diagnostics:
@@ -184,37 +182,34 @@ diagnostics <- function(x, ar.LjungB=c(1,0.025), arch.LjungB=c(1,0.025),
       userVals <- do.call(user.fun$name, c(list(x=x),userFunArg),
         envir=user.fun$envir)
     }
-    if (is.null(userVals)) {
-      # the user diagnostic function has not returned a matrix
-      # treat as if diagnostics had not been specified
-      remove(userVals) # remove so that does not try to add to "result" later
-    } else {
-      userVals <- rbind(userVals)
-      if (!is.null(user.fun$is.reject.bad)) {
-        is.reject.bad <- user.fun$is.reject.bad
-      } else { # default is that rejection is bad and leads to failure of diagn
-        is.reject.bad <- rep(TRUE, NROW(userVals))
+    ##ensure userVals is a matrix:
+    if( !is.null(userVals) ){ userVals <- rbind(userVals) }
+    if( !is.null(user.fun$pval) ){
+      ##create decision matrix:
+      tmp <- matrix(NA, NROW(userVals), 3)
+      colnames(tmp) <- c("userFunPval", "reject", "is.reject.bad")
+      tmp <- as.data.frame(tmp)
+      tmp[,"userFunPval"] <- as.numeric(userVals[,3])
+      tmp[,"reject"] <- tmp[,"userFunPval"] <= user.fun$pval     
+      if( is.null(user.fun$is.reject.bad) ){
+        tmp[,"is.reject.bad"] <- TRUE
+      }else{
+        tmp[,"is.reject.bad"] <- user.fun$is.reject.bad
       }
-      if( !is.null(user.fun$pval) ){
-        userFunPval.reject.bad <- as.numeric(userVals[is.reject.bad, 3])
-        userFunPval.reject.good <- as.numeric(userVals[!is.reject.bad, 3])
-        if( any(userFunPval.reject.bad <= user.fun$pval[is.reject.bad]) ){
-          diagnosticsGood <- FALSE
-        }
-        if ( any(userFunPval.reject.good > user.fun$pval[!is.reject.bad]) ){
-          diagnosticsGood <- FALSE
-        }
+      if( any( tmp[,"reject"] == tmp[,"is.reject.bad"] ) ){
+        diagnosticsGood <- FALSE
       }
+      diagnosticsGood <- as.logical(max(diagnosticsGood,verbose))
     }
   } #end if( user.fun )
 
   ##result:
   ##-------
 
-  ##if(!verbose): return logical only
+  ##if( !verbose ): return logical only
   if( !verbose ){ result <- diagnosticsGood }
 
-  ##if(verbose): return diagnostics table
+  ##if( verbose ): return diagnostics table
   if( verbose ){
     result <- NULL
     resultRowNames <- NULL
@@ -236,7 +231,9 @@ diagnostics <- function(x, ar.LjungB=c(1,0.025), arch.LjungB=c(1,0.025),
         paste("Jarque-Bera", sep=""))
       result <- rbind(result, tmp)
     }
-    if(exists("userVals")){
+#NOTE:
+#   !is.null(userVals) is due to J-bat's ivgets code
+    if( exists("userVals") && !is.null(userVals) ){
       result <- rbind(result, userVals)
       userValsNames <- rownames(userVals)
       if( identical(userValsNames, "userVals") ){
@@ -2387,12 +2384,6 @@ arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
 
   if( !is.null(user.estimator) ){
 
-    ##give aux$mX its column names back (some user estimators might need names)
-    ##can only do so if aux$mX is not NULL
-    if ( !is.null(aux$mX) ){
-      colnames(aux$mX) <- aux$mXnames
-    }
-    
     ##make user-estimator argument:
     if( is.null(user.estimator$envir) ){
       user.estimator$envir <- .GlobalEnv
@@ -3321,10 +3312,8 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
       coefs <- coef.arx(object, spec="mean")
   
       ##mc:
-      ##NEW by M-orca:
-      if( is.null(object$call$mc) || isTRUE(object$call$mc) ){
-#      OLD:
-#      if(!is.null(object$call$mc)){
+      mcArg <- eval(object$call$mc)
+      if( is.null(mcArg) || isTRUE(mcArg) ){
         mconst <- as.numeric(coefs[1])
         mconstIndx <- 1
       }else{
@@ -4697,7 +4686,7 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
     }else{
       normality.JarqueB <- TRUE
     }
-    
+        
     ##if( default estimator ):
     if( is.null(object$call$user.estimator) ){
       ##estimate specific model:
@@ -5076,8 +5065,6 @@ predict.gets <- function(object, spec=NULL, n.ahead=12,
       indxCounter <- indxCounter + 1
     }else{
       objectNew$call$mc <- FALSE
-#OLD:
-#      objectNew$call$mc <- NULL
     }
     
     ##ar argument:
