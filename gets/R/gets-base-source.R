@@ -173,6 +173,9 @@ diagnostics <- function(x, ar.LjungB=c(1,0.025), arch.LjungB=c(1,0.025),
     userFunArg$name <- NULL
     userFunArg$envir <- NULL
     userFunArg$pval <- NULL
+    ##new: named list element "is.reject.bad" of user.fun allows user to specify
+    ##whether a rejection of the test means that diagnostics fail or not
+    userFunArg$is.reject.bad <- NULL
     if( length(userFunArg)==0 ){ userFunArg <- NULL }
     ##'do' user diagnostics:
     if( is.null(user.fun$envir) ){
@@ -181,11 +184,26 @@ diagnostics <- function(x, ar.LjungB=c(1,0.025), arch.LjungB=c(1,0.025),
       userVals <- do.call(user.fun$name, c(list(x=x),userFunArg),
         envir=user.fun$envir)
     }
-    userVals <- rbind(userVals)
-    if( !is.null(user.fun$pval) ){
-      userFunPval <- as.numeric(userVals[,3])
-      if( any(userFunPval <= user.fun$pval) ){
-        diagnosticsGood <- FALSE
+    if (is.null(userVals)) {
+      # the user diagnostic function has not returned a matrix
+      # treat as if diagnostics had not been specified
+      remove(userVals) # remove so that does not try to add to "result" later
+    } else {
+      userVals <- rbind(userVals)
+      if (!is.null(user.fun$is.reject.bad)) {
+        is.reject.bad <- user.fun$is.reject.bad
+      } else { # default is that rejection is bad and leads to failure of diagn
+        is.reject.bad <- rep(TRUE, NROW(userVals))
+      }
+      if( !is.null(user.fun$pval) ){
+        userFunPval.reject.bad <- as.numeric(userVals[is.reject.bad, 3])
+        userFunPval.reject.good <- as.numeric(userVals[!is.reject.bad, 3])
+        if( any(userFunPval.reject.bad <= user.fun$pval[is.reject.bad]) ){
+          diagnosticsGood <- FALSE
+        }
+        if ( any(userFunPval.reject.good > user.fun$pval[!is.reject.bad]) ){
+          diagnosticsGood <- FALSE
+        }
       }
     }
   } #end if( user.fun )
@@ -2369,6 +2387,12 @@ arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
 
   if( !is.null(user.estimator) ){
 
+    ##give aux$mX its column names back (some user estimators might need names)
+    ##can only do so if aux$mX is not NULL
+    if ( !is.null(aux$mX) ){
+      colnames(aux$mX) <- aux$mXnames
+    }
+    
     ##make user-estimator argument:
     if( is.null(user.estimator$envir) ){
       user.estimator$envir <- .GlobalEnv
@@ -4673,7 +4697,7 @@ getsm <- function(object, t.pval=0.05, wald.pval=t.pval, vcov.type=NULL,
     }else{
       normality.JarqueB <- TRUE
     }
-        
+    
     ##if( default estimator ):
     if( is.null(object$call$user.estimator) ){
       ##estimate specific model:
