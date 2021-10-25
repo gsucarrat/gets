@@ -120,12 +120,12 @@ distorttest <- function(x, coef="all"){
   
   p.test <- pchisq(HtestOLS10, df = rel.df, lower.tail = FALSE)
   #attr(cf_diff,"names") <- "Difference in Estimates"
-  attr(HtestOLS10,"names") <- "Chi-squared Overall Test"
+  attr(HtestOLS10,"names") <- "X-squared"
   rval_chi <- list(
     #statistic = HtestOLS10, p.value = p.test, estimate=NULL, null.value = NULL, # Felix
     statistic = HtestOLS10, p.value = p.test, estimate=cf_diff, null.value = NULL, # Moritz
     # alternative = NULL, # Felix
-    alternative = "Difference between IIS and OLS Estimates is not 0.", # M-Orca attempt
+    alternative = "True difference between IIS and OLS estimates is not equal to 0.", # M-Orca attempt
     
     method="Jiao-Pretis-Schwarz Outlier Distortion Test", # Moritz
     #data.name="Difference between IIS and OLS Estimates", # Felix
@@ -378,7 +378,7 @@ print.boot.distorttest <- function(x, ...){
   cat("\n")
   cat(paste0("Prop Full: ",x$prop.full))
   cat("\n")
-  cat(paste0("Sample cleaned (always TRUE with parametric Bootstraps): ",x$args$clean.sample))
+  cat(paste0("Cleaned Sample (always TRUE with parametric Bootstraps): ",x$args$clean.sample))
   cat("\n")
   cat(paste0("Parametric Bootstrap (residual resampling): ",x$args$parametric))
 }
