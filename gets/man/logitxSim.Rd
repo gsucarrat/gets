@@ -1,4 +1,5 @@
-\name{dlogitxSim}
+\name{logitxSim}
+\alias{logitxSim}
 \alias{dlogitxSim}
 
 \title{Simulate from a dynamic logit-x model}
@@ -8,8 +9,10 @@ Simulate from a dynamic Autoregressive (AR) logit model with covariates ('X'). T
 }
 
 \usage{
-dlogitxSim(n, intercept = 0, ar = NULL, xreg = NULL, verbose = FALSE, 
+logitxSim(n, intercept = 0, ar = NULL, xreg = NULL, verbose = FALSE, 
     as.zoo = TRUE)
+
+dlogitxSim(n, ...)
 }
 
 \arguments{
@@ -19,6 +22,7 @@ dlogitxSim(n, intercept = 0, ar = NULL, xreg = NULL, verbose = FALSE,
   \item{xreg}{\code{NULL} or numeric vector with the values of the X-term}
   \item{verbose}{\code{logical}. If \code{FALSE}, then only the binary process (a vector) is returned. If \code{TRUE}, then a matrix with all the simulated information is returned (binary process, probabilities, etc.)}
   \item{as.zoo}{\code{logical}. If \code{TRUE}, then the returned object - a vector or matrix - will be of class \code{\link{zoo}} }
+  \item{...}{arguments passed on to \code{logitxSim}}
 }
 
 \details{No details, for the moment.}
@@ -34,18 +38,18 @@ Heikki Kauppi and Penti Saikkonen (2008): 'Predicting U.S. Recessions with Dynam
 \author{Genaro Sucarrat, \url{http://www.sucarrat.net/}}
 
 \seealso{
-\code{\link{dlogitx}}
+\code{\link{logitx}}
 }
 
 \examples{
 
 ##simulate from ar(1):
 set.seed(123) #for reproducibility
-y <- dlogitxSim(100, ar=0.3)
+y <- logitxSim(100, ar=0.3)
 
 ##more output (value, probability, logit):
 set.seed(123) #for reproducibility
-y <- dlogitxSim(100, ar=0.3, verbose=TRUE)
+y <- logitxSim(100, ar=0.3, verbose=TRUE)
 
 }
 

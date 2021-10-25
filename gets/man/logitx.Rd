@@ -1,5 +1,7 @@
-\name{dlogitx}
+\name{logitx}
+\alias{logitx}
 \alias{dlogitx}
+
 \title{Estimate an autoregressive logit model with covariates}
 
 \description{
@@ -7,11 +9,13 @@ Estimate a dynamic Autoregressive (AR) logit model with covariates ('X') by maxi
 }
 
 \usage{
-dlogitx(y, intercept = TRUE, ar = NULL, ewma = NULL, xreg = NULL, 
+logitx(y, intercept = TRUE, ar = NULL, ewma = NULL, xreg = NULL, 
     vcov.type = c("ordinary", "robust"), lag.length = NULL, 
     initial.values = NULL, lower = -Inf, upper = Inf, control = list(), 
     eps.tol = .Machine$double.eps, solve.tol = .Machine$double.eps, 
     plot = NULL)
+
+dlogitx(y, ...)
 }
 
 \arguments{
@@ -29,13 +33,14 @@ dlogitx(y, intercept = TRUE, ar = NULL, ewma = NULL, xreg = NULL,
   \item{eps.tol}{numeric, a small value that ensures the fitted zero-probabilities are not too small when the log-transformation is applied when computing the log-likelihood }
   \item{solve.tol}{numeric value passed on to the \code{tol} argument of \code{\link{solve}}, which is called whenever the coefficient-coariance matrix is computed. The value controls the toleranse for detecting linear dependence between columns when inverting a matrix }
   \item{plot}{\code{NULL} or logical. If \code{TRUE}, then a plot is produced. If \code{NULL} (default), then the value set by \code{\link{options}} determines whether a plot is produced or not.}
+  \item{...}{arguments passed on to \code{logitx}}
 }
 
 \details{
 The function estimates a dynamic Autoregressive (AR) logit model with (optionally) covariates ('X') by maximising the logit likelihood. The estimated model is that of Kauppi and Saikkonen (2008). However, there (in contrast to here) estimation is by maximisation of the probit likelihood. 
 }
 
-\value{A list of class 'dlogitx'.}
+\value{A list of class 'logitx'.}
 
 \references{
 Heikki Kauppi and Penti Saikkonen (2008): 'Predicting U.S. Recessions with Dynamic Binary Response Models'. The Review of Economic Statistics 90, pp. 777-791
@@ -46,27 +51,27 @@ Whitney K. Newey and Kenned D. West (1987): 'A Simple, Positive Semi-Definite, H
 \author{Genaro Sucarrat, \url{http://www.sucarrat.net/}}
 
 \seealso{
-Methods: \code{\link{coef.dlogitx}}, \code{\link{fitted.dlogitx}}, \code{\link{gets.dlogitx}}, \cr
-\code{\link{logLik.dlogitx}}, \code{\link{plot.dlogitx}}, \code{\link{print.dlogitx}}, \code{\link{summary.dlogitx}}, \code{\link{toLatex.dlogitx}} and \code{\link{vcov.dlogitx}}\cr
+Methods: \code{\link{coef.logitx}}, \code{\link{fitted.logitx}}, \code{\link{gets.logitx}}, \cr
+\code{\link{logLik.logitx}}, \code{\link{plot.logitx}}, \code{\link{print.logitx}}, \code{\link{summary.logitx}}, \code{\link{toLatex.logitx}} and \code{\link{vcov.logitx}}\cr
 
-Related functions: \code{\link{dlogitxSim}}, \code{\link{logit}}, \code{\link{nlminb}}
+Related functions: \code{\link{logitxSim}}, \code{\link{logit}}, \code{\link{nlminb}}
 }
 
 \examples{
 
 ##simulate from ar(1):
 set.seed(123) #for reproducibility
-y <- dlogitxSim(100, ar=0.3)
+y <- logitxSim(100, ar=0.3)
 
 ##estimate ar(1) and store result:
-mymod <- dlogitx(y, ar=1)
+mymod <- logitx(y, ar=1)
 
 ##estimate ar(4) and store result:
-mymod <- dlogitx(y, ar=1:4)
+mymod <- logitx(y, ar=1:4)
 
 ##create some more data, estimate new model:
 x <- matrix(rnorm(5*100), 100, 5)
-mymod <- dlogitx(y, ar=1:4, xreg=x)
+mymod <- logitx(y, ar=1:4, xreg=x)
 
 }
 

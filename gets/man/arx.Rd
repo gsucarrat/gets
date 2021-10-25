@@ -3,9 +3,11 @@
 \title{Estimate an AR-X model with log-ARCH-X errors}
 
 \description{
+
 Estimation by OLS, two-step OLS if a variance specification is specified: In the first the mean specification (AR-X) is estimated, whereas in the second step the log-variance specification (log-ARCH-X) is estimated.
 
 The AR-X mean specification can contain an intercept, AR-terms, lagged moving averages of the regressand and other conditioning covariates ('X'). The log-variance specification can contain log-ARCH terms, asymmetry or 'leverage' terms, log(EqWMA) where EqWMA is a lagged equally weighted moving average of past squared residuals (a volatility proxy) and other conditioning covariates ('X').
+
 }
 
 \usage{
@@ -42,29 +44,37 @@ arx(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL, vc=FALSE,
 }
 
 \details{
-For an overview of the AR-X model with log-ARCH-X errors, see Pretis, Reade and Sucarrat (2018): \url{https://www.jstatsoft.org/article/view/v086i03}.
 
-The arguments \code{user.estimator} and \code{user.diagnostics} enables the specification of user-defined estimators and user-defined diagnostics. To this end, the principles of the same arguments in \code{\link{getsFun}} are followed, see its documentation under "Details", and Sucarrat (2019): \url{https://mpra.ub.uni-muenchen.de/96653/}.
+For an overview of the AR-X model with log-ARCH-X errors, see Pretis, Reade and Sucarrat (2018): \doi{10.18637/jss.v086.i03}.\cr
+
+The arguments \code{user.estimator} and \code{user.diagnostics} enables the specification of user-defined estimators and user-defined diagnostics. To this end, the principles of the same arguments in \code{\link{getsFun}} are followed, see its documentation under "Details", and Sucarrat (2020): \url{https://journal.r-project.org/archive/2021/RJ-2021-024/}.
+
 }
 
 \value{A list of class 'arx'}
 
 \references{
-C. Jarque and A. Bera (1980): 'Efficient Tests for Normality, Homoscedasticity and Serial Independence'. Economics Letters 6, pp. 255-259
 
-Pretis, Felix, Reade, James and Sucarrat, Genaro (2018): 'Automated General-to-Specific (GETS) Regression Modeling and Indicator Saturation for Outliers and Structural Breaks'. Journal of Statistical Software 86, Number 3, pp. 1-44
+C. Jarque and A. Bera (1980): 'Efficient Tests for Normality, Homoscedasticity and Serial Independence'. Economics Letters 6, pp. 255-259. \doi{10.1016/0165-1765(80)90024-5}
 
-Genaro Sucarrat (2019): 'User-Specified General-to-Specific and Indicator Saturation Methods'. \url{https://mpra.ub.uni-muenchen.de/96653/}
+Felix Pretis, James Reade and Genaro Sucarrat (2018): 'Automated General-to-Specific (GETS) Regression Modeling and Indicator Saturation for Outliers and Structural Breaks'. Journal of Statistical Software 86, Number 3, pp. 1-44. \doi{10.18637/jss.v086.i03}
 
-Halbert White (1980): 'A Heteroskedasticity-Consistent Covariance Matrix Estimator and a Direct Test for Heteroskedasticity', Econometrica 48, pp. 817-838
+Genaro Sucarrat (2020): 'User-Specified General-to-Specific and Indicator Saturation Methods'. The R Journal 12:2, pages 388-401. \url{https://journal.r-project.org/archive/2021/RJ-2021-024/}
 
-Whitney K. Newey and Kenned D. West (1987): 'A Simple, Positive Semi-Definite, Heteroskedasticity and Autocorrelation Consistent Covariance Matrix', Econometrica 55, pp. 703-708
+Halbert White (1980): 'A Heteroskedasticity-Consistent Covariance Matrix Estimator and a Direct Test for Heteroskedasticity', Econometrica 48, pp. 817-838.
+
+Whitney K. Newey and Kenned D. West (1987): 'A Simple, Positive Semi-Definite, Heteroskedasticity and Autocorrelation Consistent Covariance Matrix', Econometrica 55, pp. 703-708.
+
 }
 
 \author{
-Genaro Sucarrat, \url{http://www.sucarrat.net/}
-Jonas Kurle, \url{https://www.jonaskurle.com/}\cr
-Moritz Schwarz, \url{https://www.inet.ox.ac.uk/people/moritz-schwarz/}\cr
+
+\tabular{lll}{
+	Jonas Kurle: \tab \tab \url{https://www.jonaskurle.com/}\cr
+	Moritz Schwarz: \tab \tab  \url{https://www.inet.ox.ac.uk/people/moritz-schwarz/}\cr
+	Genaro Sucarrat: \tab \tab \url{http://www.sucarrat.net/}\cr
+}
+
 }
 
 \seealso{

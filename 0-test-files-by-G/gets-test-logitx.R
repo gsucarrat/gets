@@ -3,10 +3,10 @@
 ## created 8 December 2020, Oslo.
 ##
 ## 1 INITIATE
-## 2 TEST dlogitxSim()
+## 2 TEST logitxSim()
 ## 3 TEST logit()
-## 4 TEST dlogitx()
-## 5 TEST gets.dlogitx()
+## 4 TEST logitx()
+## 5 TEST gets.logitx()
 ##
 ##################################################
 
@@ -23,16 +23,16 @@ setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
 require(parallel)
 require(zoo)
 
-##remove everything in workspace (.GlobaleEnv:
+##remove everything in workspace (.GlobalEnv):
 rm(list=ls())
 
 ##load source:
 source("./gets/R/gets-base-source.R")
-source("./gets/R/gets-dlogitx-source.R")
+source("./gets/R/gets-logitx-source.R")
 
 
 ##################################################
-## 2 TEST dlogitxSim()
+## 2 TEST logitxSim()
 ##################################################
 
 ##generate some data:
@@ -41,6 +41,16 @@ n <- 20
 z <- rnorm(n)
 
 ##for visual inspection:
+logitxSim(n)
+logitxSim(n, intercept=1)
+logitxSim(n, ar=c(0.2,0.1))
+logitxSim(n, xreg=0.5*z)
+logitxSim(n, verbose=TRUE)
+logitxSim(n, as.zoo=FALSE)
+logitxSim(n, intercept=1, ar=c(0.2,0.1), xreg=0.5*z, verbose=TRUE,
+  as.zoo=FALSE)
+
+##test the alias dlogitxSim():
 dlogitxSim(n)
 dlogitxSim(n, intercept=1)
 dlogitxSim(n, ar=c(0.2,0.1))
@@ -49,7 +59,7 @@ dlogitxSim(n, verbose=TRUE)
 dlogitxSim(n, as.zoo=FALSE)
 dlogitxSim(n, intercept=1, ar=c(0.2,0.1), xreg=0.5*z, verbose=TRUE,
   as.zoo=FALSE)
-    
+
     
 ##################################################
 ## 3 TEST logit()
@@ -60,7 +70,7 @@ dlogitxSim(n, intercept=1, ar=c(0.2,0.1), xreg=0.5*z, verbose=TRUE,
 
 set.seed(123)
 n <- 20
-y <- dlogitxSim(n, ar=1, as.zoo=FALSE)
+y <- logitxSim(n, ar=1, as.zoo=FALSE)
 z <- rnorm(n)
 x <- cbind(1,z)
 
@@ -87,22 +97,22 @@ z <- rnorm(10000)
 x <- cbind(1,z)
 
 ##experiment 1:
-y <- dlogitxSim(10000, intercept=0.5, xreg=z)
+y <- logitxSim(10000, intercept=0.5, xreg=z)
 result <- logit(y, x)
 result$coefficients #should be approx 0.5 and 1
 
 ##experiment 2:
-y <- dlogitxSim(10000, intercept=-1, xreg=2*z)
+y <- logitxSim(10000, intercept=-1, xreg=2*z)
 result <- logit(y, x)
 result$coefficients #should be approx -1 and 2
 
 ##experiment 3:
-y <- dlogitxSim(10000, intercept=0, xreg=1*z)
+y <- logitxSim(10000, intercept=0, xreg=1*z)
 result <- logit(y, x)
 result$coefficients #should be approx 0 and 1
 
 ##experiment 4:
-y <- dlogitxSim(10000, intercept=1, xreg=0*z)
+y <- logitxSim(10000, intercept=1, xreg=0*z)
 result <- logit(y, x)
 result$coefficients #should be approx 1 and 0
 
@@ -126,11 +136,11 @@ resultCoefs <- matrix(NA, iReps, length(resultnames))
 colnames(resultCoefs) <- resultnames
 resultPvals <- resultCoefs
 
-##loop:
+##loop (takes 2-3 minutes):
 for(i in 1:iReps){
 
   ##simulate from dgp:
-  y <- dlogitxSim(n, intercept=theta1, ar=theta2)
+  y <- logitxSim(n, intercept=theta1, ar=theta2)
   
   ##estimate and record results:
   mydata <- regressorsMean(y, mc=TRUE, ar=1)
@@ -164,35 +174,35 @@ colMeans(resultPvals < 0.01)
 
 
 ##################################################
-## 4 TEST dlogitx()
+## 4 TEST logitx()
 ##################################################
 
 set.seed(123)
 n <- 20
-y <- dlogitxSim(n, ar=1, as.zoo=TRUE)
+y <- logitxSim(n, ar=1, as.zoo=TRUE)
 z <- rnorm(n)
 
 ##test arguments:
-dlogitx(y)
-dlogitx(y, intercept=FALSE)
-dlogitx(y, ar=1)
-dlogitx(y, ewma=list(length=c(2,4)))
+logitx(y)
+logitx(y, intercept=FALSE)
+logitx(y, ar=1)
+logitx(y, ewma=list(length=c(2,4)))
 ##ISSUE: the z-variable is labelled as "mxreg", but should probably be
 ##labelled "xreg" or "z":
-dlogitx(y, xreg=z)
-dlogitx(y, vcov.type="ordinary")
-dlogitx(y, vcov.type="robust")
-dlogitx(y, vcov.type="robust", lag.length=5)
-dlogitx(y, ar=1, initial.values=c(0,0))
-dlogitx(y, ar=1, lower=0)
-dlogitx(y, ar=1, upper=0.5)
-dlogitx(y, control=list(trace=1))$coefficients
-dlogitx(y, upper=0.5, control=list(trace=1))$coefficients
-dlogitx(y, eps.tol=1) 
-dlogitx(y, solve.tol=0.99)
+logitx(y, xreg=z)
+logitx(y, vcov.type="ordinary")
+logitx(y, vcov.type="robust")
+logitx(y, vcov.type="robust", lag.length=5)
+logitx(y, ar=1, initial.values=c(0,0))
+logitx(y, ar=1, lower=0)
+logitx(y, ar=1, upper=0.5)
+logitx(y, control=list(trace=1))$coefficients
+logitx(y, upper=0.5, control=list(trace=1))$coefficients
+logitx(y, eps.tol=1) 
+logitx(y, solve.tol=0.99)
 
 ##check methods:
-x <- dlogitx(y, ar=1, xreg=z)
+x <- logitx(y, ar=1, xreg=z)
 print(x)
 coef(x)
 fitted(x)
@@ -202,18 +212,28 @@ summary(x)
 toLatex(x)
 vcov(x)
 
+##test the alias dlogitx:
+dlogitx(y)
+dlogitx(y, intercept=FALSE)
+dlogitx(y, ar=1)
+dlogitx(y, ewma=list(length=c(2,4)))
+dlogitx(y, xreg=z)
+dlogitx(y, vcov.type="ordinary")
+dlogitx(y, vcov.type="robust")
+dlogitx(y, vcov.type="robust", lag.length=5)
+
 
 ##################################################
-## 5 TEST gets.dlogitx()
+## 5 TEST gets.logitx()
 ##################################################
 
 set.seed(123)
 n <- 30
 z <- rnorm(n)
-y <- dlogitxSim(n, xreg=1*z)
+y <- logitxSim(n, xreg=1*z)
 xreg <- cbind(z, matrix(rnorm(n*9), n, 9))
 
-mymod <- dlogitx(y, xreg=xreg)
+mymod <- logitx(y, xreg=xreg)
 gets(mymod)
 gets(mymod, t.pval= 0.2)
 gets(mymod, wald.pval = 0.0001)
@@ -232,9 +252,10 @@ gets(mymod, alarm = TRUE)
 set.seed(123)
 n <- 200
 z <- rnorm(n)
-y <- dlogitxSim(n, ar=c(0.3,0.2,0.1), xreg=1*z)
+y <- logitxSim(n, ar=c(0.3,0.2,0.1), xreg=1*z)
 xreg <- cbind(z, matrix(rnorm(n*29), n, 29))
 
-mymod <- dlogitx(y, ar=1:5, xreg=xreg)
+mymod <- logitx(y, ar=1:5, xreg=xreg)
 mymod
 gets(mymod, max.paths=5)
+

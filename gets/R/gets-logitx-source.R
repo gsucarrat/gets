@@ -6,25 +6,27 @@
 ##
 ## Contents:
 ##
-## dlogitxSim()
+## logitxSim()
 ## logit()
-## dlogitx()
-## coef.dlogitx         #extraction functions
-## fitted.dlogitx       #(all are S3 methods)
-## gets.dlogitx
-## logLik.dlogitx
-## plot.dlogitx
-## WIP: predict.dlogitx
-## print.dlogitx
-## summary.dlogitx
-## toLatex.dlogitx
-## vcov.dlogitx
+## logitx()
+## coef.logitx         #extraction functions
+## fitted.logitx       #(all are S3 methods)
+## gets.logitx
+## logLik.logitx
+## plot.logitx
+## WIP: predict.logitx
+## print.logitx
+## summary.logitx
+## toLatex.logitx
+## vcov.logitx
 ##
+## dlogitxSim()     #create alias for logitxSim
+## dlogitx()        #create alias for logitx
 ##
 ###########################################################
 
 ###########################################################
-## The function dlogitxSim() simulates from an
+## The function logitxSim() simulates from an
 ## autoregressive logit model with covariates.
 ##
 ## Function arguments:
@@ -51,7 +53,7 @@
 ##
 ###########################################################
 
-dlogitxSim <- function(n, intercept=0, ar=NULL, xreg=NULL,
+logitxSim <- function(n, intercept=0, ar=NULL, xreg=NULL,
   verbose=FALSE, as.zoo=TRUE)
 {
 
@@ -114,7 +116,7 @@ dlogitxSim <- function(n, intercept=0, ar=NULL, xreg=NULL,
   }
   return(result)
 
-} #end dlogitxSim
+} #end logitxSim
 
 ###########################################################
 ## The function logit() estimates a logit model
@@ -297,9 +299,9 @@ logit <- function(y, x, initial.values=NULL, lower=-Inf, upper=Inf,
 
 
 ############################################################
-## estimate model of class "dlogitx":
+## estimate model of class "logitx":
 
-dlogitx <- function(y, intercept=TRUE, ar=NULL, ewma=NULL,
+logitx <- function(y, intercept=TRUE, ar=NULL, ewma=NULL,
   xreg=NULL, vcov.type=c("ordinary", "robust"), lag.length=NULL,
   initial.values=NULL, lower=-Inf, upper=Inf, control=list(),
   eps.tol=.Machine$double.eps, solve.tol=.Machine$double.eps,
@@ -351,25 +353,25 @@ dlogitx <- function(y, intercept=TRUE, ar=NULL, ewma=NULL,
     plot <- getOption("plot")
     if( is.null(plot) ){ plot <- FALSE }
   }
-  if(plot){ plot.dlogitx(result) }
+  if(plot){ plot.logitx(result) }
 
   ##return result:
   
-  class(result) <- "dlogitx"
+  class(result) <- c("logitx", "dlogitx")
   return(result)
   
-} #close dlogitx()
+} #close logitx()
     
 ############################################################
 ## extract coefficients
-coef.dlogitx <- function(object, ...)
+coef.logitx <- function(object, ...)
 {
   object$coefficients
-} #close coef.dlogitx
+} #close coef.logitx
 
 ############################################################
 ## extract fitted probabilities
-fitted.dlogitx <- function(object, zero.prob=FALSE, ...)
+fitted.logitx <- function(object, zero.prob=FALSE, ...)
 {
   if( zero.prob ){
     result <- 1-object$fit
@@ -377,11 +379,11 @@ fitted.dlogitx <- function(object, zero.prob=FALSE, ...)
     result <- object$fit
   }
   return(result)
-} #close fitted.dlogitx
+} #close fitted.logitx
 
 ############################################################
 ## do gets on a logitx object
-gets.dlogitx <- function(x, t.pval=0.05, wald.pval=t.pval,
+gets.logitx <- function(x, t.pval=0.05, wald.pval=t.pval,
   do.pet=TRUE, keep=NULL, include.gum=FALSE, include.1cut=TRUE,
   include.empty=FALSE, max.paths=NULL, turbo=TRUE,
   print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...)
@@ -444,7 +446,7 @@ gets.dlogitx <- function(x, t.pval=0.05, wald.pval=t.pval,
 
   ##empty final model:
   if( length(xfinal)==0 ){
-    result2 <- dlogitx(vY, intercept=FALSE, vcov.type=vcov.type,
+    result2 <- logitx(vY, intercept=FALSE, vcov.type=vcov.type,
       lag.length=x$lag.length, lower=x$lower, upper=x$upper,
       control=x$control, eps.tol=x$eps.tol, solve.tol=solve.tol, 
       plot=plot)
@@ -455,7 +457,7 @@ gets.dlogitx <- function(x, t.pval=0.05, wald.pval=t.pval,
     mX <- cbind(mX[,xfinal])
     colnames(mX) <- x$mXnames[ xfinal ]
     mX <- zoo(mX, order.by=x$y.index)
-    result2 <- dlogitx(vY, intercept=FALSE, xreg=mX, vcov.type=vcov.type,
+    result2 <- logitx(vY, intercept=FALSE, xreg=mX, vcov.type=vcov.type,
       lag.length=x$lag.length, lower=x$lower, upper=x$upper,
       control=x$control, eps.tol=x$eps.tol, solve.tol=solve.tol, 
       plot=plot)
@@ -466,14 +468,14 @@ gets.dlogitx <- function(x, t.pval=0.05, wald.pval=t.pval,
   
   result2$call <- NULL
   result <- c(result1, result2)
-  class(result) <- "dlogitx"
+  class(result) <- c("logitx", "dlogitx")
   return(result)  
  
-} #close gets.dlogitx() 
+} #close gets.logitx() 
 
 ############################################################
 ## extract log-likelihood
-logLik.dlogitx <- function(object, ...)
+logLik.logitx <- function(object, ...)
 {
   result <- object$logl
   attr(result, "df") <- length(object$coefficients)
@@ -484,14 +486,14 @@ logLik.dlogitx <- function(object, ...)
 
 ############################################################
 ## plot fitted probabilities
-plot.dlogitx <- function(x, ...)
+plot.logitx <- function(x, ...)
 {
   plot(x$fit, ylab="probability", xlab="", col="blue")
-} #close plot.dlogitx
+} #close plot.logitx
 
 ############################################################
-## print estimation result of model of class "dlogitx":
-print.dlogitx <- function(x, signif.stars=TRUE, ...)
+## print estimation result of model of class "logitx":
+print.logitx <- function(x, signif.stars=TRUE, ...)
 {
   ##header:
   ##-------
@@ -602,19 +604,19 @@ print.dlogitx <- function(x, signif.stars=TRUE, ...)
   gof[1,1] <- x$logl
   printCoefmat(gof, digits=6, signif.stars=signif.stars)
 
-} #end print.dlogitx
+} #end print.logitx
 
 
 ############################################################
 ## summarise output
-summary.dlogitx <- function(object, ...)
+summary.logitx <- function(object, ...)
 {
   summary.default(object)
 } #end summary.arx
 
 ############################################################
 ### LaTeX code (equation form)
-toLatex.dlogitx <- function(object, digits=4, gof=TRUE,
+toLatex.logitx <- function(object, digits=4, gof=TRUE,
   nonumber=FALSE, nobs="T", ...)
 {
 
@@ -634,12 +636,12 @@ toLatex.dlogitx <- function(object, digits=4, gof=TRUE,
   hName <- paste0("\\widehat{h}_t")
 
   ##coefs, coef names, std.errors:
-  coefs <- coef.dlogitx(object)
+  coefs <- coef.logitx(object)
   coefsNames <- names(coefs)
   whereIntercept <- which( coefsNames=="intercept" )
   if( whereIntercept > 0 ){ coefsNames[ whereIntercept ] <- "" }
   coefs <- as.numeric(coefs)
-  stderrs <- as.numeric(sqrt(diag(vcov.dlogitx(object))))
+  stderrs <- as.numeric(sqrt(diag(vcov.logitx(object))))
 
   ##equation (main part):
   eqtxt <- NULL
@@ -663,7 +665,7 @@ toLatex.dlogitx <- function(object, digits=4, gof=TRUE,
   ##----------------
 
   goftxt <- paste("   && LogL=",
-    format(round(as.numeric(logLik.dlogitx(object)), digits=digits), nsmall=digits),
+    format(round(as.numeric(logLik.logitx(object)), digits=digits), nsmall=digits),
     " \\qquad ", nobs, " = ", object$n, " \\nonumber \n", sep="")
 
   ##print code:
@@ -675,12 +677,19 @@ toLatex.dlogitx <- function(object, digits=4, gof=TRUE,
   cat(goftxt)
   cat("\\end{eqnarray}\n")
 
-} #end toLatex.dlogitx
+} #end toLatex.logitx
 
 ############################################################
 ## variance-covariance extraction function
-vcov.dlogitx <- function(object, ...)
+vcov.logitx <- function(object, ...)
 {
   object$vcov
-} #end vcov.dlogitx
-  
+} #end vcov.logitx
+
+############################################################
+## create alias
+dlogitxSim <- function(n, ...){ logitxSim(n, ...) }
+
+############################################################
+## create alias
+dlogitx <- function(y, ...){ logitx(y, ...) }

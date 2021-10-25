@@ -1,54 +1,96 @@
 \name{gets-package}
 \alias{gets-package}
 \docType{package}
-\title{General-to-Specific Modelling and Indicator Saturation Methods}
+\title{General-to-Specific (GETS) and Indicator Saturation (ISAT) Modelling}
 
 \description{
-Multi-path General-to-Specific (GETS) modelling of the mean and/or variance of a regression, and Indicator Saturation (ISAT) methods for detecting structural breaks in the mean. The mean can be specified as an autoregressive model with covariates (an 'AR-X' model), and the variance can be specified as a dynamic log-variance model with covariates (a 'log-ARCH-X' model). For the statistical details of the model, see Section 4 in Pretis, Reade and Sucarrat (2018).
 
-The main functions of the package are \code{\link{arx}}, \code{\link{getsm}}, \code{\link{getsv}} and \code{\link{isat}}. The first function, \code{arx}, estimates an AR-X model with (optionally) a log-ARCH-X specification on the log-variance. The second function, \code{getsm}, undertakes GETS model selection of the mean specification of an \code{arx} object. The third function, \code{getsv}, undertakes GETS model selection of the log-variance specification of an \code{arx} object. The fourth function, \code{isat}, undertakes GETS model selection of an indicator saturated mean specification. Extraction functions (mainly S3 methods) are also available, together with additional auxiliary functions used by the main functions.
+The \pkg{gets} package provides functions and methods for General-to-Specific (GETS) and Indicator Saturation (ISAT) modelling. GETS modelling is a powerful and flexible variable selection algorithm that returns a parsimonious and interpretable model. It is ideally suited for the development of models that can be used for counterfactual and predictive scenario analysis (e.g. conditional forecasting). ISAT modelling provides a comprehensive, flexible and powerful approach to the identification of structural breaks and outliers.\cr
 
-For an introduction to the package, see Pretis, Reade and Sucarrat (2018): \url{https://www.jstatsoft.org/article/view/v086i03}. The package also provides facilities for user-defined GETS and ISAT methods. While this is to some extent available via the main functions, full flexibility is provided by \code{\link{getsFun}} and \code{\link{blocksFun}}, see Sucarrat (2019): \url{https://mpra.ub.uni-muenchen.de/96653/}.
+The code of the package originated in relation with the research project G. Sucarrat and A. Escribano (2012). Felix Pretis and James Reade joined for the development of the \code{\link{isat}} code and related functions. Subsequently, Moritz Schwarz and Jonas Kurle have made significant contributions.
 
 }
 
 \details{
 
 \tabular{ll}{
-Package: \tab gets\cr
-Type: \tab Package\cr
-Version: \tab 0.30\cr
-Date: \tab 2021-09-29\cr
-License: \tab GPL-2\cr
+	Version: \tab 0.30\cr
+	Date: \tab 2021-22-25\cr
+	Licence: \tab GPL-2\cr
 }
-The code originated in relation with G. Sucarrat and A. Escribano (2012). Felix Pretis and James Reade joined for the development of the \code{\link{isat}} code and related functions. Subsequently, Moritz Schwarz and Jonas Kurle have made various contributions.
+
+}
+
+\section{GETS modelling}{
+
+	GETS methods are available for the following model classes:\cr
+
+	\itemize{
+	  \item Linear regression, both static and dynamic, see \code{\link{arx}}, \code{\link{gets.arx}} and \code{\link{gets.lm}}
+	  
+	  \item Variance models, both static and dynamic, see \code{\link{arx}}
+	  
+	  \item Logit models, both static and dynamic, see \code{\link{logitx}} and \code{\link{gets.logitx}}
+	}
+
+	The function \code{arx} estimates a static linear regression, or a dynamic AR-X model with (optionally) a log-variance specification. The log-variance specification can either be static or a dynamic log-variance model with covariates (a 'log-ARCH-X' model). For the statistical details of the model, see Section 4 in Pretis, Reade and Sucarrat (2018). The function \code{\link{logitx}} estimates a static logit model, or a dynamic logit model with covariates (optionally). For complete user-specified GETS modelling, see \code{\link{getsFun}}.\cr
+
+}
+
+\section{ISAT modelling}{
+
+	ISAT methods are available for:\cr
+
+	\itemize{
+	  \item Linear regression, both static and dynamic, see \code{\link{isat}}
+	}
+
+	The \code{isat} function undertakes GETS model selection of an indicator saturated mean specification. Extraction functions (mainly S3 methods) are also available, together with additional auxiliary functions. For complete user-specified ISAT modelling, see \code{\link{blocksFun}}.\cr
+
+}
+
+\section{Vignettes}{
+
+	Two vignettes are available in the package (type \code{browseVignettes("gets")} to access them):\cr
+
+	\itemize{
+	  \item An introduction to the \emph{gets} package
+	  \item User-Specified General-to-Specific (GETS) and Indicator Saturation (ISAT) Methods
+	}
+
+	The former is a mildly modified version of Pretis, Reade and Sucarrat (2018), whereas the latter is an updated version of Sucarrat (2020).
 
 }
 
 \author{
-Jonas Kurle, \url{https://www.jonaskurle.com/}\cr
-Felix Pretis, \url{http://www.felixpretis.org/}\cr
-James Reade,  \url{https://sites.google.com/site/jjamesreade/}\cr
-Moritz Schwarz, \url{https://www.inet.ox.ac.uk/people/moritz-schwarz/}\cr
-Genaro Sucarrat \url{http://www.sucarrat.net/}\cr\cr
+
+\tabular{lll}{
+	Jonas Kurle: \tab \tab \url{https://www.jonaskurle.com/}\cr
+	Felix Pretis: \tab \tab \url{http://www.felixpretis.org/}\cr
+	James Reade: \tab \tab \url{https://sites.google.com/site/jjamesreade/}\cr
+	Moritz Schwarz: \tab \tab  \url{https://www.inet.ox.ac.uk/people/moritz-schwarz/}\cr
+	Genaro Sucarrat: \tab \tab \url{http://www.sucarrat.net/}\cr
+}
+
 Maintainer: Genaro Sucarrat            
+
 }
 
 \references{
-Jurgen A. Doornik, David F. Hendry, and Felix Pretis (2013): 'Step Indicator Saturation', Oxford Economics Discussion Paper, 658.
+Jurgen A. Doornik, David F. Hendry, and Felix Pretis (2013): 'Step Indicator Saturation', Oxford Economics Discussion Paper, 658. \url{https://ideas.repec.org/p/oxf/wpaper/658.html}
 
-Felix Pretis, James Reade and Genaro Sucarrat (2018): 'Automated General-to-Specific (GETS) Regression Modeling and Indicator Saturation for Outliers and Structural Breaks'. Journal of Statistical Software 86, Number 3, pp. 1-44. \url{https://www.jstatsoft.org/article/view/v086i03}
+Felix Pretis, James Reade and Genaro Sucarrat (2018): 'Automated General-to-Specific (GETS) Regression Modeling and Indicator Saturation for Outliers and Structural Breaks'. Journal of Statistical Software 86, Number 3, pp. 1-44. \doi{10.18637/jss.v086.i03}
 
-Carlos Santos, David F. Hendry and Soren Johansen (2007):  'Automatic selection of indicators in a fully saturated regression'. Computational Statistics, vol 23:1, pp.317-335
+Carlos Santos, David F. Hendry and Soren Johansen (2007):  'Automatic selection of indicators in a fully saturated regression'. Computational Statistics, vol 23:1, pp.317-335. \doi{10.1007/s00180-007-0054-z}
 
-Genaro Sucarrat (2019): 'User-Specified General-to-Specific and Indicator Saturation Methods'. \url{https://mpra.ub.uni-muenchen.de/96653/}
+Genaro Sucarrat (2020): 'User-Specified General-to-Specific and Indicator Saturation Methods'. The R Journal 12:2, pages 388-401. \url{https://journal.r-project.org/archive/2021/RJ-2021-024/}
 
 Genaro Sucarrat and Alvaro Escribano (2012): 'Automated Financial Model Selection: General-to-Specific Modelling of the Mean and Volatility Specifications', Oxford Bulletin of Economics and Statistics 74, Issue 5 (October), pp. 716-735. \doi{10.1111/j.1468-0084.2011.00669.x}
 
 }
 
 \seealso{
-\code{\link{arx}}, \code{\link{getsm}}, \code{\link{getsv}}, \code{\link{isat}}, \code{\link{getsFun}}, \code{\link{blocksFun}}
+\code{\link{arx}}, \code{\link{gets.arx}}, \code{\link{getsm}}, \code{\link{getsv}}, \code{\link{isat}}, \code{\link{getsFun}}, \code{\link{blocksFun}}
 }
 
 \examples{

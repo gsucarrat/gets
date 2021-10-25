@@ -52,21 +52,25 @@ getsv(object, t.pval=0.05, wald.pval=t.pval,
 }
 
 \details{
-For an overview, see Pretis, Reade and Sucarrat (2018): \url{https://www.jstatsoft.org/article/view/v086i03}.
 
-The arguments \code{user.diagnostics} and \code{gof.function} enable the specification of user-defined diagnostics and a user-defined goodness-of-fit function. For the former, see the documentation of \code{\link{diagnostics}}. For the latter, the principles of the same arguments in \code{\link{getsFun}} are followed, see its documentation under "Details", and Sucarrat (2019): \url{https://mpra.ub.uni-muenchen.de/96653/}.
+For an overview, see Pretis, Reade and Sucarrat (2018): \doi{10.18637/jss.v086.i03}.\cr
+
+The arguments \code{user.diagnostics} and \code{gof.function} enable the specification of user-defined diagnostics and a user-defined goodness-of-fit function. For the former, see the documentation of \code{\link{diagnostics}}. For the latter, the principles of the same arguments in \code{\link{getsFun}} are followed, see its documentation under "Details", and Sucarrat (2020): \url{https://journal.r-project.org/archive/2021/RJ-2021-024/}.
+
 }
 
 \value{A list of class 'gets'}
 
 \references{
-C. Jarque and A. Bera (1980): 'Efficient Tests for Normality, Homoscedasticity and Serial Independence'. Economics Letters 6, pp. 255-259
+
+C. Jarque and A. Bera (1980): 'Efficient Tests for Normality, Homoscedasticity and Serial Independence'. Economics Letters 6, pp. 255-259. \doi{10.1016/0165-1765(80)90024-5}
 
 G. Ljung and G. Box (1979): 'On a Measure of Lack of Fit in Time Series Models'. Biometrika 66, pp. 265-270
 
-Felix Pretis, James Reade and Genaro Sucarrat (2018): 'Automated General-to-Specific (GETS) Regression Modeling and Indicator Saturation for Outliers and Structural Breaks'. Journal of Statistical Software 86, Number 3, pp. 1-44. \url{https://www.jstatsoft.org/article/view/v086i03}
+Felix Pretis, James Reade and Genaro Sucarrat (2018): 'Automated General-to-Specific (GETS) Regression Modeling and Indicator Saturation for Outliers and Structural Breaks'. Journal of Statistical Software 86, Number 3, pp. 1-44. \doi{10.18637/jss.v086.i03}
 
-Genaro Sucarrat (2019): 'User-Specified General-to-Specific and Indicator Saturation Methods'. \url{https://mpra.ub.uni-muenchen.de/96653/}
+Genaro Sucarrat (2020): 'User-Specified General-to-Specific and Indicator Saturation Methods'. The R Journal 12:2, pages 388-401. \url{https://journal.r-project.org/archive/2021/RJ-2021-024/}
+
 }
 
 \author{Genaro Sucarrat, \url{http://www.sucarrat.net/} }

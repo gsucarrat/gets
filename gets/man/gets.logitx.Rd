@@ -1,21 +1,21 @@
-\name{gets.dlogitx}
-\alias{gets.dlogitx}
+\name{gets.logitx}
+\alias{gets.logitx}
 
-\title{General-to-Specific (GETS) Modelling of objects of class 'dlogitx'}
+\title{General-to-Specific (GETS) Modelling of objects of class 'logitx'}
 
 \description{
 General-to-Specific (GETS) Modelling of a dynamic Autoregressive (AR) logit model with covariates ('X') of class 'dlogitx'.
 }
 
 \usage{
-\method{gets}{dlogitx}(x, t.pval = 0.05, wald.pval = t.pval, do.pet = TRUE, 
+\method{gets}{logitx}(x, t.pval = 0.05, wald.pval = t.pval, do.pet = TRUE, 
     keep = NULL, include.gum = FALSE, include.1cut = TRUE, include.empty = FALSE, 
     max.paths = NULL, turbo = TRUE, print.searchinfo = TRUE, 
     plot = NULL, alarm = FALSE, ...) 
 }
 
 \arguments{
-  \item{x}{an object of class 'dlogitx', see \code{\link{dlogitx}} }
+  \item{x}{an object of class 'logitx', see \code{\link{logitx}} }
   \item{t.pval}{numeric value between 0 and 1. The significance level used for the two-sided regressor significance t-tests}
   \item{wald.pval}{numeric value between 0 and 1. The significance level used for the Parsimonious Encompassing Tests (PETs). By default, it is the same as \code{t.pval}}
   \item{do.pet}{\code{logical} that determines whether a Parsimonious Encompassing Test (PET) against the GUM should be undertaken at each regressor removal for the joint significance of all the deleted regressors along the current path. If \code{FALSE}, then a PET is not undertaken at each regressor removal }
@@ -32,7 +32,7 @@ General-to-Specific (GETS) Modelling of a dynamic Autoregressive (AR) logit mode
 }
 
 \details{
-The model of class 'dlogitx' is a dynamic Autoregressive (AR) logit model with (optional) covariates ('X') proposed by Kauppi and Saikkonen (2008). Internally, \code{gets.dlogitx} undertakes the General-to-Specific (GETS) modelling with the \code{\link{getsFun}} function, see Sucarrat (2020). 
+The model of class 'logitx' is a dynamic Autoregressive (AR) logit model with (optional) covariates ('X') proposed by Kauppi and Saikkonen (2008). Internally, \code{gets.logitx} undertakes the General-to-Specific (GETS) modelling with the \code{\link{getsFun}} function, see Sucarrat (2020). 
 }
 
 \references{
@@ -44,18 +44,18 @@ Genaro Sucarrat, \url{http://www.sucarrat.net/}
 }
 
 \seealso{
-\code{\link{dlogitx}}, \code{\link{dlogitxSim}}, \code{\link{coef.dlogitx}}, \code{\link{getsFun}}
+\code{\link{logitx}}, \code{\link{logitxSim}}, \code{\link{coef.logitx}}, \code{\link{getsFun}}
 }
 
 \examples{
 
 ##simulate from ar(1), create covariates:
 set.seed(123) #for reproducibility
-y <- dlogitxSim(100, ar=0.3)
+y <- logitxSim(100, ar=0.3)
 x <- matrix(rnorm(5*100), 100, 5)
 
 ##estimate model:
-mymod <- dlogitx(y, ar=1:4, xreg=x)
+mymod <- logitx(y, ar=1:4, xreg=x)
 
 ##do gets modelling:
 gets(mymod)

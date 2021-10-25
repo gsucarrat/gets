@@ -4,7 +4,7 @@
 \title{General-to-Specific (GETS) Modelling 'lm' objects}
 
 \description{
-General-to-Specific (GETS) Modelling of a objects of class \code{\link{lm}}.
+General-to-Specific (GETS) Modelling of objects of class \code{\link{lm}}.
 }
 
 \usage{

@@ -47,10 +47,11 @@ export(
   "isatloop", "isatvarcorrect", "mvrnormsim", "outlierscaletest",
   "outliertest", "vargaugeiis", "gets.isat", "isat.lm", "isat.arx",
 
-  ##dlogitx-class function:
-  "dlogitxSim", "logit", "dlogitx", "coef.dlogitx", "fitted.dlogitx",
-  "gets.dlogitx", "logLik.dlogitx", "plot.dlogitx", "print.dlogitx",
-  "summary.dlogitx", "toLatex.dlogitx", "vcov.dlogitx",
+  ##logitx-class functions:
+  "logitxSim", "logit", "logitx", "coef.logitx", "fitted.logitx",
+  "gets.logitx", "logLik.logitx", "plot.logitx", "print.logitx",
+  "summary.logitx", "toLatex.logitx", "vcov.logitx", "dlogitxSim",
+  "dlogitx",
 
   ##lm-class functions:
   "as.arx.lm", "gets.lm"
@@ -102,16 +103,16 @@ S3method("sigma", "isat")
 S3method("summary", "isat")
 S3method("vcov", "isat")
 
-##methods for class dlogitx:
-S3method("coef", "dlogitx")
-S3method("fitted", "dlogitx")
-S3method("gets", "dlogitx")
-S3method("logLik", "dlogitx")
-S3method("plot", "dlogitx")
-S3method("print", "dlogitx")
-S3method("summary", "dlogitx")
-S3method("toLatex", "dlogitx")
-S3method("vcov", "dlogitx")
+##methods for class logitx:
+S3method("coef", "logitx")
+S3method("fitted", "logitx")
+S3method("gets", "logitx")
+S3method("logLik", "logitx")
+S3method("plot", "logitx")
+S3method("print", "logitx")
+S3method("summary", "logitx")
+S3method("toLatex", "logitx")
+S3method("vcov", "logitx")
 
 ##methods for class lm:
 S3method("as.arx", "lm")

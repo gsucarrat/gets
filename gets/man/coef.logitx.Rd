@@ -1,31 +1,31 @@
-\name{coef.dlogitx}
-\alias{coef.dlogitx}
-\alias{fitted.dlogitx}
-\alias{logLik.dlogitx}
-\alias{plot.dlogitx}
-\alias{print.dlogitx}
-\alias{summary.dlogitx}
-\alias{toLatex.dlogitx}
-\alias{vcov.dlogitx}
+\name{coef.logitx}
+\alias{coef.logitx}
+\alias{fitted.logitx}
+\alias{logLik.logitx}
+\alias{plot.logitx}
+\alias{print.logitx}
+\alias{summary.logitx}
+\alias{toLatex.logitx}
+\alias{vcov.logitx}
 
-\title{Extraction functions for 'dlogitx' objects}
+\title{Extraction functions for 'logitx' objects}
 
-\description{Extraction functions (of type S3 methods) for objects of class 'dlogitx'}
+\description{Extraction functions (of type S3 methods) for objects of class 'logitx'}
 
 \usage{
-  \method{coef}{dlogitx}(object, ...)
-  \method{fitted}{dlogitx}(object, zero.prob=FALSE, ...)
-  \method{logLik}{dlogitx}(object, ...)
-  \method{plot}{dlogitx}(x, ...)
-  \method{print}{dlogitx}(x, signif.stars=TRUE, ...)
-  \method{summary}{dlogitx}(object, ...)
-  \method{toLatex}{dlogitx}(object, digits = 4, gof = TRUE, nonumber = FALSE, nobs = "T", ...)
-  \method{vcov}{dlogitx}(object, ...)
+  \method{coef}{logitx}(object, ...)
+  \method{fitted}{logitx}(object, zero.prob=FALSE, ...)
+  \method{logLik}{logitx}(object, ...)
+  \method{plot}{logitx}(x, ...)
+  \method{print}{logitx}(x, signif.stars=TRUE, ...)
+  \method{summary}{logitx}(object, ...)
+  \method{toLatex}{logitx}(object, digits = 4, gof = TRUE, nonumber = FALSE, nobs = "T", ...)
+  \method{vcov}{logitx}(object, ...)
 }
 
 \arguments{
-  \item{object}{an object of class 'dlogitx'}
-  \item{x}{an object of class 'dlogitx'}
+  \item{object}{an object of class 'logitx'}
+  \item{x}{an object of class 'logitx'}
   \item{zero.prob}{\code{logical}. If \code{FALSE} (default), then the probabilities of a one are returned as fitted values. If \code{TRUE}, then the zero probabilities are returned as fitted values }
   \item{signif.stars}{\code{logical}. If \code{TRUE}, then p-values are additionally encoded visually, see \code{\link{printCoefmat}} }
   \item{digits}{integer, the number of digits in the LaTeX print}
@@ -42,17 +42,17 @@ Genaro Sucarrat, \url{http://www.sucarrat.net/}
 }
 
 \seealso{
-\code{\link{dlogitx}}, \code{\link{dlogitxSim}}, \code{\link{gets.dlogitx}}
+\code{\link{logitx}}, \code{\link{logitxSim}}, \code{\link{gets.logitx}}
 }
 
 \examples{
 
 ##simulate from ar(1):
 set.seed(123) #for reproducibility
-y <- dlogitxSim(100, ar=0.3)
+y <- logitxSim(100, ar=0.3)
 
 ##estimate and store result:
-mymod <- dlogitx(y, ar=1)
+mymod <- logitx(y, ar=1)
 
 ##extract stuff:
 coef(mymod)
