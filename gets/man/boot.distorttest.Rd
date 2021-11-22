@@ -6,7 +6,7 @@
 \title{Bootstrapped Jiao-Pretis-Schwarz Outlier Distortion Test}
 
 \description{
-  Test whether Outliers distort regression coefficients using Bootstrapping.
+  Test whether Outliers distort regression coefficients using Bootstrapping. See the referenced Jiao-Pretis-Schwarz Paper below for more information.
   %The function \code{as.arx} is a generic function and its methods returns an object of class \code{\link{arx}}.
 }
 
@@ -14,7 +14,7 @@
 boot(x, ...)
 
 ##S3 method for objects of class 'distorttest':
-\method{boot}{distorttest}(x, nboot = 199, clean.sample = TRUE, 
+\method{boot}{distorttest}(x, nboot = 5, clean.sample = TRUE, 
   parametric = FALSE, scale.t.pval = 1, parallel.options = NULL, ...)
 ##S3 printing method for objects of class 'boot.distorttest':
 \method{print}{boot.distorttest}(x, ...)
@@ -22,7 +22,7 @@ boot(x, ...)
 
 \arguments{
   \item{x}{object of class \code{\link{isat}} }
-  \item{nboot}{numeric. Number of bootstrap replications. Default is 199 replications.}
+  \item{nboot}{numeric. Number of bootstrap replications. Default is 5 replications to make inital trials easier. Much higher replications are recommended for actual estimation (<200 at least).}
   \item{clean.sample}{logical. Whether the outlier-removed sample should be used in resampling.}
   \item{parametric}{logical. Whether to use a parametric bootstrap. Default is non-parametric (FALSE). Parametric currently not implemented for autoregressive models.}
   \item{scale.t.pval}{numeric. Scaled target p-value. Default is 1.}
@@ -30,6 +30,10 @@ boot(x, ...)
   \item{...}{Further arguments passed to \code{\link{isat}}.}}
 
 \value{A list including an object of class \code{h-test}.}
+
+\references{
+Xiyu Jiao, Felix Pretis,and Moritz Schwarz. Testing for Coefficient Distortion due to Outliers with an Application to the Economic Impacts of Climate Change. Available at SSRN: \url{https://ssrn.com/abstract=3915040 or http://dx.doi.org/10.2139/ssrn.3915040}
+}
 
 \author{
   Felix Pretis \url{https://felixpretis.climateeconometrics.org/}\cr\cr
@@ -39,6 +43,7 @@ boot(x, ...)
 \seealso{
   \code{\link{isat}, \link{distorttest}}
 }
+
 
 \examples{
   \dontrun{

@@ -655,7 +655,16 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     if( is.null(plot) ){ plot <- FALSE }
   }
   if(plot){ plot.isat(getsis, coef.path=TRUE) }
-
+  
+  ## Outlier Proportion and Distortion Test 
+  # Proportion Test was previously executed in the print.isat function
+  if(!is.null(getsis$call$iis) & 
+     isTRUE(eval(getsis$call$iis) & 
+            !any(eval(getsis$call$sis), eval(getsis$call$tis), eval(getsis$call$uis))==TRUE)){
+    getsis$outlier.proportion.test <- outliertest(getsis)
+    getsis$outlier.distortion.test <- distorttest(getsis)
+  }
+  
   return(getsis)
 
 } #close isat function
@@ -1205,27 +1214,34 @@ print.isat <- function(x, signif.stars=TRUE, ...)
       cat("Diagnostics and fit:\n")
       cat("\n")
       printCoefmat(x$diagnostics, tst.ind=2,signif.stars=signif.stars, has.Pvalue = TRUE)
-      if(!is.null(x$call$iis)){
-        #OLD:
-        #      if (x$call$iis==TRUE){
-        if (x$call$iis==TRUE){        outltest <- outliertest(x)
-        mOutl <- matrix(NA, 2, 2)
-        colnames(mOutl) <- c("Stat.", "p-value")
-        rownames(mOutl) <- c("Jiao-Pretis Prop.", "Jiao-Pretis Count")
-        mOutl[1,] <- c(outltest$prop$statistic, outltest$prop$p.value)
-        mOutl[2,] <- c(outltest$count$statistic, outltest$count$p.value)
+      
+      
+      if(!is.null(x$outlier.proportion.test)){
+        #cat("\nJiao-Pretis Outlier Proportion Test")
+        mOutl_p <- matrix(NA, 2, 2)
+        colnames(mOutl_p) <- c("Stat.", "p-value")
+        rownames(mOutl_p) <- c("Jiao-Pretis Outlier Proportion", "Jiao-Pretis Outlier Count")
+        mOutl_p[1,] <- c(x$outlier.proportion.test$prop$statistic, x$outlier.proportion.test$prop$p.value)
+        mOutl_p[2,] <- c(x$outlier.proportion.test$count$statistic, x$outlier.proportion.test$count$p.value)
         cat("\n")
-#OLD:
-#        printCoefmat(mOutl, digits=6, signif.stars = FALSE) 
-        printCoefmat(mOutl, digits=6, signif.stars = TRUE) 
-        #cat("\n")
-        }
+        printCoefmat(mOutl_p, digits=6, signif.stars = TRUE,P.values = TRUE, has.Pvalue = TRUE, signif.legend = FALSE) 
       }
+      
+      if(!is.null(x$outlier.distortion.test)){
+        #cat("\nJiao-Pretis-Schwarz Outlier Distortion Test")
+        mOutl_d <- matrix(NA, 1, 3)
+        colnames(mOutl_d) <- c("Chi-sq","df", "p-value")
+        rownames(mOutl_d) <- c("Jiao-Pretis-Schwarz Outlier Distortion")
+        mOutl_d[1,] <- c(x$outlier.distortion.test$statistic,x$outlier.distortion.test$df,x$outlier.distortion.test$p.value)
+        cat("\n")
+        printCoefmat(mOutl_d, digits=6, signif.stars = TRUE,P.values = TRUE, has.Pvalue = TRUE, signif.legend = FALSE)
+      }
+      
       printCoefmat(mGOF, digits=6, signif.stars=signif.stars)
       
     }
     
-  }
+}
 
 #OLD:
 ##==================================================
@@ -2745,7 +2761,7 @@ vargaugeiis <- function(t.pval, T, infty=FALSE, m=1){
 }  
 
 ################
-#### outliertest
+#### outlier Proportion Test
 ################
 
 #### Outlier proportion and count tests from Jiao and Pretis (2019)
@@ -2757,7 +2773,6 @@ outliertest <- function(x=NULL, noutl=NULL, t.pval=NULL, T=NULL,  m=1, infty=FAL
     # t.pval=x$obs.gauge$t.pval[i]
     # T=x$n
     # 
-    
     if (!is.null(x)){
       
       if (class(x)=="isat"){
@@ -2870,7 +2885,7 @@ isatloop <- function(num=c(seq(from=20, to=1, by=-1)), t.pval.spec = FALSE, prin
     {
       print(paste("k:", k, "/", K, ", p:", pval, sep=""))
     }
-    x <- isat(y=y, iis=iis, sis=sis, t.pval=pval, ar=ar, ...) 
+    x <- do.call("isat", args = list(y = y, iis = iis, sis = sis, t.pval = pval, ar = ar, ...))
     
     #mxreg=mxreg, mc=mc, 
     if (!is.null(x$ISnames)) {

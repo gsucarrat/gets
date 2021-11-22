@@ -4,7 +4,7 @@ distorttest <- function(x, coef="all"){
   
   if (is.null(x)){stop("Object is NULL - please make sure to pass an isat object.")}
   if (class(x)!="isat"){ stop("x must be an isat object")}
-  if (any(x$call$sis, x$call$tis, x$call$uis)==TRUE){stop("Test only valid for iis - not valid for sis, uis, or tis.")} 
+  if (any(x$call$sis, x$call$tis, x$call$uis)==TRUE){warning("Test only valid for iis - not valid for sis, uis, or tis.")} 
   if (all(coef != "all") && any(!coef %in% names(coef(x)))){stop("The 'coef' variable or vector contains one or more regressors not in the isat object.")}
   if (x$call$iis != TRUE){stop("The isat object has not selected iis = TRUE. This is necessary for this test. Re-estimate isat with iis = TRUE.")}
   # WRONG CHECK - Therefore commented out: if (is.null(x$ISnames)){stop("IIS did not identify any Indicators (Outliers). Therefore OLS = IIS and no distortion is detectable.")}
@@ -12,7 +12,7 @@ distorttest <- function(x, coef="all"){
   ISnames <- c(x$ISnames[grep("iis", x$ISnames)])
   noutl = length(ISnames)
   t.pval <- x$aux$t.pval
-  T <- x$n # MORITZ: Want to change this. Using T is not good practice - update: this is not used anywhere else (I think)
+  # T <- x$n # MORITZ: Want to change this. Using T is not good practice - update: this is not used anywhere else so commented out
   
   alpha <-   t.pval
   c <- abs(qnorm(alpha/2))
@@ -40,11 +40,11 @@ distorttest <- function(x, coef="all"){
   
   
   if (!is.null(x$call$ar)){
-    ar.call <- x$call$ar
+    ar.call <- eval(x$call$ar)
   }
   
   if (!is.null(x$call$ar)){
-    mx.null <- x$aux$mX[(n.null-max(x$call$ar)),keep] # M-orca note: this won't work with panels!!
+    mx.null <- x$aux$mX[(n.null-max(eval(x$call$ar))),keep] # M-orca note: this won't work with panels!!
   } else{
     mx.null <- x$aux$mX[n.null,keep]
   }
@@ -123,7 +123,7 @@ distorttest <- function(x, coef="all"){
   attr(HtestOLS10,"names") <- "X-squared"
   rval_chi <- list(
     #statistic = HtestOLS10, p.value = p.test, estimate=NULL, null.value = NULL, # Felix
-    statistic = HtestOLS10, p.value = p.test, estimate=cf_diff, null.value = NULL, # Moritz
+    statistic = HtestOLS10, p.value = p.test, estimate=cf_diff, null.value = NULL, df = rel.df, # Moritz
     # alternative = NULL, # Felix
     alternative = "True difference between IIS and OLS estimates is not equal to 0.", # M-Orca attempt
     
@@ -146,7 +146,7 @@ boot <- function(x, ...){ UseMethod("boot") }
 
 boot.distorttest <- function(
   x,
-  nboot = 199,
+  nboot = 5,
   clean.sample = TRUE,
   parametric = FALSE,
   scale.t.pval = 1,
@@ -298,14 +298,14 @@ boot.distorttest <- function(
   count.full <- out.full$count$estimate
   count.full.stat <- out.full$count$statistic
   
-  boot.q.prop <- quantile(coefdist.res$prop, probs = c(0.9, 0.95, 0.975, 0.99, 0.995))
-  boot.q.count <- quantile(coefdist.res$count, probs = c(0.9, 0.95, 0.975, 0.99, 0.995))
-  boot.q.prop.test <- quantile(coefdist.res$prop.test, probs = c(0.9, 0.95, 0.975, 0.99, 0.995))
-  boot.q.count.test <- quantile(coefdist.res$count.test, probs = c(0.9, 0.95, 0.975, 0.99, 0.995))
+  boot.q.prop <- quantile(coefdist.res$prop, probs = c(0.9, 0.95, 0.975, 0.99, 0.995)) # sample estimate for proportion
+  boot.q.count <- quantile(coefdist.res$count, probs = c(0.9, 0.95, 0.975, 0.99, 0.995)) # sample estimate for count
+  boot.q.prop.test <- quantile(coefdist.res$prop.test, probs = c(0.9, 0.95, 0.975, 0.99, 0.995)) # proportion stat
+  boot.q.count.test <- quantile(coefdist.res$count.test, probs = c(0.9, 0.95, 0.975, 0.99, 0.995)) # count stat
   
   
-  boot.q.L2 <- quantile(coefdist.res$L2, probs = c(0.9, 0.95, 0.975, 0.99, 0.995))
-  boot.q.L1 <- quantile(coefdist.res$L1, probs = c(0.9, 0.95, 0.975, 0.99, 0.995))
+  boot.q.L2 <- quantile(coefdist.res$L2, probs = c(0.9, 0.95, 0.975, 0.99, 0.995)) # sample estimate for proportion
+  boot.q.L1 <- quantile(coefdist.res$L1, probs = c(0.9, 0.95, 0.975, 0.99, 0.995)) # sample estimate for proportion
   boot.q.dist <- quantile(coefdist.res$dist, probs = c(0.9, 0.95, 0.975, 0.99, 0.995))
   
   boot.p.L2 <- sum(coefdist.res$L2 > L2.full)/nboot
@@ -369,18 +369,25 @@ boot.distorttest <- function(
 
 print.boot.distorttest <- function(x, ...){
   
-  
   print(x$dist.full)
   cat("\n")
-  cat("Bootstrap Details")
+  cat("--- Bootstrap Details ---")
   cat("\n")
   cat(paste0("Number of Bootstrap Replications: ",x$args$nboot))
-  cat("\n")
-  cat(paste0("Prop Full: ",x$prop.full))
+  # cat("\n")
+  # mOutl_p <- matrix(NA, 2, 2)
+  # colnames(mOutl_p) <- c("Stat.", "p-value")
+  # rownames(mOutl_p) <- c("Jiao-Pretis Bootstrapped Outlier Proportion", "Jiao-Pretis Bootstrapped Outlier Count")
+  # mOutl_p[1,] <- c(x$prop.full.stat, x$boot.p.prop.test)
+  # mOutl_p[2,] <- c(x$count.full.stat, x$boot.p.count.test)
+  # cat("\n")
+  # printCoefmat(mOutl_p, digits=6, signif.stars = TRUE,P.values = TRUE, has.Pvalue = TRUE, signif.legend = FALSE) 
+  
   cat("\n")
   cat(paste0("Cleaned Sample (always TRUE with parametric Bootstraps): ",x$args$clean.sample))
   cat("\n")
   cat(paste0("Parametric Bootstrap (residual resampling): ",x$args$parametric))
+  cat("\n")
 }
 
 

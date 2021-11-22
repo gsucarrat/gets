@@ -4,7 +4,7 @@
 \title{Jiao-Pretis-Schwarz Outlier Distortion Test}
 
 \description{
-  Test whether Outliers distort regression coefficients. 
+  Test whether Outliers distort regression coefficients. See the referenced Jiao-Pretis-Schwarz Paper below for more information.
   %The function \code{as.arx} is a generic function and its methods returns an object of class \code{\link{arx}}.
 }
 
@@ -15,9 +15,14 @@
 \arguments{
   \item{x}{object of class \code{\link{isat}} }
   \item{coef}{Either "all" (Default) to test the distortion on all coefficients or a character vector of explanatory variable names.}
+
 }
 
-\value{Object of class \code{\link{arx}} }
+\value{Object of class \code{\link{isat}} }
+
+\references{
+Xiyu Jiao, Felix Pretis,and Moritz Schwarz. Testing for Coefficient Distortion due to Outliers with an Application to the Economic Impacts of Climate Change. Available at SSRN: \url{https://ssrn.com/abstract=3915040 or http://dx.doi.org/10.2139/ssrn.3915040}
+}
 
 \author{
   Felix Pretis \url{https://felixpretis.climateeconometrics.org/}\cr\cr
