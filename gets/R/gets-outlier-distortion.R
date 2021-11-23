@@ -4,7 +4,7 @@ distorttest <- function(x, coef="all"){
   
   if (is.null(x)){stop("Object is NULL - please make sure to pass an isat object.")}
   if (class(x)!="isat"){ stop("x must be an isat object")}
-  if (any(x$call$sis, x$call$tis, x$call$uis)==TRUE){warning("Test only valid for iis - not valid for sis, uis, or tis.")} 
+  if (any(x$call$sis, x$call$tis, x$call$uis)==TRUE){stop("Test only valid for iis - not valid for sis, uis, or tis.")} 
   if (all(coef != "all") && any(!coef %in% names(coef(x)))){stop("The 'coef' variable or vector contains one or more regressors not in the isat object.")}
   if (x$call$iis != TRUE){stop("The isat object has not selected iis = TRUE. This is necessary for this test. Re-estimate isat with iis = TRUE.")}
   # WRONG CHECK - Therefore commented out: if (is.null(x$ISnames)){stop("IIS did not identify any Indicators (Outliers). Therefore OLS = IIS and no distortion is detectable.")}
@@ -146,7 +146,7 @@ boot <- function(x, ...){ UseMethod("boot") }
 
 boot.distorttest <- function(
   x,
-  nboot = 5,
+  nboot,
   clean.sample = TRUE,
   parametric = FALSE,
   scale.t.pval = 1,
@@ -202,9 +202,17 @@ boot.distorttest <- function(
     is.boot <- isat(y.boot, mxreg=x.boot, mc=FALSE, t.pval=boot.tpval, iis=TRUE, sis=FALSE,  print.searchinfo=FALSE, ...)
     dist.boot <- distorttest(is.boot)
     out.boot <- outliertest(is.boot)
-    dist.res <- c(dist.boot$coef.diff, dist.boot$statistic,  out.boot$proportion$estimate,  out.boot$proportion$statistic, out.boot$count$estimate, out.boot$count$statistic)
+    dist.res <- c(
+      dist.boot$coef.diff,
+      dist.boot$statistic,
+      
+      out.boot$proportion$estimate,
+      out.boot$proportion$statistic,
+      out.boot$count$estimate,
+      out.boot$count$statistic
+    )
     names(dist.res) <- c(names(dist.boot$coef.diff), "dist", "prop", "prop.test", "count", "count.test")
-    return( dist.res)
+    return(dist.res)
   }
   
   overall_fun <- function(i){
@@ -279,7 +287,6 @@ boot.distorttest <- function(
     coefdist.res$L1 <- abs(coefdist.sample[,1])
   }
   
-  
   coefdist.res$dist <- coefdist.sample$dist
   
   coefdist.res$prop <- coefdist.sample$prop
@@ -287,11 +294,24 @@ boot.distorttest <- function(
   coefdist.res$prop.test <- coefdist.sample$prop.test
   coefdist.res$count.test <- coefdist.sample$count.test
   
-  
+  ############
+  # Distortion
+  ############
   L2.full <- sqrt(sum(dist.full$coef.diff^2))
   L1.full <- sum(abs(dist.full$coef.diff))
   dist.full.stat <- dist.full$statistic
   
+  boot.q.L2 <- quantile(coefdist.res$L2, probs = c(0.9, 0.95, 0.975, 0.99, 0.995)) # sample estimate L2 for distortion
+  boot.q.L1 <- quantile(coefdist.res$L1, probs = c(0.9, 0.95, 0.975, 0.99, 0.995)) # sample estimate L1 for distortion
+  boot.q.dist <- quantile(coefdist.res$dist, probs = c(0.9, 0.95, 0.975, 0.99, 0.995))
+  
+  boot.p.L2 <- sum(coefdist.res$L2 > L2.full)/nboot
+  boot.p.L1 <- sum(coefdist.res$L1 > L1.full)/nboot
+  boot.p.dist <- sum(coefdist.res$dist > dist.full.stat)/nboot
+  
+  ############
+  # Proportion
+  ############
   prop.full <- out.full$proportion$estimate
   prop.full.stat <- out.full$proportion$statistic
   
@@ -303,26 +323,36 @@ boot.distorttest <- function(
   boot.q.prop.test <- quantile(coefdist.res$prop.test, probs = c(0.9, 0.95, 0.975, 0.99, 0.995)) # proportion stat
   boot.q.count.test <- quantile(coefdist.res$count.test, probs = c(0.9, 0.95, 0.975, 0.99, 0.995)) # count stat
   
-  
-  boot.q.L2 <- quantile(coefdist.res$L2, probs = c(0.9, 0.95, 0.975, 0.99, 0.995)) # sample estimate for proportion
-  boot.q.L1 <- quantile(coefdist.res$L1, probs = c(0.9, 0.95, 0.975, 0.99, 0.995)) # sample estimate for proportion
-  boot.q.dist <- quantile(coefdist.res$dist, probs = c(0.9, 0.95, 0.975, 0.99, 0.995))
-  
-  boot.p.L2 <- sum(coefdist.res$L2 > L2.full)/nboot
-  boot.p.L1 <- sum(coefdist.res$L1 > L1.full)/nboot
-  boot.p.dist <- sum(coefdist.res$dist > dist.full.stat)/nboot
-  
   boot.p.prop <- 2*min(sum(coefdist.res$prop > prop.full)/nboot,  sum(coefdist.res$prop <= prop.full)/nboot) #check the p-values here.
   boot.p.count <- 2*min(sum(coefdist.res$count > count.full)/nboot, sum(coefdist.res$count <= count.full)/nboot)
   
   boot.p.prop.test <- sum(abs(coefdist.res$prop.test) > abs(prop.full.stat))/(nboot)
   boot.p.count.test <- sum(abs(coefdist.res$count.test) > abs(count.full.stat))/(nboot)
   
-  
+  ####
   out <- list()
+  
+  out$dist.full <- dist.full
+  out$dist.full$method <- "Jiao-Pretis-Schwarz Outlier Distortion Test (Full Sample)"
   
   out$coefdist.res <- coefdist.res
   
+  ############
+  # Distortion
+  ############
+  out$L2.full <- L2.full
+  out$boot.q.L2 <- boot.q.L2
+  out$boot.p.L2 <- boot.p.L2
+  out$L1.full <- L1.full
+  out$boot.q.L1 <- boot.q.L1
+  out$boot.p.L1 <- boot.p.L1
+  out$boot.q.dist <- boot.q.dist
+  out$boot.p.dist <- boot.p.dist
+  
+  
+  ############
+  # Proportion
+  ############
   out$prop.full <- prop.full
   out$boot.q.prop <- boot.q.prop
   out$boot.p.prop <- boot.p.prop
@@ -339,19 +369,6 @@ boot.distorttest <- function(
   out$boot.q.count.stat <- boot.q.count.test
   out$boot.p.count.stat <- boot.p.count.test
   
-  
-  out$L2.full <- L2.full
-  out$boot.q.L2 <- boot.q.L2
-  out$boot.p.L2 <- boot.p.L2
-  out$L1.full <- L1.full
-  out$boot.q.L1 <- boot.q.L1
-  out$boot.p.L1 <- boot.p.L1
-  out$boot.q.dist <- boot.q.dist
-  out$boot.p.dist <- boot.p.dist
-  
-  
-  out$dist.full <- dist.full
-  out$dist.full$method <- "Bootstrap Jiao-Pretis-Schwarz Outlier Distortion Test"
   
   out$args <- list(parametric = parametric, 
                    nboot = nboot, 
@@ -371,9 +388,10 @@ print.boot.distorttest <- function(x, ...){
   
   print(x$dist.full)
   cat("\n")
-  cat("--- Bootstrap Details ---")
+  cat("------ Bootstrap Results ------")
   cat("\n")
   cat(paste0("Number of Bootstrap Replications: ",x$args$nboot))
+  cat("\n")
   # cat("\n")
   # mOutl_p <- matrix(NA, 2, 2)
   # colnames(mOutl_p) <- c("Stat.", "p-value")
@@ -384,10 +402,30 @@ print.boot.distorttest <- function(x, ...){
   # printCoefmat(mOutl_p, digits=6, signif.stars = TRUE,P.values = TRUE, has.Pvalue = TRUE, signif.legend = FALSE) 
   
   cat("\n")
+  cat("Distortion Bootstrap Results (Jiao-Pretis-Schwarz)")
+  cat("\n")
+  print(matrix(c(
+    c(x$L1.full,x$boot.q.L1),
+    c(x$L2.full,x$boot.q.L2),
+    c(x$dist.full$statistic,x$boot.q.dist)), nrow = 3, byrow = TRUE,
+    dimnames = list(c("L1","L2","Distortion"),c("Full Sample", "Boot 90%", "Boot 95%", "Boot 97.5%", "Boot 99%", "Boot 99.5%"))))
+  cat("\n")
+  cat("Proportion Bootstrap Results (Jiao-Pretis)")
+  cat("\n")
+  print(matrix(c(
+    c(x$prop.full,x$boot.q.prop),
+    c(x$prop.full.stat,x$boot.q.prop.stat),
+    c(x$count.full,x$boot.q.count),
+    c(x$count.full.stat,x$boot.q.count.stat)), nrow = 4, byrow = TRUE,
+    dimnames = list(c("Proportion","Proportion Estimate","Count","Count Estimate"),c("Full Sample", "Boot 90%", "Boot 95%", "Boot 97.5%", "Boot 99%", "Boot 99.5%"))))
+  
+
+  cat("\n")
   cat(paste0("Cleaned Sample (always TRUE with parametric Bootstraps): ",x$args$clean.sample))
   cat("\n")
   cat(paste0("Parametric Bootstrap (residual resampling): ",x$args$parametric))
   cat("\n")
+  cat(paste0("Scaled target p-val. rel. to initial p-val.: ",x$args$scale.t.pval))
 }
 
 
