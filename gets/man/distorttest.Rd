@@ -4,7 +4,7 @@
 \title{Jiao-Pretis-Schwarz Outlier Distortion Test}
 
 \description{
-  Test whether Outliers distort regression coefficients. See the referenced Jiao-Pretis-Schwarz Paper below for more information.
+Implements the Jiao-Pretis-Schwarz test for coefficient distortion due to outliers by comparing coefficient estimates obtained using OLS to estimates obtained using the robust IIS estimator implemented using \code{isat}. See the referenced Jiao-Pretis-Schwarz Paper below for more information.
   %The function \code{as.arx} is a generic function and its methods returns an object of class \code{\link{arx}}.
 }
 
@@ -25,7 +25,8 @@ Xiyu Jiao, Felix Pretis,and Moritz Schwarz. Testing for Coefficient Distortion d
 }
 
 \author{
-  Felix Pretis \url{https://felixpretis.climateeconometrics.org/}\cr\cr
+  Xiyu Jiao \url{https://sites.google.com/view/xiyujiao}\cr\cr
+  Felix Pretis \url{https://www.felixpretis.org/}\cr\cr
   Moritz Schwarz \url{https://moritzschwarz.org}\cr\cr
 }
 
@@ -36,8 +37,7 @@ Xiyu Jiao, Felix Pretis,and Moritz Schwarz. Testing for Coefficient Distortion d
 \examples{
   
 data(Nile)
-Nile[10] <- Nile[10]+1000 # to ensure there is an indicator retained
-nile <- isat(Nile, sis=FALSE, iis=TRUE, plot=TRUE, t.pval=0.005)
+nile <- isat(Nile, sis=FALSE, iis=TRUE, plot=TRUE, t.pval=0.01)
 distorttest(nile)
 
 data("hpdata")
@@ -48,7 +48,7 @@ mxreg <- ts(dat[,c("GNPQ","FSDJ")],start = 1959, frequency = 4)
 m1 <- isat(y = Y, mc = TRUE, sis = FALSE, iis = TRUE)
 m2 <- isat(y = Y, mc = TRUE, sis = FALSE, iis = TRUE, ar = 1)
 m3 <- isat(y = Y, mxreg = mxreg, mc = TRUE, sis = FALSE, iis = TRUE)
-m4 <- isat(y = Y, mxreg = mxreg, mc = TRUE, sis = FALSE, iis = TRUE, ar = 1)
+m4 <- isat(y = Y, mxreg = mxreg, mc = TRUE, sis = FALSE, iis = TRUE, ar = 1, t.pval = 0.01)
 distorttest(m1, coef = "all")
 distorttest(m2, coef = "all")
 distorttest(m3, coef = "GNPQ")
