@@ -164,6 +164,13 @@ boot.distorttest <- function(
   ####compute distortion on full model
   #dist.full <- distorttest(x)
   
+  if(!identical(class(x),c("htest","distorttest"))){
+    if (class(x)=="isat") {
+      x <- distorttest(x)
+    } else {stop("Unrecognised class of x. The function needs either an isat object or the output of the distorttest() function.")}
+  }
+  
+  
   dist.full <- x
   #coef_name <- attr(x$coef.diff, "names") # FUTURE DEVELOPMENT. Current error stopping below: 
   if(!identical(attr(x$coef.diff,"names"),x$iis$aux$mXnames[!x$iis$aux$mXnames %in% x$iis$ISnames])){stop("Bootstrap on distorttest currently must be coef = 'all'.")}

@@ -1216,6 +1216,16 @@ print.isat <- function(x, signif.stars=TRUE, ...)
       printCoefmat(x$diagnostics, tst.ind=2,signif.stars=signif.stars, has.Pvalue = TRUE)
       
       
+      if(!is.null(x$outlier.distortion.test)){
+        #cat("\nJiao-Pretis-Schwarz Outlier Distortion Test")
+        mOutl_d <- matrix(NA, 1, 3)
+        colnames(mOutl_d) <- c("Chi-sq","df", "p-value")
+        rownames(mOutl_d) <- c("Jiao-Pretis-Schwarz Outlier Distortion")
+        mOutl_d[1,] <- c(x$outlier.distortion.test$statistic,x$outlier.distortion.test$df,x$outlier.distortion.test$p.value)
+        cat("\n")
+        printCoefmat(mOutl_d, digits=6, signif.stars = TRUE,P.values = TRUE, has.Pvalue = TRUE, signif.legend = FALSE)
+      }
+      
       if(!is.null(x$outlier.proportion.test)){
         #cat("\nJiao-Pretis Outlier Proportion Test")
         mOutl_p <- matrix(NA, 2, 2)
@@ -1225,16 +1235,6 @@ print.isat <- function(x, signif.stars=TRUE, ...)
         mOutl_p[2,] <- c(x$outlier.proportion.test$count$statistic, x$outlier.proportion.test$count$p.value)
         cat("\n")
         printCoefmat(mOutl_p, digits=6, signif.stars = TRUE,P.values = TRUE, has.Pvalue = TRUE, signif.legend = FALSE) 
-      }
-      
-      if(!is.null(x$outlier.distortion.test)){
-        #cat("\nJiao-Pretis-Schwarz Outlier Distortion Test")
-        mOutl_d <- matrix(NA, 1, 3)
-        colnames(mOutl_d) <- c("Chi-sq","df", "p-value")
-        rownames(mOutl_d) <- c("Jiao-Pretis-Schwarz Outlier Distortion")
-        mOutl_d[1,] <- c(x$outlier.distortion.test$statistic,x$outlier.distortion.test$df,x$outlier.distortion.test$p.value)
-        cat("\n")
-        printCoefmat(mOutl_d, digits=6, signif.stars = TRUE,P.values = TRUE, has.Pvalue = TRUE, signif.legend = FALSE)
       }
       
       printCoefmat(mGOF, digits=6, signif.stars=signif.stars)
