@@ -15,10 +15,11 @@ boot(x, ...)
 
 ##S3 method for objects of class 'distorttest':
 \method{boot}{distorttest}(x, nboot, clean.sample = TRUE, 
-  parametric = FALSE, scale.t.pval = 1, parallel.options = NULL, ...)
+  parametric = FALSE, scale.t.pval = 1, parallel.options = NULL, 
+  quantiles = c(0.90, 0.95, 0.99), ...)
 
 ##S3 printing method for objects of class 'boot.distorttest':
-\method{print}{boot.distorttest}(x, ...)
+\method{print}{boot.distorttest}(x, print.proportion = FALSE, ...)
 }
 
 \arguments{
@@ -28,6 +29,8 @@ boot(x, ...)
   \item{parametric}{logical. Whether to use a parametric bootstrap. Default is non-parametric (FALSE). Parametric currently not implemented for autoregressive models.}
   \item{scale.t.pval}{numeric. Scaled target p-value (for selection) relative to the initial p-value used in isat. Default is 1. E.g. a value of 0.5 would scale an initial target p-value of 0.05 to 0.025.}
   \item{parallel.options}{NULL (Default) or an integer, i.e. the number of cores/threads to be used for parallel computing (implemented w/makeCluster and parLapply).}
+  \item{print.proportion}{logical. Should the bootstraped Jiao-Pretis Outlier Proportion Test be printed. Default is FALSE.}
+  \item{quantiles}{numeric vector. Quantiles to be shown based on the bootstrapped results. Default is c(0.90, 0.95, 0.99).}
   \item{...}{Further arguments passed to \code{\link{isat}}.}}
 
 \value{A list including an object of class \code{h-test}.}

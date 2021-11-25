@@ -151,6 +151,7 @@ boot.distorttest <- function(
   parametric = FALSE,
   scale.t.pval = 1,
   parallel.options = NULL,
+  quantiles = c(0.9, 0.95, 0.99),
   #parallel = FALSE,
   #ncore = detectCores()[1] - 1,
   ...
@@ -301,9 +302,9 @@ boot.distorttest <- function(
   L1.full <- sum(abs(dist.full$coef.diff))
   dist.full.stat <- dist.full$statistic
   
-  boot.q.L2 <- quantile(coefdist.res$L2, probs = c(0.9, 0.95, 0.975, 0.99, 0.995)) # sample estimate L2 for distortion
-  boot.q.L1 <- quantile(coefdist.res$L1, probs = c(0.9, 0.95, 0.975, 0.99, 0.995)) # sample estimate L1 for distortion
-  boot.q.dist <- quantile(coefdist.res$dist, probs = c(0.9, 0.95, 0.975, 0.99, 0.995))
+  boot.q.L2 <- quantile(coefdist.res$L2, probs = quantiles) # sample estimate L2 for distortion
+  boot.q.L1 <- quantile(coefdist.res$L1, probs = quantiles) # sample estimate L1 for distortion
+  boot.q.dist <- quantile(coefdist.res$dist, probs = quantiles)
   
   boot.p.L2 <- sum(coefdist.res$L2 > L2.full)/nboot
   boot.p.L1 <- sum(coefdist.res$L1 > L1.full)/nboot
@@ -318,10 +319,10 @@ boot.distorttest <- function(
   count.full <- out.full$count$estimate
   count.full.stat <- out.full$count$statistic
   
-  boot.q.prop <- quantile(coefdist.res$prop, probs = c(0.9, 0.95, 0.975, 0.99, 0.995)) # sample estimate for proportion
-  boot.q.count <- quantile(coefdist.res$count, probs = c(0.9, 0.95, 0.975, 0.99, 0.995)) # sample estimate for count
-  boot.q.prop.test <- quantile(coefdist.res$prop.test, probs = c(0.9, 0.95, 0.975, 0.99, 0.995)) # proportion stat
-  boot.q.count.test <- quantile(coefdist.res$count.test, probs = c(0.9, 0.95, 0.975, 0.99, 0.995)) # count stat
+  boot.q.prop <- quantile(coefdist.res$prop, probs = quantiles) # sample estimate for proportion
+  boot.q.count <- quantile(coefdist.res$count, probs = quantiles) # sample estimate for count
+  boot.q.prop.test <- quantile(coefdist.res$prop.test, probs = quantiles) # proportion stat
+  boot.q.count.test <- quantile(coefdist.res$count.test, probs = quantiles) # count stat
   
   boot.p.prop <- 2*min(sum(coefdist.res$prop > prop.full)/nboot,  sum(coefdist.res$prop <= prop.full)/nboot) #check the p-values here.
   boot.p.count <- 2*min(sum(coefdist.res$count > count.full)/nboot, sum(coefdist.res$count <= count.full)/nboot)
@@ -384,7 +385,7 @@ boot.distorttest <- function(
 
 
 
-print.boot.distorttest <- function(x, ...){
+print.boot.distorttest <- function(x, print.proportion = FALSE, ...){
   
   print(x$dist.full)
   cat("\n")
@@ -405,22 +406,26 @@ print.boot.distorttest <- function(x, ...){
   cat("Distortion Bootstrap Results (Jiao-Pretis-Schwarz)")
   cat("\n")
   print(matrix(c(
-    c(x$L1.full,x$boot.q.L1),
-    c(x$L2.full,x$boot.q.L2),
-    c(x$dist.full$statistic,x$boot.q.dist)), nrow = 3, byrow = TRUE,
-    dimnames = list(c("L1","L2","Distortion"),c("Full Sample", "Boot 90%", "Boot 95%", "Boot 97.5%", "Boot 99%", "Boot 99.5%"))))
+    c(x$L1.full,x$boot.q.L1, x$boot.p.L1),
+    c(x$L2.full,x$boot.q.L2), x$boot.p.L2), nrow = 2, byrow = TRUE,
+    dimnames = list(c("L1","L2"),c("Full Sample", paste0("Boot ",names(x$boot.q.L1)),"p-value"))))
   cat("\n")
-  cat("Proportion Bootstrap Results (Jiao-Pretis)")
-  cat("\n")
-  print(matrix(c(
-    c(x$prop.full,x$boot.q.prop),
-    c(x$prop.full.stat,x$boot.q.prop.stat),
-    c(x$count.full,x$boot.q.count),
-    c(x$count.full.stat,x$boot.q.count.stat)), nrow = 4, byrow = TRUE,
-    dimnames = list(c("Proportion","Proportion Estimate","Count","Count Estimate"),c("Full Sample", "Boot 90%", "Boot 95%", "Boot 97.5%", "Boot 99%", "Boot 99.5%"))))
+  
+  if(print.proportion){
+    cat("Proportion Bootstrap Results (Jiao-Pretis)")
+    cat("\n")
+    print(matrix(c(
+      c(x$prop.full,x$boot.q.prop),
+      c(x$prop.full.stat,x$boot.q.prop.stat),
+      c(x$count.full,x$boot.q.count),
+      c(x$count.full.stat,x$boot.q.count.stat)), nrow = 4, byrow = TRUE,
+      dimnames = list(c("Proportion","Proportion Estimate","Count","Count Estimate"),
+                      c("Full Sample", paste0("Boot ",names(x$boot.q.prop))))))
+    cat("\n")
+  }
   
 
-  cat("\n")
+  
   cat(paste0("Cleaned Sample (always TRUE with parametric Bootstraps): ",x$args$clean.sample))
   cat("\n")
   cat(paste0("Parametric Bootstrap (residual resampling): ",x$args$parametric))
