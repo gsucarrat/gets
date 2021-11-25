@@ -710,6 +710,11 @@ gets.isat <- function(x, t.pval=0.05, wald.pval=t.pval, vcov.type = NULL,
   mxreg <- x$aux$mX
   colnames(mxreg) <- x$aux$mXnames
 
+  
+  # Save original arx mc warning setting and disable it here
+  tmpmc <- getOption("mc.warning")
+  options(mc.warning = FALSE)
+  
   object <- do.call("arx", 
                     list(y = y, mxreg = mxreg,
                          ewma = NULL, mc = FALSE, ar = NULL, log.ewma = NULL, # would be in mxreg already
@@ -753,6 +758,10 @@ gets.isat <- function(x, t.pval=0.05, wald.pval=t.pval, vcov.type = NULL,
     plot,
     alarm
   )
+  
+  # Set the old arx mc warning again
+  options(mc.warning = tmpmc)
+  
   return(out)
   
 } #close gets.isat() function
