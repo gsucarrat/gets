@@ -405,10 +405,10 @@ print.boot.distorttest <- function(x, print.proportion = FALSE, ...){
   cat("\n")
   cat("Distortion Bootstrap Results (Jiao-Pretis-Schwarz)")
   cat("\n")
-  print(matrix(c(
+  printCoefmat(matrix(c(
     c(x$L1.full,x$boot.q.L1, x$boot.p.L1),
     c(x$L2.full,x$boot.q.L2), x$boot.p.L2), nrow = 2, byrow = TRUE,
-    dimnames = list(c("L1","L2"),c("Full Sample", paste0("Boot ",names(x$boot.q.L1)),"p-value"))))
+    dimnames = list(c("L1","L2"),c("Full Sample", paste0("Boot ",names(x$boot.q.L1)),"p-value"))), has.Pvalue = TRUE,P.values = TRUE)
   cat("\n")
   
   if(print.proportion){
