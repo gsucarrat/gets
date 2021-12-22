@@ -11,7 +11,7 @@ importFrom("graphics", "abline", "legend", "lines", "mtext", "par",
 
 importFrom("grDevices", "rgb")
 
-importFrom("utils", "tail", "toLatex", "write.csv")
+importFrom("utils", "packageVersion", "tail", "toLatex", "write.csv")
 
 importFrom("parallel", "detectCores", "makeCluster", "clusterExport",
   "parLapply", "stopCluster")

@@ -1,5 +1,5 @@
-Version 0.30 (25 October 2021):
-===============================
+Version 0.30 (22 December 2021):
+================================
 
 * New vignette: "User-Specified General-to-Specific (GETS) and Indicator Saturation (ISAT) Methods"
 
@@ -10,8 +10,16 @@ Version 0.30 (25 October 2021):
 - gets.lm.Rd
 - gets-package.Rd
 - getsm.Rd
+- printtex.Rd
 
-* dlogitx() changed name to logitx(), and the main class of the latter is now "logitx". Accordingly, the corresponding S3 methods changed their extension to .logitx. For backwards compatibility, dlogitx() and dlogitxSim() will still work due to the creation of suitable aliases
+* dlogitx() changed name to logitx(), and the main class of the latter is now "logitx". Accordingly, the corresponding S3 methods changed their extension to .logitx. For backwards compatibility, dlogitx() and dlogitxSim() will still work due to the creation of aliases
+
+* printtex()/toLatex.arx()/toLatex.gets():
+- new arguments: index, print.info
+- minor changes to the LaTeX print
+
+* arx()
+- new entry 'version' in the returned value
 
 Fixes:
 - predict.arx() now works correctly when 'mc' is set to 'T' or 'F' in arx(), thanks to mdwy62 (on Github) for identifying this error

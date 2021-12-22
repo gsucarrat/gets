@@ -12,7 +12,7 @@ Convenience functions that generates LaTeX-code of an estimation result in equat
 \usage{
   printtex(x, fitted.name=NULL, xreg.names=NULL, digits=4,
       intercept=TRUE, gof=TRUE, diagnostics=TRUE, nonumber=FALSE,
-      nobs="T")
+      nobs="T", index="t", print.info=TRUE)
   \method{toLatex}{arx}(object, ...)
   \method{toLatex}{gets}(object, ...)
 }
@@ -27,6 +27,8 @@ Convenience functions that generates LaTeX-code of an estimation result in equat
   \item{diagnostics}{logical, whether to include diagnostics in the print}
   \item{nonumber}{logical, whether to remove or not (default) the equation-numbering}
   \item{nobs}{character, the notation to use to denote the number of observations}
+  \item{index}{\code{NULL} or a \code{\link{character}}, only relevant if \code{fitted.name} is not \code{NULL}, and if the object in question is of class \code{\link{arx}}, \code{\link{gets}} or \code{\link{isat}} }
+  \item{print.info}{\code{logical}, whether to print the info at the start or not}
   \item{...}{arguments passed on to \code{printtex} }
 }
 

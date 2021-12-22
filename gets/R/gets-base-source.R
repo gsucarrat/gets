@@ -489,15 +489,11 @@ regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
     xregLabel <- paste0( prefix, "xreg" )
     if(is.null(mxreg.names)){
       mxreg.names <- paste(xregLabel, 1:NCOL(mxreg), sep="")
-#OLD:
-#      mxreg.names <- paste("mxreg", 1:NCOL(mxreg), sep="")
     }
     if( any(mxreg.names == "") ){
       missing.colnames <- which(mxreg.names == "")
       for(i in 1:length(missing.colnames)){
         mxreg.names[missing.colnames[i]] <- paste0(xregLabel, i)
-#OLD:
-#        mxreg.names[missing.colnames[i]] <- paste0("mxreg", i)
       }
     }
 ##for the future?:
@@ -2477,7 +2473,10 @@ arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   ## 5 finalise and return result
   ##-----------------------------------
 
-  out <- c(list(call=sysCall, date=date(), aux=aux), out)
+  versionTxt <- paste0("gets ", packageVersion("gets"), " under ",
+    version$version.string)
+  out <-
+    c(list(call=sysCall, date=date(), version=versionTxt, aux=aux), out)
   class(out) <- "arx"
 
   ##plot:
@@ -5592,14 +5591,21 @@ stata <- function(object, file=NULL, print=TRUE,
 ##generate latex-code (equation form):
 printtex <- function(x, fitted.name=NULL, xreg.names=NULL,
   digits=4, intercept=TRUE, gof=TRUE, diagnostics=TRUE, nonumber=FALSE,
-  nobs="T")
+  nobs="T", index="t", print.info=TRUE)
 {
+  ##idea for the future:
+  ## - new argument: decimal.separator=NULL, "." or ","
 
-  ##is class(x)="arx"/"gets"/"isat"?:
-  ##---------------------------------
+  ##record class:
+  ##-------------
 
   xName <- deparse(substitute(x))
   xClass <- class(x)
+
+  ##variable names:
+  ##---------------
+
+  ##y name:
   if( xClass %in% c("arx","gets","isat") ){
     yName <- ifelse(is.null(fitted.name), x$aux$y.name, fitted.name)
   }else{
@@ -5608,23 +5614,44 @@ printtex <- function(x, fitted.name=NULL, xreg.names=NULL,
       "'gets' or 'isat', LaTeX code may contain errors:\n"))
   }
   yName <- paste0("\\widehat{", yName, "}")
-
-  ##equation:
-  ##---------
-
+  
   ##coef names:
   coefs <- coef(x)
-  if(is.null(xreg.names)){
-    coefsNames <- names(coefs)
-  }else{
+  coefsNames <- names(coefs)
+  arOrders <- as.list(x$call)$ar
+  if( xClass %in% c("arx","gets","isat") && !is.null(fitted.name) &&
+      !is.null(arOrders) ){    
+    arOrders <- eval(arOrders)      
+    arNames <- character(0)
+    tmpindx <- ifelse(is.null(index), "", index)
+    for(i in 1:length(arOrders)){
+      tmp <- paste0(yName, "_{", tmpindx, "-", arOrders[i], "}")
+      arNames <- c(arNames, tmp)
+    }
+    t1 <- which( coefsNames == paste0("ar", arOrders[1]) )
+    t2 <- which( coefsNames == paste0("ar", arOrders[length(arOrders)]) )
+    coefsNames[ t1:t2 ] <- arNames
+    tmpindx <- ifelse(is.null(index), "", paste0("_", index))
+    yName <- paste0(yName, tmpindx)
+  }
+  
+  ##coef names (modify, if user-specified)
+  if( !is.null(xreg.names) ){
     coefsNames <- xreg.names
     if( length(coefs) != length(xreg.names) ){
       message(paste0("\n length of 'xreg.names' does not match",
         " length of 'coef(x)'\n"))
     }
   }
+
+  ##intercept:
   intercept <- as.numeric(intercept)
   if( intercept > 0 ){ coefsNames[ intercept ] <- "" }
+
+  ##equation:
+  ##---------
+  
+  ##record estimates and standard errors
   coefs <- as.numeric(coefs)
   stderrs <- as.numeric(sqrt(diag(vcov(x))))
 
@@ -5693,6 +5720,14 @@ printtex <- function(x, fitted.name=NULL, xreg.names=NULL,
   ##print code:
   ##-----------
 
+  if( print.info ){
+    cat("% Date:", date(), "\n")
+    notetxt <- paste0("% LaTeX code generated in R ",
+      version$major, ".", version$minor, " by gets ",
+      packageVersion("gets"), " package\n")
+    cat(notetxt)
+    cat("% Note: The {eqnarray} environment requires the {amsmath} package\n")
+  }
   cat("\\begin{eqnarray}\n")
   cat(eqtxt)
   cat(goftxt)

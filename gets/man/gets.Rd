@@ -4,7 +4,9 @@
 
 \title{General-to-Specific (GETS) Modelling}
 
-\description{Generic function that enables new GETS and ISAT methods for new classes}
+\description{
+Generic function that enables new GETS and ISAT methods for new classes. See \code{\link{gets-package}} for an overview of the package.
+}
 
 \usage{
 gets(x, ...)
