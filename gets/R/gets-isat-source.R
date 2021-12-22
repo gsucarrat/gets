@@ -710,10 +710,6 @@ gets.isat <- function(x, t.pval=0.05, wald.pval=t.pval, vcov.type = NULL,
   mxreg <- x$aux$mX
   colnames(mxreg) <- x$aux$mXnames
 
-<<<<<<< HEAD
-=======
-  
->>>>>>> b755d7cf156651fc922e82d1079c40fdbc61ffe2
   # Save original arx mc warning setting and disable it here
   tmpmc <- getOption("mc.warning")
   options(mc.warning = FALSE)
