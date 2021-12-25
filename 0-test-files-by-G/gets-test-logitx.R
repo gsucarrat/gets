@@ -44,6 +44,7 @@ z <- rnorm(n)
 logitxSim(n)
 logitxSim(n, intercept=1)
 logitxSim(n, ar=c(0.2,0.1))
+#note: ewma not an argument in logitxSim() yet!
 logitxSim(n, xreg=0.5*z)
 logitxSim(n, verbose=TRUE)
 logitxSim(n, as.zoo=FALSE)
@@ -75,6 +76,7 @@ z <- rnorm(n)
 x <- cbind(1,z)
 
 ##for visual inspection:
+logit(y, NULL)
 logit(y,x)
 logit(y,x, initial.values=c(0,0))
 logit(y,x, lower=0)$coefficients
@@ -179,14 +181,17 @@ colMeans(resultPvals < 0.01)
 
 set.seed(123)
 n <- 20
-y <- logitxSim(n, ar=1, as.zoo=TRUE)
+y <- logitxSim(n, ar=1)
 z <- rnorm(n)
 
-##test arguments:
+##test arguments (visual inspection):
 logitx(y)
 logitx(y, intercept=FALSE)
 logitx(y, ar=1)
 logitx(y, ewma=list(length=c(2,4)))
+logitx(y, ewma=c(2,4))
+##should drop EqWMA(2):
+logitx(y, ar=c(1,2), ewma=c(2,4)) 
 ##ISSUE: the z-variable is labelled as "mxreg", but should probably be
 ##labelled "xreg" or "z":
 logitx(y, xreg=z)
@@ -199,7 +204,8 @@ logitx(y, ar=1, upper=0.5)
 logitx(y, control=list(trace=1))$coefficients
 logitx(y, upper=0.5, control=list(trace=1))$coefficients
 logitx(y, eps.tol=1) 
-logitx(y, solve.tol=0.99)
+##should return error:
+logitx(y, solve.tol=2)
 
 ##check methods:
 x <- logitx(y, ar=1, xreg=z)
@@ -258,4 +264,3 @@ xreg <- cbind(z, matrix(rnorm(n*29), n, 29))
 mymod <- logitx(y, ar=1:5, xreg=xreg)
 mymod
 gets(mymod, max.paths=5)
-

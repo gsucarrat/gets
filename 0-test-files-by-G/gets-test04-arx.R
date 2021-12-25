@@ -186,6 +186,13 @@ plot(VaR(mod02, level=c(0.99,0.95,0.9))) #value-at-risk
 vcov(mod02)
 vcov(mod02, spec="m")
 vcov(mod02, spec="v")
+##test the generation of LaTeX code:
+printtex(mod02)
+printtex(mod02, fitted.name="g")
+printtex(mod02, fitted.name="g", print.info=FALSE)
+toLatex(mod02)
+toLatex(mod02, fitted.name="g")
+toLatex(mod02, fitted.name="g", print.info=FALSE)
 
 ##only variance specification:
 mod03 <- arx(y, mc=FALSE, arch=1:4, asym=1:2, log.ewma=3, vxreg=log(mX^2))

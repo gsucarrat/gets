@@ -9,9 +9,10 @@ General-to-Specific (GETS) Modelling of a dynamic Autoregressive (AR) logit mode
 
 \usage{
 \method{gets}{logitx}(x, t.pval = 0.05, wald.pval = t.pval, do.pet = TRUE, 
-    keep = NULL, include.gum = FALSE, include.1cut = TRUE, include.empty = FALSE, 
-    max.paths = NULL, turbo = TRUE, print.searchinfo = TRUE, 
-    plot = NULL, alarm = FALSE, ...) 
+    user.diagnostics = NULL, keep = NULL, include.gum = FALSE,
+    include.1cut = TRUE, include.empty = FALSE, max.paths = NULL,
+    turbo = TRUE, print.searchinfo = TRUE, plot = NULL, alarm = FALSE,
+    ...) 
 }
 
 \arguments{
@@ -19,6 +20,7 @@ General-to-Specific (GETS) Modelling of a dynamic Autoregressive (AR) logit mode
   \item{t.pval}{numeric value between 0 and 1. The significance level used for the two-sided regressor significance t-tests}
   \item{wald.pval}{numeric value between 0 and 1. The significance level used for the Parsimonious Encompassing Tests (PETs). By default, it is the same as \code{t.pval}}
   \item{do.pet}{\code{logical} that determines whether a Parsimonious Encompassing Test (PET) against the GUM should be undertaken at each regressor removal for the joint significance of all the deleted regressors along the current path. If \code{FALSE}, then a PET is not undertaken at each regressor removal }
+  \item{user.diagnostics}{\code{NULL} (default) or a \code{list} with two entries, \code{name} and \code{pval}, see \code{\link{getsFun}}}
   \item{keep}{\code{NULL} or a vector of integers that determines which regressors to be excluded from removal in the specification search }
   \item{include.gum}{\code{logical} that determines whether the GUM (i.e. the starting model) should be included among the terminal models. If \code{FALSE} (default), then the GUM is not included }
   \item{include.1cut}{\code{logical} that determines whether the 1-cut model should be added to the list of terminal models. If \code{FALSE} (default), then the 1-cut is not added, unless it is a terminal model in one of the paths }

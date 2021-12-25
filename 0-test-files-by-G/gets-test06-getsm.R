@@ -418,6 +418,16 @@ functionVals <- predict(myspecific, n.ahead=1)
 ##do they correspond?:                                                  
 all( functionVals == correctVals )
 
+##this yielded error, at some point
+##---------------------------------
+
+set.seed(123)
+y <- arima.sim(list(ar=0.4), 100)
+xregs <- matrix(rnorm(4*100), 100, 4)
+mymod <- arx(y, mc=TRUE, ar=1:2, mxreg=xregs, arch=1:3)
+meanmod <- getsm(mymod)
+predict(meanmod, plot=TRUE)
+
 
 ##################################################
 ## 5 SIMULATIONS (FOR THE FUTURE)

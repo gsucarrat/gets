@@ -12,8 +12,8 @@ Estimate a dynamic Autoregressive (AR) logit model with covariates ('X') by maxi
 logitx(y, intercept = TRUE, ar = NULL, ewma = NULL, xreg = NULL, 
     vcov.type = c("ordinary", "robust"), lag.length = NULL, 
     initial.values = NULL, lower = -Inf, upper = Inf, control = list(), 
-    eps.tol = .Machine$double.eps, solve.tol = .Machine$double.eps, 
-    plot = NULL)
+    eps.tol = .Machine$double.eps, solve.tol = .Machine$double.eps,
+    singular.ok = TRUE, plot = NULL)
 
 dlogitx(y, ...)
 }
@@ -32,18 +32,19 @@ dlogitx(y, ...)
   \item{control}{a \code{list} passed on to the control argument of \code{\link{nlminb}} }
   \item{eps.tol}{numeric, a small value that ensures the fitted zero-probabilities are not too small when the log-transformation is applied when computing the log-likelihood }
   \item{solve.tol}{numeric value passed on to the \code{tol} argument of \code{\link{solve}}, which is called whenever the coefficient-coariance matrix is computed. The value controls the toleranse for detecting linear dependence between columns when inverting a matrix }
+  \item{singular.ok}{logical. If \code{TRUE} (default), then the regressors causing the singularity are dropped (using \code{\link{dropvar}}) before estimation. If \code{FALSE}, singularity returns error}
   \item{plot}{\code{NULL} or logical. If \code{TRUE}, then a plot is produced. If \code{NULL} (default), then the value set by \code{\link{options}} determines whether a plot is produced or not.}
   \item{...}{arguments passed on to \code{logitx}}
 }
 
 \details{
-The function estimates a dynamic Autoregressive (AR) logit model with (optionally) covariates ('X') by maximising the logit likelihood. The estimated model is that of Kauppi and Saikkonen (2008). However, there (in contrast to here) estimation is by maximisation of the probit likelihood. 
+The function estimates a dynamic Autoregressive (AR) logit model with (optionally) covariates ('X') by maximising the logit likelihood. The estimated model is an augmented version of the model considered by Kauppi and Saikkonen (2008). Also, they considered estimation is by maximisation of the probit likelihood. Here, by contrast, estimation is by maximisation of the logit likelihood.
 }
 
 \value{A list of class 'logitx'.}
 
 \references{
-Heikki Kauppi and Penti Saikkonen (2008): 'Predicting U.S. Recessions with Dynamic Binary Response Models'. The Review of Economic Statistics 90, pp. 777-791
+Heikki Kauppi and Pentti Saikkonen (2008): 'Predicting U.S. Recessions with Dynamic Binary Response Models'. The Review of Economics and Statistics 90, pp. 777-791
 
 Whitney K. Newey and Kenned D. West (1987): 'A Simple, Positive Semi-Definite, Heteroskedasticity and Autocorrelation Consistent Covariance Matrix', Econometrica 55, pp. 703-708
 }

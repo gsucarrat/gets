@@ -60,7 +60,7 @@ mCoefs[6,] <- lm(vY ~ mX-1)$coefficients #compare with lm
 rownames(mCoefs) <- paste("method ",1:NROW(mCoefs), ":", sep="")
 mCoefs
 
-##compare log-likelihoods (they should differ):
+##compare log-likelihoods:
 test_that("Log-Likelihoods are the same",{
   tmp <- ols(vY, mX, method=3)
   expect_equal(tmp$logl,sum(dnorm(tmp$residuals, sd=sqrt(tmp$sigma2), log=TRUE)))
@@ -590,6 +590,14 @@ test_that("Testing the regressorsMean() function - Test 3 on Dataframe",{
   expect_silent(regressorsMean(y, mxreg=mxreg))
 })
 
+##test 4:
+##=======
+
+##used to yield faulty regressor name (corrected in version 0.30)
+##(regressor was named 'mxreg' instead of 'x'
+x <- rnorm(10)
+regressorsMean(y, mc=TRUE, mxreg=x)
+
 
 ##################################################
 ## 7 TEST regressorsVariance()
@@ -710,3 +718,11 @@ regressorsVariance(eps, vxreg=vxreg)
 test_that("regressorsVariance() - Test 3 vxreg as data.frame",{
   expect_silent(regressorsVariance(eps, vxreg=vxreg))
 })
+
+##test 4:
+##=======
+
+##used to yield faulty regressor name (corrected in version 0.30)
+##(regressor was named 'vxreg' instead of 'x'
+x <- rnorm(10)
+regressorsVariance(y, vc=TRUE, vxreg=x)

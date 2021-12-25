@@ -7,7 +7,7 @@
 
 The \pkg{gets} package provides functions and methods for General-to-Specific (GETS) and Indicator Saturation (ISAT) modelling. GETS modelling is a powerful and flexible variable selection algorithm that returns a parsimonious and interpretable model. It is ideally suited for the development of models that can be used for counterfactual and predictive scenario analysis (e.g. conditional forecasting). ISAT modelling provides a comprehensive, flexible and powerful approach to the identification of structural breaks and outliers.\cr
 
-The code of the package originated in relation with the research project G. Sucarrat and A. Escribano (2012). In 2014, Felix Pretis and James Reade joined for the development of the \code{\link{isat}} code and related functions. Subsequently, Moritz Schwarz and Jonas Kurle have joined the development team.
+The code of the package originated in relation with the research project G. Sucarrat and A. Escribano (2012). In 2014, Felix Pretis and James Reade joined for the development of the \code{\link{isat}} code and related functions. Moritz Schwarz and Jonas Kurle joined the development team in 2020.
 
 }
 
@@ -15,7 +15,7 @@ The code of the package originated in relation with the research project G. Suca
 
 \tabular{ll}{
 	Version: \tab 0.30\cr
-	Date: \tab 2021-12-22\cr
+	Date: \tab 2021-12-25\cr
 	Licence: \tab GPL-2\cr
 }
 
