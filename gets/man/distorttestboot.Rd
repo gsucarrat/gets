@@ -1,29 +1,26 @@
-\name{boot.distorttest}
-\alias{boot}
-\alias{boot.distorttest}
-\alias{print.boot.distorttest}
+\name{distorttestboot}
+\alias{distorttestboot}
+\alias{print.distorttestboot}
+
 
 \title{Bootstrapped Jiao-Pretis-Schwarz Outlier Distortion Test}
 
 \description{
-  Implements the Jiao-Pretis-Schwarz bootstrap test for coefficient distortion due to outliers by comparing coefficient estimates obtained using OLS to estimates obtained using the robust IIS estimator implemented using \code{isat}. Three bootstrap schemes are available – using the original sample (not recommended), the clean (outlier-removed) data, and using the clean (outlier-removed) sample with scaled cut-offs used to detect outliers in IIS implemented using isat. See the referenced Jiao-Pretis-Schwarz Paper below for more information.
+  Implements the Jiao-Pretis-Schwarz bootstrap test for coefficient distortion due to outliers by comparing coefficient estimates obtained using OLS to estimates obtained using the robust IIS estimator implemented using \code{isat}. Three bootstrap schemes are available - using the original sample (not recommended), the clean (outlier-removed) data, and using the clean (outlier-removed) sample with scaled cut-offs used to detect outliers in IIS implemented using isat. See the referenced Jiao-Pretis-Schwarz Paper below for more information.
   %The function \code{as.arx} is a generic function and its methods returns an object of class \code{\link{arx}}.
 }
 
 \usage{
-boot(x, ...)
 
-##S3 method for objects of class 'distorttest':
-\method{boot}{distorttest}(x, nboot, clean.sample = TRUE, 
-  parametric = FALSE, scale.t.pval = 1, parallel.options = NULL, 
-  quantiles = c(0.90, 0.95, 0.99), ...)
+distorttestboot(x, nboot, clean.sample = TRUE, parametric = FALSE, scale.t.pval = 1, 
+parallel.options = NULL, quantiles = c(0.90, 0.95, 0.99), ...)
 
-##S3 printing method for objects of class 'boot.distorttest':
-\method{print}{boot.distorttest}(x, print.proportion = FALSE, ...)
+##S3 printing method for objects of class 'distorttestboot':
+\method{print}{distorttestboot}(x, print.proportion = FALSE, ...)
 }
 
 \arguments{
-  \item{x}{object of class \code{\link{isat}} }
+  \item{x}{object of class \code{\link{isat}} or the output of the \code{\link{distorttest}} function. }
   \item{nboot}{numeric. Number of bootstrap replications. A high number of replications are recommended for final estimation (more than 200 at least).}
   \item{clean.sample}{logical. Whether the outlier-removed sample should be used in resampling.}
   \item{parametric}{logical. Whether to use a parametric bootstrap. Default is non-parametric (FALSE). Parametric currently not implemented for autoregressive models.}
@@ -57,7 +54,7 @@ Xiyu Jiao, Felix Pretis,and Moritz Schwarz. Testing for Coefficient Distortion d
   
   distorttest(nile)
   # bootstrap (with nboot = 5 to save time. Higher replications are recommended)
-  boot(distorttest(nile), nboot = 5)
+  distorttestboot(nile, nboot = 5)
   
   data("hpdata")
   # Another example with co-variates
@@ -73,12 +70,12 @@ Xiyu Jiao, Felix Pretis,and Moritz Schwarz. Testing for Coefficient Distortion d
   distorttest(m3, coef = "GNPQ")
   distorttest(m4, coef = c("ar1", "FSDJ"))
   
-  # bootstrap (with nboot = 5 to save time)
-  boot(distorttest(m1), nboot = 5)
-  boot(distorttest(m2), nboot = 5)
-  boot(distorttest(m3), nboot = 5)
-  boot(distorttest(m4), nboot = 5)
-  boot(distorttest(m4), nboot = 5, parametric = TRUE, scale.t.pval = 0.5)
+  # bootstrap (with nboot = 5 to save time. Higher replications are recommended)
+  distorttestboot(m1, nboot = 5)
+  distorttestboot(m2, nboot = 5)
+  distorttestboot(m3, nboot = 5)
+  distorttestboot(m4, nboot = 5)
+  distorttestboot(m4, nboot = 5, parametric = TRUE, scale.t.pval = 0.5)
 
   }
 }

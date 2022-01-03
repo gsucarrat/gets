@@ -142,9 +142,7 @@ distorttest <- function(x, coef="all"){
 }
 
 
-boot <- function(x, ...){ UseMethod("boot") }
-
-boot.distorttest <- function(
+distorttestboot <- function(
   x,
   nboot,
   clean.sample = TRUE,
@@ -166,7 +164,9 @@ boot.distorttest <- function(
   
   if(!identical(class(x),c("htest","distorttest"))){
     if (class(x)=="isat") {
+      data.name <- deparse(substitute(x))
       x <- distorttest(x)
+      x$data.name <- data.name
     } else {stop("Unrecognised class of x. The function needs either an isat object or the output of the distorttest() function.")}
   }
   
@@ -383,7 +383,7 @@ boot.distorttest <- function(
                    scale.t.pval = scale.t.pval,
                    clean.sample = clean.sample)
   
-  class(out) <- "boot.distorttest"
+  class(out) <- "distorttestboot"
   
   return(out)
   
@@ -392,7 +392,7 @@ boot.distorttest <- function(
 
 
 
-print.boot.distorttest <- function(x, print.proportion = FALSE, ...){
+print.distorttestboot <- function(x, print.proportion = FALSE, ...){
   
   print(x$dist.full)
   cat("\n")

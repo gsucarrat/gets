@@ -31,7 +31,7 @@ Xiyu Jiao, Felix Pretis,and Moritz Schwarz. Testing for Coefficient Distortion d
 }
 
 \seealso{
-  \code{\link{isat}, \link{boot.distorttest}}
+  \code{\link{isat}, \link{distorttestboot}}
 }
 
 \examples{
