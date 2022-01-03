@@ -35,7 +35,7 @@ Xiyu Jiao, Felix Pretis,and Moritz Schwarz. Testing for Coefficient Distortion d
 }
 
 \examples{
-  
+\dontrun{  
 data(Nile)
 nile <- isat(Nile, sis=FALSE, iis=TRUE, plot=TRUE, t.pval=0.01)
 distorttest(nile)
@@ -53,7 +53,7 @@ distorttest(m1, coef = "all")
 distorttest(m2, coef = "all")
 distorttest(m3, coef = "GNPQ")
 distorttest(m4, coef = c("ar1", "FSDJ"))
-  
+ } 
 }
 
 \keyword{Statistical Models}
