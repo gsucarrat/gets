@@ -2697,7 +2697,7 @@ isatdates <- function(x){
 isatvarcorrect <- function(x,   mcor = 1){
   
   if (class(x)=="isat"){
-    if (x$call$iis==TRUE) 
+    if (!is.null(x$call$iis) & x$call$iis==TRUE) 
     {
       x$vcov.mean <- x$vcov.mean * as.numeric(isvarcor(x$aux$t.pval, 1)[2]^2)
       x$vcov.mean[x$keep, x$keep] <- x$vcov.mean[x$keep, x$keep] * as.numeric(isvareffcor(x$aux$t.pval, 1, mcor)[2]^2)
