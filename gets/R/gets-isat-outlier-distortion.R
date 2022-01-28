@@ -446,32 +446,32 @@ print.distorttestboot <- function(x, print.proportion = FALSE, ...){
 
 
 
-isvarcor.isat <- function(isatobject){
-  
-  
-  #################################################################################
-  ########## 1. Consistency correction of sigma estimate (affects all regressors)
-  vcov.mean.original <- isatobject$vcov.mean
-  
-  vcov.mean.cor.1 <- isatobject$vcov.mean * as.numeric(isvarcor(isatobject$aux$t.pval, 1)[2]^2)
-  ###################################################################################
-  
-  ###############################################################################################################
-  ######### 2. Correction for the variance of retained regressors (affects only fixed regressors, not impulses)
-  vcov.mean.cor.2 <- vcov.mean.cor.1
-  rel_names <- isatobject$aux$mXnames[!(isatobject$aux$mXnames %in% isatobject$ISnames)]
-  mcor <- 1
-  vcov.mean.cor.2[rel_names, rel_names] <- vcov.mean.cor.2[rel_names, rel_names] * as.numeric(isvareffcor(isatobject$aux$t.pval, 1, mcor)[2]^2)
-  ###############################################################################################################
-  
-  isatobject <- isatobject
-  isatobject$vcov <- vcov.mean.cor.2
-  isatobject$vcov.mean <- vcov.mean.cor.2
-  isatobject$vcov.mean.cor.1 <- vcov.mean.cor.1
-  isatobject$vcov.mean.original <- vcov.mean.original
-  
-  # correcting the S.E. in isatobject
-  isatobject$mean.results["std.error"] <- sqrt(diag(vcov.mean.cor.2))
-  
-  return(isatobject)
-}
+# isvarcor.isat <- function(isatobject){
+#   
+#   
+#   #################################################################################
+#   ########## 1. Consistency correction of sigma estimate (affects all regressors)
+#   vcov.mean.original <- isatobject$vcov.mean
+#   
+#   vcov.mean.cor.1 <- isatobject$vcov.mean * as.numeric(isvarcor(isatobject$aux$t.pval, 1)[2]^2)
+#   ###################################################################################
+#   
+#   ###############################################################################################################
+#   ######### 2. Correction for the variance of retained regressors (affects only fixed regressors, not impulses)
+#   vcov.mean.cor.2 <- vcov.mean.cor.1
+#   rel_names <- isatobject$aux$mXnames[!(isatobject$aux$mXnames %in% isatobject$ISnames)]
+#   mcor <- 1
+#   vcov.mean.cor.2[rel_names, rel_names] <- vcov.mean.cor.2[rel_names, rel_names] * as.numeric(isvareffcor(isatobject$aux$t.pval, 1, mcor)[2]^2)
+#   ###############################################################################################################
+#   
+#   isatobject <- isatobject
+#   isatobject$vcov <- vcov.mean.cor.2
+#   isatobject$vcov.mean <- vcov.mean.cor.2
+#   isatobject$vcov.mean.cor.1 <- vcov.mean.cor.1
+#   isatobject$vcov.mean.original <- vcov.mean.original
+#   
+#   # correcting the S.E. in isatobject
+#   isatobject$mean.results["std.error"] <- sqrt(diag(vcov.mean.cor.2))
+#   
+#   return(isatobject)
+# }
