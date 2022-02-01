@@ -1698,11 +1698,16 @@ isatvar <- function(x, lr=FALSE, conscorr=FALSE, effcorr=FALSE, mcor = 1,  mxful
       if (conscorr==TRUE){
         x$vcov.mean <- x$vcov.mean*as.numeric(isvarcor(x$aux$t.pval,1)[2]^2)
       }
-
-      if (effcorr==TRUE){
-
-        if (!is.null(x$keep)) {
-          x$vcov.mean[x$keep, x$keep] <- x$vcov.mean[x$keep, x$keep] * as.numeric(isvareffcor(x$aux$t.pval, 1, mcor)[2]^2)
+      
+      if (effcorr == TRUE){
+        rel_names <- x$aux$mXnames[!(x$aux$mXnames %in% x$ISnames)]
+        if (!is.null(rel_names)) {
+          # OLD:
+          #if (!is.null(x$keep)) {
+          # x$vcov.mean[x$keep, x$keep] <- x$vcov.mean[x$keep, x$keep] * as.numeric(isvareffcor(x$aux$t.pval, 1, mcor)[2]^2)
+          x$vcov.mean[rel_names, rel_names] <- x$vcov.mean[rel_names, 
+                                                           rel_names] * as.numeric(isvareffcor(x$aux$t.pval,
+                                                                                               1, mcor)[2]^2)
         }
       }
 
@@ -2700,7 +2705,8 @@ isatvarcorrect <- function(x,   mcor = 1){
     if (!is.null(x$call$iis) & x$call$iis==TRUE) 
     {
       x$vcov.mean <- x$vcov.mean * as.numeric(isvarcor(x$aux$t.pval, 1)[2]^2)
-      x$vcov.mean[x$keep, x$keep] <- x$vcov.mean[x$keep, x$keep] * as.numeric(isvareffcor(x$aux$t.pval, 1, mcor)[2]^2)
+      rel_names <- x$aux$mXnames[!(x$aux$mXnames %in% x$ISnames)]
+      x$vcov.mean[rel_names, rel_names] <- x$vcov.mean[rel_names, rel_names] * as.numeric(isvareffcor(x$aux$t.pval, 1, mcor)[2]^2)
       
       x$mean.results$std.error <- sqrt(diag(x$vcov.mean))
       x$mean.results$`t-stat` <- x$mean.results$coef/x$mean.results$std.error
