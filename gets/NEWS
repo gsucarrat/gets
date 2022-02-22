@@ -1,5 +1,7 @@
-Version 0.30 (25 December 2021):
+Version 0.30 (22 February 2022):
 ================================
+
+* New functions: distorttest(), distorttestboot(), print.distorttestboot()
 
 * New vignette: "User-Specified General-to-Specific (GETS) and Indicator Saturation (ISAT) Methods"
 

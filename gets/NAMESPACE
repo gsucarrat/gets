@@ -55,7 +55,7 @@ export(
 
   ##lm-class functions:
   "as.arx.lm", "gets.lm",
-  
+
   ##outlier-distortion functions:
   "distorttest", "distorttestboot", "print.distorttestboot"
 

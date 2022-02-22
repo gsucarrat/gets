@@ -33,6 +33,7 @@ rm(list=ls())
 ##load source:
 source("./gets/R/gets-base-source.R")
 source("./gets/R/gets-isat-source.R")
+source("./gets/R/gets-isat-outlier-distortion-source.R")
 
 
 ##################################################
