@@ -54,7 +54,10 @@ export(
   "dlogitx",
 
   ##lm-class functions:
-  "as.arx.lm", "gets.lm"
+  "as.arx.lm", "gets.lm",
+  
+  ##outlier-distortion functions:
+  "distorttest", "distorttestboot", "print.distorttestboot"
 
 )
 
@@ -118,3 +121,6 @@ S3method("vcov", "logitx")
 S3method("as.arx", "lm")
 S3method("gets", "lm")
 S3method("isat", "lm")
+
+##methods for class distorttest.boot
+S3method("print","distorttestboot")
