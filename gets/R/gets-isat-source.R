@@ -658,12 +658,14 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   
   ## Outlier Proportion and Distortion Test 
   # Proportion Test was previously executed in the print.isat function
-  if(!is.null(getsis$call$iis) & 
-     isTRUE(eval(getsis$call$iis) & 
-            !any(eval(getsis$call$sis), eval(getsis$call$tis), eval(getsis$call$uis))==TRUE)){
-    getsis$outlier.proportion.test <- outliertest(getsis)
-    getsis$outlier.distortion.test <- distorttest(getsis)
-  }
+  if(!is.null(getsis$call$iis) & isTRUE(eval(getsis$call$iis))){
+    if(!any(eval(getsis$call$sis), eval(getsis$call$tis), 
+            ifelse(is.logical(eval(getsis$call$uis)) & isTRUE(eval(getsis$call$uis)), TRUE, FALSE))){
+      
+      getsis$outlier.proportion.test <- outliertest(getsis)
+      getsis$outlier.distortion.test <- distorttest(getsis)
+      }
+    }
   
   return(getsis)
 
