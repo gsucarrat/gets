@@ -21,12 +21,12 @@ Implements the Jiao-Pretis-Schwarz test for coefficient distortion due to outlie
 \value{Object of class \code{\link{isat}} }
 
 \references{
-Xiyu Jiao, Felix Pretis,and Moritz Schwarz. Testing for Coefficient Distortion due to Outliers with an Application to the Economic Impacts of Climate Change. Available at SSRN: \url{https://ssrn.com/abstract=3915040 or http://dx.doi.org/10.2139/ssrn.3915040}
+Xiyu Jiao, Felix Pretis,and Moritz Schwarz. Testing for Coefficient Distortion due to Outliers with an Application to the Economic Impacts of Climate Change. Available at SSRN: \url{https://www.ssrn.com/abstract=3915040} or \doi{10.2139/ssrn.3915040}
 }
 
 \author{
   Xiyu Jiao \url{https://sites.google.com/view/xiyujiao}\cr\cr
-  Felix Pretis \url{https://www.felixpretis.org/}\cr\cr
+  Felix Pretis \url{http://www.felixpretis.org} \cr\cr
   Moritz Schwarz \url{https://moritzschwarz.org}\cr\cr
 }
 

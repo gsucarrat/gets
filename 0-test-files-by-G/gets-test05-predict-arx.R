@@ -218,7 +218,6 @@ correctVals <- c(yhat1,yhat2,yhat3)
 all( functionVals == correctVals ) #TRUE since version 0.30
 
 
-
 ##################################################
 ## 3 TESTS OF VARIANCE PREDICTIONS
 ##################################################

@@ -19,12 +19,11 @@ setwd("C:/Users/sucarrat/Documents/R/gs/gets/devel/")
 require(parallel)
 require(zoo)
 
-##remove everything in workspace (.GlobaleEnv):
+##remove everything in workspace (.GlobalEnv):
 rm(list=ls())
 
 ##load source:
 source("./gets/R/gets-base-source.R")
-#source("./gets/R/gets-isat-source.R")
 
 
 ##################################################
@@ -99,7 +98,7 @@ plot(fitted(vgets01))
 plot(fitted(vgets01, spec="v"))
 logLik(vgets01)
 paths(vgets01)
-paths(vgum01) #should return the error-message: The object does not belong to the 'gets' nor 'isat' class
+paths(vgum01) #should return NULL
 plot(vgets01)
 plot(residuals(vgets01))
 plot(residuals(vgets01, std=TRUE))
@@ -108,7 +107,7 @@ predict(vgets01)
 sigma(vgets01)
 rsquared(vgets01) #should return NA
 terminals(vgets01)
-terminals(vgum01) #should return the error-message: The object does not belong to the 'gets' nor 'isat' class
+terminals(vgum01) #should return NULL
 plot(VaR(vgets01, level=c(0.99,0.95,0.9))) #value-at-risk
 vcov(vgets01)
 vcov(vgets01, spec="m")
@@ -145,14 +144,14 @@ plot(fitted(vgets02, spec="v"))
 #plot(fitted(vgets02, spec="b")) #should result in error
 logLik(vgets02)
 paths(vgets02)
-paths(vgum02) #should return error: "The object does not belong to the 'gets' or 'isat' class
+paths(vgum02) #should return NULL
 plot(vgets02)
 plot(residuals(vgets02))
 plot(residuals(vgets02, std=TRUE))
 plot(residuals(vgets02, std=FALSE))
 predict(vgets02)
 terminals(vgets02)
-terminals(vgum02) #should return the error-message: The object does not belong to the 'gets' nor 'isat' class
+terminals(vgum02) #should return NULL
 plot(VaR(vgets02, level=c(0.99,0.95,0.9))) #value-at-risk
 vcov(vgets02)
 vcov(vgets02, spec="m") #should be NULL

@@ -41,7 +41,7 @@ vY <- mX[,10] + 0.1*rnorm(NROW(mX))
 
 ##note: in the tests that follows, it seems the name of the
 ##regressor matrix, mX, is used unnecessarily in naming objects
-##of the value returned by blocksFun(). check?
+##of the value returned by blocksFun(), check?
 
 ##check if each argument works:
 blocksFun(vY, mX)$specific.spec

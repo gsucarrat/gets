@@ -1,7 +1,9 @@
-Version 0.30 (22 February 2022):
+Version 0.30 (23 February 2022):
 ================================
 
 * New functions: distorttest(), distorttestboot(), print.distorttestboot()
+
+* isat.default(): minor changes to accommodate the new distortion test
 
 * New vignette: "User-Specified General-to-Specific (GETS) and Indicator Saturation (ISAT) Methods"
 

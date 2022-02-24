@@ -127,7 +127,7 @@ plot(cbind(residuals(getsm01),
   residuals(getsm01, std=TRUE)))
 paths(getsm01)
 paths(mod01) #should return the error-message: object 'mod01' not found
-paths(gum01) #should return the error-messase: object not of class...
+paths(gum01) #should be NULL
 recursive(getsm01)
 recursive(getsm01, std.errors=FALSE)
 terminals(getsm01)

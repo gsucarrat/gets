@@ -374,8 +374,14 @@ diagnostics(x,
   user.fun=list(name="SWtest", pval=0.025),
   verbose=FALSE) #should return TRUE
 diagnostics(x,
-  user.fun=list(name="SWtest", pval=0.85, is.reject.bad=FALSE),
+  user.fun=list(name="SWtest", pval=0.85),
   verbose=FALSE) #should return FALSE
+diagnostics(x,
+  user.fun=list(name="SWtest", pval=0.85, is.reject.bad=TRUE),
+  verbose=FALSE) #should return FALSE
+diagnostics(x,
+  user.fun=list(name="SWtest", pval=0.85, is.reject.bad=FALSE),
+  verbose=FALSE) #should return TRUE
 
 ##check no. 2 of "is.rejection.bad" entry:
 SWtest <- function(x, ...){
@@ -415,8 +421,8 @@ eqwma(x, p=2)
 eqwma(x, abs=TRUE)
 eqwma(x, log=TRUE)
 eqwma(x, as.vector=TRUE)
-eqwma(x, start=1) #should return error
-eqwma(x, lag=1) #should return error
+eqwma(x, start=1) #should return error: 'start' has been deprecated
+eqwma(x, lag=1) #should return error: 'lag' has been deprecated, use 'k' instead
 
 test_that("test EQMA",{
   expect_silent(eqwma(x))
@@ -443,8 +449,8 @@ leqwma(x, length=c(2,3))
 leqwma(x, k=2 )
 leqwma(x, p=1)
 leqwma(x, as.vector=TRUE)
-leqwma(x, start=1) #should return error
-leqwma(x, lag=1) #should return error
+leqwma(x, start=1) #should return error: 'start' has been deprecated
+leqwma(x, lag=1) #should return error: 'lag' has been deprecated, use 'k' instead
 
 test_that("test leqwma",{
   expect_silent(leqwma(x))
@@ -590,14 +596,6 @@ test_that("Testing the regressorsMean() function - Test 3 on Dataframe",{
   expect_silent(regressorsMean(y, mxreg=mxreg))
 })
 
-##test 4:
-##=======
-
-##used to yield faulty regressor name (corrected in version 0.30)
-##(regressor was named 'mxreg' instead of 'x'
-x <- rnorm(10)
-regressorsMean(y, mc=TRUE, mxreg=x)
-
 
 ##################################################
 ## 7 TEST regressorsVariance()
@@ -718,11 +716,3 @@ regressorsVariance(eps, vxreg=vxreg)
 test_that("regressorsVariance() - Test 3 vxreg as data.frame",{
   expect_silent(regressorsVariance(eps, vxreg=vxreg))
 })
-
-##test 4:
-##=======
-
-##used to yield faulty regressor name (corrected in version 0.30)
-##(regressor was named 'vxreg' instead of 'x'
-x <- rnorm(10)
-regressorsVariance(y, vc=TRUE, vxreg=x)
