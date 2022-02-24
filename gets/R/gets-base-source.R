@@ -3053,7 +3053,8 @@ predict.arx <- function(object, spec=NULL, n.ahead=12,
 
   ##ci.levels argument:
   if( is.null(ci.levels) && plotArg==TRUE ){
-    if( class(object)=="isat" ){ ##if isat:
+    classObject <- class(object)
+    if( "isat" %in% classObject ){ ##if isat:
       ciLevelsArg <- c(0.68,0.95)
     }else{ ##if not isat:
       ciLevelsArg <- c(0.5,0.9)    
@@ -4322,9 +4323,10 @@ sigma.arx <- function(object, ...)
 ## R-squared
 rsquared <- function(object, adjusted=FALSE, ...)
 {
-  classOK <- class(object) %in% c("arx", "gets", "isat")
+  classObject <- class(object)
+  classOK <- classObject %in% c("arx", "gets", "isat")
   if(!classOK){ message("object not of class 'arx', 'gets' or 'isat'") }
-  if( class(object) == "gets" ){
+  if( "gets" %in% classObject ){
     specType <- switch(as.character(object$call)[1],
       getsm="mean", getsv="variance")
   }

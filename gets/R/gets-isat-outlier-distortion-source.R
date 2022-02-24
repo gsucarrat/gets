@@ -3,7 +3,8 @@ distorttest <- function(x, coef="all"){
   # Checks
   
   if (is.null(x)){stop("Object is NULL - please make sure to pass an isat object.")}
-  if (class(x)!="isat"){ stop("x must be an isat object")}
+  classx <- class(x)
+  if (classx!="isat"){ stop("x must be an isat object")}
   if (any(x$call$sis, x$call$tis, x$call$uis)==TRUE){stop("Test only valid for iis - not valid for sis, uis, or tis.")} 
   if (all(coef != "all") && any(!coef %in% names(coef(x)))){stop("The 'coef' variable or vector contains one or more regressors not in the isat object.")}
   if (x$call$iis != TRUE){stop("The isat object has not selected iis = TRUE. This is necessary for this test. Re-estimate isat with iis = TRUE.")}
@@ -162,8 +163,9 @@ distorttestboot <- function(
   ####compute distortion on full model
   #dist.full <- distorttest(x)
   
-  if(!identical(class(x),c("htest","distorttest"))){
-    if (class(x)=="isat") {
+  classx <- class(x)
+  if(!identical(classx,c("htest","distorttest"))){
+    if (classx=="isat") {
       data.name <- deparse(substitute(x))
       x <- distorttest(x)
       x$data.name <- data.name

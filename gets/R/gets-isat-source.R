@@ -2715,7 +2715,8 @@ isatdates <- function(x){
 
 isatvarcorrect <- function(x,   mcor = 1){
   
-  if (class(x)=="isat"){
+  classx <- class(x)
+  if (classx=="isat"){
     if (!is.null(x$call$iis) & x$call$iis==TRUE) 
     {
       x$vcov.mean <- x$vcov.mean * as.numeric(isvarcor(x$aux$t.pval, 1)[2]^2)
@@ -2795,7 +2796,8 @@ outliertest <- function(x=NULL, noutl=NULL, t.pval=NULL, T=NULL,  m=1, infty=FAL
     # 
     if (!is.null(x)){
       
-      if (class(x)=="isat"){
+      classx <- class(x)
+      if (classx=="isat"){
         
         # if (any(x$call$sis, x$call$tis)==TRUE ){
         #   stop("Test only valid for iis")

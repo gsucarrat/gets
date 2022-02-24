@@ -63,6 +63,7 @@ diagnostics(est, verbose=FALSE)
 diagnostics(est, normality.JarqueB=0.05)
 diagnostics(est, normality.JarqueB=0.05, verbose=FALSE)
 
+\dontrun{
 ##user-defined Shapiro-Wilks test for non-normality of the residuals:
 SWtest <- function(x, ...){
   tmp <- shapiro.test(x$residuals) #do test on est$residuals
@@ -74,7 +75,8 @@ diagnostics(est, user.fun=list(name="SWtest", pval=0.05), verbose=FALSE)
 ##user-defined test but diagnostics fail if do not reject (illustration only)
 diagnostics(est, user.fun=list(name="SWtest", pval=0.05, is.reject.bad = FALSE))
 diagnostics(est, user.fun=list(name="SWtest", pval=0.05, is.reject.bad = FALSE),
-verbose=FALSE)
+  verbose=FALSE)
+}
 
 }
 
