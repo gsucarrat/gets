@@ -1,5 +1,5 @@
-Version 0.31 (24 February 2022):
-================================
+Version 0.33 (9 March 2022):
+============================
 
 * New functions: distorttest(), distorttestboot(), print.distorttestboot()
 
@@ -39,10 +39,22 @@ Fixes:
 - predict.arx() now works correctly when 'mc' is set to 'T' or 'F' in arx(), thanks to mdwy62 (on Github) for identifying this error
 
 
+Version 0.32 (1 March 2022):
+============================
+
+* unsubmitted by CRAN (some Debian checks were not passed)
+
+
+Version 0.31 (24 February 2022):
+================================
+
+* unsubmitted by CRAN (some Debian checks were not passed)
+
+
 Version 0.30 (23 February 2022):
 ================================
 
-* unsubmitted by CRAN (did not pass the Debian checks)
+* unsubmitted by CRAN (some Debian checks were not passed)
 
 
 Version 0.29 (2 September 2021):

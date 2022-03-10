@@ -14,8 +14,8 @@ The code of the package originated in relation with the research project G. Suca
 \details{
 
 \tabular{ll}{
-	Version: \tab 0.31\cr
-	Date: \tab 2022-02-24\cr
+	Version: \tab 0.33\cr
+	Date: \tab 2022-03-09\cr
 	Licence: \tab GPL-2\cr
 }
 
@@ -85,7 +85,7 @@ Carlos Santos, David F. Hendry and Soren Johansen (2007):  'Automatic selection 
 
 Genaro Sucarrat (2020): 'User-Specified General-to-Specific and Indicator Saturation Methods'. The R Journal 12:2, pages 388-401. \url{https://journal.r-project.org/archive/2021/RJ-2021-024/}
 
-Genaro Sucarrat and Alvaro Escribano (2012): 'Automated Financial Model Selection: General-to-Specific Modelling of the Mean and Volatility Specifications', Oxford Bulletin of Economics and Statistics 74, Issue 5 (October), pp. 716-735. \doi{10.1111/j.1468-0084.2011.00669.x}
+Genaro Sucarrat and Alvaro Escribano (2012): 'Automated Financial Model Selection: General-to-Specific Modelling of the Mean and Volatility Specifications', Oxford Bulletin of Economics and Statistics 74, Issue 5 (October), pp. 716-735.
 
 }
 

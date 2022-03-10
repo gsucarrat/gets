@@ -23,7 +23,7 @@ diagnostics(x, ar.LjungB=c(1, 0.025), arch.LjungB=c(1, 0.025),
 \details{
   The argument \code{user.fun} enables the user to specify additional diagnostics. To do this, the argument should be a \code{\link{list}} with at least one entry, \code{name} (of class \code{character}), that contains the name of the user-defined function. The call to this function is executed with \code{\link{do.call}}, whose default value on \code{envir} is \code{parent.frame()}. Usually, this will be the global environment (\code{.GlobalEnv}), but it can be changed by adding an entry named \code{envir} to the list that indicates where the user-defined function resides. If the \code{verbose} argument is set to \code{FALSE}, then an entry named \code{pval} must be provided. This entry should contain the chosen significance level or levels, i.e. either a scalar or a vector of length equal to the number of \emph{p}-values returned by the user-defined diagnostics function (see examples). The user can also specify whether a rejection of the tests should cause the diagnostics to fail (default behaviour) or whether a rejection is desirable. For that purpose, a named entry \code{is.reject.bad} can be added that stores a logical vector of length equal to the number of tests conducted in the user diagnostics function. The first entry of the vector governs the diagnostic decision for the first row that the user diagnostics function returns, the second entry the decision for the second row etc. Additional entries in the \code{list} are passed on as arguments to the user-defined function.
  
-  The user-defined function should refer to the named items of the estimation result \code{x} (see examples), and the value returned by the user-defined function should be a matrix of dimension \emph{m} x 3. Here, \emph{m} is the number of diagnostic tests performed by the user-defined function. For example, if only a single test is performed, then \emph{m} = 1 and so the returned value should be a 1 x 3 matrix (or a vector of length 3). The three columns of the \emph{m} x 3 matrix should contain, in the following order, 1) the value(s) of the test-statistic(s) (or \code{NA}), 2) the degree(s) of freedom(s) (or \code{NA}) of the tests, and 3) the \emph{p}-value(s) of the test(s). When checking whether the model passes the diagnostics or not, the \emph{p}-value(s) is(are) checked against the value(s) in the entry named \code{pval} in the \code{list} provided to \code{user.fun}. By default, a calculated \emph{p-value} below the corresponding element in \code{pval} causes the diagnostics to fail. If a named entry \code{is.reject.bad} exists, this decision rule is only applied to tests whose corresponding entry is \code{TRUE} while the decision rule is reversed for those with entry \code{FALSE}. For these tests, the diagnostics fail if the hypothesis cannot be rejected.
+  The user-defined function should refer to the named items of the estimation result \code{x} (see examples), and the value returned by the user-defined function should be a matrix of dimension \emph{m} x 3. Here, \emph{m} is the number of diagnostic tests performed by the user-defined function. For example, if only a single test is performed, then \emph{m} = 1 and so the returned value should be a 1 x 3 matrix (or a vector of length 3). The three columns of the \emph{m} x 3 matrix should contain, in the following order, 1) the value(s) of the test-statistic(s) (or \code{NA}), 2) the degree(s) of freedom(s) (or \code{NA}) of the tests, and 3) the \emph{p}-value(s) of the test(s). When checking whether the model passes the diagnostics or not, the \emph{p}-value(s) is(are) checked against the value(s) in the entry named \code{pval} in the \code{list} provided to \code{user.fun}. By default, a calculated \emph{p}-value below the corresponding element in \code{pval} causes the diagnostics to fail. If a named entry \code{is.reject.bad} exists, this decision rule is only applied to tests whose corresponding entry is \code{TRUE} while the decision rule is reversed for those with entry \code{FALSE}. For these tests, the diagnostics fail if the hypothesis cannot be rejected.
 }
 
 \value{
@@ -45,7 +45,7 @@ Genaro Sucarrat, \url{http://www.sucarrat.net/}\cr
 Jonas Kurle, \url{https://www.jonaskurle.com/}
 }
 
-\seealso{\code{\link{arx}}, \code{\link{getsm}}, \code{\link{getsv}}, \code{\link{isat}}, \code{\link{getsFun}}, \code{\link{blocksFun}} }
+\seealso{\code{\link{arx}}, \code{\link{getsm}}, \code{\link{getsv}}, \code{\link{isat}}, \code{\link{getsFun}}, \code{\link{blocksFun}}}
 
 \examples{
 ##generate some data:
@@ -63,7 +63,6 @@ diagnostics(est, verbose=FALSE)
 diagnostics(est, normality.JarqueB=0.05)
 diagnostics(est, normality.JarqueB=0.05, verbose=FALSE)
 
-\dontrun{
 ##user-defined Shapiro-Wilks test for non-normality of the residuals:
 SWtest <- function(x, ...){
   tmp <- shapiro.test(x$residuals) #do test on est$residuals
@@ -76,7 +75,6 @@ diagnostics(est, user.fun=list(name="SWtest", pval=0.05), verbose=FALSE)
 diagnostics(est, user.fun=list(name="SWtest", pval=0.05, is.reject.bad = FALSE))
 diagnostics(est, user.fun=list(name="SWtest", pval=0.05, is.reject.bad = FALSE),
   verbose=FALSE)
-}
 
 }
 
