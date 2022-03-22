@@ -27,8 +27,8 @@ diagnostics(x, ar.LjungB=c(1, 0.025), arch.LjungB=c(1, 0.025),
 }
 
 \value{
-  \item{If \code{verbose=TRUE}:}{a \code{\link{data.frame}} that contains the diagnostics results}
-  \item{If \code{verbose=FALSE}:}{a \code{logical} (of length one) indicating whether the residuals and/or model passes ALL the diagnostics (\code{TRUE} if it does, \code{FALSE} otherwise)}
+  \item{verbose=TRUE}{a \code{\link{data.frame}} that contains the diagnostics results}
+  \item{verbose=FALSE}{a \code{logical} (of length one) indicating whether the residuals and/or model passes ALL the diagnostics (\code{TRUE} if it does, \code{FALSE} otherwise)}
 }
 
 \references{
@@ -65,7 +65,7 @@ diagnostics(est, normality.JarqueB=0.05, verbose=FALSE)
 
 ##user-defined Shapiro-Wilks test for non-normality of the residuals:
 SWtest <- function(x, ...){
-  tmp <- shapiro.test(x$residuals) #do test on est$residuals
+  tmp <- shapiro.test(x$residuals)
   return( c(tmp$statistic, NA, tmp$p.value) )
 }
 diagnostics(est, user.fun=list(name="SWtest", pval=0.05))
