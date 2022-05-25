@@ -661,7 +661,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   if(!is.null(getsis$call$iis) & isTRUE(eval(getsis$call$iis))){
     if(!any(eval(getsis$call$sis), eval(getsis$call$tis), 
             ifelse(is.logical(eval(getsis$call$uis)) & isTRUE(eval(getsis$call$uis)), TRUE, FALSE),
-            identical(userEstArg$name, "ols"))){
+            !identical(userEstArg$name, "ols"))){
       
       getsis$outlier.proportion.test <- outliertest(getsis)
       getsis$outlier.distortion.test <- distorttest(getsis)
