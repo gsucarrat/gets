@@ -5,7 +5,7 @@
 \title{General-to-Specific (GETS) Modelling}
 
 \description{
-Generic function for GETS modelling. Note that \code{gets.arx} is a convenience wrapper to \code{\link{getsm}} and \code{\link{getsv}}. For specific GETS methods for \code{lm}, \code{logitx} and \code{isat} models, see \code{\link{gets.lm}}, \code{\link{gets.logitx}} and \code{\link{gets.isat}}, respectively. For an overview of the \bold{gets} package, see \code{\link{gets-package}}.
+For an overview of the \bold{gets} package, see \code{\link{gets-package}}. Here, documentation of generic functions for GETS modelling is provided. Note that \code{gets.arx} is a convenience wrapper to \code{\link{getsm}} and \code{\link{getsv}}. For specific GETS methods for \code{lm}, \code{logitx} and \code{isat} models, see \code{\link{gets.lm}}, \code{\link{gets.logitx}} and \code{\link{gets.isat}}, respectively. 
 }
 
 \usage{
@@ -28,7 +28,7 @@ gets(x, ...)
 \author{Genaro Sucarrat, \url{http://www.sucarrat.net/}}
 
 \seealso{
-\code{\link{getsm}}, \code{\link{getsv}}, \code{\link{getsFun}}
+\code{\link{getsm}}, \code{\link{getsv}}, \code{\link{getsFun}}, \code{\link{blocksFun}}
 }
 
 \keyword{Statistical Models}

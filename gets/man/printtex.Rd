@@ -12,7 +12,7 @@ Convenience functions that generates LaTeX-code of an estimation result in equat
 \usage{
   printtex(x, fitted.name=NULL, xreg.names=NULL, digits=4,
       intercept=TRUE, gof=TRUE, diagnostics=TRUE, nonumber=FALSE,
-      nobs="T", index="t", print.info=TRUE)
+      nobs="T", index="t", dec=NULL, print.info=TRUE)
   \method{toLatex}{arx}(object, ...)
   \method{toLatex}{gets}(object, ...)
 }
@@ -28,11 +28,12 @@ Convenience functions that generates LaTeX-code of an estimation result in equat
   \item{nonumber}{logical, whether to remove or not (default) the equation-numbering}
   \item{nobs}{character, the notation to use to denote the number of observations}
   \item{index}{\code{NULL} or a \code{\link{character}}, only relevant if \code{fitted.name} is not \code{NULL}, and if the object in question is of class \code{\link{arx}}, \code{\link{gets}} or \code{\link{isat}} }
+  \item{dec}{\code{NULL} or a \code{\link{character}} (for example \code{","}). In the latter case, an attempt is made to replace the dot separator \code{.} with the character in \code{dec} }
   \item{print.info}{\code{logical}, whether to print the info at the start or not}
   \item{...}{arguments passed on to \code{printtex} }
 }
 
-\details{Currently, \code{toLatex.arx} and \code{toLatex.gets} are simply wrappers to \code{printtex} }
+\details{\code{toLatex.arx} and \code{toLatex.gets} are simply wrappers to \code{printtex} }
 
 \value{LaTeX code of an estimation result}
 
@@ -40,7 +41,7 @@ Convenience functions that generates LaTeX-code of an estimation result in equat
 Genaro Sucarrat, \url{http://www.sucarrat.net/}
 }
 
-\seealso{\code{\link{arx}}, \code{\link{getsm}}, \code{\link{getsv}}, \code{\link{isat}}}
+\seealso{\code{\link{arx}}, \code{\link{logitx}}, \code{\link{getsm}}, \code{\link{getsv}}, \code{\link{isat}}}
 
 \examples{
 ##simulate random variates, estimate model:

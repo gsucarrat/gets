@@ -660,9 +660,10 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   # Proportion Test was previously executed in the print.isat function
   if(!is.null(getsis$call$iis) & isTRUE(eval(getsis$call$iis))){
     if(!any(eval(getsis$call$sis), eval(getsis$call$tis), 
+##change suggested by J-bat (implemented by G-man 12 June 2022):
             ifelse(is.logical(eval(getsis$call$uis)) & isTRUE(eval(getsis$call$uis)), TRUE, FALSE),
             !identical(userEstArg$name, "ols"))){
-      
+                  
       getsis$outlier.proportion.test <- outliertest(getsis)
       getsis$outlier.distortion.test <- distorttest(getsis)
       }
