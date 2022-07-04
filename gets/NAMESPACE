@@ -16,6 +16,8 @@ importFrom("utils", "packageVersion", "tail", "toLatex", "write.csv")
 importFrom("parallel", "detectCores", "makeCluster", "clusterExport",
   "parLapply", "stopCluster")
 
+importFrom("methods", "is")
+
 export(
   ##generic functions:
   "gets", "isat", "as.arx",

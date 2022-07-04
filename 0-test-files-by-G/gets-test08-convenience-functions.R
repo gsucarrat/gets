@@ -102,6 +102,7 @@ printtex(mod01, intercept=FALSE)
 printtex(mod01, intercept=2)
 printtex(mod01, gof=FALSE)
 printtex(mod01, diagnostics=FALSE)
+printtex(mod01, dec="{,}")
 
 ##gets-object:
 printtex(gets01)
@@ -111,6 +112,7 @@ printtex(gets01, digits=6)
 printtex(gets01, intercept=FALSE)
 printtex(gets01, gof=FALSE)
 printtex(gets01, diagnostics=FALSE)
+printtex(gets01, dec="{,}")
 
 ##isat-object:
 printtex(isat01)
@@ -121,6 +123,7 @@ printtex(isat01, digits=6)
 printtex(isat01, intercept=FALSE)
 printtex(isat01, gof=FALSE)
 printtex(isat01, diagnostics=FALSE)
+printtex(isat01, dec="{,}")
 
 
 ##################################################

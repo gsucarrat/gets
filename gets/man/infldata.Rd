@@ -22,7 +22,7 @@ Quarterly Norwegian year-on-year CPI inflation from 1989(1) to 2015(4).
 }
 
 \source{
-Statistics Norway (SSB): \url{http://www.ssb.no/}. The raw data comprise monthly CPI data obtained via \url{https://www.ssb.no/statbank/table/08183}.
+Statistics Norway (SSB): \url{https://www.ssb.no/}. The raw data comprise monthly CPI data obtained via \url{https://www.ssb.no/statbank/table/08183}.
 }
 
 \references{

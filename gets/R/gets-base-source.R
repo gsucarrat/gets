@@ -4338,7 +4338,7 @@ rsquared <- function(object, adjusted=FALSE, ...)
     specType <- switch(as.character(object$call)[1],
       getsm="mean", getsv="variance")
   }
-  if( class(object) == "gets" && specType=="variance" ){
+  if( is(object,"gets") && specType=="variance" ){
     result <- NA
 #OLD:
 #    Rsquared <- NA
@@ -5739,8 +5739,7 @@ printtex <- function(x, fitted.name=NULL, xreg.names=NULL,
   if( print.info ){
     cat("% Date:", date(), "\n")
     notetxt <- paste0("% LaTeX code generated in R ",
-      version$major, ".", version$minor, " by gets ",
-      packageVersion("gets"), " package\n")
+      version$major, ".", version$minor, " by the gets package\n")
     cat(notetxt)
     cat("% Note: The {eqnarray} environment requires the {amsmath} package\n")
   }

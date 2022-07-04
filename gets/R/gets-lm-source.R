@@ -15,7 +15,7 @@
 as.arx.lm <- function(object, ...)
 { 
   ##'lm' object?:
-  if( class(object)!="lm" ){
+  if( !is(object,"lm") ){
     objectName <- deparse(substitute(object))
     stop(paste0("'", objectName, "' not of class 'lm'"))
   }

@@ -1,5 +1,5 @@
-Version 0.36 (12 June 2022):
-============================
+Version 0.36 (3 July 2022):
+===========================
 
 * printtex()/toLatex.arx()/toLatex.logitx()/toLatex.gets()/: new argument 'dec'
 
@@ -9,7 +9,7 @@ Version 0.36 (12 June 2022):
 - printtex.Rd
 
 Fixes:
-- isat.default()
+- isat.default(): only compute outliertest() and distorttest() for the OLS estimator, or when user.estimator$name == "ols"
 - arx() now correctly stores the name of the regressand
 
 

@@ -37,6 +37,15 @@ source("./gets/R/gets-isat-source.R") #needed for sim()
 ## 2 TEST MAIN arx() ARGUMENTS
 ##################################################
 
+##bug detected in 0.35: name of regressand not
+##correctly stored by arx(), solved in 0.36
+set.seed(123)
+x <- rnorm(50)
+arx(x)
+
+##set plot option:
+##================
+
 getOption("plot")
 options(plot=TRUE)
 #options(plot=FALSE)

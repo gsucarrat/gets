@@ -247,19 +247,19 @@ all( functionVals == correctVals )
 ##ar(0) model w/constant:
 ##=======================
 
-mymodel <- arx(vY)
-
-##predictions of the variance:
-functionVals <- predict(mymodel, spec="variance", n.ahead=3)
-##note: is it correct that the message "Set 'vc = TRUE'..."
-##should be returned?
-
-##correct predictions:
-sd2hat1 <- sd2hat2 <- sd2hat3 <- sigma(mymodel)^2
-correctVals <- c(sd2hat1,sd2hat2,sd2hat3)
-
-##do they correspond?:
-all( functionVals == correctVals )
+  mymodel <- arx(vY)
+  
+  ##predictions of the variance:
+  functionVals <- predict(mymodel, spec="variance", n.ahead=3)
+  ##note: is it correct that the message "Set 'vc = TRUE'..."
+  ##should be returned?
+  
+  ##correct predictions:
+  sd2hat1 <- sd2hat2 <- sd2hat3 <- sigma(mymodel)^2
+  correctVals <- c(sd2hat1,sd2hat2,sd2hat3)
+  
+  ##do they correspond?:
+  all( functionVals == correctVals )
 
 ##ar(1) model w/constant:
 ##=======================

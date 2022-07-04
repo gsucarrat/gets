@@ -57,6 +57,8 @@ mCoefs[4,] <- ols(vY, mX, method=4)$coefficients
 ols(vY, mX, method=5)
 mCoefs[5,] <- ols(vY, mX, method=5)$coefficients
 mCoefs[6,] <- lm(vY ~ mX-1)$coefficients #compare with lm
+
+##print mCoefs:
 rownames(mCoefs) <- paste("method ",1:NROW(mCoefs), ":", sep="")
 mCoefs
 
