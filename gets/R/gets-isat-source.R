@@ -58,7 +58,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     stop("No Indicator Selection Method was selected. Either set iis, sis or tis as TRUE or specify uis.")
   }
   
-  if(ar == 0){ar <- NULL}
+  if(!is.null(ar) && ar == 0){ar <- NULL}
   if(!(is.numeric(ar) | is.null(ar))){stop("The 'ar' argument must be NULL or numeric.")}
   
   ##name of regressand:
