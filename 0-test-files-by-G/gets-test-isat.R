@@ -332,6 +332,9 @@ isat(y, sis=FALSE, uis=uis, max.paths=2)
 ##uis as data.frame:
 ##in an email 5/10-2020, F-bear reported an error produced by
 ##the following code:
+## UPDATE 08/2022: potentially fixed by M-orca
+# before, when passing a data.frame for uis, each column was split up into a separate list
+# now a data.frame is treated like a matrix
 set.seed(123)
 mx <- data.frame(matrix(runif(500),ncol=5))
 colnames(mx) <- paste("x", seq(1:5), sep="")
