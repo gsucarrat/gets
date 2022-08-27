@@ -436,10 +436,10 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
         ISspecific.models <- NULL
       }else{
         ISspecific.models <- names(getsis$specific.spec)
-#For the future?:
-#        ISgums[[j]] <- getsis$gum.mean
-#        ISpaths[[j]] <- getsis$paths
-#        ISterminals.results[[j]] <- getsis$terminals.results
+        #For the future?:
+        #        ISgums[[j]] <- getsis$gum.mean
+        #        ISpaths[[j]] <- getsis$paths
+        #        ISterminals.results[[j]] <- getsis$terminals.results
       }
 
       ##return
@@ -707,7 +707,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     #  }
   }
   
-  getsis$aux <- isat.args
+  getsis$aux$args <- isat.args
   
   return(getsis)
 
