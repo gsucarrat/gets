@@ -692,7 +692,9 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   if(plot){ plot.isat(getsis, coef.path=TRUE) }
   
   
-  if(isat.args$iis & !any(isat.args$sis, isat.args$tis, isat.args$uis.logical)){
+  if(isat.args$iis &&
+     identical(userEstArg$name, "ols") &&
+     !any(isat.args$sis, isat.args$tis, isat.args$uis.logical)){
     
     ## Outlier Proportion and Distortion Test 
     # Proportion Test was previously executed in the print.isat function
