@@ -1,3 +1,12 @@
+Version 0.37 (3 September 2022):
+================================
+
+* Changes to the introduction vignette (mainly of style)
+
+Fixes:
+- isat.default(): the dependence on Sys.call() was removed when determining outlier distortion
+
+
 Version 0.36 (3 July 2022):
 ===========================
 

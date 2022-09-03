@@ -104,28 +104,25 @@ if( doDelete ){
 ##compress the vignette:
 ##======================
 
-##check whether qpdf works:
-##system( "qpdf.exe" ) #should work!
+##to check whether qpdf works:
+##system( "qpdf.exe" ) #should work
 ##system( paste0( getwd(), "/qpdf-10.1.0/bin/qpdf.exe") )
 
 ##non-automatic approach no. 1:
 #library(tools)
 ##reduce size:
-#compactPDF( paste0(getwd(), "/vignettes-tex/introduction.pdf"))
+#compactPDF( paste0(getwd(), "/vignettes-tex/intro/introduction.pdf"))
 ##reduce size ("printer" = 300dpi):
-#compactPDF( paste0(getwd(), "/vignettes-tex/introduction.pdf"), gs_quality = "printer")
+#compactPDF( paste0(getwd(), "/vignettes-tex/intro/introduction.pdf"), gs_quality = "printer")
 ##reduce size ("ebook" = 150dpi):
 #compactPDF( paste0(getwd(), "/vignettes-tex/intro/introduction.pdf"), gs_quality = "ebook")
 ##reduce size ("screen" = 72dpi):
-#compactPDF( paste0(getwd(), "/vignettes-tex/introduction.pdf"), gs_quality = "screen")
+#compactPDF( paste0(getwd(), "/vignettes-tex/intro/introduction.pdf"), gs_quality = "screen")
 
 ##non-automatic approach no. 2:
-## - compress introduction.pdf
-## - put it, together with introduction.Rnw, in the gets/inst/doc folder
+## - compress introduction.pdf, e.g. with the commands in no. 1
+## - put introduction.pdf, together with introduction.Rnw, in the gets/inst/doc folder
 ## - make sure the --no-build-vignettes is used when invoking R CMD build
-
-#compactPDF( paste0(getwd(),
-#  "/vignettes-tex/user-defined-gets/user-defined-gets.pdf"), gs_quality = "printer")
 
 ##build tarball:
 ##==============

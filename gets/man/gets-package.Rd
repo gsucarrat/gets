@@ -14,8 +14,8 @@ The code of the package originated in relation with the research project G. Suca
 \details{
 
 \tabular{ll}{
-	Version: \tab 0.36\cr
-	Date: \tab 2022-07-03\cr
+	Version: \tab 0.37\cr
+	Date: \tab 2022-09-03\cr
 	Licence: \tab GPL-2\cr
 }
 

@@ -1,79 +1,92 @@
-\documentclass[article,nojss]{jss}
-%% need no \usepackage{Sweave}
-%\documentclass[article]{jss}
-\usepackage{thumbpdf,lmodern} 
-\graphicspath{{Figures/}}
-
+\documentclass[12pt,a4paper]{article}
+\usepackage[greek, british, english]{babel}
+\usepackage{natbib}
+%\graphicspath{{Figures/}}
 \usepackage{amsmath}
+\usepackage{amssymb} %enable \mathbb, \subsetneq commands
+\usepackage{graphicx} %needed for [scale..] argument in figures
 
-\author{Felix Pretis\\University of Victoria \\ \& University of Oxford 
-	\And J. James Reade\\ University of Reading 
-	\And Genaro Sucarrat\\BI Norwegian Business School
+\usepackage{hyperref} %see http://en.wikibooks.org/wiki/LaTeX/Hyperlinks and http://www.tug.org/applications/hyperref/manual.html#x1-120003.8
+\hypersetup{
+	%    bookmarks=true,         % show bookmarks bar?
+	%    unicode=false,          % non-Latin characters in Acrobat's bookmarks
+	%    pdftoolbar=true,        % show Acrobat's toolbar?
+	%    pdfmenubar=true,        % show Acrobat's menu?
+	%    pdffitwindow=false,     % window fit to page when opened
+	pdfstartview={FitH},    % fits the width of the page to the window
+	%    pdftitle={My title},    % title
+	%    pdfauthor={Author},     % author
+	%    pdfsubject={Subject},   % subject of the document
+	%    pdfcreator={Creator},   % creator of the document
+	%    pdfproducer={Producer}, % producer of the document
+	%    pdfkeywords={keyword1} {key2} {key3}, % list of keywords
+	%    pdfnewwindow=true,      % links in new window
+	colorlinks,       % false: boxed links; true: colored links
+	linkcolor=blue, %red,          % color of internal links (change box color with linkbordercolor)
+	citecolor=blue, %green,        % color of links to bibliography
+	%    filecolor=magenta,      % color of file links
+	urlcolor=blue %cyan           % color of external links
 }
 
-\title{An introduction to the \textit{gets} package\thanks{Date: 6 August 2021. This paper is almost an exact reproduction of the paper published in Journal of Statistical Software: \url{https://doi.org/10.18637/jss.v086.i03}. The most important changes were made to accommodate the release of version 0.28, in which the default of the {\tt arx()} function argument {\tt mc} changed to {\tt TRUE}.}}
+%%%%%% NEW COMMANDS:
+\newcommand{\bx}{\boldsymbol{x}}
+\newcommand{\bbeta}{\boldsymbol{\beta}}
+\newcommand{\code}[1]{{\tt #1}}
+\newcommand{\pkg}[1]{{\bf #1}}
+\newcommand{\proglang}[1]{{\textsf{#1}}}
+\newcommand{\E}{{\textsf{E}}}
+
+%%%%%%% MARGIN RELATED COMMANDS:
+\setlength\textheight{23cm} %height of the body without header and footer
+\setlength\textwidth{17cm} %width of the body
+\addtolength{\voffset}{-2.5cm}
+\addtolength{\hoffset}{-1.5cm} %move text horisontally 0.5cm
+
+%%%%%% ORDINARY FONT-SIZES:
+%\Huge \huge \LARGE \Large \large \normalsize \small \footnotesize \scriptsize \tiny
 
 
-\Plainauthor{Felix Pretis, J. James Reade, Genaro Sucarrat} 
-
-\Shorttitle{\pkg{gets}: General-to-Specific Modeling and Indicator Saturation}
-
-\Abstract{ This paper provides an overview of the \proglang{R} package
-  \pkg{gets}, which contains facilities for automated
-  general-to-specific (GETS) modeling of the mean and variance of a
-  regression, and indicator saturation (IS) methods for the detection
-  and modeling of outliers and structural breaks. The mean can be
-  specified as an autoregressive model with covariates (an ``AR-X''
-  model), and the variance can be specified as an autoregressive
-  log-variance model with covariates (a ``log-ARCH-X'' model). The
-  covariates in the two specifications need not be the same, and the
-  classical linear regression model is obtained as a special case when
-  there is no dynamics, and when there are no covariates in the
-  variance equation. The four main functions of the package are
-  \code{arx}, \code{getsm}, \code{getsv} and \code{isat}. The first
-  function estimates an AR-X model with log-ARCH-X errors. The second
-  function undertakes GETS modeling of the mean specification of an
-  `\code{arx}' object. The third function undertakes GETS modeling of
-  the log-variance specification of an `\code{arx}' object. The fourth
-  function undertakes GETS modeling of an indicator-saturated mean
-  specification allowing for the detection of outliers and structural
-  breaks. The usage of two convenience functions for export of results
-  to \proglang{EViews} and \proglang{STATA} are illustrated, and \LaTeX{} code of
-  the estimation output can readily be generated.  }
-      
-\Keywords{general-to-specific, model selection, variable selection, regression of the mean, regression of the log-variance, time series, AR-X, log-ARCH-X, indicator saturation, \proglang{R}}
-
-\Plainkeywords{general-to-specific, model selection, variable selection, regression of the mean, regression of the log-variance, time series, AR-X, log-ARCH-X, indicator saturation, R}
-
-\Address{
-	Felix Pretis\\
-	University of Victoria, Department of Economics \\
-	\& INET at the Oxford Martin School, University of Oxford\\
-	E-mail: \email{fpretis@uvic.ca}\\
-	URL: \url{http://www.felixpretis.org/}  
-	
-	J. James Reade\\
-	Programme for Economic Modelling at the Oxford Martin School \\
-	\& Department of Economics
-	University of Reading\\
-	E-mail: \email{j.j.reade@reading.ac.uk}\\
-	URL: \url{https://sites.google.com/site/jjamesreade/}
-	
-	Genaro Sucarrat\\
-	Department of Economics\\
-	BI Norwegian Business School\\
-	0484 Oslo, Norway\\
-	E-mail: \email{genaro.sucarrat@bi.no}\\
-	URL: \url{http://www.sucarrat.net/}
-}
 \begin{document}
-
+	
 %\SweaveOpts{engine=R,eps=FALSE}
 %\VignetteIndexEntry{An introduction to the gets package}
 %\VignetteDepends{gets}
 %\VignetteKeywords{general-to-specific, model selection, variable selection, regression of the mean, regression of the log-variance, time series, AR-X, log-ARCH-X, indicator saturation}
 %\VignettePackage{gets}
 
+\begin{center}
+	{\bf\Large An introduction to the \textit{gets} package}%
+	\footnote{
+		This vignette is a minor modification of \citet{PretisReadeSucarrat2018}.
+	}
+	
+	\bigskip
+	Felix Pretis\footnote{University of Victoria, Department of Economics
+		\& INET at the Oxford Martin School, University of Oxford. URL: \url{http://www.felixpretis.org/}}, %
+	J. James Reade\footnote{Programme for Economic Modelling at the Oxford Martin School \& Department of Economics, University of Reading. URL: \url{https://sites.google.com/site/jjamesreade/}}%
+	and %
+	Genaro Sucarrat\footnote{Department of Economics, BI Norwegian Business School. URL: \url{https://www.sucarrat.net/}} \\
+	
+	\bigskip
+	{\small This version: \selectlanguage{british}\today}\\
+	{\small [Original version: 3 September 2018]}\\
+		
+	%table of contents:
+	\parbox[t]{0.9\linewidth}{
+		\footnotesize
+		%		\renewcommand{\contentsname}{Contents:}
+		\renewcommand{\contentsname}{} %{} means no name
+		\tableofcontents
+	}
+\end{center}
+
+\clearpage
+\section*{Summary}
+\addcontentsline{toc}{section}{Summary}
+
+This vignette provides an overview of the \proglang{R} package \pkg{gets}, which contains facilities for automated general-to-specific (GETS) modeling of the mean and variance of a regression, and indicator saturation (IS) methods for the detection and modeling of outliers and structural breaks. The mean can be specified as an autoregressive model with covariates (an ``AR-X'' model), and the variance can be specified as an autoregressive log-variance model with covariates (a ``log-ARCH-X'' model). The covariates in the two specifications need not be the same, and the classical linear regression model is obtained as a special case when there is no dynamics, and when there are no covariates in the variance equation. The four main functions of the package are \code{arx()}, \code{getsm()}, \code{getsv()} and \code{isat()}. The first function estimates an AR-X model with log-ARCH-X errors. The second function undertakes GETS modeling of the mean specification of an `\code{arx}' object. The third function undertakes GETS modeling of the log-variance specification of an `\code{arx}' object. The fourth function undertakes GETS modeling of an indicator-saturated mean specification allowing for the detection of outliers and structural breaks. The usage of two convenience functions for export of results to \proglang{EViews} and \proglang{STATA} are illustrated, and \LaTeX{} code of the estimation output can readily be generated.
+
+\clearpage
 \section{Introduction}
 
 General-to-specific (GETS) modeling combines well-known ingredients:
@@ -165,7 +178,7 @@ modeling by users of \proglang{EViews} \citep{EViews2016v9.5} or
 commercial software packages in econometrics. The section also briefly
 alludes to how estimation output can readily be converted into
 \LaTeX{} code. Finally, Section~\ref{sec:conclusions} concludes.
-		
+
 \section{An overview, alternatives and development principles}
 \label{sec:an:overview}
 
@@ -280,7 +293,7 @@ GETS modeling combines well-known ingredients from the model-selection literatur
 
 For $k$ candidate variables, there are $2^k$ possible models. As $k$ becomes large the number of models becomes computationally infeasible, thus, a structured search is required. GETS provides such a structured search by starting with a general model (the GUM), and subsequently removing variables along search paths while checking the diagnostics at each removal.
 
-\subsection[A comparison of GETS and gets with alternatives]{A comparison of GETS and \pkg{gets} with alternatives}
+\subsection{A comparison of GETS and \pkg{gets} with alternatives}
 \label{subsec:comparison:of:gets:with:alternatives}
 
 When comparing the \proglang{R} package \pkg{gets} to alternatives, it is important to differentiate the methodological approach of GETS modeling relative to other modeling approaches, from different software implementations within the GETS methodology. Here, we denote the broader field of GETS modeling by GETS, and the \proglang{R} package by \pkg{gets}. First we briefly review and compare alternative approaches to GETS modeling, then we discuss alternative implementations of GETS.
@@ -448,7 +461,7 @@ done by one-equation at a time in \pkg{gets}.
 		0.12. \label{table:feature-comparison:of:gets:softwares} }
 \end{table}
 
-\subsection[Development principles of the package gets]{Development principles of the package \pkg{gets}}
+\subsection{Development principles of the package \pkg{gets}}
 \label{subsec:development:principles}
 
 The original motivation behind the precursor of \pkg{gets} (i.e.,
@@ -476,7 +489,7 @@ computationally faster and more user-friendly.
 The \pkg{gets} package is not limited to time series models and does not require that time-series characteristics are set beforehand (for example if the data at hand are not time series). However, if time series characteristics are not set, and if the data are in fact time series, then graphs and other outputs (e.g., fitted values, residuals, etc.) are not optimal. The \pkg{gets} package is optimized to work with Z's ordered observations (ZOO) package \pkg{zoo}, see \cite{ZeileisGrothendieck2005}. In fact, the fitted values, residuals, recursive estimates and so on returned by \pkg{gets} functions, are all objects of class `\code{zoo}'. The \pkg{zoo} package provides a very general and versatile infrastructure for observations that are ordered according to an arbitrary index, e.g., time-series, and \pkg{zoo} is adapted to interact well with the less versatile time-series class of the \pkg{base} distribution, `\code{ts}': To convert `\code{ts}' objects
 to `\code{zoo}' objects, simply use \code{as.zooreg} (preferred) or \code{as.zoo}. See the help system and webpage of the \pkg{zoo} package for several short intros and vignettes:
 \url{https://CRAN.R-project.org/package=zoo}.
-		
+
 \section{The AR-X model with log-ARCH-X errors}
 \label{sec:ar-x:model:with:log-arch-x:errors}
 
@@ -507,79 +520,67 @@ where $\alpha_0^* = \alpha_0 + \E(\ln z_t^2)$ and $u_t=\ln z_t^2 - \E(\ln z_t^2)
 
 Simulation from an AR($P$) process can readily be done with the \code{arima.sim} function in the \pkg{stats} package (part of the base distribution of \proglang{R}). For example, the following code simulates 100 observations from the AR(1) model $y_t = \phi_0 + \phi_1 y_{t-1} + \epsilon_t$ with $\phi_0=0$ and $\phi_1=0.4$:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> set.seed(123)
-R> y <- arima.sim(list(ar = 0.4), 100)
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  set.seed(123)
+  y <- arima.sim(list(ar = 0.4), 100)
+\end{verbatim}
 % 
 To simulate from a model with log-ARCH errors, we first need to simulate the errors. This can be achieved with \code{lgarchSim} from the \pkg{lgarch} package \citep{Sucarrat2015lgarchV06}:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> library("lgarch")
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  library("lgarch")
+\end{verbatim}
 %
 Next, the following code simulates an error-term $\epsilon_t$ that follows the log-ARCH(1) specification $\ln\sigma_t^2 = \alpha_0 + \alpha_1 \ln\epsilon_{t-1}^2$ with $\alpha_0=0$ and $\alpha_1=0.3$:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> eps <- lgarchSim(100, arch = 0.3, garch = 0)
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  eps <- lgarchSim(100, arch = 0.3, garch = 0)
+\end{verbatim}
 %
 By default, the standardized error $z_t$ is normal, but this can be changed via the \code{innovation} argument of the \code{lgarchSim} function. To combine the log-ARCH error with an AR(1) model with $\phi_0=0$ and $\phi_1=0.4$ the following code can be used:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> yy <- arima.sim(list(ar = 0.4), 100, innov = eps)
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  yy <- arima.sim(list(ar = 0.4), 100, innov = eps)
+\end{verbatim}
 % 
 The command \code{plot(as.zoo(cbind(y, yy, eps)))} plots the three series.
 
-\subsection[arx:Estimation]{\code{arx}: Estimation}
+\subsection{\code{arx()}: Estimation}
 \label{subsec:arx:estimation}
 
 The function \code{arx} estimates an AR-X model with log-ARCH-X errors. For example, the following code loads the \pkg{gets} package, fits an AR(1) model with intercept to the series \code{y} generated in Section~\ref{subsec:simulation}, and stores the results in an object called \code{mod01}:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> library("gets")
-R> mod01 <- arx(y, ar = 1)
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  library("gets")
+  mod01 <- arx(y, ar = 1)
+\end{verbatim}
 % 
 To print the estimation results, simply type \code{mod01}. This returns:
 %
-\begin{CodeChunk}
-\begin{CodeOutput}
-Date: Fri Aug 06 10:57:59 2021 
-Dependent var.: y 
-Method: Ordinary Least Squares (OLS) 
-Variance-Covariance: Ordinary 
-No. of observations (mean eq.): 99 
-Sample: 2 to 100 
+\begin{verbatim}
+  Date: Fri Aug 06 10:57:59 2021 
+  Dependent var.: y 
+  Method: Ordinary Least Squares (OLS) 
+  Variance-Covariance: Ordinary 
+  No. of observations (mean eq.): 99 
+  Sample: 2 to 100 
+		
+  Mean equation:
 
-Mean equation:
-
-           coef std.error t-stat   p-value    
-mconst 0.034045  0.091664 0.3714    0.7111    
-ar1    0.397411  0.095212 4.1740 6.533e-05
-
-Diagnostics and fit:
-
-                   Chi-sq df p-value
-Ljung-Box AR(2)   0.25922  2  0.8784
-Ljung-Box ARCH(1) 0.26124  1  0.6093
-
-SE of regression    0.90933
-R-squared           0.15226
-Log-lik.(n=99)   -130.06490
-\end{CodeOutput}
-\end{CodeChunk}
+             coef std.error t-stat   p-value    
+  mconst 0.034045  0.091664 0.3714    0.7111    
+  ar1    0.397411  0.095212 4.1740 6.533e-05
+		
+  Diagnostics and fit:
+		
+                     Chi-sq df p-value
+  Ljung-Box AR(2)   0.25922  2  0.8784
+  Ljung-Box ARCH(1) 0.26124  1  0.6093
+		
+  SE of regression    0.90933
+  R-squared           0.15226
+  Log-lik.(n=99)   -130.06490
+\end{verbatim}
 % 
 The two diagnostic tests are of the standardized residuals $\widehat{z}_t$. The AR and ARCH tests are \cite{Ljungetal79} tests for serial correlation in $\widehat{z}_t$ and $\widehat{z}_t^2$, respectively, and the number in parentheses indicates at which lag the test is conducted. \code{R-squared} is that of the mean specification, whereas the (Gaussian) log-likelihood is made up of the residuals $\widehat{\epsilon}_t$. If no log-variance specification is fitted, then the conditional variance in the log-likelihood is constant and equal to the sample variance of the residuals. By contrast, if a log-variance specification is fitted, then the conditional variance in the log-likelihood is equal to the fitted conditional variance, which is given by $\widehat{\sigma}_t^2 = \exp(\ln\widehat{\sigma}_t^2)$.
 
@@ -608,27 +609,21 @@ The main optional arguments of the \code{arx} function when estimating the mean 
 %
 To make full use of these arguments, let us first generate a set of 5 regressors:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> mX <- matrix(rnorm(100 * 5), 100, 5)
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  mX <- matrix(rnorm(100 * 5), 100, 5)
+\end{verbatim}
 %
 Next, the following code estimates an AR-X model with an intercept, two AR-lags and five regressors, and stores the estimation results in an object called \code{mod02}:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> mod02 <- arx(y, ar = 1:2, mxreg = mX, vcov.type = "white")
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  mod02 <- arx(y, ar = 1:2, mxreg = mX, vcov.type = "white")
+\end{verbatim}
 %
 Estimation of the log-variance specification is also undertaken with the \code{arx} function. For example, the following code fits the log-ARCH(1) specification $\ln\sigma_t^2 = \alpha_0 + \alpha_1 \ln\epsilon_{t-1}^2$ to the variable \code{eps} generated above:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> mod03 <- arx(eps, mc = FALSE, arch = 1)
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  mod03 <- arx(eps, mc = FALSE, arch = 1)
+\end{verbatim}
 %
 Typing \code{mod03} prints the estimation results. The main optional arguments when estimating the log-variance are:
 %
@@ -642,20 +637,16 @@ Typing \code{mod03} prints the estimation results. The main optional arguments w
 %
 The following code provides an example that makes use of all three arguments:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> mod04 <- arx(eps, mc = FALSE, arch = 1:3, asym = 2, vxreg = log(mX^2))
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  mod04 <- arx(eps, mc = FALSE, arch = 1:3, asym = 2, vxreg = log(mX^2))
+\end{verbatim}
 %
 Again, typing \code{mod04} prints the results. Finally we give an example where we jointly fit a mean and log-variance equation to the series \code{yy} generated above, using the variance-covariance matrix of \cite{White80} for the mean equation:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-	R mod05 <- arx(yy, ar = 1:2, mxreg = mX, arch = 1:3, asym = 2,
-	+   vxreg = log(mX^2), vcov.type = "white")
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  mod05 <- arx(yy, ar = 1:2, mxreg = mX, arch = 1:3, asym = 2,
+    vxreg = log(mX^2), vcov.type = "white")
+\end{verbatim}
 %
 \subsection{Extraction functions}
 \label{subsec:arx:extraction:functions}
@@ -664,10 +655,10 @@ There are a number of functions available for extracting
 information from `\code{arx}' objects. The most important of these (most of them
 \proglang{S}3 methods) are:
 %
-\begin{Code}
-	coef, ES, fitted, logLik, plot, predict, print, recursive, residuals,
-	rsquared, sigma, summary, toLatex, VaR, vcov
-\end{Code}
+\begin{verbatim}
+  coef, ES, fitted, logLik, plot, predict, print, recursive, residuals,
+  rsquared, sigma, summary, toLatex, VaR, vcov
+\end{verbatim}
 %
 Six of these (\code{coef}, \code{fitted}, \code{predict},
 \code{recursive}, \code{residuals} and \code{vcov}) have an optional
@@ -690,12 +681,10 @@ When \cite{Engle82} proposed the ARCH-class of models, his empirical application
 
 The following code imports the data\footnote{The source of the data is Statistics Norway (\url{http://www.ssb.no/}). The original untransformed data, a monthly consumer price index (CPI), was retrieved 14 February 2016 via \url{http://www.ssb.no/tabell/08183/}.} and assigns it quarterly time-series attributes:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> data("infldata", package = "gets")
-R> infldata <- zooreg(infldata[, -1], frequency = 4, start = c(1989, 1))
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  data("infldata", package = "gets")
+  infldata <- zooreg(infldata[, -1], frequency = 4, start = c(1989, 1))
+\end{verbatim}
 %
 Note that \code{[, -1]} removes the first column, since it is not
 needed. The dataset thus contains four variables: \code{infl}, \code{q2dum},
@@ -712,47 +701,43 @@ specification:
 %
 That is, an AR(4)-X, where the dummies constitute the X-part. The code
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> inflMod01 <- arx(inflData[, "infl"], ar = 1:4, mxreg = inflData[, 2:4],
-+    vcov.type = "white")
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  inflMod01 <- arx(inflData[, "infl"], ar = 1:4, mxreg = inflData[, 2:4],
+    vcov.type = "white")
+\end{verbatim}
 %
 estimates the model using heteroscedasticity-robust coefficient standard errors of the \cite{White80} type, and typing \code{inflMod01} prints the estimation results:
 %
-\begin{CodeChunk}
-\begin{CodeOutput}
-Date: Fri Aug 06 11:11:17 2021 
-Dependent var.: y 
-Method: Ordinary Least Squares (OLS) 
-Variance-Covariance: White (1980) 
-No. of observations (mean eq.): 104 
-Sample: 1990(1) to 2015(4) 
-
-Mean equation:
-
-             coef  std.error  t-stat   p-value    
-mconst  0.8386311  0.2961338  2.8319  0.005637
-ar1     0.7257550  0.1300407  5.5810 2.211e-07
-ar2     0.0195911  0.1171347  0.1673  0.867523    
-ar3     0.0350092  0.1385735  0.2526  0.801087    
-ar4    -0.1676751  0.1336972 -1.2541  0.212836    
-q2dum  -0.0148892  0.2333917 -0.0638  0.949266    
-q3dum  -0.0072972  0.2262704 -0.0322  0.974340    
-q4dum   0.0103990  0.2226772  0.0467  0.962849    
-
-Diagnostics and fit:
-
-                   Chi-sq df  p-value   
-Ljung-Box AR(5)   16.3205  5 0.005986
-Ljung-Box ARCH(1)  5.9665  1 0.014580
-
-SE of regression    0.72814
-R-squared           0.53166
-Log-lik.(n=104)  -110.57435
-\end{CodeOutput}
-\end{CodeChunk}
+\begin{verbatim}
+  Date: Fri Aug 06 11:11:17 2021 
+  Dependent var.: y 
+  Method: Ordinary Least Squares (OLS) 
+  Variance-Covariance: White (1980) 
+  No. of observations (mean eq.): 104 
+  Sample: 1990(1) to 2015(4) 
+		
+  Mean equation:
+		
+               coef  std.error  t-stat   p-value    
+  mconst  0.8386311  0.2961338  2.8319  0.005637
+  ar1     0.7257550  0.1300407  5.5810 2.211e-07
+  ar2     0.0195911  0.1171347  0.1673  0.867523    
+  ar3     0.0350092  0.1385735  0.2526  0.801087    
+  ar4    -0.1676751  0.1336972 -1.2541  0.212836    
+  q2dum  -0.0148892  0.2333917 -0.0638  0.949266    
+  q3dum  -0.0072972  0.2262704 -0.0322  0.974340    
+  q4dum   0.0103990  0.2226772  0.0467  0.962849    
+		
+  Diagnostics and fit:
+		
+                     Chi-sq df  p-value   
+  Ljung-Box AR(5)   16.3205  5 0.005986
+  Ljung-Box ARCH(1)  5.9665  1 0.014580
+		
+  SE of regression    0.72814
+  R-squared           0.53166
+  Log-lik.(n=104)  -110.57435
+\end{verbatim}
 %
 The diagnostics suggest the standardized residuals are autocorrelated and heteroscedastic, since the tests for autocorrelation and heteroscedasticity yield $p$~values of 0.6\% and 1.5\%, respectively. Next, we specify the conditional variance as a log-ARCH(4)-X, where the X-part is made up of the seasonal dummies:
 %
@@ -762,59 +747,55 @@ The diagnostics suggest the standardized residuals are autocorrelated and hetero
 %
 The code
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> inflMod02 <- arx(inflData[, "infl"], ar = 1:4, mxreg = inflData[, 2:4],
-+    arch = 1:4, vxreg = inflData[, 2:4], vcov.type = "white")
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  inflMod02 <- arx(inflData[, "infl"], ar = 1:4, mxreg = inflData[, 2:4],
+    arch = 1:4, vxreg = inflData[, 2:4], vcov.type = "white")
+\end{verbatim}
 %
 estimates the full model with \cite{White80} standard errors in the mean and ordinary standard errors in the log-variance. Typing \code{inflMod02} returns
 %
-\begin{CodeChunk}
-\begin{CodeOutput}
-Date: Fri Aug 06 11:12:20 2021 
-Dependent var.: y 
-Method: Ordinary Least Squares (OLS) 
-Variance-Covariance: White (1980) 
-No. of observations (mean eq.): 104 
-Sample: 1990(1) to 2015(4) 
-
-Mean equation:
-
-             coef  std.error  t-stat   p-value    
-mconst  0.8386311  0.2961338  2.8319  0.005637
-ar1     0.7257550  0.1300407  5.5810 2.211e-07
-ar2     0.0195911  0.1171347  0.1673  0.867523    
-ar3     0.0350092  0.1385735  0.2526  0.801087    
-ar4    -0.1676751  0.1336972 -1.2541  0.212836    
-q2dum  -0.0148892  0.2333917 -0.0638  0.949266    
-q3dum  -0.0072972  0.2262704 -0.0322  0.974340    
-q4dum   0.0103990  0.2226772  0.0467  0.962849    
-
-Log-variance equation:
-
-           coef std.error  t-stat  p-value   
-vconst  0.95935   0.53464  3.2199 0.072749
-arch1   0.16697   0.10352  1.6130 0.110169   
-arch2   0.12027   0.10335  1.1637 0.247566   
-arch3   0.14740   0.10332  1.4267 0.157060   
-arch4   0.05982   0.10515  0.5689 0.570824   
-q2dum  -1.32860   0.61862 -2.1477 0.034366
-q3dum  -0.92707   0.58400 -1.5874 0.115843   
-q4dum  -1.82736   0.62014 -2.9467 0.004069
-
-Diagnostics and fit:
-
-                  Chi-sq df p-value
-Ljung-Box AR(5)   9.1776  5  0.1022
-Ljung-Box ARCH(5) 1.7613  5  0.8811
-
-SE of regression   0.72814
-R-squared          0.53166
-Log-lik.(n=100)  -82.32892
-\end{CodeOutput}
-\end{CodeChunk}
+\begin{verbatim}
+  Date: Fri Aug 06 11:12:20 2021 
+  Dependent var.: y 
+  Method: Ordinary Least Squares (OLS) 
+  Variance-Covariance: White (1980) 
+  No. of observations (mean eq.): 104 
+  Sample: 1990(1) to 2015(4) 
+		
+  Mean equation:
+		
+               coef  std.error  t-stat   p-value    
+  mconst  0.8386311  0.2961338  2.8319  0.005637
+  ar1     0.7257550  0.1300407  5.5810 2.211e-07
+  ar2     0.0195911  0.1171347  0.1673  0.867523    
+  ar3     0.0350092  0.1385735  0.2526  0.801087    
+  ar4    -0.1676751  0.1336972 -1.2541  0.212836    
+  q2dum  -0.0148892  0.2333917 -0.0638  0.949266    
+  q3dum  -0.0072972  0.2262704 -0.0322  0.974340    
+  q4dum   0.0103990  0.2226772  0.0467  0.962849    
+		
+  Log-variance equation:
+		
+             coef std.error  t-stat  p-value   
+  vconst  0.95935   0.53464  3.2199 0.072749
+  arch1   0.16697   0.10352  1.6130 0.110169   
+  arch2   0.12027   0.10335  1.1637 0.247566   
+  arch3   0.14740   0.10332  1.4267 0.157060   
+  arch4   0.05982   0.10515  0.5689 0.570824   
+  q2dum  -1.32860   0.61862 -2.1477 0.034366
+  q3dum  -0.92707   0.58400 -1.5874 0.115843   
+  q4dum  -1.82736   0.62014 -2.9467 0.004069
+		
+  Diagnostics and fit:
+		
+                    Chi-sq df p-value
+  Ljung-Box AR(5)   9.1776  5  0.1022
+  Ljung-Box ARCH(5) 1.7613  5  0.8811
+		
+  SE of regression   0.72814
+  R-squared          0.53166
+  Log-lik.(n=100)  -82.32892
+\end{verbatim}
 %
 The first noticeable difference between \code{inflMod01} and
 \code{inflMod02} is that the diagnostics improve substantially. In
@@ -830,12 +811,10 @@ substantial increase. In terms of the \cite{Schwarz1978} information
 criterion (SC), which favors parsimony, a comparison of the average
 log-likelihoods can be made by the \code{info.criterion} function:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> info.criterion(as.numeric(logLik(inflMod01)), n = 104, k = 8 + 1)
-R> info.criterion(as.numeric(logLik(inflMod02)), n = 100, k = 8 + 8)
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  info.criterion(as.numeric(logLik(inflMod01)), n = 104, k = 8 + 1)
+  info.criterion(as.numeric(logLik(inflMod02)), n = 100, k = 8 + 8)
+\end{verbatim}
 %
 As is clear, the value falls from 2.53 in \code{inflMod01} to 2.38 in
 \code{inflMod02}. (A comparison of the average log-likelihoods is
@@ -859,21 +838,17 @@ makes use of commonly available information provides a better fit.
 
 We start by loading a dataset of the Standard and Poor's 500 (SP500) index:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> data("sp500data", package = "gets")
-R> sp500data <- zoo(sp500data[, -1],
-+    order.by = as.Date(sp500data[, "Date"]))
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  data("sp500data", package = "gets")
+  sp500data <- zoo(sp500data[, -1],
+    order.by = as.Date(sp500data[, "Date"]))
+\end{verbatim}
 %
 The dataset contains the daily value of the SP500 index, its highs and lows, and daily volume. We will make use of this information together with day-of-the-week dummies to construct a rich model of SP500 return volatility. But first we shorten the sample, since not all variables are available from the start:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> sp500data <- window(sp500data, start = as.Date("1983-07-01"))
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  sp500data <- window(sp500data, start = as.Date("1983-07-01"))
+\end{verbatim}
 %
 The resulting sample thus goes from 1 July 1983 to 8 March 2016, a
 total of 8241 observations before differencing and lagging. Next, the
@@ -881,80 +856,74 @@ following lines of code create a variable equal to the log-return in
 percent, a lagged range-based volatility proxy, and the lagged
 log-difference of volume:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> sp500Ret <- diff(log(sp500data[, "Adj.Close"])) * 100
-R> relrange <- (log(sp500data[, "High"]) - log(sp500data[, "Low"]) ) * 100
-R> volproxy <- log(relrange^2)
-R> volproxylag <- lag(volproxy, k = -1)
-R> volume <- log(sp500data[, "Volume"])
-R> volumediff <- diff(volume) * 100
-R> volumedifflag <- lag(volumediff, k = -1)
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  sp500Ret <- diff(log(sp500data[, "Adj.Close"])) * 100
+  relrange <- (log(sp500data[, "High"]) - log(sp500data[, "Low"]) ) * 100
+  volproxy <- log(relrange^2)
+  volproxylag <- lag(volproxy, k = -1)
+  volume <- log(sp500data[, "Volume"])
+  volumediff <- diff(volume) * 100
+  volumedifflag <- lag(volumediff, k = -1)
+\end{verbatim}
 %
 Finally, we make the day-of-the-week dummies and estimate the full model, a log-ARCH(5)-X specification:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> sp500Index <- index(sp500Ret)
-R> days <- weekdays(sp500Index)
-R> days <- union(days, days)
-R> dTue <- zoo(as.numeric(weekdays(sp500Index) == days[1]),
-+    order.by = sp500Index)
-R> dWed <- zoo(as.numeric(weekdays(sp500Index) == days[2]),
-+    order.by = sp500Index)
-R> dThu <- zoo(as.numeric(weekdays(sp500Index) == days[3]),
-+    order.by = sp500Index)
-R> dFri <- zoo(as.numeric(weekdays(sp500Index) == days[4]),
-+    order.by = sp500Index)
-R> sp500Mod01 <- arx(sp500Ret, mc = FALSE, arch = 1:5, log.ewma = c(5, 20, 60, 120),
-+    asym = 1,
-+    vxreg = cbind(volproxylag, volumedifflag, dTue, dWed, dThu, dFri))
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  sp500Index <- index(sp500Ret)
+  days <- weekdays(sp500Index)
+  days <- union(days, days)
+  dTue <- zoo(as.numeric(weekdays(sp500Index) == days[1]),
+    order.by = sp500Index)
+  dWed <- zoo(as.numeric(weekdays(sp500Index) == days[2]),
+    order.by = sp500Index)
+  dThu <- zoo(as.numeric(weekdays(sp500Index) == days[3]),
+    order.by = sp500Index)
+  dFri <- zoo(as.numeric(weekdays(sp500Index) == days[4]),
+    order.by = sp500Index)
+  sp500Mod01 <- arx(sp500Ret, mc = FALSE, arch = 1:5, log.ewma = c(5, 20, 60, 120),
+    asym = 1,
+    vxreg = cbind(volproxylag, volumedifflag, dTue, dWed, dThu, dFri))
+\end{verbatim}
 %	
 Typing \code{sp500Mod01} returns the following print output:
 %
-\begin{CodeChunk}
-\begin{CodeOutput}
-Date: Fri Aug 06 11:17:38 2021 
-Dependent var.: y 
-Method: Ordinary Least Squares (OLS) 
-Sample: 1983-07-05 to 2016-03-08 
-
-Log-variance equation:
-
-                    coef  std.error  t-stat   p-value    
-vconst         0.0107260  0.0784437  0.0187  0.891241    
-arch1         -0.0482520  0.0161972 -2.9790  0.002900
-arch2          0.0071996  0.0122312  0.5886  0.556127    
-arch3          0.0256668  0.0122521  2.0949  0.036212
-arch4          0.0149581  0.0122145  1.2246  0.220758    
-arch5          0.0371055  0.0122796  3.0217  0.002521
-asym1         -0.0336271  0.0175185 -1.9195  0.054954
-logEqWMA(5)    0.0262491  0.0519435  0.5053  0.613334    
-logEqWMA(20)   0.2817220  0.0713466  3.9486 7.926e-05
-logEqWMA(60)   0.1970841  0.1052311  1.8729  0.061122
-logEqWMA(120)  0.1936954  0.0865864  2.2370  0.025312
-volproxylag    0.2078785  0.0400515  5.1903 2.151e-07
-volumedifflag -0.0030906  0.0014207 -2.1754  0.029630
-dTue           0.0978314  0.0834703  1.1720  0.241212    
-dWed          -0.0804053  0.0853471 -0.9421  0.346171    
-dThu           0.0838896  0.0843500  0.9945  0.319988    
-dFri           0.0756869  0.0840118  0.9009  0.367664    
-
-Diagnostics and fit:
-
-                    Chi-sq df  p-value    
-Ljung-Box AR(1)    0.53421  1   0.4648    
-Ljung-Box ARCH(6) 29.21040  6 5.55e-05
-
-SE of regression      1.13957
-R-squared            -0.00069
-Log-lik.(n=8120) -10985.79738
-\end{CodeOutput}
-\end{CodeChunk}
+\begin{verbatim}
+  Date: Fri Aug 06 11:17:38 2021 
+  Dependent var.: y 
+  Method: Ordinary Least Squares (OLS) 
+  Sample: 1983-07-05 to 2016-03-08 
+		
+  Log-variance equation:
+		
+                      coef  std.error  t-stat   p-value    
+  vconst         0.0107260  0.0784437  0.0187  0.891241    
+  arch1         -0.0482520  0.0161972 -2.9790  0.002900
+  arch2          0.0071996  0.0122312  0.5886  0.556127    
+  arch3          0.0256668  0.0122521  2.0949  0.036212
+  arch4          0.0149581  0.0122145  1.2246  0.220758    
+  arch5          0.0371055  0.0122796  3.0217  0.002521
+  asym1         -0.0336271  0.0175185 -1.9195  0.054954
+  logEqWMA(5)    0.0262491  0.0519435  0.5053  0.613334    
+  logEqWMA(20)   0.2817220  0.0713466  3.9486 7.926e-05
+  logEqWMA(60)   0.1970841  0.1052311  1.8729  0.061122
+  logEqWMA(120)  0.1936954  0.0865864  2.2370  0.025312
+  volproxylag    0.2078785  0.0400515  5.1903 2.151e-07
+  volumedifflag -0.0030906  0.0014207 -2.1754  0.029630
+  dTue           0.0978314  0.0834703  1.1720  0.241212    
+  dWed          -0.0804053  0.0853471 -0.9421  0.346171    
+  dThu           0.0838896  0.0843500  0.9945  0.319988    
+  dFri           0.0756869  0.0840118  0.9009  0.367664    
+		
+  Diagnostics and fit:
+		
+                      Chi-sq df  p-value    
+  Ljung-Box AR(1)    0.53421  1   0.4648    
+  Ljung-Box ARCH(6) 29.21040  6 5.55e-05
+		
+  SE of regression      1.13957
+  R-squared            -0.00069
+  Log-lik.(n=8120) -10985.79738
+\end{verbatim}
 %
 Later, in Section~\ref{subsec:gets:sp500:example}, we will simplify
 this model with the \code{getsv} function. For now, we provide a
@@ -963,28 +932,24 @@ comparison with a log-GARCH(1, 1) using the \proglang{R} package
 loads the package, estimates the model and stores the estimation
 results:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> library("lgarch")
-R> sp500Mod02 <- lgarch(sp500Ret)
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  library("lgarch")
+  sp500Mod02 <- lgarch(sp500Ret)
+\end{verbatim}
 %
 Extracting the log-likelihood by \code{logLik(sp500Mod02)} reveals that it is substantially lower, namely $-11396.11$. To compare the models in terms of the \cite{Schwarz1978} information criterion, it is necessary to undertake the comparison in terms of the average log-likelihoods, since the estimation samples of the two models have a different number of observations:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> info.criterion(as.numeric(logLik(sp500Mod01)), n = 8120, k = 17)
-R> info.criterion(as.numeric(logLik(sp500Mod02)), n = 8240, k = 3)
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  info.criterion(as.numeric(logLik(sp500Mod01)), n = 8120, k = 17)
+  info.criterion(as.numeric(logLik(sp500Mod02)), n = 8240, k = 3)
+\end{verbatim}
 %
 The value increases from 2.7247 in \code{sp500Mod01} to 2.7693 in \code{sp500Mod02}, which indicates that the former specification provides a better fit.
 
 \section{GETS modeling}
 \label{sec:gets:model:selection}
 
-\subsection[getsm: Modeling the mean]{\code{getsm}: Modeling the mean}
+\subsection{\code{getsm()}: Modeling the mean}
 \label{subsec:getsm:modeling:the:mean}
 
 GETS modeling of the mean specification in a regression (e.g., a
@@ -995,69 +960,65 @@ specified \code{arx} model. For example, the following code performs
 GETS model selection on the regressors of the mean specification of
 \code{mod05} with default values on all the optional arguments:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> getsm05 <- getsm(mod05)
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  getsm05 <- getsm(mod05)
+\end{verbatim}
 %
 The results are stored in an object named \code{getsm05}, and the information produced during the specification search is:
 %
-\begin{CodeChunk}
-\begin{CodeOutput}
-GUM mean equation:
-
-       reg.no. keep       coef  std.error  t-stat p-value  
-mconst       1    0 -0.0596894  0.0782285 -0.7630  0.4475  
-ar1          2    0  0.1938157  0.1235456  1.5688  0.1202  
-ar2          3    0  0.0343803  0.1141559  0.3012  0.7640  
-mxreg1       4    0  0.1171045  0.0805838  1.4532  0.1496  
-mxreg2       5    0  0.0116124  0.0865925  0.1341  0.8936  
-mxreg3       6    0 -0.1087162  0.0815946 -1.3324  0.1861  
-mxreg4       7    0 -0.2226722  0.1019820 -2.1834  0.0316
-mxreg5       8    0  0.0012498  0.0694024  0.0180  0.9857  
-
-GUM log-variance equation:
-
-            coef std.error  t-stat p-value  
-vconst  0.351872  0.438687  0.6434 0.42249  
-arch1   0.268975  0.107470  2.5028 0.01424
-arch2   0.088540  0.159135  0.5564 0.57941  
-arch3   0.022932  0.115861  0.1979 0.84357  
-asym2  -0.112941  0.171767 -0.6575 0.51262  
-vxreg1  0.102181  0.110374  0.9258 0.35718  
-vxreg2 -0.068873  0.093762 -0.7345 0.46464  
-vxreg3 -0.032006  0.102597 -0.3120 0.75584  
-vxreg4  0.029429  0.106865  0.2754 0.78369  
-vxreg5  0.187176  0.120259  1.5564 0.12332  
-
-Diagnostics:
-
-                   Chi-sq df p-value
-Ljung-Box AR(3)   0.18672  3 0.97970
-Ljung-Box ARCH(4) 0.43983  4 0.97909
-
-7 path(s) to search
-Searching: 1 2 3 4 5 6 7 
-
-Path 1: 1 8 5 3 4 6 2 
-Path 2: 2 8 5 3 1 4 6 
-Path 3: 3 8 5 1 4 6 2 
-Path 4: 4 3 5 8 1 6 2 
-Path 5: 5 8 3 1 4 6 2 
-Path 6: 6 8 5 3 1 4 2 
-Path 7: 8 5 3 1 4 6 2 
-
-Terminal models:
-
-                info(sc)      logl  n k
-spec 1 (1-cut): 2.285792 -109.7113 98 1
-
-Retained regressors (final model):
-
-mxreg4
-\end{CodeOutput}
-\end{CodeChunk}
+\begin{verbatim}
+  GUM mean equation:
+		
+         reg.no. keep       coef  std.error  t-stat p-value  
+  mconst       1    0 -0.0596894  0.0782285 -0.7630  0.4475  
+  ar1          2    0  0.1938157  0.1235456  1.5688  0.1202  
+  ar2          3    0  0.0343803  0.1141559  0.3012  0.7640  
+  mxreg1       4    0  0.1171045  0.0805838  1.4532  0.1496  
+  mxreg2       5    0  0.0116124  0.0865925  0.1341  0.8936  
+  mxreg3       6    0 -0.1087162  0.0815946 -1.3324  0.1861  
+  mxreg4       7    0 -0.2226722  0.1019820 -2.1834  0.0316
+  mxreg5       8    0  0.0012498  0.0694024  0.0180  0.9857  
+		
+  GUM log-variance equation:
+		
+              coef std.error  t-stat p-value  
+  vconst  0.351872  0.438687  0.6434 0.42249  
+  arch1   0.268975  0.107470  2.5028 0.01424
+  arch2   0.088540  0.159135  0.5564 0.57941  
+  arch3   0.022932  0.115861  0.1979 0.84357  
+  asym2  -0.112941  0.171767 -0.6575 0.51262  
+  vxreg1  0.102181  0.110374  0.9258 0.35718  
+  vxreg2 -0.068873  0.093762 -0.7345 0.46464  
+  vxreg3 -0.032006  0.102597 -0.3120 0.75584  
+  vxreg4  0.029429  0.106865  0.2754 0.78369  
+  vxreg5  0.187176  0.120259  1.5564 0.12332  
+		
+  Diagnostics:
+		
+                     Chi-sq df p-value
+  Ljung-Box AR(3)   0.18672  3 0.97970
+  Ljung-Box ARCH(4) 0.43983  4 0.97909
+		
+  7 path(s) to search
+  Searching: 1 2 3 4 5 6 7 
+		
+  Path 1: 1 8 5 3 4 6 2 
+  Path 2: 2 8 5 3 1 4 6 
+  Path 3: 3 8 5 1 4 6 2 
+  Path 4: 4 3 5 8 1 6 2 
+  Path 5: 5 8 3 1 4 6 2 
+  Path 6: 6 8 5 3 1 4 2 
+  Path 7: 8 5 3 1 4 6 2 
+		
+  Terminal models:
+		
+                  info(sc)      logl  n k
+  spec 1 (1-cut): 2.285792 -109.7113 98 1
+		
+  Retained regressors (final model):
+		
+  mxreg4
+\end{verbatim}
 %
 To see the estimation results of the final model, type \code{getsm05}. The first part of the printed results pertains to the GUM, i.e.\ the starting model. Note in particular that regressors are numbered (the \code{reg.no} column in the GUM mean equation). This is useful when interpreting paths searched, which indicates in which order the regressors are deleted in each path. Next, the \code{Terminal models} part contains the distinct terminal specifications. By default, the \cite{Schwarz1978} information criterion (sc) is used to choose among the terminals, but this can be changed (see below). The last part contains the estimation results of the final, simplified model.
 
@@ -1128,21 +1089,17 @@ The main optional arguments of the \code{getsm} function are (type \code{args(ge
 %
 As an example, the following code uses a lower significance level for the regressor significance tests and the PETs, and turns of diagnostic testing for ARCH in the standardized residuals:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> getsm05a <- getsm(mod05, t.pval = 0.01, arch.LjungB = NULL)
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  getsm05a <- getsm(mod05, t.pval = 0.01, arch.LjungB = NULL)
+\end{verbatim}
 %
 Similarly, the following code restricts the mean intercept from being deleted, even though it is not significant:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> getsm05b <- getsm(mod05, keep = 1)
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  getsm05b <- getsm(mod05, keep = 1)
+\end{verbatim}
 
-\subsection[getsv: Modeling the log-variance]{\code{getsv}: Modeling the log-variance}
+\subsection{\code{getsv()}: Modeling the log-variance}
 \label{subsec:getsv:modeling:the:log-variance}
 
 GETS modeling of the log-variance specification is undertaken by
@@ -1151,28 +1108,23 @@ example, the following code performs GETS model selection of the
 log-variance specification of \code{mod05} with default values on all
 the optional arguments:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> getsv05 <- getsv(mod05)
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  getsv05 <- getsv(mod05)
+\end{verbatim}
 %
 Alternatively, the following code undertakes GETS model selection on the log-variance specification of the simplified model \code{getsm05}:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> mod06 <- arx(residuals(getsm05), mc = FALSE, arch = 1:3, asym = 2, vxreg = log(mX^2))
-R> getsv06 <- getsv(mod06)
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  mod06 <- arx(residuals(getsm05), mc = FALSE, arch = 1:3, asym = 2,
+    vxreg = log(mX^2))
+  getsv06 <- getsv(mod06)
+\end{verbatim}
 %
 Typing \code{getsv06} prints the results. Note that \code{vconst}, the log-variance intercept, is forced to enter the \code{keep} set when \code{getsv} is used. That is, $\alpha_0$ is restricted from removal even if it is not significant. This is due to the estimation procedure, which is via the AR-representation. Finally, the main optional arguments of \code{getsv} are almost the same as those of \code{getsm} (see above). The main difference is that the only variance-covariance matrix available is the ordinary one, since the error-term of the AR-specification is iid. As an example of how to set some of the options to non-default values, the following code restricts the three log-ARCH terms (in addition to the log-variance intercept) from removal, and turns off diagnostic testing for serial correlation in the standardized residuals:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> getsv06b <- getsv(mod06, keep = 1:4, ar.LjungB = NULL)
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  getsv06b <- getsv(mod06, keep = 1:4, ar.LjungB = NULL)
+\end{verbatim}
 
 \subsection{Extraction functions}
 \label{subsec:gets:extraction:functions}
@@ -1182,10 +1134,10 @@ objects, i.e., objects produced by either \code{getsm} or
 \code{getsv}. The most important functions (most of them \proglang{S}3 methods)
 are:
 %
-\begin{Code}
-	coef, ES, fitted, logLik, paths, plot, predict, print, recursive,
-	residuals, rsquared, sigma, summary, terminals, toLatex, VaR, vcov
-\end{Code}
+\begin{verbatim}
+  coef, ES, fitted, logLik, paths, plot, predict, print, recursive,
+  residuals, rsquared, sigma, summary, terminals, toLatex, VaR, vcov
+\end{verbatim}
 %
 All, apart from \code{paths} and \code{terminals}, behave in a similar
 way to the corresponding extraction functions for `\code{arx}'
@@ -1205,137 +1157,115 @@ we fitted was stored as an `\code{arx}' object named
 \code{inflMod02}. The following code undertakes GETS modeling of the
 mean, and stores the results in an object named \code{inflMod03}:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> inflMod03 <- getsm(inflMod02)
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  inflMod03 <- getsm(inflMod02)
+\end{verbatim}
 %
 This produces the following during the specification search:
 %
-\begin{CodeChunk}
-\begin{CodeOutput}
-GUM mean equation:
-
-       reg.no. keep       coef  std.error  t-stat   p-value    
-mconst       1    0  0.8386311  0.2961338  2.8319  0.005637
-ar1          2    0  0.7257550  0.1300407  5.5810 2.211e-07
-ar2          3    0  0.0195911  0.1171347  0.1673  0.867523    
-ar3          4    0  0.0350092  0.1385735  0.2526  0.801087    
-ar4          5    0 -0.1676751  0.1336972 -1.2541  0.212836    
-q2dum        6    0 -0.0148892  0.2333917 -0.0638  0.949266    
-q3dum        7    0 -0.0072972  0.2262704 -0.0322  0.974340    
-q4dum        8    0  0.0103990  0.2226772  0.0467  0.962849    
-
-GUM log-variance equation:
-
-coef std.error  t-stat  p-value   
-vconst  0.95935   0.53464  3.2199 0.072749
-arch1   0.16697   0.10352  1.6130 0.110169   
-arch2   0.12027   0.10335  1.1637 0.247566   
-arch3   0.14740   0.10332  1.4267 0.157060   
-arch4   0.05982   0.10515  0.5689 0.570824   
-q2dum  -1.32860   0.61862 -2.1477 0.034366
-q3dum  -0.92707   0.58400 -1.5874 0.115843   
-q4dum  -1.82736   0.62014 -2.9467 0.004069
-
-Diagnostics:
-
-                  Chi-sq df p-value
-Ljung-Box AR(5)   9.1776  5 0.10219
-Ljung-Box ARCH(5) 1.7613  5 0.88109
-
-6 path(s) to search
-Searching: 1 2 3 4 5 6 
-
-Path 1: 3 7 6 8 4 5 -5 
-Path 2: 4 7 6 8 3 5 -5 
-Path 3: 5 7 6 3 8 -8 4 -4 
-Path 4: 6 7 8 3 4 5 -5 
-Path 5: 7 6 8 3 4 5 -5 
-Path 6: 8 7 6 3 4 5 -5 
-
-Terminal models:
-
-        info(sc)      logl   n k
-spec 1: 1.722352 -82.59571 104 3
-spec 2: 1.776284 -83.07798 104 4
-
-Retained regressors (final model):
-
+\begin{verbatim}
+  GUM mean equation:
+		
+         reg.no. keep       coef  std.error  t-stat   p-value    
+  mconst       1    0  0.8386311  0.2961338  2.8319  0.005637
+  ar1          2    0  0.7257550  0.1300407  5.5810 2.211e-07
+  ar2          3    0  0.0195911  0.1171347  0.1673  0.867523    
+  ar3          4    0  0.0350092  0.1385735  0.2526  0.801087    
+  ar4          5    0 -0.1676751  0.1336972 -1.2541  0.212836    
+  q2dum        6    0 -0.0148892  0.2333917 -0.0638  0.949266    
+  q3dum        7    0 -0.0072972  0.2262704 -0.0322  0.974340    
+  q4dum        8    0  0.0103990  0.2226772  0.0467  0.962849    
+		
+  GUM log-variance equation:
+		
+             coef std.error  t-stat  p-value   
+  vconst  0.95935   0.53464  3.2199 0.072749
+  arch1   0.16697   0.10352  1.6130 0.110169   
+  arch2   0.12027   0.10335  1.1637 0.247566   
+  arch3   0.14740   0.10332  1.4267 0.157060   
+  arch4   0.05982   0.10515  0.5689 0.570824   
+  q2dum  -1.32860   0.61862 -2.1477 0.034366
+  q3dum  -0.92707   0.58400 -1.5874 0.115843   
+  q4dum  -1.82736   0.62014 -2.9467 0.004069
+		
+  Diagnostics:
+		
+                    Chi-sq df p-value
+  Ljung-Box AR(5)   9.1776  5 0.10219
+  Ljung-Box ARCH(5) 1.7613  5 0.88109
+		
+  6 path(s) to search
+  Searching: 1 2 3 4 5 6 
+		
+  Path 1: 3 7 6 8 4 5 -5 
+  Path 2: 4 7 6 8 3 5 -5 
+  Path 3: 5 7 6 3 8 -8 4 -4 
+  Path 4: 6 7 8 3 4 5 -5 
+  Path 5: 7 6 8 3 4 5 -5 
+  Path 6: 8 7 6 3 4 5 -5 
+		
+  Terminal models:
+		
+          info(sc)      logl   n k
+  spec 1: 1.722352 -82.59571 104 3
+  spec 2: 1.776284 -83.07798 104 4
+		
+  Retained regressors (final model):
+		
   mconst   ar1   ar4
-\end{CodeOutput}
-\end{CodeChunk}
+\end{verbatim}
 %
 In addition to the intercept, the final model contains the AR(1) and AR(4) terms, but no quarterly dummies. So the level of quarterly year-on-year inflation does not seem to depend on quarter. Note that, in the searched paths, regressor no.\ 5 (i.e., the AR(4) term) has a minus sign in front of it in all but one of the searched paths. This means the term has been re-introduced after deletion, since its deletion leads to a violation of one or several of the diagnostics tests. This is the reason the AR(4) term is retained even though it is not significant in the final model. Next, we use the residuals of the simplified model to develop a parsimonious model of the log-variance, storing the results in \code{inflMod05}:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> inflMod04 <- arx(residuals(inflMod03), mc = FALSE, arch = 1:4,
-+    vxreg = inflData[, 2:4])
-R> inflMod05 <- getsv(inflMod04, ar.LjungB = list(lag = 5, pval = 0.025))
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  inflMod04 <- arx(residuals(inflMod03), mc = FALSE, arch = 1:4,
+    vxreg = inflData[, 2:4])
+  inflMod05 <- getsv(inflMod04, ar.LjungB = list(lag = 5, pval = 0.025))
+\end{verbatim}
 %
 Note that, to ensure that the diagnostic test for autocorrelation in the standardized residuals is undertaken at the same lag as earlier, the \code{ar.LjungB} argument has been modified. Next, typing \code{inflMod05} prints the results, and again we only reproduce selected parts in the interest of brevity:
 %
-\begin{CodeChunk}
-\begin{CodeOutput}
-SPECIFIC log-variance equation:
-
-           coef std.error  t-stat  p-value   
-vconst  0.71311   0.53965  1.7462 0.186355   
-arch1   0.17438   0.10057  1.7339 0.086217
-arch2   0.16822   0.10034  1.6764 0.096975
-q2dum  -1.43834   0.62992 -2.2834 0.024662
-q3dum  -1.09189   0.60035 -1.8187 0.072135
-q4dum  -1.82836   0.60351 -3.0295 0.003163
-
-Diagnostics and fit:
-
-                  Chi-sq df p-value
-Ljung-Box AR(5)   8.1224  5  0.1496
-Ljung-Box ARCH(5) 7.7418  5  0.1711
-\end{CodeOutput}
-\end{CodeChunk}
+\begin{verbatim}
+  SPECIFIC log-variance equation:
+		
+             coef std.error  t-stat  p-value   
+  vconst  0.71311   0.53965  1.7462 0.186355   
+  arch1   0.17438   0.10057  1.7339 0.086217
+  arch2   0.16822   0.10034  1.6764 0.096975
+  q2dum  -1.43834   0.62992 -2.2834 0.024662
+  q3dum  -1.09189   0.60035 -1.8187 0.072135
+  q4dum  -1.82836   0.60351 -3.0295 0.003163
+		
+  Diagnostics and fit:
+		
+                    Chi-sq df p-value
+  Ljung-Box AR(5)   8.1224  5  0.1496
+  Ljung-Box ARCH(5) 7.7418  5  0.1711
+\end{verbatim}
 %
-The results suggest a high impact of the ARCH(1) and ARCH(2) terms --
-much higher than for financial returns,\footnote{In finance, if
-	$\epsilon_t$ is a mean-corrected financial return, then the ARCH(1)
-	term is usually about 0.05, and almost never higher than 0.1.} and
-that the conditional variance depends on quarter. To obtain an idea of
-the economic importance of our results, we re-estimate the full,
-simplified model, and generate out-of-sample forecasts of the
-conditional standard deviation up to four quarters ahead. The full,
-simplified model is re-estimated using:
+The results suggest a high impact of the ARCH(1) and ARCH(2) terms -- much higher than for financial returns,\footnote{In finance, if $\epsilon_t$ is a mean-corrected financial return, then the ARCH(1) term is usually about 0.05, and almost never higher than 0.1.} and that the conditional variance depends on quarter. To obtain an idea of the economic importance of our results, we re-estimate the full, simplified model, and generate out-of-sample forecasts of the conditional standard deviation up to four quarters ahead. The full, simplified model is re-estimated using:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> inflMod06 <- inflMod06 <- arx(inflData[, "infl"], ar = c(1, 4),
-+    arch = 1:2, vxreg = inflData[, 2:4], vcov.type = "white")
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  inflMod06 <- inflMod06 <- arx(inflData[, "infl"], ar = c(1, 4),
+    arch = 1:2, vxreg = inflData[, 2:4], vcov.type = "white")
+\end{verbatim}
 %
 In order to generate out-of-sample forecasts, we first need to generate the out-of-sample values of the retained quarterly dummies:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> newvxreg <- matrix(0, 4, 3)
-R> colnames(newvxreg) <- c("q2dum", "q3dum", "q4dum")
-R> newvxreg[2, "q2dum"] <- 1
-R> newvxreg[3, "q3dum"] <- 1
-R> newvxreg[4, "q4dum"] <- 1
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  newvxreg <- matrix(0, 4, 3)
+  colnames(newvxreg) <- c("q2dum", "q3dum", "q4dum")
+  newvxreg[2, "q2dum"] <- 1
+  newvxreg[3, "q3dum"] <- 1
+  newvxreg[4, "q4dum"] <- 1
+\end{verbatim}
 %
 We can now generate the out-of-sample forecasts of the conditional standard deviations:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> set.seed(123)
-R> predict(inflMod06, n.ahead = 4, spec = "variance", newvxreg = newvxreg)
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  set.seed(123)
+  predict(inflMod06, n.ahead = 4, spec = "variance", newvxreg = newvxreg)
+\end{verbatim}
 %
 The first command, \code{set.seed(123)}, is for reproducibility
 purposes, since a bootstrap procedure is used to generate variance
@@ -1343,12 +1273,10 @@ forecasts two or more steps ahead (the number of draws can be changed
 via the \code{n.sim} argument). The forecasts for 2016(1) to 2016(4)
 are:
 %
-\begin{CodeChunk}
-\begin{CodeOutput}
-2016(1)   2016(2)   2016(3)   2016(4) 
-1.0448239 0.3403215 0.4628250 0.2075531
-\end{CodeOutput}
-\end{CodeChunk}
+\begin{verbatim}
+    2016(1)   2016(2)   2016(3)   2016(4) 
+  1.0448239 0.3403215 0.4628250 0.2075531
+\end{verbatim}
 %
 In other words, the conditional variance is forecasted to be about four times higher in 2016(1) than in 2016(4). This has notable economic consequences. For example, if the forecasted inflation in 2016(1) is 2\%, then an approximate 95\% prediction interval computed as $2 \pm 2 \times \widehat{\sigma}_{n+1}$ is given by the range $0$\% to 4\%, which is large. By contrast, an approximate 95\% prediction interval for 2016(4) computed as $2 \pm 2 \times \widehat{\sigma}_{n+4}$ is given by the range 1.1\% to 2.9\%, which is much tighter.
 
@@ -1357,45 +1285,39 @@ In other words, the conditional variance is forecasted to be about four times hi
 
 In Section~\ref{subsec:arx:example:sp500-volatility} we estimated a rich model of daily SP500 return volatility named \code{sp500Mod01}. Simplification of this model is straightforward with the \code{getsv} function. Since the model does not fully get rid of the ARCH in the standardized residuals, we will turn off the ARCH diagnostics. Also, for parsimony we will choose a small regressor significance level equal to $0.1\%$:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> sp500Mod03 <- getsv(sp500Mod01, t.pval = 0.001, arch.LjungB = NULL)
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  sp500Mod03 <- getsv(sp500Mod01, t.pval = 0.001, arch.LjungB = NULL)
+\end{verbatim}
 %
 Typing \code{sp500Mod03} returns (amongst other):
 %
-\begin{CodeChunk}
-\begin{CodeOutput}
-SPECIFIC log-variance equation:
-
-                   coef std.error  t-stat   p-value    
-vconst         0.016309  0.044960  0.1316 0.7167940    
-arch1         -0.064147  0.013740 -4.6687 3.080e-06
-arch5          0.038690  0.011324  3.4168 0.0006368
-logEqWMA(20)   0.427071  0.053110  8.0413 1.014e-15
-logEqWMA(120)  0.327148  0.052734  6.2038 5.782e-10
-volproxylag    0.197866  0.036558  5.4124 6.396e-08
-dWed          -0.176576  0.064799 -2.7250 0.0064442
-
-Diagnostics and fit:
-
-                    Chi-sq df  p-value    
-Ljung-Box AR(1)    0.40681  1   0.5236    
-Ljung-Box ARCH(6) 32.33070  6 1.41e-05
-
-SE of regression      1.14417
-Log-lik.(n=8120) -10993.62221
-\end{CodeOutput}
-\end{CodeChunk}
+\begin{verbatim}
+  SPECIFIC log-variance equation:
+		
+                     coef std.error  t-stat   p-value    
+  vconst         0.016309  0.044960  0.1316 0.7167940    
+  arch1         -0.064147  0.013740 -4.6687 3.080e-06
+  arch5          0.038690  0.011324  3.4168 0.0006368
+  logEqWMA(20)   0.427071  0.053110  8.0413 1.014e-15
+  logEqWMA(120)  0.327148  0.052734  6.2038 5.782e-10
+  volproxylag    0.197866  0.036558  5.4124 6.396e-08
+  dWed          -0.176576  0.064799 -2.7250 0.0064442
+		
+  Diagnostics and fit:
+		
+                      Chi-sq df  p-value    
+  Ljung-Box AR(1)    0.40681  1   0.5236    
+  Ljung-Box ARCH(6) 32.33070  6 1.41e-05
+		
+  SE of regression      1.14417
+  Log-lik.(n=8120) -10993.62221
+\end{verbatim}
 %
 In other words, no day-of-the-week dummies are retained and only the first ARCH-term is retained. However, three of the log-proxies are retained, i.e., the weekly, the monthly and the half-yearly, and both the lagged range-based volatility proxy and the lagged log-volume difference are retained. The log-likelihood is now $-11131.4$, and the following code computes the \cite{Schwarz1978} information criterion value in terms of the average log-likelihood:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> info.criterion(as.numeric(logLik(sp500Mod03)), n = 8120, k = 7)
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  info.criterion(as.numeric(logLik(sp500Mod03)), n = 8120, k = 7)
+\end{verbatim}
 %
 The value is 2.7155, so so the parsimonious model provides a better fit (according to sc) compared with the GUM (i.e., \code{sp500Mod01}).
 
@@ -1553,52 +1475,49 @@ being retained spuriously on average in a well-specified model under
 the null of no shifts or outliers. Estimating an \code{isat} model
 using SIS (\code{sis = TRUE} is default):
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> options(plot = TRUE)
-R> so2 <- data("so2data", package = "gets")  
-R> yso2 <- zoo(so2data[, "DLuk_tot_so2"], order.by = so2data[, "year"])
-R> (sis <- isat(yso2, t.pval = 0.01))
-\end{CodeInput}
-\begin{CodeOutput}
-SIS block 1 of 2:
-30 paths to search
-Searching: 1 2 3 4 ...
+\begin{verbatim}
+  options(plot = TRUE)
+  so2 <- data("so2data", package = "gets")  
+  yso2 <- zoo(so2data[, "DLuk_tot_so2"], order.by = so2data[, "year"])
+  (sis <- isat(yso2, t.pval = 0.01))
 
-SIS block 2 of 2:
-
-26 paths to search
-Searching: 1 2 3 4 ...
-
-GETS of union of retained SIS variables... 
-2 paths to search
-Searching: 1 2 
-
-...
-
-SPECIFIC mean equation:
-
-               coef   std.error    t-stat      p-value
-mconst   0.01465385 0.007931984  1.847438 7.026836e-02
-sis1972 -0.04332051 0.011866458 -3.650669 5.990412e-04
-sis1993 -0.11693333 0.020126141 -5.810023 3.625832e-07
-sis1998  0.12860000 0.044305650  2.902564 5.382516e-03
-sis1999 -0.28400000 0.057198348 -4.965178 7.505854e-06
-sis2000  0.24550000 0.045219264  5.429102 1.441154e-06
-sis2004 -0.11550000 0.035026692 -3.297485 1.746083e-03
-
-Diagnostics:
-
-                   Chi-sq df p-value
-Ljung-Box AR(1)   0.61553  1 0.43271
-Ljung-Box ARCH(1) 1.44153  1 0.22989
-Jarque-Bera       0.57302  2 0.75088
-
-SE of regression   0.04045
-R-squared          0.73021
-Log-lik.(n=60)   110.83192
-\end{CodeOutput}
-\end{CodeChunk}
+  SIS block 1 of 2:
+  30 paths to search
+  Searching: 1 2 3 4 ...
+		
+  SIS block 2 of 2:
+		
+  26 paths to search
+  Searching: 1 2 3 4 ...
+		
+  GETS of union of retained SIS variables... 
+  2 paths to search
+  Searching: 1 2 
+		
+  ...
+		
+  SPECIFIC mean equation:
+		
+                 coef   std.error    t-stat      p-value
+  mconst   0.01465385 0.007931984  1.847438 7.026836e-02
+  sis1972 -0.04332051 0.011866458 -3.650669 5.990412e-04
+  sis1993 -0.11693333 0.020126141 -5.810023 3.625832e-07
+  sis1998  0.12860000 0.044305650  2.902564 5.382516e-03
+  sis1999 -0.28400000 0.057198348 -4.965178 7.505854e-06
+  sis2000  0.24550000 0.045219264  5.429102 1.441154e-06
+  sis2004 -0.11550000 0.035026692 -3.297485 1.746083e-03
+		
+  Diagnostics:
+		
+                     Chi-sq df p-value
+  Ljung-Box AR(1)   0.61553  1 0.43271
+  Ljung-Box ARCH(1) 1.44153  1 0.22989
+  Jarque-Bera       0.57302  2 0.75088
+		
+  SE of regression   0.04045
+  R-squared          0.73021
+  Log-lik.(n=60)   110.83192
+\end{verbatim}
 %
 The above output shows multiple detected step-shifts (labeled
 \code{sis1972}--\code{sis2004}) in the time series. If plotting is
@@ -1631,12 +1550,10 @@ selection. For example, consider forcing a hypothesized step-shift in
 1972 to be retained while simultaneously searching for additional
 shifts throughout the sample:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> x1972 <- zoo(sim(so2data[, "year"])[, 26], order.by = so2data[, "year"])
-R> isat(yso2, t.pval = 0.01, mxreg = x1972)
-\end{CodeInput}
-\end{CodeChunk}
+\begin{verbatim}
+  x1972 <- zoo(sim(so2data[, "year"])[, 26], order.by = so2data[, "year"])
+  isat(yso2, t.pval = 0.01, mxreg = x1972)
+\end{verbatim}
 %
 The resulting estimation does not select over the fixed step-shift in 1972, though for this particular example the estimated terminal model with a forced step shift matches the SIS results of a general search.
 %
@@ -1664,18 +1581,15 @@ is specified to include autoregressive terms, then \code{isatvar}
 (setting \code{lr = TRUE}) also returns the static long-run solution
 of the dynamic model with its approximate variance.
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> sisvar <- isatvar(sis)
-R> sisvar
-\end{CodeInput}
-\begin{CodeOutput}
-       coef.path  const.path    const.var    const.se
-1946  0.00000000  0.01465385 6.291637e-05 0.007931984
-1947  0.00000000  0.01465385 6.291637e-05 0.007931984
-...
-\end{CodeOutput}
-\end{CodeChunk}
+\begin{verbatim}
+  sisvar <- isatvar(sis)
+  sisvar
+
+         coef.path  const.path    const.var    const.se
+  1946  0.00000000  0.01465385 6.291637e-05 0.007931984
+  1947  0.00000000  0.01465385 6.291637e-05 0.007931984
+  ...
+\end{verbatim}
 %
 Indicator saturation may result in an under-estimation of the error
 variance as observations are ``dummied out'' resulting in a truncation
@@ -1697,46 +1611,38 @@ demonstrated below running IIS on an autoregressive model with one lag
 variance of the coefficient path is higher once consistency and
 efficiency corrections are applied:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> iis <- isat(yso2, ar = 1, sis = FALSE, iis = TRUE, t.pval = 0.05)
-R> isatvar(iis, conscorr = TRUE, effcorr = TRUE)
-\end{CodeInput}
-\begin{CodeOutput}
-       coef.path   const.path    const.var    const.se
-1947  0.00000000 -0.006210179 7.225479e-05 0.008500282
-1948  0.00000000 -0.006210179 7.225479e-05 0.008500282
-...
-\end{CodeOutput}
-\begin{CodeInput}
-R> isatvar(iis,  conscorr = FALSE, effcorr = FALSE)
-\end{CodeInput}
-\begin{CodeOutput}
-       coef.path   const.path    const.var    const.se
-1947  0.00000000 -0.006210179 4.483453e-05 0.006695859
-1948  0.00000000 -0.006210179 4.483453e-05 0.006695859
-...
-\end{CodeOutput}
-\end{CodeChunk}
+\begin{verbatim}
+  iis <- isat(yso2, ar = 1, sis = FALSE, iis = TRUE, t.pval = 0.05)
+  isatvar(iis, conscorr = TRUE, effcorr = TRUE)
+
+         coef.path   const.path    const.var    const.se
+  1947  0.00000000 -0.006210179 7.225479e-05 0.008500282
+  1948  0.00000000 -0.006210179 7.225479e-05 0.008500282
+  ...
+
+  isatvar(iis,  conscorr = FALSE, effcorr = FALSE)
+
+         coef.path   const.path    const.var    const.se
+  1947  0.00000000 -0.006210179 4.483453e-05 0.006695859
+  1948  0.00000000 -0.006210179 4.483453e-05 0.006695859
+  ...
+\end{verbatim}
 %
 The terminal models of \code{isat} are the result of model selection, and may therefore lead to a selection bias in the coefficient estimates of selected variables. Post-selection bias-correction for orthogonal variables can be conducted using the method proposed in \cite{HendryKrolzig2005}. This is implemented as the function \code{biascorr}. Following \cite{pretis2015istest}, bias-correction of the coefficients in a SIS model can be directly applied to the coefficient path without prior orthogonalization. Bias-correcting the coefficient path of the above model of the growth rate of SO$_2$ yields the one- and two-step bias-corrected coefficients:
 %
-\begin{CodeChunk}
-\begin{CodeInput}
-R> bcorr <- biascorr(b = sisvar[, "const.path"], b.se = sisvar[, "const.se"],
-+    p.alpha = 0.01, T = length(sisvar[, "const.path"]))
-\end{CodeInput}
-\begin{CodeOutput}
-            beta  beta.1step  beta.2step
-...
-1997 -0.14560000 -0.14560000 -0.14560000
-1998 -0.01700000 -0.01700000 -0.01700000
-1999 -0.30100000 -0.30099983 -0.30099983
-2000 -0.05550000 -0.04043232 -0.03000334
-2001 -0.05550000 -0.04043232 -0.03000334
-...	
-\end{CodeOutput}
-\end{CodeChunk}
+\begin{verbatim}
+  bcorr <- biascorr(b = sisvar[, "const.path"], b.se = sisvar[, "const.se"],
+    p.alpha = 0.01, T = length(sisvar[, "const.path"]))
+
+             beta  beta.1step  beta.2step
+  ...
+  1997 -0.14560000 -0.14560000 -0.14560000
+  1998 -0.01700000 -0.01700000 -0.01700000
+  1999 -0.30100000 -0.30099983 -0.30099983
+  2000 -0.05550000 -0.04043232 -0.03000334
+  2001 -0.05550000 -0.04043232 -0.03000334
+  ...
+\end{verbatim}
 %
 Bias-correction reduces the magnitude of the estimated coefficients slightly to account for potential selection bias.
 
@@ -1763,19 +1669,16 @@ main arguments of the \code{isattest} function are:
 %
 Here we test the time-varying mean (as determined using SIS) of the annual growth rate of UK SO$_2$ emissions against the null hypothesis of zero-growth using \code{isattest}:
 %
-\begin{CodeChunk}
-\begin{CodeInput}  
-R> isattest(sis, hnull = 0, lr = FALSE, ci.pval = 0.99, plot.turn = TRUE,
-+    biascorr = TRUE)
-\end{CodeInput}
-\begin{CodeOutput}
-           ci.low      ci.high bias.high   bias.low
-1946 -0.006539007  0.035846700         0  0.0000000
-1947 -0.006539007  0.035846700         0  0.0000000
-1948 -0.006539007  0.035846700         0  0.0000000
-...
-\end{CodeOutput}
-\end{CodeChunk}
+\begin{verbatim}
+  isattest(sis, hnull = 0, lr = FALSE, ci.pval = 0.99, plot.turn = TRUE,
+    biascorr = TRUE)
+
+             ci.low      ci.high bias.high   bias.low
+  1946 -0.006539007  0.035846700         0  0.0000000
+  1947 -0.006539007  0.035846700         0  0.0000000
+  1948 -0.006539007  0.035846700         0  0.0000000
+  ...
+\end{verbatim}
 %
 The results are shown in the automatically-generated plot given in Figure~\ref{fig_sistest} (the \code{plot.turn = TRUE} argument automatically adds the break dates into the plot in the lower panel). When testing at 1\% and using bias-correction this suggests that the detected shift in 1972 does not significantly move the growth-rate away from zero. Similarly, the upward shift in 2000 moves the growth rate back to zero. This change, however, is off-set by the shift at the end of the sample which shows the growth rate turning significantly negative in 2004.
 
@@ -1854,8 +1757,7 @@ mean (or specified coefficients through inclusion in \code{uis}) are
 permitted -- making it possible to pre-specify constancy. A partial
 structural change model using the Bai and Perron least-squares
 approach can be estimated using available \proglang{MATLAB}
-code.\footnote{Available online at
-	\url{http://people.bu.edu/perron/code.html}.}
+code.\footnote{Available online at \url{http://people.bu.edu/perron/code.html}.}
 
 Relative to \pkg{changepoint}, \code{isat} in \pkg{gets} is focused on
 regression modeling and structural breaks in the intercept of
@@ -1868,7 +1770,7 @@ then \code{isat} searches for changes in the mean of a time series as
 in the models used in the \pkg{changepoint} package while, however,
 simultaneously detecting outliers.
 
-\section[Exporting results to EViews, STATA, and LaTeX]{Exporting results to \proglang{EViews}, \proglang{STATA} and \LaTeX{}}
+\section{Exporting results to \proglang{EViews}, \proglang{STATA} and \LaTeX{}}
 \label{sec:eviews:and:stata:export}
 
 The two most popular commercial econometric software packages are
@@ -1881,78 +1783,50 @@ in a similar way, and both can be applied on either `\code{arx}',
 `\code{gets}' or `\code{isat}' objects. For example, typing
 \code{eviews(getsm05)} yields the following print output:
 %
-\begin{CodeChunk}
-\begin{CodeOutput}
-EViews code to estimate the model:
-
-  equation getsm05.ls(cov = white) yy mxreg4 
-
-R code (example) to export the data of the model:
-
-  eviews(getsm05, file = 'C:/Users/myname/Documents/getsdata.csv')
-\end{CodeOutput}
-\end{CodeChunk}
+\begin{verbatim}
+  EViews code to estimate the model:
+		
+    equation getsm05.ls(cov = white) yy mxreg4 
+		
+  R code (example) to export the data of the model:
+		
+    eviews(getsm05, file = 'C:/Users/myname/Documents/getsdata.csv')
+\end{verbatim}
 %
-In other words, the code to estimate the final model in
-\proglang{EViews}, and -- if needed -- a code-suggestion for how to
-export the data of the model. The need to export the data of the final
-model is likely to be most relevant subsequent to the use of
-\code{isat}. The \code{stata} function works similarly. Note that both
-the \code{eviews} and \code{stata} functions are only applicable to
-conditional mean specifications, since neither \proglang{EViews} nor
-\proglang{STATA} offer the estimation of dynamic log-variance models.
+In other words, the code to estimate the final model in \proglang{EViews}, and -- if needed -- a code-suggestion for how to export the data of the model. The need to export the data of the final model is likely to be most relevant subsequent to the use of \code{isat}. The \code{stata} function works similarly. Note that both the \code{eviews} and \code{stata} functions are only applicable to conditional mean specifications, since neither \proglang{EViews} nor \proglang{STATA} offer the estimation of dynamic log-variance models.
 
-The objects returned by \code{arx}, \code{getsm}, \code{getsv} and
-\code{isat} are lists. The entries in these lists that contain the
-main estimation output are objects of class `\code{data.frame}'. That
-means the \proglang{R} package \pkg{xtable} of \cite{Dahl2016} can be
-used to generate \LaTeX{} code of the data frames.
+The objects returned by \code{arx}, \code{getsm}, \code{getsv} and \code{isat} are lists. The entries in these lists that contain the main estimation output are objects of class `\code{data.frame}'. That means the \proglang{R} package \pkg{xtable} of \cite{Dahl2016} can be used to generate \LaTeX{} code of the data frames.
 
 \section{Conclusions}
 \label{sec:conclusions}
 
-The \proglang{R} package \pkg{gets} provides a toolkit for
-general-to-specific modeling through automatic variable selection in
-regression specifications of the mean and the variance, as well as
-indicator saturation methods to detect outliers and structural
-breaks. Starting with a general candidate set of variables unknown to
-be relevant or irrelevant, selection using \code{getsm} or
-\code{getsv} can yield parsimonious terminal models that satisfy a set
-of chosen diagnostic criteria, where parameter changes and outlying
-observations are detected using \code{isat}.
+The \proglang{R} package \pkg{gets} provides a toolkit for general-to-specific modeling through automatic variable selection in regression specifications of the mean and the variance, as well as indicator saturation methods to detect outliers and structural breaks. Starting with a general candidate set of variables unknown to be relevant or irrelevant, selection using \code{getsm} or \code{getsv} can yield parsimonious terminal models that satisfy a set of chosen diagnostic criteria, where parameter changes and outlying observations are detected using \code{isat}.
 
 %\bibliography{ref}
 \begin{thebibliography}{56}
 	\newcommand{\enquote}[1]{``#1''}
 	\providecommand{\natexlab}[1]{#1}
-	\providecommand{\url}[1]{\texttt{#1}}
-	\providecommand{\urlprefix}{URL }
-	\expandafter\ifx\csname urlstyle\endcsname\relax
-	\providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
-	\providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
-		\urlstyle{rm}\Url}\fi
-	\providecommand{\eprint}[2][]{\url{#2}}
 	
 	\bibitem[{Akaike(1974)}]{Akaike1974}
 	Akaike H (1974).
 	\newblock \enquote{A New Look at the Statistical Model Identification.}
 	\newblock \emph{IEEE Transactions on Automatic Control}, \textbf{19}(6),
 	716--723.
-	\newblock \doi{10.1109/tac.1974.1100705}.
+	\newblock \url{https://doi.org/10.1109/tac.1974.1100705}.
 	
 	\bibitem[{Bai and Perron(1998)}]{bai1998estimating}
 	Bai J, Perron P (1998).
 	\newblock \enquote{Estimating and Testing Linear Models with Multiple
 		Structural Changes.}
 	\newblock \emph{Econometrica}, \textbf{66}(1), 47--78.
-	\newblock \doi{10.2307/2998540}.
+	\newblock \url{https://doi.org/10.2307/2998540}.
 	
 	\bibitem[{Bai and Perron(2003)}]{bai2003computation}
 	Bai J, Perron P (2003).
 	\newblock \enquote{Computation and Analysis of Multiple Structural Change
 		Models.}
 	\newblock \emph{Journal of Applied Econometrics}, \textbf{18}(1), 1--22.
-	\newblock \doi{10.1002/jae.659}.
+	\newblock \url{https://doi.org/10.1002/jae.659}.
 	
 	\bibitem[{Campos \emph{et~al.}(2005)Campos, Hendry, and
 		Ericsson}]{CamposEricssonHendry2005}
@@ -1965,7 +1839,7 @@ observations are detected using \code{isat}.
 	Castle JL, Doornik JA, Hendry DF (2011).
 	\newblock \enquote{Evaluating Automatic Model Selection.}
 	\newblock \emph{Journal of Time Series Econometrics}, \textbf{3}(1), 1--31.
-	\newblock \doi{10.2202/1941-1928.1097}.
+	\newblock \url{https://doi.org/10.2202/1941-1928.1097}.
 	
 	\bibitem[{Castle \emph{et~al.}(2015)Castle, Doornik, Hendry, and
 		Pretis}]{castle2015detecting}
@@ -1973,13 +1847,13 @@ observations are detected using \code{isat}.
 	\newblock \enquote{Detecting Location Shifts During Model Selection by
 		Step-Indicator Saturation.}
 	\newblock \emph{Econometrics}, \textbf{3}(2), 240--264.
-	\newblock \doi{10.3390/econometrics3020240}.
+	\newblock \url{https://doi.org/10.3390/econometrics3020240}.
 	
 	\bibitem[{Dahl(2016)}]{Dahl2016}
 	Dahl DB (2016).
 	\newblock \emph{\pkg{xtable}: Export Tables to \LaTeX{} or HTML}.
 	\newblock \proglang{R} package version 1.8-2,
-	\urlprefix\url{https://CRAN.R-project.org/package=xtable}.
+	\url{https://CRAN.R-project.org/package=xtable}.
 	
 	\bibitem[{Doornik(2006)}]{Doornik2006}
 	Doornik J (2006).
@@ -2008,35 +1882,35 @@ observations are detected using \code{isat}.
 	\newblock \enquote{Smearing Estimate: A Nonparametric Retransformation Method.}
 	\newblock \emph{Journal of the Americal Statistical Association},
 	\textbf{78}(383), 605--610.
-	\newblock \doi{10.2307/2288126}.
+	\newblock \url{https://doi.org/10.2307/2288126}.
 	
 	\bibitem[{Efron \emph{et~al.}(2004)Efron, Hastie, Johnstone, and
 		Tibshirani}]{efron2004least}
 	Efron B, Hastie T, Johnstone I, Tibshirani R (2004).
 	\newblock \enquote{Least Angle Regression.}
 	\newblock \emph{The Annals of Statistics}, \textbf{32}(2), 407--499.
-	\newblock \doi{10.1214/009053604000000067}.
+	\newblock \url{https://doi.org/10.1214/009053604000000067}.
 	
 	\bibitem[{Engle(1982)}]{Engle82}
 	Engle R (1982).
 	\newblock \enquote{Autoregressive Conditional Heteroscedasticity with Estimates
 		of the Variance of United Kingdom Inflations.}
 	\newblock \emph{Econometrica}, \textbf{50}(4), 987--1008.
-	\newblock \doi{10.2307/1912773}.
+	\newblock \url{https://doi.org/10.2307/1912773}.
 	
 	\bibitem[{Ericsson(2017)}]{ericsson2013biased}
 	Ericsson NR (2017).
 	\newblock \enquote{How Biased Are US Government Forecasts of the Federal Debt?}
 	\newblock \emph{International Journal of Forecasting}, \textbf{33}(2),
 	543--559.
-	\newblock \doi{10.1016/j.ijforecast.2016.09.001}.
+	\newblock \url{https://doi.org/10.1016/j.ijforecast.2016.09.001}.
 	
 	\bibitem[{Francq and Sucarrat(2018)}]{FrancqSucarrat2013}
 	Francq C, Sucarrat G (2018).
 	\newblock \enquote{An Exponential Chi-Squared QMLE for Log-GARCH Models Via the
 		ARMA Representation.}
 	\newblock \emph{Journal of Financial Econometrics}, \textbf{16}(1), 129--154.
-	\newblock \doi{10.1093/jjfinec/nbx032}.
+	\newblock \url{https://doi.org/10.1093/jjfinec/nbx032}.
 	
 	\bibitem[{Friedman \emph{et~al.}(2010)Friedman, Hastie, and
 		Tibshirani}]{friedman2010regularization}
@@ -2044,7 +1918,7 @@ observations are detected using \code{isat}.
 	\newblock \enquote{Regularization Paths for Generalized Linear Models via
 		Coordinate Descent.}
 	\newblock \emph{Journal of Statistical Software}, \textbf{33}(1), 1--22.
-	\newblock \doi{10.18637/jss.v033.i01}.
+	\newblock \url{https://doi.org/10.18637/jss.v033.i01}.
 	
 	\bibitem[{Glosten \emph{et~al.}(1993)Glosten, Jagannathan, and
 		Runkle}]{GlostenJagannathanRunkle1993}
@@ -2052,7 +1926,7 @@ observations are detected using \code{isat}.
 	\newblock \enquote{On the Relation between the Expected Value and the
 		Volatility of the Nominal Excess Return on Stocks.}
 	\newblock \emph{Journal of Finance}, \textbf{48}(5), 1779--1801.
-	\newblock \doi{10.2307/2329067}.
+	\newblock \url{https://doi.org/10.2307/2329067}.
 	
 	\bibitem[{Hannan and Quinn(1979)}]{HannanQuinn1979}
 	Hannan EJ, Quinn BG (1979).
@@ -2065,14 +1939,14 @@ observations are detected using \code{isat}.
 	\newblock \emph{\pkg{lars}: Least Angle Regression, Lasso and Forward
 		Stagewise}.
 	\newblock \proglang{R} package version 1.2,
-	\urlprefix\url{https://CRAN.R-project.org/package=lars}.
+	\url{https://CRAN.R-project.org/package=lars}.
 	
 	\bibitem[{Hendry(2003)}]{Hendry03}
 	Hendry DF (2003).
 	\newblock \enquote{J. Denis Sargan and the Origins of LSE Econometric
 		Methodology.}
 	\newblock \emph{Econometric Theory}, \textbf{19}(3), 457--480.
-	\newblock \doi{10.1017/s0266466603193061}.
+	\newblock \url{https://doi.org/10.1017/s0266466603193061}.
 	
 	\bibitem[{Hendry and Doornik(2014)}]{HendryDoornik2014}
 	Hendry DF, Doornik J (2014).
@@ -2083,7 +1957,7 @@ observations are detected using \code{isat}.
 	Hendry DF, Johansen S (2015).
 	\newblock \enquote{Model Discovery and Trygve Haavelmo's Legacy.}
 	\newblock \emph{Econometric Theory}, \textbf{31}(1), 93--114.
-	\newblock \doi{10.1017/s0266466614000218}.
+	\newblock \url{https://doi.org/10.1017/s0266466614000218}.
 	
 	\bibitem[{Hendry \emph{et~al.}(2007)Hendry, Johansen, and
 		Santos}]{HendryJohansenSantos2007}
@@ -2091,7 +1965,7 @@ observations are detected using \code{isat}.
 	\newblock \enquote{Automatic Selection of Indicators in a Fully Saturated
 		Regression.}
 	\newblock \emph{Computational Statistics}, \textbf{23}(2), 317--335.
-	\newblock \doi{10.1007/s00180-007-0054-z}.
+	\newblock \url{https://doi.org/10.1007/s00180-007-0054-z}.
 	
 	\bibitem[{Hendry and Krolzig(2001)}]{Hendryetal01}
 	Hendry DF, Krolzig HM (2001).
@@ -2102,41 +1976,41 @@ observations are detected using \code{isat}.
 	Hendry DF, Krolzig HM (2005).
 	\newblock \enquote{The Properties of Automatic Gets Modelling.}
 	\newblock \emph{The Economic Journal}, \textbf{115}(502), C32--C61.
-	\newblock \doi{10.1111/j.0013-0133.2005.00979.x}.
+	\newblock \url{https://doi.org/10.1111/j.0013-0133.2005.00979.x}.
 	
 	\bibitem[{Hoover and Perez(1999)}]{Hooveretal99}
 	Hoover KD, Perez SJ (1999).
 	\newblock \enquote{Data Mining Reconsidered: Encompassing and the
 		General-to-Specific Approach to Specification Search.}
 	\newblock \emph{The Econometrics Journal}, \textbf{2}(2), 167--191.
-	\newblock \doi{10.1111/1368-423x.00025}.
+	\newblock \url{https://doi.org/10.1111/1368-423x.00025}.
 	
 	\bibitem[{{IHS Markit}(2017)}]{EViews2016v9.5}
 	{IHS Markit} (2017).
 	\newblock \emph{\proglang{EViews} Version 9.5}.
 	\newblock IHS Markit, Irvine, CA.
-	\newblock \urlprefix\url{http://www.eviews.com/}.
+	\newblock \url{http://www.eviews.com/}.
 	
 	\bibitem[{Jarque and Bera(1980)}]{JarqueBera1980}
 	Jarque C, Bera A (1980).
 	\newblock \enquote{Efficient Tests for Normality, Homoskedasticity, and Serial
 		Independence.}
 	\newblock \emph{Economics Letters}, \textbf{6}(3), 255--259.
-	\newblock \doi{10.1016/0165-1765(80)90024-5}.
+	\newblock \url{https://doi.org/10.1016/0165-1765(80)90024-5}.
 	
 	\bibitem[{Johansen and Nielsen(2016)}]{johansen2016asymptotic}
 	Johansen S, Nielsen B (2016).
 	\newblock \enquote{Asymptotic Theory of Outlier Detection Algorithms for Linear
 		Time Series Regression Models.}
 	\newblock \emph{Scandinavian Journal of Statistics}, \textbf{43}(2), 321--348.
-	\newblock \doi{10.1111/sjos.12174}.
+	\newblock \url{https://doi.org/10.1111/sjos.12174}.
 	
 	\bibitem[{Killick and Eckley(2014)}]{killick2014changepoint}
 	Killick R, Eckley I (2014).
 	\newblock \enquote{\pkg{changepoint}: An \proglang{R} Package for Changepoint
 		Analysis.}
 	\newblock \emph{Journal of Statistical Software}, \textbf{58}(3), 1--19.
-	\newblock \doi{10.18637/jss.v058.i03}.
+	\newblock \url{https://doi.org/10.18637/jss.v058.i03}.
 	
 	\bibitem[{Kleiber \emph{et~al.}(2002)Kleiber, Hornik, Leisch, and
 		Zeileis}]{kleiber2002strucchange}
@@ -2144,19 +2018,19 @@ observations are detected using \code{isat}.
 	\newblock \enquote{\pkg{strucchange}: An \proglang{R} Package for Testing for
 		Structural Change in Linear Regression Models.}
 	\newblock \emph{Journal of Statistical Software}, \textbf{7}(2), 1--38.
-	\newblock \doi{10.18637/jss.v007.i02}.
+	\newblock \url{https://doi.org/10.18637/jss.v007.i02}.
 	
 	\bibitem[{Ljung and Box(1978)}]{Ljungetal79}
 	Ljung GM, Box GEP (1978).
 	\newblock \enquote{On a Measure of Lack of Fit in Time Series Models.}
 	\newblock \emph{Biometrika}, \textbf{65}(2), 297--303.
-	\newblock \doi{10.2307/2335207}.
+	\newblock \url{https://doi.org/10.2307/2335207}.
 	
 	\bibitem[{Lovell(1983)}]{Lovell83}
 	Lovell MC (1983).
 	\newblock \enquote{Data Mining.}
 	\newblock \emph{The Review of Economics and Statistics}, \textbf{65}(1), 1--12.
-	\newblock \doi{10.2307/1924403}.
+	\newblock \url{https://doi.org/10.2307/1924403}.
 	
 	\bibitem[{Mizon(1995)}]{Mizon95}
 	Mizon G (1995).
@@ -2170,7 +2044,7 @@ observations are detected using \code{isat}.
 	\newblock \enquote{A Simple Positive Semi-Definite, Heteroskedasticity and
 		Autocorrelation Consistent Covariance Matrix.}
 	\newblock \emph{Econometrica}, \textbf{55}(3), 703--708.
-	\newblock \doi{10.2307/1913610}.
+	\newblock \url{https://doi.org/10.2307/1913610}.
 	
 	\bibitem[{Perron(2006)}]{perron2006dealing}
 	Perron P (2006).
@@ -2197,7 +2071,15 @@ observations are detected using \code{isat}.
 		Assessing the Effects of Conditioning Variables and Temporal Uncertainties
 		Through Sample-Wide Break Detection.}
 	\newblock \emph{Climatic Change}, \textbf{131}(4), 705--718.
-	\newblock \doi{10.1007/s10584-015-1391-5}.
+	\newblock \url{https://doi.org/10.1007/s10584-015-1391-5}.
+
+	\bibitem[{Pretis \emph{et~al.}(2018)Pretis, Reade, and
+	Sucarrat}]{PretisReadeSucarrat2018}
+	Pretis F, Reade JJ, Sucarrat G (2018).
+	\newblock \enquote{Automated General-to-Specific (GETS) Regression Modeling
+		and Indicator Saturation for Outliers and Structural Breaks.}
+	\newblock \emph{Journal of Statistical Software}, \textbf{86}(3), 1--44.
+	\newblock \url{https://doi.org/10.18637/jss.v086.i03}.
 	
 	\bibitem[{Pretis \emph{et~al.}(2016)Pretis, Schneider, Smerdon, and
 		Hendry}]{pretis_volc16}
@@ -2205,14 +2087,14 @@ observations are detected using \code{isat}.
 	\newblock \enquote{Detecting Volcanic Eruptions in Temperature Reconstructions
 		by Designed Break-Indicator Saturation.}
 	\newblock \emph{Journal of Economic Surveys}, \textbf{30}(3), 403--429.
-	\newblock \doi{10.1111/joes.12148}.
+	\newblock \url{https://doi.org/10.1111/joes.12148}.
 	
 	\bibitem[{{\proglang{R} Core Team}(2018)}]{RCoreTeam2016}
 	{\proglang{R} Core Team} (2018).
 	\newblock \emph{\proglang{R}: A Language and Environment for Statistical
 		Computing}.
 	\newblock \proglang{R} Foundation for Statistical Computing, Vienna, Austria.
-	\newblock \urlprefix\url{https://www.R-project.org/}.
+	\newblock \url{https://www.R-project.org/}.
 	
 	\bibitem[{Schneider \emph{et~al.}(2017)Schneider, Smerdon, Pretis, Hartl-Meier,
 		and Esper}]{schneider2017}
@@ -2220,13 +2102,13 @@ observations are detected using \code{isat}.
 	\newblock \enquote{A New Archive of Large Volcanic Events Over the Past
 		Millennium Derived from Reconstructed Summer Temperatures.}
 	\newblock \emph{Environmental Research Letters}, \textbf{12}(9), 094005.
-	\newblock \doi{10.1088/1748-9326/aa7a1b}.
+	\newblock \url{https://doi.org/10.1088/1748-9326/aa7a1b}.
 	
 	\bibitem[{Schwarz(1978)}]{Schwarz1978}
 	Schwarz G (1978).
 	\newblock \enquote{Estimating the Dimension of a Model.}
 	\newblock \emph{The Annals of Statistics}, \textbf{6}(2), 461--464.
-	\newblock \doi{10.1214/aos/1176344136}.
+	\newblock \url{https://doi.org/10.1214/aos/1176344136}.
 	
 	\bibitem[{Smith \emph{et~al.}(2011)Smith, {van Aardenne}, Klimont, Andres,
 		Volke, and {Delgado Arias}}]{smith2011anthropogenic}
@@ -2234,31 +2116,31 @@ observations are detected using \code{isat}.
 	(2011).
 	\newblock \enquote{Anthropogenic Sulfur Dioxide Emissions: 1850--2005.}
 	\newblock \emph{Atmospheric Chemistry and Physics}, \textbf{11}(3), 1101--1116.
-	\newblock \doi{10.5194/acp-11-1101-2011}.
+	\newblock \url{https://doi.org/10.5194/acp-11-1101-2011}.
 	
 	\bibitem[{{StataCorp}(2017)}]{STATA2017}
 	{StataCorp} (2017).
 	\newblock \emph{\proglang{STATA} Statistical Software: Release~15}.
 	\newblock StataCorp LLC, College Station, TX.
-	\newblock \urlprefix\url{http://www.stata.com/}.
+	\newblock \url{http://www.stata.com/}.
 	
 	\bibitem[{Sucarrat(2010)}]{Sucarrat2010}
 	Sucarrat G (2010).
 	\newblock \enquote{Econometric Reduction Theory and Philosophy.}
 	\newblock \emph{Journal of Economic Methodology}, \textbf{17}(1), 53--75.
-	\newblock \doi{10.1080/13501780903528978}.
+	\newblock \url{https://doi.org/10.1080/13501780903528978}.
 	
 	\bibitem[{Sucarrat(2015{\natexlab{a}})}]{AutoSEARCH}
 	Sucarrat G (2015{\natexlab{a}}).
 	\newblock \emph{\pkg{AutoSEARCH}: General-to-Specific (GETS) Modelling}.
 	\newblock \proglang{R} package version 1.5,
-	\urlprefix\url{https://CRAN.R-project.org/package=AutoSEARCH}.
+	\url{https://CRAN.R-project.org/package=AutoSEARCH}.
 	
 	\bibitem[{Sucarrat(2015{\natexlab{b}})}]{Sucarrat2015lgarchV06}
 	Sucarrat G (2015{\natexlab{b}}).
 	\newblock \emph{\pkg{lgarch}: Simulation and Estimation of Log-GARCH Models}.
 	\newblock \proglang{R} package version 0.6-2,
-	\urlprefix\url{https://CRAN.R-project.org/package=lgarch/}.
+	\url{https://CRAN.R-project.org/package=lgarch/}.
 	
 	\bibitem[{Sucarrat and Escribano(2012)}]{SucarratEscribano2012}
 	Sucarrat G, Escribano {\'A} (2012).
@@ -2266,7 +2148,7 @@ observations are detected using \code{isat}.
 		Modelling of the Mean and Volatility Specifications.}
 	\newblock \emph{Oxford Bulletin of Economics and Statistics}, \textbf{74}(5),
 	716--735.
-	\newblock \doi{10.1111/j.1468-0084.2011.00669.x}.
+	\newblock \url{https://doi.org/10.1111/j.1468-0084.2011.00669.x}.
 	
 	\bibitem[{Sucarrat \emph{et~al.}(2016)Sucarrat, Gr{\o}nneberg, and
 		Escribano}]{SucarratGronnebergEscribano2016}
@@ -2275,21 +2157,21 @@ observations are detected using \code{isat}.
 		Log-GARCH-X Models When the Conditional Density Is Unknown.}
 	\newblock \emph{Computational Statistics \& Data Analysis}, \textbf{100},
 	582--594.
-	\newblock \doi{10.1016/j.csda.2015.12.005}.
+	\newblock \url{https://doi.org/10.1016/j.csda.2015.12.005}.
 	
 	\bibitem[{Sucarrat \emph{et~al.}(2018)Sucarrat, Pretis, and Reade}]{gets}
 	Sucarrat G, Pretis F, Reade J (2018).
 	\newblock \emph{\pkg{gets}: General-to-Specific (GETS) Modelling and Indicator
 		Saturation Methods}.
 	\newblock \proglang{R} package version 0.15,
-	\urlprefix\url{https://CRAN.R-project.org/package=gets}.
+	\url{https://CRAN.R-project.org/package=gets}.
 	
 	\bibitem[{{The~MathWorks Inc.}(2017)}]{MATLABR2017b}
 	{The~MathWorks Inc} (2017).
 	\newblock \emph{\proglang{MATLAB} -- The Language of Technical Computing,
 		Version R2017b.}
 	\newblock Natick, Massachusetts.
-	\newblock \urlprefix\url{http://www.mathworks.com/products/matlab/}.
+	\newblock \url{http://www.mathworks.com/products/matlab/}.
 	
 	\bibitem[{Tibshirani(1996)}]{tibshirani1996regression}
 	Tibshirani R (1996).
@@ -2302,14 +2184,14 @@ observations are detected using \code{isat}.
 	\newblock \enquote{A Heteroskedasticity-Consistent Covariance Matrix and a
 		Direct Test for Heteroskedasticity.}
 	\newblock \emph{Econometrica}, \textbf{48}(4), 817--838.
-	\newblock \doi{10.2307/1912934}.
+	\newblock \url{https://doi.org/10.2307/1912934}.
 	
 	\bibitem[{Zeileis and Grothendieck(2005)}]{ZeileisGrothendieck2005}
 	Zeileis A, Grothendieck G (2005).
 	\newblock \enquote{\pkg{zoo}: \proglang{S}3 Infrastructure for Regular and
 		Irregular Time Series.}
 	\newblock \emph{Journal of Statistical Software}, \textbf{14}(6), 1--27.
-	\newblock \doi{10.18637/jss.v014.i06}.
+	\newblock \url{https://doi.org/10.18637/jss.v014.i06}.
 	
 \end{thebibliography}
 
