@@ -53,6 +53,41 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   info.method <- match.arg(info.method)
   gof.method <- match.arg(gof.method)
   
+  isat.args <- list(
+    mc = mc, 
+    ar = ar, 
+    ewma = ewma,
+    iis = iis, 
+    sis = sis, 
+    tis = tis, 
+    uis = uis,
+    uis.logical = if(is.null(uis) | identical(uis, FALSE)){FALSE} else {TRUE}, 
+    blocks = blocks,
+    ratio.threshold = ratio.threshold, 
+    max.block.size = max.block.size, 
+    t.pval = t.pval,
+    wald.pval = wald.pval,
+    vcov.type = vcov.type,
+    do.pet = do.pet, 
+    ar.LjungB = ar.LjungB, 
+    arch.LjungB = arch.LjungB,
+    normality.JarqueB = normality.JarqueB,
+    info.method = info.method,
+    user.diagnostics = user.diagnostics, 
+    user.estimator = user.estimator,
+    gof.function = gof.function,
+    gof.method = gof.method,
+    include.gum = include.gum,
+    include.1cut = include.1cut, 
+    include.empty = include.empty, 
+    max.paths = max.paths,
+    parallel.options = parallel.options, 
+    turbo = turbo, 
+    tol = tol, 
+    LAPACK = LAPACK,
+    max.regs = max.regs
+  )
+  
   ##check that any indicator method is selected
   if(sis == FALSE && iis == FALSE && tis == FALSE && identical(uis, FALSE)){
     stop("No Indicator Selection Method was selected. Either set iis, sis or tis as TRUE or specify uis.")
@@ -133,19 +168,19 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
 
   } #end if(!is.null(parallel.options))
 
-#OLD:
-#  ##parallel.options argument:
-#  if(!is.null(parallel.options)){
-#    if(is.numeric(parallel.options)){
-#      clusterSpec <- parallel.options
-#    }
-#    OScores <- detectCores()
-#    if(parallel.options > OScores){
-#      stop("parallel.options > number of cores/threads")
-#    }
-#    #to do: enable exportCluster argument?
-#    #add: memory.limit()/memory.size() = max cores check?
-#  }
+  #OLD:
+  #  ##parallel.options argument:
+  #  if(!is.null(parallel.options)){
+  #    if(is.numeric(parallel.options)){
+  #      clusterSpec <- parallel.options
+  #    }
+  #    OScores <- detectCores()
+  #    if(parallel.options > OScores){
+  #      stop("parallel.options > number of cores/threads")
+  #    }
+  #    #to do: enable exportCluster argument?
+  #    #add: memory.limit()/memory.size() = max cores check?
+  #  }
 
   ##create regressors (no indicators), record info:
   mX <- regressorsMean(y, mc=mc, ar=ar, ewma=ewma, mxreg=mxreg,
@@ -225,9 +260,9 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
 
   ##user-defined indicators/variables:
   ##----------------------------------
-
-  #if uis is a matrix:
-  if(!is.list(uis) && !identical(as.numeric(uis),0)){
+  
+  #if uis is a matrix or a data.frame:
+  if(!is.list(uis) && !identical(as.numeric(uis),0) || is.data.frame(uis)){
 
     ##handle colnames:
     uis <- as.zoo(cbind(uis))
@@ -401,10 +436,10 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
         ISspecific.models <- NULL
       }else{
         ISspecific.models <- names(getsis$specific.spec)
-#For the future?:
-#        ISgums[[j]] <- getsis$gum.mean
-#        ISpaths[[j]] <- getsis$paths
-#        ISterminals.results[[j]] <- getsis$terminals.results
+        #For the future?:
+        #        ISgums[[j]] <- getsis$gum.mean
+        #        ISpaths[[j]] <- getsis$paths
+        #        ISterminals.results[[j]] <- getsis$terminals.results
       }
 
       ##return
@@ -444,7 +479,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
         message("Searching...", appendLF=TRUE)
         #message("\n", appendLF=FALSE)
       }
-
+      
       blocksClust <- makeCluster(clusterSpec, outfile="") #make cluster
       clusterExport(blocksClust, clusterVarlist,
         envir=.GlobalEnv) #idea for the future?: envir=clusterEnvir
@@ -470,7 +505,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
         names(ISmatrices)[i], " variables... ",
         appendLF=TRUE)
     }
-
+    
     ##if no indicators retained from the blocks:
     if(length(ISspecific.models) == 0){
       isNames <- NULL
@@ -656,18 +691,25 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   }
   if(plot){ plot.isat(getsis, coef.path=TRUE) }
   
-  ## Outlier Proportion and Distortion Test 
-  # Proportion Test was previously executed in the print.isat function
-  if(!is.null(getsis$call$iis) & isTRUE(eval(getsis$call$iis))){
-    if(!any(eval(getsis$call$sis), eval(getsis$call$tis), 
-##change suggested by J-bat (implemented by G-man 12 June 2022):
-            ifelse(is.logical(eval(getsis$call$uis)) & isTRUE(eval(getsis$call$uis)), TRUE, FALSE),
-            !identical(userEstArg$name, "ols"))){
-                  
-      getsis$outlier.proportion.test <- outliertest(getsis)
-      getsis$outlier.distortion.test <- distorttest(getsis)
-      }
-    }
+  
+  if(isat.args$iis &&
+     identical(userEstArg$name, "ols") &&
+     !any(isat.args$sis, isat.args$tis, isat.args$uis.logical)){
+    
+    ## Outlier Proportion and Distortion Test 
+    # Proportion Test was previously executed in the print.isat function
+    #if(!is.null(getsis$call$iis) & isTRUE(eval(getsis$call$iis))){
+    #  if(!any(eval(getsis$call$sis), eval(getsis$call$tis), 
+    ##change suggested by J-bat (implemented by G-man 12 June 2022):
+    #          ifelse(is.logical(eval(getsis$call$uis)) & isTRUE(eval(getsis$call$uis)), TRUE, FALSE),
+    #          !identical(userEstArg$name, "ols"))){
+                
+    getsis$outlier.proportion.test <- outliertest(getsis)
+    getsis$outlier.distortion.test <- distorttest(getsis)
+    #  }
+  }
+  
+  getsis$aux$args <- isat.args
   
   return(getsis)
 
