@@ -691,6 +691,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   }
   if(plot){ plot.isat(getsis, coef.path=TRUE) }
   
+  getsis$aux$args <- isat.args
   
   if(isat.args$iis &&
      identical(userEstArg$name, "ols") &&
@@ -709,7 +710,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     #  }
   }
   
-  getsis$aux$args <- isat.args
+  
   
   return(getsis)
 
@@ -2761,7 +2762,7 @@ isatvarcorrect <- function(x,   mcor = 1){
   
   classx <- class(x)
   if (classx=="isat"){
-    if (!is.null(x$call$iis) & x$call$iis==TRUE) 
+    if (!is.null(x$aux$args$iis) & x$aux$args$iis==TRUE) 
     {
       x$vcov.mean <- x$vcov.mean * as.numeric(isvarcor(x$aux$t.pval, 1)[2]^2)
       rel_names <- x$aux$mXnames[!(x$aux$mXnames %in% x$ISnames)]
@@ -2846,7 +2847,7 @@ outliertest <- function(x=NULL, noutl=NULL, t.pval=NULL, T=NULL,  m=1, infty=FAL
         # if (any(x$call$sis, x$call$tis)==TRUE ){
         #   stop("Test only valid for iis")
         # } else {
-        if (  x$call$iis == TRUE){
+        if (  x$aux$args$iis == TRUE){
           ISnames <- c(x$ISnames[grep("iis", x$ISnames)])
           noutl= length(ISnames) 
           t.pval <- x$aux$t.pval
