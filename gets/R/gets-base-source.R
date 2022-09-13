@@ -2196,10 +2196,6 @@ arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     )
   }
 
-  # Check ar argument
-  if(!(is.numeric(ar) | is.null(ar))){stop("The 'ar' argument must be NULL or numeric.")}
-  
-  
   ##regressand, regressors:
   #should be here instead of above/in the beginning?:
   #y.name <- deparse(substitute(y))
