@@ -5,9 +5,9 @@ distorttest <- function(x, coef="all"){
   if (is.null(x)){stop("Object is NULL - please make sure to pass an isat object.")}
   classx <- class(x)
   if (classx!="isat"){ stop("x must be an isat object")}
-  if (any(x$call$sis, x$call$tis, x$call$uis)==TRUE){stop("Test only valid for iis - not valid for sis, uis, or tis.")} 
+  if (any(x$aux$args$sis, x$aux$args$tis, x$aux$args$uis_logical)==TRUE){stop("Test only valid for iis - not valid for sis, uis, or tis.")} 
   if (all(coef != "all") && any(!coef %in% names(coef(x)))){stop("The 'coef' variable or vector contains one or more regressors not in the isat object.")}
-  if (x$call$iis != TRUE){stop("The isat object has not selected iis = TRUE. This is necessary for this test. Re-estimate isat with iis = TRUE.")}
+  if (x$aux$args$iis != TRUE){stop("The isat object has not selected iis = TRUE. This is necessary for this test. Re-estimate isat with iis = TRUE.")}
   # WRONG CHECK - Therefore commented out: if (is.null(x$ISnames)){stop("IIS did not identify any Indicators (Outliers). Therefore OLS = IIS and no distortion is detectable.")}
   
   ISnames <- c(x$ISnames[grep("iis", x$ISnames)])
@@ -40,12 +40,12 @@ distorttest <- function(x, coef="all"){
   y.null <-  x$aux$y[n.null]
   
   
-  if (!is.null(x$call$ar)){
-    ar.call <- eval(x$call$ar)
+  if (!is.null(x$aux$args$ar)){
+    ar.call <- x$aux$args$ar
   }
   
-  if (!is.null(x$call$ar)){
-    mx.null <- x$aux$mX[(n.null-max(eval(x$call$ar))),keep] # M-orca note: this won't work with panels!!
+  if (!is.null(x$aux$args$ar)){
+    mx.null <- x$aux$mX[(n.null-max(x$aux$args$ar)),keep] # M-orca note: this won't work with panels!!
   } else{
     mx.null <- x$aux$mX[n.null,keep]
   }
