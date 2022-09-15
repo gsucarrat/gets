@@ -1,10 +1,16 @@
-Version 0.37 (3 September 2022):
-================================
+Version 0.37 (15 September 2022):
+=================================
 
-* Changes to the introduction vignette (mainly of style)
+* changes (mainly of style) to the introduction vignette
 
-Fixes:
+* notational changes to the NEWS file 
+
+* isat.default(): new output list 'args' in the list element aux that saves the most relevant inputs
+
+* fixes:
 - isat.default(): the dependence on Sys.call() was removed when determining outlier distortion
+- isat.default(): now handles situations where ar = 0 or non-numeric
+- isat.default()/distorttest()/outliertest(): removed dependence on correct evaluation of 'Sys.call()', functions now depend on the new 'args' list
 
 
 Version 0.36 (3 July 2022):
@@ -12,18 +18,20 @@ Version 0.36 (3 July 2022):
 
 * printtex()/toLatex.arx()/toLatex.logitx()/toLatex.gets()/: new argument 'dec'
 
-* Changes to several manual files:
+* changes to several manual files:
 - gets.Rd
 - gets-package.Rd
 - printtex.Rd
 
-Fixes:
+* fixes:
 - isat.default(): only compute outliertest() and distorttest() for the OLS estimator, or when user.estimator$name == "ols"
 - arx() now correctly stores the name of the regressand
 
 
 Version 0.35 (22 March 2022):
 =============================
+
+* versions 0.30 to 0.34 were unsubmitted by CRAN, since they did not pass certain Debian checks
 
 * New functions: distorttest(), distorttestboot(), print.distorttestboot()
 
@@ -60,41 +68,14 @@ Version 0.35 (22 March 2022):
 - logitx.Rd
 - printtex.Rd
 
-Fixes:
+* Fixes:
 - predict.arx() now works correctly when 'mc' is set to 'T' or 'F' in arx(), thanks to mdwy62 (on Github) for identifying this error
-
-Version 0.34 (21 March 2022):
-=============================
-
-* unsubmitted by CRAN (some Debian checks were not passed)
-
-
-Version 0.33 (9 March 2022):
-============================
-
-* unsubmitted by CRAN (some Debian checks were not passed)
-
-
-Version 0.32 (1 March 2022):
-============================
-
-* unsubmitted by CRAN (some Debian checks were not passed)
-
-
-Version 0.31 (24 February 2022):
-================================
-
-* unsubmitted by CRAN (some Debian checks were not passed)
-
-
-Version 0.30 (23 February 2022):
-================================
-
-* unsubmitted by CRAN (some Debian checks were not passed)
 
 
 Version 0.29 (2 September 2021):
 ================================
+
+* version 0.28 was unsubmitted by CRAN, since it did not pass a Debian check 
 
 * arx():
 - new default 'mc = TRUE'; this necessitated changes (not visible to the average user) in several other files, including predict.arx(), predict.gets(), isat.default() and predict.isat()
@@ -124,17 +105,11 @@ Version 0.29 (2 September 2021):
 
 * blocksFun.Rd: minor changes
 
-Fixes:
+* Fixes:
 - predict.arx() now works when 'mc' is explicitly set to FALSE in arx()
 - paths() and terminals() can now be applied more generally (i.e. not only objects of class "arx", "gets" and "isat")
 - the value (a list) returned by arx() when a log-variance specification has been specified, but not a mean specification, does not erroneously contain an item named 'vcov.mean' anymore
 - isat.Rd: the manual of "isat.default()" now correctly states that the value returned is of class "isat", and the extensions of the relevant functions in the "See also" field has been corrected to ".isat"
-
-
-Version 0.28 (1 September 2021):
-================================
-
-* unsubmitted by CRAN, since it did not pass a Debian check 
 
 
 Version 0.27 (20 February 2021):
@@ -571,13 +546,13 @@ Version 0.7 (11 April 2016):
 Version 0.6 (9 March 2016):
 ===========================
 
-* Minor change in the object returned by isat: The entry aux$mX now has column-names equal to aux$mXnames (in version 0.5 colnames(aux$mX) was NULL)
+* minor change in the object returned by isat: The entry aux$mX now has column-names equal to aux$mXnames (in version 0.5 colnames(aux$mX) was NULL)
 
-* Fixes:
+* fixes:
 
 - paths, terminals: documentation and help-files for these functions are now included (the help-files were inadvertedly excluded in version 0.5 due to an error in the paths.Rd file)
 
-- DESCRIPTION file: The BugReports field was changed to http://stackoverflow.com/questions/tagged/r
+- DESCRIPTION file: the BugReports field was changed to http://stackoverflow.com/questions/tagged/r
 
 
 Version 0.5 (29 February 2016):
@@ -597,7 +572,7 @@ Version 0.5 (29 February 2016):
 
 * eviews, stata: minor stylistic changes in the printing whenever file is not NULL
 
-* Fixes:
+* fixes:
 
 - arx: regressors in mxreg can now contain fewer non-NA observations than the regressand (this is automatically adjusted for) at the beginning and at the end of the series
 
@@ -695,9 +670,9 @@ Fixes:
 Version 0.1 (14 October 2014):
 ==============================
 
-All versions until 1.0 should be considered Beta-versions.
+* all versions until 1.0 should be considered Beta-versions.
 
-The package is based on code from AutoSEARCH (also available on the CRAN), but entails a shift in the underlying development principles. The main motivation behind gets is improved user-friendliness, faster and simpler code, and a package that is easier to extend. The most important differences are:
+* the package is based on code from AutoSEARCH (also available on the CRAN), but entails a shift in the underlying development principles. The main motivation behind gets is improved user-friendliness, faster and simpler code, and a package that is easier to extend. The most important differences are:
  
 * the sm function has been replaced with the arx function:
 

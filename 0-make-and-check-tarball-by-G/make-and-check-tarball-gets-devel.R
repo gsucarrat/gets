@@ -47,7 +47,6 @@ whereFolder <- paste0(getwd(), "/gets")
 ####################################################
 
 ##delete files and folders from previous builds?:
-## - 'gets' folder
 ## - '*.Rcheck' folder(s)
 ## - '*.tar.gz' file(s)
 
@@ -148,11 +147,13 @@ fileNames <- dir()
 tarballWhere <- grep(".tar.gz", fileNames)
 tarballName <- fileNames[ tarballWhere ]
 system( paste0("R CMD check ", tarballName, " --as-cran") )
-#system( paste0("R CMD check ", tarballName) )
+#system( paste0("R CMD check ", tarballName) ) #faster but less rigorous
 ## Note: The --as-cran option is obligatory according to cran policy.
 ## Check also the PDF user manual for line exceedances in the .Rd files.
-## This is not detected by the tarball check. An alternative way to
-## check tarball, see: http://win-builder.r-project.org/
+## This is not detected by the tarball check.
+## An alternative way to check the tarball (recommended!), which often
+## finds errors that are usually not found on personal laptops, is via:
+##   http://win-builder.r-project.org/
 
 
 ####################################################
