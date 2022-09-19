@@ -403,8 +403,10 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       }
 
       ##apply dropvar:
+      mXis.names <- colnames(mXis)
       mXis <- dropvar(mXis, tol=tol, LAPACK=LAPACK,
         silent=!print.searchinfo)
+      mxkeep <- mxkeep[!mxkeep %in% which(!mXis.names %in% colnames(mXis))]
 
       ##print info:
       if(is.null(parallel.options)){
