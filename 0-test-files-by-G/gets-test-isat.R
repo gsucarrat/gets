@@ -84,6 +84,26 @@ isat(y, mxreg=x, LAPACK=FALSE)
 #format(tmp, format="%YQ%q")
 #iim(y)
 
+## bug in (until?) version 0.36: incorrect handling of
+## perfect colinearity (https://github.com/gsucarrat/gets/issues/62)
+##==================================================================
+
+library(gets)
+data(hpdata)
+y <- zooreg(hpdata$GCQ, 1959, frequency=4)
+dlogy <- diff(log(y))
+x <- zooreg(hpdata$GYDQ, 1959, frequency=4)
+xmatrix <- as.zoo(ts(data.frame(GYDQ = diff(log(x))), start = index(dlogy)[1], end = index(dlogy)[144], frequency = 4))
+
+a <- isat(dlogy, mxreg=xmatrix$GYDQ, iis=TRUE, sis = FALSE, t.pval =0.05, plot = TRUE)
+
+xmatrix$GYDQ_lincom <- xmatrix$GYDQ * 4
+b <- isat(dlogy, mxreg=xmatrix, iis=TRUE, sis = FALSE, t.pval =0.05, plot = TRUE)
+
+##should be identical, bu were not in (until?) version 0.36:
+a
+b
+
 
 ##################################################
 ## 3 TEST MAIN isat() ARGUMENTS

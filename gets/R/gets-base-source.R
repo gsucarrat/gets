@@ -445,6 +445,22 @@ regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
   }
 
   ##ar terms:
+  ##---------
+  
+#  ##idea for better handling of ar argument:
+#  ararg <- ar
+#  if( !is.null(ararg) ){
+#    ararg <- as.integer(ararg) #convert to integer
+#    ararg <- union(ararg, ararg) #ensure uniqueness of values
+#    if( any(ararg) < 0 ){ #check for negative values
+#      stop("one or more values in 'ar' is negative")
+#    } 
+#    if( identical(ararg, 0) ){ #set ar to NULL if ar=0
+#      ararg <- NULL
+#      warning("'ar' set to NULL, since 'ar = 0'")
+#    } 
+#  }
+  
   if( !is.null(ar) && !identical(as.numeric(ar),0) ){
     tmp <- NULL
     nas <- rep(NA, max(ar))

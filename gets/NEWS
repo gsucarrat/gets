@@ -1,16 +1,17 @@
-Version 0.37 (15 September 2022):
+Version 0.37 (20 September 2022):
 =================================
 
 * changes (mainly of style) to the introduction vignette
 
-* notational changes to the NEWS file 
+* notational and stylistic changes to the NEWS file 
 
 * isat.default(): new output list 'args' in the list element aux that saves the most relevant inputs
 
-* fixes:
-- isat.default(): the dependence on Sys.call() was removed when determining outlier distortion
-- isat.default(): now handles situations where ar = 0 or non-numeric
-- isat.default()/distorttest()/outliertest(): removed dependence on correct evaluation of 'Sys.call()', functions now depend on the new 'args' list
+* isat.default()/distorttest()/outliertest(): removed dependence on correct evaluation of 'Sys.call()', functions now depend on the new 'args' list
+
+* fixes in isat.default():
+- now handles situations where ar = 0 or non-numeric
+- now handles perfectly colinear variables in mxreg correctly
 
 
 Version 0.36 (3 July 2022):
