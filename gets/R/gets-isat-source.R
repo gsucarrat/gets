@@ -538,9 +538,12 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
         mXisNames <- c(mXnames, isNames)
         mXis <- cbind(mX,ISmatrices[[i]][,isNames])
         colnames(mXis) <- mXisNames
+        
+        mXis.names <- colnames(mXis)
         mXis <- dropvar(mXis, tol=tol, LAPACK=LAPACK,
           silent=!print.searchinfo)
-
+        mxkeep <- mxkeep[!mxkeep %in% which(!mXis.names %in% colnames(mXis))]
+        
         getsis <- getsFun(y, mXis, untransformed.residuals=NULL,
           user.estimator=userEstArg, gum.result=NULL, t.pval=t.pval,
           wald.pval=wald.pval, do.pet=do.pet, ar.LjungB=arLjungB,
@@ -604,8 +607,11 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       }
     } #end for loop
 
+    mXis.names <- colnames(cbind(mX,mIS))
     mXis <- dropvar(cbind(mX,mIS), tol=tol, LAPACK=LAPACK,
       silent=!print.searchinfo)
+    mxkeep <- mxkeep[!mxkeep %in% which(!mXis.names %in% colnames(mXis))]
+    
 
   } #end if(length(ISfinalmodels)>0)
 
