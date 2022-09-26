@@ -404,9 +404,11 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
 
       ##apply dropvar:
       mXis.names <- colnames(mXis)
+      original.mxkeep.names <- mXis.names[mxkeep]
       mXis <- dropvar(mXis, tol=tol, LAPACK=LAPACK,
-        silent=!print.searchinfo)
-      mxkeep <- mxkeep[!mxkeep %in% which(!mXis.names %in% colnames(mXis))]
+                      silent=!print.searchinfo)
+      mXis.names.afterdropvar <- colnames(mXis)
+      mxkeep <- which(mXis.names.afterdropvar %in% original.mxkeep.names)
 
       ##print info:
       if(is.null(parallel.options)){
@@ -539,10 +541,13 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
         mXis <- cbind(mX,ISmatrices[[i]][,isNames])
         colnames(mXis) <- mXisNames
         
+        # apply dropvar
         mXis.names <- colnames(mXis)
+        original.mxkeep.names <- mXis.names[mxkeep]
         mXis <- dropvar(mXis, tol=tol, LAPACK=LAPACK,
           silent=!print.searchinfo)
-        mxkeep <- mxkeep[!mxkeep %in% which(!mXis.names %in% colnames(mXis))]
+        mXis.names.afterdropvar <- colnames(mXis)
+        mxkeep <- which(mXis.names.afterdropvar %in% original.mxkeep.names)
         
         getsis <- getsFun(y, mXis, untransformed.residuals=NULL,
           user.estimator=userEstArg, gum.result=NULL, t.pval=t.pval,
@@ -607,10 +612,13 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       }
     } #end for loop
 
+    # apply dropvar
     mXis.names <- colnames(cbind(mX,mIS))
+    original.mxkeep.names <- mXis.names[mxkeep]
     mXis <- dropvar(cbind(mX,mIS), tol=tol, LAPACK=LAPACK,
       silent=!print.searchinfo)
-    mxkeep <- mxkeep[!mxkeep %in% which(!mXis.names %in% colnames(mXis))]
+    mXis.names.afterdropvar <- colnames(mXis)
+    mxkeep <- which(mXis.names.afterdropvar %in% original.mxkeep.names)
     
 
   } #end if(length(ISfinalmodels)>0)
