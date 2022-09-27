@@ -92,8 +92,8 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   if(sis == FALSE && iis == FALSE && tis == FALSE && identical(uis, FALSE)){
     stop("No Indicator Selection Method was selected. Either set iis, sis or tis as TRUE or specify uis.")
   }
-  
-  if(!is.null(ar) && ar == 0){ar <- NULL}
+
+  if(!is.null(ar) && identical(ar,0)){ar <- NULL}
   if(!(is.numeric(ar) | is.null(ar))){stop("The 'ar' argument must be NULL or numeric.")}
   
   ##name of regressand:
@@ -408,7 +408,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       mXis <- dropvar(mXis, tol=tol, LAPACK=LAPACK,
                       silent=!print.searchinfo)
       mXis.names.afterdropvar <- colnames(mXis)
-      mxkeep <- which(mXis.names.afterdropvar %in% original.mxkeep.names)
+      mxkeep.afterdropvar <- which(mXis.names.afterdropvar %in% original.mxkeep.names)
 
       ##print info:
       if(is.null(parallel.options)){
@@ -427,7 +427,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
         wald.pval=wald.pval, do.pet=do.pet, ar.LjungB=arLjungB,
         arch.LjungB=archLjungB, normality.JarqueB=normality.JarqueB,
         user.diagnostics=user.diagnostics, gof.function=gofFunArg,
-        gof.method=gof.method, keep=mxkeep, include.gum=include.gum,
+        gof.method=gof.method, keep=mxkeep.afterdropvar, include.gum=include.gum,
         include.1cut=include.1cut, include.empty=include.empty,
         max.paths=max.paths, turbo=turbo, tol=tol, LAPACK=LAPACK,
         max.regs=max.regs, print.searchinfo=print.searchinfo,
@@ -547,14 +547,14 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
         mXis <- dropvar(mXis, tol=tol, LAPACK=LAPACK,
           silent=!print.searchinfo)
         mXis.names.afterdropvar <- colnames(mXis)
-        mxkeep <- which(mXis.names.afterdropvar %in% original.mxkeep.names)
+        mxkeep.afterdropvar <- which(mXis.names.afterdropvar %in% original.mxkeep.names)
         
         getsis <- getsFun(y, mXis, untransformed.residuals=NULL,
           user.estimator=userEstArg, gum.result=NULL, t.pval=t.pval,
           wald.pval=wald.pval, do.pet=do.pet, ar.LjungB=arLjungB,
           arch.LjungB=archLjungB, normality.JarqueB=normality.JarqueB,
           user.diagnostics=user.diagnostics, gof.function=gofFunArg,
-          gof.method=gof.method, keep=mxkeep, include.gum=include.gum,
+          gof.method=gof.method, keep=mxkeep.afterdropvar, include.gum=include.gum,
           include.1cut=include.1cut, include.empty=include.empty,
           max.paths=max.paths, turbo=turbo, tol=tol, LAPACK=LAPACK,
           max.regs=max.regs, print.searchinfo=print.searchinfo,
@@ -618,7 +618,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     mXis <- dropvar(cbind(mX,mIS), tol=tol, LAPACK=LAPACK,
       silent=!print.searchinfo)
     mXis.names.afterdropvar <- colnames(mXis)
-    mxkeep <- which(mXis.names.afterdropvar %in% original.mxkeep.names)
+    mxkeep.afterdropvar <- which(mXis.names.afterdropvar %in% original.mxkeep.names)
     
 
   } #end if(length(ISfinalmodels)>0)
@@ -644,7 +644,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     wald.pval=wald.pval, do.pet=do.pet, ar.LjungB=arLjungB,
     arch.LjungB=archLjungB, normality.JarqueB=normality.JarqueB,
     user.diagnostics=user.diagnostics, gof.function=gofFunArg,
-    gof.method=gof.method, keep=mxkeep, include.gum=include.gum,
+    gof.method=gof.method, keep=mxkeep.afterdropvar, include.gum=include.gum,
     include.1cut=include.1cut, include.empty=include.empty,
     max.paths=max.paths, turbo=turbo, tol=tol, LAPACK=LAPACK,
     max.regs=max.regs, print.searchinfo=print.searchinfo,
