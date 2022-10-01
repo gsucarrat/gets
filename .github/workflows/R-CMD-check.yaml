@@ -27,7 +27,6 @@ jobs:
           - {os: ubuntu-20.04, r: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest"}
           - {os: ubuntu-20.04, r: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/xenial/latest"}
           - {os: ubuntu-20.04, r: 'devel', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest"}
-          - {os: ubuntu-16.04, r: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/xenial/latest"}
 
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
@@ -104,7 +103,7 @@ jobs:
       - name: Check
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
-        run: rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), build_args = c('--compact-vignettes=both'), error_on = "warning", check_dir = "check")
+        run: rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), build_args = c("--no-build-vignettes"), error_on = "warning", check_dir = "check") #'--compact-vignettes=both'
         shell: Rscript {0}
 
       - name: Upload check results
