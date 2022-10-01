@@ -80,6 +80,7 @@ jobs:
           tinytex::tlmgr_install("thumbpdf")
           tinytex::tlmgr_install("grfext")
           tinytex::tlmgr_install("babel-greek")
+          tinytex::tlmgr_install("greek-fontenc")
         shell: Rscript {0}
       
       #### Comment: This is a super useful debug feature - not needed in standard mode. 
@@ -103,7 +104,7 @@ jobs:
       - name: Check
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
-        run: rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), build_args = c("--no-build-vignettes"), error_on = "warning", check_dir = "check") #'--compact-vignettes=both'
+        run: rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran", "--no-build-vignettes"), build_args = c("--no-build-vignettes"), error_on = "warning", check_dir = "check") #'--compact-vignettes=both'
         shell: Rscript {0}
 
       - name: Upload check results
