@@ -9,7 +9,7 @@ Description: Automated General-to-Specific (GETS) modelling of the mean and vari
 License: GPL (>= 2)
 Imports: methods
 Depends: R (>= 3.3.0), zoo, parallel
-Suggests: lgarch, xtable, Matrix, microbenchmark, testthat
+Suggests: lgarch, xtable, testthat
 BugReports: https://github.com/gsucarrat/gets/issues
 URL: https://CRAN.R-project.org/package=gets, http://www.sucarrat.net/R/gets/
 Config/testthat/edition: 3

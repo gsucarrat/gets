@@ -87,30 +87,30 @@ options(print.searchinfo=FALSE)
 #options(plot=NULL)
 
 test_that("TEST MAIN isat() ARGUMENTS - very basic", {
-
+  
   ##control the plotting:
   ##=====================
-
+  
   getOption("plot")
   options(plot = FALSE)
   #options(plot=FALSE)
   #options(plot=NULL)
-
-
+  
+  
   ##generate some data:
   ##===================
-
+  
   set.seed(123)
   dgp.n <- 50
   y <- rnorm(dgp.n) #or: y <- rt(dgp.n, df=4.1)
   mX <- matrix(rnorm(dgp.n * 3), dgp.n, 3)
   y[1:10] <- y[1:10] + 4 #step-shift
   #plot(as.zoo(y), col="blue") #plot
-
-
+  
+  
   ##some basic tests:
   ##=================
-
+  
   ##for visual inspection:
   expect_silent(isat(y, sis=TRUE, print.searchinfo = FALSE))
   expect_silent(isat(y, iis=TRUE, sis=TRUE, print.searchinfo = FALSE))
@@ -119,9 +119,9 @@ test_that("TEST MAIN isat() ARGUMENTS - very basic", {
   expect_silent(isat(y, sis=TRUE, tis=TRUE, print.searchinfo = FALSE))
   expect_silent(isat(y, iis=TRUE, sis=FALSE, tis=TRUE, print.searchinfo = FALSE))
   expect_silent(isat(y, iis=TRUE, sis=TRUE, tis=TRUE, print.searchinfo = FALSE))
-
+  
   expect_error(isat(y, sis=FALSE))
-
+  
   expect_silent(isat(y, ar=0, sis=TRUE, print.searchinfo = FALSE)) # checking that ar=0 works
   expect_silent(isat(y, ar=1:2, sis=TRUE, print.searchinfo = FALSE))
   expect_silent(isat(y, ar=1:2, iis=TRUE, sis=TRUE, print.searchinfo = FALSE))
@@ -130,7 +130,7 @@ test_that("TEST MAIN isat() ARGUMENTS - very basic", {
   expect_silent(isat(y, ar=1:2, iis=TRUE, sis=FALSE, tis=TRUE, print.searchinfo = FALSE))
   expect_silent(isat(y, ar=1:2, iis=FALSE, sis=TRUE, tis=TRUE, print.searchinfo = FALSE))
   expect_silent(isat(y, ar=1:2, iis=TRUE, sis=TRUE, tis=TRUE, print.searchinfo = FALSE))
-
+  
   expect_silent(isat(y, ar=1:2, mxreg=mX, print.searchinfo = FALSE))
   expect_silent(isat(y, ar=1:2, mxreg=mX, iis=TRUE, print.searchinfo = FALSE))
   expect_silent(isat(y, ar=1:2, mxreg=mX, iis=FALSE, sis=TRUE, print.searchinfo = FALSE))
@@ -139,15 +139,15 @@ test_that("TEST MAIN isat() ARGUMENTS - very basic", {
   expect_silent(isat(y, ar=1:2, mxreg=mX, iis=TRUE, tis=TRUE, print.searchinfo = FALSE))
   expect_silent(isat(y, ar=1:2, mxreg=mX, iis=FALSE, sis=TRUE, tis=TRUE, print.searchinfo = FALSE))
   expect_silent(isat(y, ar=1:2, mxreg=mX, iis=TRUE, sis=TRUE, tis=TRUE, print.searchinfo = FALSE))
-
+  
   # Check the messages
   expect_message(isat(y, ar=1:2, mxreg=mX, iis=TRUE, sis=TRUE, tis=TRUE, print.searchinfo = TRUE))
-
-
+  
+  
   ##yielded error in version 0.9 to 0.23:
   expect_silent(isat(y, ar=1:2, mxreg=as.data.frame(mX), print.searchinfo = FALSE))
-
-
+  
+  
 })
 
 test_that("TEST MAIN isat() ARGUMENTS - slightly more advanced",{
@@ -159,28 +159,28 @@ test_that("TEST MAIN isat() ARGUMENTS - slightly more advanced",{
   y[40] <- y[40]+10
   y[60] <- y[60]-10
   # plot(as.zoo(y))
-
+  
   expect_silent(a <- isat(y, iis=TRUE, sis=FALSE, t.pval=0.05, plot=FALSE, print.searchinfo = FALSE))
-
+  
   # check that any iis are identified
   expect_true(grepl("iis",a$ISfinalmodels))
-
+  
   # check that the correct iis are identified
   expect_true(all(c("iis30", "iis40", "iis60") %in% a$ISfinalmodels[[1]]))
-
+  
   z <- rnorm(100, 0, 1)
   z[1:30] <- z[1:30] + 10
   b <- isat(z, iis=TRUE,  sis=FALSE, t.pval=0.05, plot=FALSE, print.searchinfo = FALSE)
-
+  
   # check that any iis are identified
   expect_true(grepl("iis",b$ISfinalmodels))
-
+  
   # check that no sis are identified
   expect_true(!grepl("sis",b$ISfinalmodels))
-
-
-
-
+  
+  
+  
+  
   ##issue reported by F-bear regarding version 0.20 (email 26/9-2019).
   ## "...there seems to be a serious bug in the latest version of the package.
   ## ISnames seems to be null, even if there are impulses retained. This
@@ -190,18 +190,18 @@ test_that("TEST MAIN isat() ARGUMENTS - slightly more advanced",{
   y <- rnorm(100, 0, 1)
   my <- isat(y, iis=TRUE, sis=FALSE, t.pval=0.05,plot=FALSE, print.searchinfo = FALSE)
   my
-
+  
   expect_true(!is.null(my$ISnames))
-
-
+  
+  
 })
 
 test_that("TEST MAIN isat() ARGUMENTS - Testing the extraction functions", {
-
-
+  
+  
   ##test the extraction functions:
   ##==============================
-
+  
   ##same data as earlier:
   set.seed(123)
   dgp.n <- 50
@@ -209,14 +209,14 @@ test_that("TEST MAIN isat() ARGUMENTS - Testing the extraction functions", {
   mX <- matrix(rnorm(dgp.n*3),dgp.n,3)
   y[1:10] <- y[1:10] + 4 #step-shift
   # plot(as.zoo(y), col="blue") #plot
-
+  
   isatmod <- isat(y, ar=1:2, mxreg=mX, iis=TRUE, sis=TRUE, tis=TRUE, print.searchinfo = FALSE)
-
+  
   expect_output(print(isatmod))
   expect_type(summary(isatmod), "character")
   expect_equal(length(summary(isatmod)),90)
-
-
+  
+  
   coef(isatmod)
   plot(cbind(fitted(isatmod),
              fitted(isatmod, spec="m"),
@@ -238,36 +238,36 @@ test_that("TEST MAIN isat() ARGUMENTS - Testing the extraction functions", {
   terminals(isatmod)
   expect_error(terminals(mod01), "object 'mod01' not found") #should return the error-message: object 'mod01' not found
   vcov(isatmod)
-
+  
 })
 
 
 
 test_that("TEST MAIN isat() ARGUMENTS - test further arguments",{
-
+  
   options(print.searchinfo = FALSE)
-
+  
   set.seed(123)
   y <- rnorm(30)
-
+  
   ##test further arguments:
   ##=======================
-
+  
   expect_silent(isat(y, print.searchinfo = FALSE, t.pval = 0.1)) #default: 0.001
   expect_silent(isat(y, print.searchinfo = FALSE, do.pet = TRUE)) #default: FALSE
   expect_silent(isat(y, print.searchinfo = FALSE, wald.pval = 0.1)) #default: 0.001
   expect_silent(isat(y, print.searchinfo = FALSE, ar.LjungB = list(lag = NULL, pval = 0.01))) #default: NULL
-
+  
   #no search, because the gum does not pass arch-diagnostics:
   expect_silent(isat(y, print.searchinfo = FALSE, arch.LjungB = list(lag = NULL, pval = 0.01))) #default: NULL
   expect_silent(isat(y, print.searchinfo = FALSE, normality.JarqueB = 0.025)) #default: NULL
   expect_silent(isat(y, print.searchinfo = FALSE, info.method = "aic")) #default: sc
-
+  
   expect_silent(isat(y, print.searchinfo = FALSE, arch.LjungB = list(lag = NULL, pval = 0.9))) #default: NULL
-
+  
   #should return warning:
   expect_warning(isat(y, print.searchinfo = FALSE, include.gum = TRUE)) #default: NULL
-
+  
   expect_silent(isat(y, print.searchinfo = FALSE, include.1cut = TRUE)) #default: FALSE
   expect_silent(isat(y, print.searchinfo = FALSE, include.empty = TRUE)) #default: FALSE
   expect_silent(isat(y, print.searchinfo = FALSE, max.paths = 3)) #default: NULL (i.e. "multi-path")
@@ -279,7 +279,7 @@ test_that("TEST MAIN isat() ARGUMENTS - test further arguments",{
   expect_silent(isat(y, print.searchinfo = FALSE, parallel.options = 2, max.paths = 2))
   expect_silent(isat(y, print.searchinfo = FALSE, turbo = TRUE))
   expect_silent(isat(y, print.searchinfo = FALSE, parallel.options = 2, max.paths = 2, turbo = TRUE)) #default: NULL
-
+  
 })
 
 
@@ -295,14 +295,14 @@ expect_snapshot_plot <- function(name, code) {
   # Or maybe the output is different on some operation systems
   skip_on_ci()
   # You'll need to carefully think about and experiment with these skips
-
+  
   name <- paste0(name, ".png")
-
+  
   # Announce the file before touching `code`. This way, if `code`
   # unexpectedly fails or skips, testthat will not auto-delete the
   # corresponding snapshot file.
   announce_snapshot_file(name = name)
-
+  
   # To use expect_snapshot_file() you'll typically need to start by writing
   # a helper function that creates a file from your code, returning a path
   save_png <- function(code, width = 400, height = 400) {
@@ -310,16 +310,16 @@ expect_snapshot_plot <- function(name, code) {
     png(path, width = width, height = height)
     on.exit(dev.off())
     code
-
+    
     path
   }
-
+  
   path <- save_png(code)
   expect_snapshot_file(path, name)
 }
 
 test_that("TEST MAIN isat() ARGUMENTS - additional test of predict.isat",{
-
+  
   ##same data as earlier:
   set.seed(123)
   dgp.n <- 50
@@ -327,13 +327,13 @@ test_that("TEST MAIN isat() ARGUMENTS - additional test of predict.isat",{
   mX <- matrix(rnorm(dgp.n*3),dgp.n,3)
   y[1:10] <- y[1:10] + 4 #step-shift
   # plot(as.zoo(y), col="blue") #plot
-
+  
   isatmod <- isat(y, ar = 1:2, mxreg = mX, iis = TRUE, sis = TRUE, tis = TRUE, print.searchinfo = FALSE)
-
-
+  
+  
   ##additional test of predict.isat():
   ##==================================
-
+  
   expect_snapshot_plot("Test 1",predict(isatmod, newmxreg = matrix(0,12,5),  ci.levels=seq(0.20,0.95,by=0.05),n.sim=20000))
   expect_snapshot_plot("Test 2",predict(isatmod, newmxreg = matrix(0,12,5),  ci.levels=seq(0.20,0.95,by=0.05),n.sim=20000, plot.options=list(shades=seq(20,95,by=5))))
   expect_snapshot_plot("Test 3",predict(isatmod, newmxreg = matrix(0,12,5),  ci.levels=seq(0.20,0.95,by=0.05),n.sim=20000, plot.options=list(shades=seq(95,20,by=-5))))
@@ -355,28 +355,28 @@ test_that("TEST MAIN isat() ARGUMENTS - additional test of predict.isat",{
   expect_snapshot_plot("Test 19",predict(isatmod, newmxreg=matrix(0,12,5),   plot.options = list(newmactual=rep(0,6))))
   expect_snapshot_plot("Test 20",predict(isatmod, newmxreg=matrix(0,12,5),   plot.options = list(shades=c(95,50))))
   expect_snapshot_plot("Test 21",predict(isatmod, newmxreg = matrix(0, 12, 5), plot.options = list(shades = c(50, 95)))) #invert shades
-
+  
 })
 
 test_that("TEST MAIN isat() ARGUMENTS - Test that mconst is named correctly",{
-
+  
   ##In the following model (isatmod), the constant was not correctly
   ##named 'mconst' at one point. Instead, it was named 'mxreg',
   ##which created problems for predict.isat: predict(isatmod). Issue
   ##solved 31/7/2019.
-
+  
   set.seed(123)
   y <- rnorm(30)
   isatmod <- isat(y, print.searchinfo = FALSE)
   expect_identical(names(coef(isatmod))[1], "mconst")
   expect_snapshot_plot("Test 22",predict(isatmod, plot=TRUE))
-
+  
   ##same y, but slightly different model:
   isatmod <- isat(y, ar=1, print.searchinfo = FALSE)
   expect_identical(names(coef(isatmod))[1], "mconst")
   expect_snapshot_plot("Test 23",predict(isatmod, plot=TRUE))
-
-
+  
+  
 })
 
 
@@ -385,7 +385,7 @@ test_that("TEST MAIN isat() ARGUMENTS - Test that mconst is named correctly",{
 
 
 test_that("TEST MAIN isat() ARGUMENTS - test uis argument",{
-
+  
   ##test uis argument:
   ##==================
   set.seed(123)
@@ -396,25 +396,25 @@ test_that("TEST MAIN isat() ARGUMENTS - test uis argument",{
   expect_silent(isat(y, sis=FALSE, uis=uis, print.searchinfo = FALSE))
   expect_silent(isat(y, sis=FALSE, uis=uis, max.paths=1, print.searchinfo = FALSE))
   uis <- sim(dgp.n)
-
+  
   ##as of August 2020, these did not work;
   ##but as of 2 October 2020 they do!:
   expect_silent(isat(y, print.searchinfo = FALSE, sis=FALSE, uis=uis))
   expect_silent(isat(y, print.searchinfo = FALSE, sis=FALSE, uis=uis[,seq(1,dgp.n,2)]))
   expect_silent(isat(y, print.searchinfo = FALSE, sis=FALSE, uis=uis, max.paths=1))
-
+  
   uis <- tim(dgp.n)
   expect_silent(isat(y, print.searchinfo = FALSE, sis=FALSE, uis=uis))
   expect_silent(isat(y, print.searchinfo = FALSE, sis=FALSE, uis=uis[,seq(1,dgp.n,2)]))
   expect_silent(isat(y, print.searchinfo = FALSE, sis=FALSE, uis=uis, max.paths=1))
-
+  
   ##used to crash (uis is a matrix):
   set.seed(123)
   y <- rnorm(30)
   z <- rnorm(30)
   mX <- matrix(rnorm(1*30), 30, 1)
   expect_silent(isat(y, mxreg = z, iis = FALSE, sis = TRUE, uis = mX, print.searchinfo = FALSE))
-
+  
   ##used to crash (uis is a matrix):
   ##as of August 2020, these did not work;
   ##but as of 2 October 2020 they do!:
@@ -424,22 +424,22 @@ test_that("TEST MAIN isat() ARGUMENTS - test uis argument",{
   x <- rnorm(dgpN)
   x_mis <- sim(dgpN)*x
   colnames(x_mis) <- paste("mis", seq(2:(NCOL(x_mis)+1)), sep="")
-
+  
   # The following will still produce messages (despite print.searchinfo = FALSE): "Warning: uis specified but no mxfull variable given. Using mconst instead."
   # this officially is not a warning but just a message
   expect_message(isat(y, print.searchinfo = FALSE, ar=1, mxreg=x, sis=FALSE, uis = x_mis, t.pval=0.05))
   expect_message(isat(y, print.searchinfo = FALSE, ar=1, mxreg=x, sis=FALSE, uis = x_mis, t.pval=0.05, max.paths=1))
-
+  
   expect_snapshot_plot("Test 24",isat(y, ar = 1, mxreg = x, sis = FALSE, uis = x_mis, t.pval = 0.05, plot = TRUE, print.searchinfo = FALSE))
   expect_snapshot_plot("Test 25",isat(y, ar = 1, mxreg = x, sis = FALSE, uis = x_mis, t.pval = 0.05, max.paths = 1, plot =
                                         TRUE, print.searchinfo = FALSE))
-
+  
   ##used to yield error because NCOL(mX) > length(y):
   set.seed(123)
   y <- rnorm(20)
   mX <- matrix(rnorm(20*40), 20, 40)
   expect_silent(isat(y, sis=FALSE, uis = mX, print.searchinfo = FALSE))
-
+  
   ##uis as list:
   uis <- list(sis = sim(y) , tis = tim(y))
   ##as of August 2020, these do not work (why?):
@@ -447,7 +447,7 @@ test_that("TEST MAIN isat() ARGUMENTS - test uis argument",{
   expect_silent(isat(y, print.searchinfo = FALSE, sis = FALSE, uis = uis))
   expect_silent(isat(y, print.searchinfo = FALSE, sis = FALSE, uis = uis, max.paths = 1))
   expect_silent(isat(y, print.searchinfo = FALSE, sis = FALSE, uis = uis, max.paths = 2))
-
+  
   ##uis as data.frame:
   ##in an email 5/10-2020, F-bear reported an error produced by
   ##the following code:
@@ -460,57 +460,57 @@ test_that("TEST MAIN isat() ARGUMENTS - test uis argument",{
   mx <- as.data.frame(mx)
   #mx <- as.zoo(mx) #conversion to zoo solves the issue partially
   yx <- 2*mx[,1] + rnorm(100, 0, 1)
-
+  
   # The following will still produce messages (despite print.searchinfo = FALSE): "Warning: uis specified but no mxfull variable given. Using mconst instead."
   # this officially is not a warning but just a message
   expect_message(isat(yx, iis=TRUE, sis=FALSE, uis=mx, t.pval=0.01, print.searchinfo = FALSE))
   expect_message(isat(yx, iis=TRUE, sis=FALSE, uis=mx, t.pval=0.01, print.searchinfo = TRUE))
-
+  
 })
 
 test_that("TEST MAIN isat() ARGUMENTS - test blocks argument",{
-
+  
   ##test blocks argument:
   ##=====================
-
+  
   ##same data as earlier:
   set.seed(123)
   dgp.n <- 50
   y <- rnorm(dgp.n)
-
+  
   myblocks <- list()
   myblocks[[1]] <- list(10:20, 30:40)
   expect_silent(isat(y, print.searchinfo = FALSE, iis=TRUE, sis=FALSE, tis=FALSE, uis=FALSE, blocks=myblocks))
   expect_silent(isat(y, print.searchinfo = FALSE, iis=TRUE, sis=FALSE, tis=FALSE, uis=FALSE, blocks=myblocks, max.paths=1))
   expect_silent(isat(y, print.searchinfo = FALSE, iis=FALSE, sis=TRUE, tis=FALSE, uis=FALSE, blocks=myblocks))
   expect_silent(isat(y, print.searchinfo = FALSE, iis=FALSE, sis=TRUE, tis=FALSE, uis=FALSE, blocks=myblocks, max.paths=1))
-
+  
   uis <- list(sim(dgp.n), tim(dgp.n))
   myblocks[[2]] <- list(7:19, 27:34, 40:45)
-
+  
   ##as of August 2020, these did not work;
   ##but as of 2 October 2020 they do!:
   expect_silent(isat(y, print.searchinfo = FALSE, iis=FALSE, sis=FALSE, tis=FALSE, uis=uis, blocks=myblocks))
   expect_silent(isat(y, print.searchinfo = FALSE, iis=FALSE, sis=FALSE, tis=FALSE, uis=uis, blocks=myblocks, max.paths=1))
-
+  
 })
 
 test_that("TEST MAIN isat() ARGUMENTS - further tests of predict.isat",{
-
+  
   ##further tests of predict.isat:
   ##==============================
-
+  
   ##issue reported by Steven Sabol (email 27/01-2017). The
   ##code should work as of 0.11:
   set.seed(123)
   mxreg <- zooreg(matrix(rnorm(700), ncol = 7), start = 2002 ,frequency = 12)
   colnames(mxreg) <- c("c1","c2","c3","c4","c5","c6","c7")
   y = zooreg(rnorm(88),start = 2002 ,frequency = 12)
-
+  
   expect_silent(isat_mod <- isat(y, mxreg = mxreg, mc = TRUE, ar = 4, sis = TRUE, t.pval = 0.01, vcov.type = "white", print.searchinfo = FALSE))
   newmxreg  <- tail(na.trim(mxreg),12)
   new_index <- index(tail(na.trim(mxreg),12))
-
+  
   # TODO!!!!
   ##as of 17 July 2019, does not work:
   #prediction_isat <- predict.isat(isat_mod, newmxreg = newmxreg,
@@ -518,10 +518,10 @@ test_that("TEST MAIN isat() ARGUMENTS - further tests of predict.isat",{
 })
 
 test_that("TEST MAIN isat() ARGUMENTS - tests of biascorr, isattest, isatvar",{
-
+  
   ##tests of biascorr, isattest, isatvar, ...etc.:
   ##==============================================
-
+  
   ##issue reported by Gareth Thomas (EViews, email 22/5-2017):
   ##"The following code produces a blank graphics output.  It seems as
   ##though isattest calls the R graphics even if plot=FALSE is set".
@@ -531,14 +531,14 @@ test_that("TEST MAIN isat() ARGUMENTS - tests of biascorr, isattest, isatvar",{
   d[35:55] <- 1
   e <- rnorm(100, 0, 1)
   y <- d*2 +e
-
+  
   ##Static Test against hnull=0 using bias-correction:
   ys <- isat(y, sis=TRUE, iis=FALSE, tis=FALSE, t.pval=0.01, plot=FALSE, print.searchinfo = FALSE)
   expect_silent(isattest(ys, hnull = 0, lr = FALSE, ci.pval = 0.99, plot = FALSE, biascorr = TRUE))
   expect_identical(ncol(isattest(ys, hnull = 0, lr = FALSE, ci.pval = 0.99, plot = FALSE, biascorr = TRUE)),as.integer(4))
   expect_identical(names(isattest(ys, hnull = 0, lr = FALSE, ci.pval = 0.99, plot = FALSE, biascorr = TRUE)),c("ci.low","ci.high", "bias.high","bias.low"))
-
-
+  
+  
 })
 
 
@@ -547,27 +547,27 @@ test_that("TEST MAIN isat() ARGUMENTS - tests of biascorr, isattest, isatvar",{
 # ##################################################
 
 test_that("TEST USER-DEFINED DIAGNOSTICS",{
-
+  
   ##generate some data:
   set.seed(123)
   dgp.n <- 50
   y <- rnorm(dgp.n)
   y[1:10] <- y[1:10] + 4
   mX <- matrix(rnorm(dgp.n*3),dgp.n,3)
-
+  
   ##user-defined Shapiro-Wilks test for normality in the residuals:
   SWtest <- function(x, ...){
     tmp <- shapiro.test(x$residuals)
     result <- c(tmp$statistic, NA, tmp$p.value)
     return(result)
   }
-
+  
   # TODO this is not able to be tested using automatic testing
   # for manual testing, just uncomment the below - these should execute normally
   #expect_silent(isat(y, user.diagnostics = list(name = "SWtest", pval = 1e-10), print.searchinfo = FALSE))
   #expect_identical(nrow(isat(y, user.diagnostics = list(name = "SWtest", pval = 1e-10), print.searchinfo = FALSE)$diagnostics), as.integer(3))
   #expect_identical(row.names(isat(y, user.diagnostics = list(name = "SWtest", pval = 1e-10), print.searchinfo = FALSE)$diagnostics)[3], "SWtest")
-
+  
   ##test the envir entry:
   rm("SWtest") #make sure SWtest is not defined in the global environment
   myenv <- new.env()
@@ -581,10 +581,10 @@ test_that("TEST USER-DEFINED DIAGNOSTICS",{
          },
          envir = myenv) #close assign
   expect_error(isat(y, user.diagnostics = list(name = "SWtest", pval = 0.025), print.searchinfo = FALSE)) #should not work
-
+  
   expect_silent(isat(y, print.searchinfo = FALSE, user.diagnostics = list(name = "SWtest", pval = 1e-05, envir = myenv)))
   expect_silent(isat(y, print.searchinfo = FALSE, user.diagnostics = list(name = "SWtest", pval = 0.025,  envir = myenv)))
-
+  
 })
 
 
@@ -627,59 +627,61 @@ test_that("TEST USER-DEFINED ESTIMATION",{
 })
 
 
-test_that("TEST USER-DEFINED ESTIMATION",{
-  
-  skip_if(!test_environment)
-  
-  ##generate some data:
-  set.seed(123)
-  dgp.n <- 50
-  y <- rnorm(dgp.n)
-  y[1:10] <- y[1:10] + 4
-  mX <- matrix(rnorm(dgp.n*3),dgp.n,3)
-  
-  ##faster ols?:
-  ##There are packages and routines that make OLS faster in
-  ##certain situations, e.g. the Matrix package. The code below
-  ##creates a new function, ols2, which is essentially a copy
-  ##of ols(y, x, method=3), but based on routines from the Matrix
-  ##package.
-  library(Matrix)
-  ols2 <- function(y, x){
-    out <- list()
-    out$n <- length(y)
-    if (is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
-    out$df <- out$n - out$k
-    if (out$k > 0) {
-      x <- as(x, "dgeMatrix")
-      out$xpy <- crossprod(x, y)
-      out$xtx <- crossprod(x)
-      out$coefficients <- as.numeric(solve(out$xtx,out$xpy))
-      out$xtxinv <- solve(out$xtx)
-      out$fit <- out$fit <- as.vector(x %*% out$coefficients)
-    }else{
-      out$fit <- rep(0, out$n)
-    }
-    out$residuals <- y - out$fit
-    out$residuals2 <- out$residuals^2
-    out$rss <- sum(out$residuals2)
-    out$sigma2 <- out$rss/out$df
-    if(out$k > 0){ out$vcov <- as.matrix(out$sigma2 * out$xtxinv) }
-    out$logl <-
-      -out$n * log(2 * out$sigma2 * pi)/2 - out$rss/(2 * out$sigma2)
-    return(out)
-  }
-  
-  ##isat w/ols2:
-  expect_silent(isat(y, user.estimator=list(name="ols2"), print.searchinfo = FALSE))
-  # checking that coefficients are identical across estimators
-  expect_identical(round(isat(y, user.estimator=list(name="ols2"), print.searchinfo = FALSE)$coefficients,7),
-                   round(isat(y, print.searchinfo = FALSE)$coefficients,7))
-  
-  expect_identical(round(isat(y, ar = 1, user.estimator=list(name="ols2"), print.searchinfo = FALSE)$coefficients,7),
-                   round(isat(y, ar = 1, print.searchinfo = FALSE)$coefficients,7))
-  
-})
+# commented out by M-orca to remove Matrix from DESCRIPTION
+# 02/10/2022
+# test_that("TEST USER-DEFINED ESTIMATION",{
+#   
+#   skip_if(!test_environment)
+#   
+#   ##generate some data:
+#   set.seed(123)
+#   dgp.n <- 50
+#   y <- rnorm(dgp.n)
+#   y[1:10] <- y[1:10] + 4
+#   mX <- matrix(rnorm(dgp.n*3),dgp.n,3)
+#   
+##faster ols?:
+##There are packages and routines that make OLS faster in
+##certain situations, e.g. the Matrix package. The code below
+##creates a new function, ols2, which is essentially a copy
+##of ols(y, x, method=3), but based on routines from the Matrix
+##package.
+# library(Matrix)
+# ols2 <- function(y, x){
+#   out <- list()
+#   out$n <- length(y)
+#   if (is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
+#   out$df <- out$n - out$k
+#   if (out$k > 0) {
+#     x <- as(x, "dgeMatrix")
+#     out$xpy <- crossprod(x, y)
+#     out$xtx <- crossprod(x)
+#     out$coefficients <- as.numeric(solve(out$xtx,out$xpy))
+#     out$xtxinv <- solve(out$xtx)
+#     out$fit <- out$fit <- as.vector(x %*% out$coefficients)
+#   }else{
+#     out$fit <- rep(0, out$n)
+#   }
+#   out$residuals <- y - out$fit
+#   out$residuals2 <- out$residuals^2
+#   out$rss <- sum(out$residuals2)
+#   out$sigma2 <- out$rss/out$df
+#   if(out$k > 0){ out$vcov <- as.matrix(out$sigma2 * out$xtxinv) }
+#   out$logl <-
+#     -out$n * log(2 * out$sigma2 * pi)/2 - out$rss/(2 * out$sigma2)
+#   return(out)
+# }
+# 
+# ##isat w/ols2:
+# expect_silent(isat(y, user.estimator=list(name="ols2"), print.searchinfo = FALSE))
+# # checking that coefficients are identical across estimators
+# expect_identical(round(isat(y, user.estimator=list(name="ols2"), print.searchinfo = FALSE)$coefficients,7),
+#                  round(isat(y, print.searchinfo = FALSE)$coefficients,7))
+# 
+# expect_identical(round(isat(y, ar = 1, user.estimator=list(name="ols2"), print.searchinfo = FALSE)$coefficients,7),
+#                  round(isat(y, ar = 1, print.searchinfo = FALSE)$coefficients,7))
+#   
+# })
 
 # M-orca 02/10/22: commented out the speed comparison section
 # all of the below should work, but this is isn't needed each time that we do automatic testing
