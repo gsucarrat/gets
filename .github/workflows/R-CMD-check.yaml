@@ -49,4 +49,4 @@ jobs:
           working-directory: gets
           args: 'c("--no-manual", "--as-cran", "--no-build-vignettes")'
           build_args : 'c("--no-build-vignettes")'
-          error-on: '"error"'
+          error-on: '"warning"'
