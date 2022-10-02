@@ -92,6 +92,12 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   if(sis == FALSE && iis == FALSE && tis == FALSE && identical(uis, FALSE)){
     stop("No Indicator Selection Method was selected. Either set iis, sis or tis as TRUE or specify uis.")
   }
+  
+  ##warn to use robust coefficient variances
+  # suggestion by M-orca 02/10/2022: no time to test this, but potentially useful addition
+  # if(vcov.type != "ordinary"){
+  #   warning("Using robust coefficient covariances is currently discouraged. Errors are likely and results are unlikely to be useful.\nReason is that robust estimators inflate p-values of indicators, leading to overidentification of indicators.\nRecommended to use 'ordinary' vcov type in isat and then to use robust estimators post-selection (i.e. to run arx() with vcov.type argument on the resulting isat object).")
+  # }
 
   if(!is.null(ar) && identical(ar,0)){ar <- NULL}
   if(!(is.numeric(ar) | is.null(ar))){stop("The 'ar' argument must be NULL or numeric.")}

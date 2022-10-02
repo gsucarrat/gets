@@ -21,6 +21,9 @@
 
 
 
+test_environment <- FALSE
+
+
 ##################################################
 ## 2 TEST iim(), sim() AND tim()
 ##################################################
@@ -504,11 +507,11 @@ test_that("TEST MAIN isat() ARGUMENTS - further tests of predict.isat",{
   colnames(mxreg) <- c("c1","c2","c3","c4","c5","c6","c7")
   y = zooreg(rnorm(88),start = 2002 ,frequency = 12)
 
-  isat_mod <- isat(y, mxreg = mxreg, mc = TRUE, ar = 4, sis = TRUE, t.pval = 0.01, vcov.type = "white", print.searchinfo = FALSE)
+  expect_silent(isat_mod <- isat(y, mxreg = mxreg, mc = TRUE, ar = 4, sis = TRUE, t.pval = 0.01, vcov.type = "white", print.searchinfo = FALSE))
   newmxreg  <- tail(na.trim(mxreg),12)
   new_index <- index(tail(na.trim(mxreg),12))
 
-  # TO DO!!!!
+  # TODO!!!!
   ##as of 17 July 2019, does not work:
   #prediction_isat <- predict.isat(isat_mod, newmxreg = newmxreg,
   #                                n.ahead = 12, newindex = new_index, return = TRUE)
@@ -544,27 +547,27 @@ test_that("TEST MAIN isat() ARGUMENTS - tests of biascorr, isattest, isatvar",{
 # ##################################################
 
 test_that("TEST USER-DEFINED DIAGNOSTICS",{
-  
+
   ##generate some data:
   set.seed(123)
   dgp.n <- 50
   y <- rnorm(dgp.n)
   y[1:10] <- y[1:10] + 4
   mX <- matrix(rnorm(dgp.n*3),dgp.n,3)
-  
+
   ##user-defined Shapiro-Wilks test for normality in the residuals:
   SWtest <- function(x, ...){
     tmp <- shapiro.test(x$residuals)
     result <- c(tmp$statistic, NA, tmp$p.value)
     return(result)
   }
-  
-  # this is not able to be tested using automatic testing
+
+  # TODO this is not able to be tested using automatic testing
   # for manual testing, just uncomment the below - these should execute normally
   #expect_silent(isat(y, user.diagnostics = list(name = "SWtest", pval = 1e-10), print.searchinfo = FALSE))
   #expect_identical(nrow(isat(y, user.diagnostics = list(name = "SWtest", pval = 1e-10), print.searchinfo = FALSE)$diagnostics), as.integer(3))
   #expect_identical(row.names(isat(y, user.diagnostics = list(name = "SWtest", pval = 1e-10), print.searchinfo = FALSE)$diagnostics)[3], "SWtest")
-  
+
   ##test the envir entry:
   rm("SWtest") #make sure SWtest is not defined in the global environment
   myenv <- new.env()
@@ -578,67 +581,108 @@ test_that("TEST USER-DEFINED DIAGNOSTICS",{
          },
          envir = myenv) #close assign
   expect_error(isat(y, user.diagnostics = list(name = "SWtest", pval = 0.025), print.searchinfo = FALSE)) #should not work
-  
+
   expect_silent(isat(y, print.searchinfo = FALSE, user.diagnostics = list(name = "SWtest", pval = 1e-05, envir = myenv)))
   expect_silent(isat(y, print.searchinfo = FALSE, user.diagnostics = list(name = "SWtest", pval = 0.025,  envir = myenv)))
+
+})
+
+
+##################################################
+## 5 TEST USER-DEFINED ESTIMATION
+##################################################
+
+test_that("TEST USER-DEFINED ESTIMATION",{
+  
+  skip_if(!test_environment)
+  
+  ##generate some data:
+  set.seed(123)
+  dgp.n <- 50
+  y <- rnorm(dgp.n)
+  y[1:10] <- y[1:10] + 4
+  mX <- matrix(rnorm(dgp.n*3),dgp.n,3)
+  
+  ##define estimator:
+  myEstimator <- function(y, x){ ols(y,x) }
+  
+  ##isat w/user-defined estimator:
+  expect_silent(isat(y, user.estimator=list(name="myEstimator"), print.searchinfo = FALSE))
+  
+  ##isat w/user-defined estimator and test for normality:
+  SWtest <- function(x, ...){
+    tmp <- shapiro.test(x$residuals)
+    result <- c(tmp$statistic, NA, tmp$p.value)
+    return(result)
+  }
+  expect_silent(isat(y, user.estimator=list(name="myEstimator"),
+                     user.diagnostics=list(name="SWtest", pval=1e-10), print.searchinfo = FALSE))
+  
+  expect_identical(row.names(isat(y, user.estimator=list(name="myEstimator"),
+                                  user.diagnostics=list(name="SWtest", pval=1e-10), print.searchinfo = FALSE)$diagnostics)[3], "SWtest")
+  
+  expect_true(is.numeric(isat(y, user.estimator=list(name="myEstimator"),
+                              user.diagnostics=list(name="SWtest", pval=1e-10), print.searchinfo = FALSE)$diagnostics[3,3]))
   
 })
 
- 
-# ##################################################
-# ## 5 TEST USER-DEFINED ESTIMATION
-# ##################################################
-# 
-# ##define estimator:
-# myEstimator <- function(y, x){ ols(y,x) }
-# 
-# ##isat w/user-defined estimator:
-# isat(y, user.estimator=list(name="myEstimator"))
-# 
-# ##isat w/user-defined estimator and test for normality:
-# SWtest <- function(x, ...){
-#   tmp <- shapiro.test(x$residuals)
-#   result <- c(tmp$statistic, NA, tmp$p.value)
-#   return(result)
-# }
-# isat(y, user.estimator=list(name="myEstimator"),
-#      user.diagnostics=list(name="SWtest", pval=1e-10))
-# 
-# ##faster ols?:
-# ##There are packages and routines that make OLS faster in
-# ##certain situations, e.g. the Matrix package. The code below
-# ##creates a new function, ols2, which is essentially a copy
-# ##of ols(y, x, method=3), but based on routines from the Matrix
-# ##package.
-# library(Matrix)
-# ols2 <- function(y, x){
-#   out <- list()
-#   out$n <- length(y)
-#   if (is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
-#   out$df <- out$n - out$k
-#   if (out$k > 0) {
-#     x <- as(x, "dgeMatrix")
-#     out$xpy <- crossprod(x, y)
-#     out$xtx <- crossprod(x)
-#     out$coefficients <- as.numeric(solve(out$xtx,out$xpy))
-#     out$xtxinv <- solve(out$xtx)
-#     out$fit <- out$fit <- as.vector(x %*% out$coefficients)
-#   }else{
-#     out$fit <- rep(0, out$n)
-#   }
-#   out$residuals <- y - out$fit
-#   out$residuals2 <- out$residuals^2
-#   out$rss <- sum(out$residuals2)
-#   out$sigma2 <- out$rss/out$df
-#   if(out$k > 0){ out$vcov <- as.matrix(out$sigma2 * out$xtxinv) }
-#   out$logl <-
-#     -out$n * log(2 * out$sigma2 * pi)/2 - out$rss/(2 * out$sigma2)
-#   return(out)
-# }
-# 
-# ##isat w/ols2:
-# isat(y, user.estimator=list(name="ols2"))
-# 
+
+test_that("TEST USER-DEFINED ESTIMATION",{
+  
+  skip_if(!test_environment)
+  
+  ##generate some data:
+  set.seed(123)
+  dgp.n <- 50
+  y <- rnorm(dgp.n)
+  y[1:10] <- y[1:10] + 4
+  mX <- matrix(rnorm(dgp.n*3),dgp.n,3)
+  
+  ##faster ols?:
+  ##There are packages and routines that make OLS faster in
+  ##certain situations, e.g. the Matrix package. The code below
+  ##creates a new function, ols2, which is essentially a copy
+  ##of ols(y, x, method=3), but based on routines from the Matrix
+  ##package.
+  library(Matrix)
+  ols2 <- function(y, x){
+    out <- list()
+    out$n <- length(y)
+    if (is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
+    out$df <- out$n - out$k
+    if (out$k > 0) {
+      x <- as(x, "dgeMatrix")
+      out$xpy <- crossprod(x, y)
+      out$xtx <- crossprod(x)
+      out$coefficients <- as.numeric(solve(out$xtx,out$xpy))
+      out$xtxinv <- solve(out$xtx)
+      out$fit <- out$fit <- as.vector(x %*% out$coefficients)
+    }else{
+      out$fit <- rep(0, out$n)
+    }
+    out$residuals <- y - out$fit
+    out$residuals2 <- out$residuals^2
+    out$rss <- sum(out$residuals2)
+    out$sigma2 <- out$rss/out$df
+    if(out$k > 0){ out$vcov <- as.matrix(out$sigma2 * out$xtxinv) }
+    out$logl <-
+      -out$n * log(2 * out$sigma2 * pi)/2 - out$rss/(2 * out$sigma2)
+    return(out)
+  }
+  
+  ##isat w/ols2:
+  expect_silent(isat(y, user.estimator=list(name="ols2"), print.searchinfo = FALSE))
+  # checking that coefficients are identical across estimators
+  expect_identical(round(isat(y, user.estimator=list(name="ols2"), print.searchinfo = FALSE)$coefficients,7),
+                   round(isat(y, print.searchinfo = FALSE)$coefficients,7))
+  
+  expect_identical(round(isat(y, ar = 1, user.estimator=list(name="ols2"), print.searchinfo = FALSE)$coefficients,7),
+                   round(isat(y, ar = 1, print.searchinfo = FALSE)$coefficients,7))
+  
+})
+
+# M-orca 02/10/22: commented out the speed comparison section
+# all of the below should work, but this is isn't needed each time that we do automatic testing
 # ##compare speed 1:
 # system.time(isat(y))
 # system.time(isat(y, user.estimator=list(name="ols2")))
@@ -659,102 +703,157 @@ test_that("TEST USER-DEFINED DIAGNOSTICS",{
 # system.time(isat(y, user.estimator=list(name="ols2")))
 # ##Conclusion: sample size matters, additional experiments
 # ##suggests the speed increase is increasing in sample size
+
+
+##################################################
+## 6 TEST USER-DEFINED GOF FUNCTION
+##################################################
+
+test_that("TEST USER-DEFINED GOF FUNCTION", {
+  
+  skip_if(!test_environment)
+  
+  ##generate some data:
+  set.seed(123)
+  dgp.n <- 50
+  y <- rnorm(dgp.n)
+  y[1:10] <- y[1:10] + 4
+  mX <- matrix(rnorm(dgp.n*3),dgp.n,3)
+  
+  
+  ##define estimator:
+  myEstimator <- function(y, x){ ols(y,x) }
+  
+  ##user-defined gof-function:
+  myGof <- function(object){ infocrit(object) }
+  
+  ##do isat:
+  expect_silent(isat(y, gof.function=list(name="myGof"), print.searchinfo = FALSE))
+  expect_silent(isat(y, user.estimator=list(name="myEstimator"), gof.function=list(name="myGof"), print.searchinfo = FALSE))
+  expect_silent(isat(y, user.diagnostics=list(name="SWtest", pval=1e-10), user.estimator=list(name="myEstimator"),gof.function=list(name="myGof"), print.searchinfo = FALSE))
+  
+  ##adjusted R-squared:
+  myGof <- function(object){
+    yvar <- object$fit + object$residuals
+    TSS <- sum( (yvar - mean(yvar))^2 )
+    RSS <- sum(object$residuals^2)
+    Rsquared <- 1 - RSS/TSS
+    result <- 1 - (1-Rsquared)*(object$n-1)/(object$n-object$k)
+    return(result)
+  }
+  
+  ##do isat while maximising R-squared:
+  expect_silent(isat(y, gof.function=list(name="myGof"), gof.method="max", print.searchinfo = FALSE))
+  
+  ##minimise the number of parameters/regressors:
+  myGof <- function(x, ...){ return( x$k ) }
+  expect_silent(isat(y, gof.function=list(name="myGof"), gof.method="min", print.searchinfo = FALSE))
+  
+  
+})
+
+
+
+##################################################
+## 7 TEST PARALLEL COMPUTING
+##################################################
+
+test_that("TEST PARALLEL COMPUTING",{
+  
+  ##generate some data:
+  set.seed(123)
+  dgp.n <- 50
+  y <- rnorm(dgp.n)
+  y[1:10] <- y[1:10] + 4
+  mX <- matrix(rnorm(dgp.n*3),dgp.n,3)
+  
+  expect_silent(isat(y, print.searchinfo = FALSE))
+  expect_silent(isat(y, parallel.options=2, print.searchinfo = FALSE))
+  # check that parallel and non-parallel equal same result
+  expect_identical(isat(y, print.searchinfo = FALSE)$coefficients,
+                   isat(y, parallel.options=2, print.searchinfo = FALSE)$coefficients)
+  
+  
+  expect_silent(isat(y, mxreg = mX, print.searchinfo = FALSE))
+  expect_silent(isat(y, mxreg = mX, parallel.options=2, print.searchinfo = FALSE))
+  # check that parallel and non-parallel equal same result
+  expect_identical(isat(y, mxreg = mX, print.searchinfo = FALSE)$coefficients,
+                   isat(y, mxreg = mX, parallel.options=2, print.searchinfo = FALSE)$coefficients)
+  
+  skip_if(!test_environment)
+  
+  ##user-defined Shapiro-Wilks test for normality in the residuals:
+  SWtest <- function(x, ...){
+    tmp <- shapiro.test(x$residuals)
+    result <- c(tmp$statistic, NA, tmp$p.value)
+    return(result)
+  }
+  
+  expect_silent(isat(y, user.diagnostics=list(name="SWtest", pval=1e-10), print.searchinfo = FALSE))
+  expect_silent(isat(y, user.diagnostics=list(name="SWtest", pval=1e-10),parallel.options=2, print.searchinfo = FALSE))
+  # check that parallel and non-parallel equal same result
+  expect_identical(isat(y, user.diagnostics=list(name="SWtest", pval=1e-10), print.searchinfo = FALSE)$coefficients,
+                   isat(y, user.diagnostics=list(name="SWtest", pval=1e-10),parallel.options=2, print.searchinfo = FALSE)$coefficients)
+  
+  ##user-defined estimator:
+  myEstimator <- function(y, x){ ols(y,x) }
+  expect_silent(isat(y, user.estimator = list(name = "myEstimator"), print.searchinfo = FALSE))
+  expect_silent(isat(y, user.estimator = list(name = "myEstimator"), parallel.options = 2, print.searchinfo = FALSE))
+  expect_identical(isat(y, user.estimator = list(name = "myEstimator"), print.searchinfo = FALSE)$coefficients,
+                   isat(y, user.estimator = list(name = "myEstimator"), parallel.options = 2, print.searchinfo = FALSE)$coefficients)
+  ##user-defined gof:
+  myGof <- function(x, ...){ return( x$k ) }
+  expect_silent(isat(y, gof.function=list(name="myGof"), gof.method="min", print.searchinfo = FALSE))
+  expect_silent(isat(y, gof.function=list(name="myGof"), gof.method="min", parallel.options=2, print.searchinfo = FALSE))
+  expect_identical(isat(y, gof.function=list(name="myGof"), gof.method="min", print.searchinfo = FALSE)$coefficients,
+                   isat(y, gof.function=list(name="myGof"), gof.method="min", parallel.options=2, print.searchinfo = FALSE)$coefficients)
+  
+  ##all three user-defined:
+  expect_silent(isat(y, user.diagnostics = list(name = "SWtest", pval = 1e-10),
+                     user.estimator = list(name = "myEstimator"),
+                     gof.function = list(name = "myGof"), gof.method = "min",
+                     parallel.options = 2, print.searchinfo = FALSE))
+  
+  
+})
+
+
+
+##################################################
+## 8 TEST ROBUST COEFFICIENT COVARIANCES
+##################################################
+
+# test_that("TEST ROBUST COEFFICIENT COVARIANCES",{
 # 
+# M-orca 02/10/2022 disabled as continues to throw errors - we need to fix this overall 
+# TODO fix this
+# skip("Testing of robust coefficient covariances currently skipped")
 # 
-# ##################################################
-# ## 6 TEST USER-DEFINED GOF FUNCTION
-# ##################################################
+## "white" and "newey-west" coefficient covariances generally lead to
+## either outright errors, or strange results. Currently, therefore,
+## until more numerically stable versions are derived, users are
+## discouraged to use these robust coefficient covariances. The tests
+## here, therefore, only check whether the arguments work or not. The
+## last set of checks suggest the source of the problem is near-zero
+## residuals.
 # 
-# ##generate some data:
-# set.seed(123); dgp.n <- 50; y <- rnorm(dgp.n)
-# y[1:10] <- y[1:10] + 4
-# mX <- matrix(rnorm(dgp.n*3),dgp.n,3)
-# 
-# ##user-defined gof-function:
-# myGof <- function(object){ infocrit(object) }
-# 
-# ##do isat:
-# isat(y, gof.function=list(name="myGof"))
-# isat(y, user.estimator=list(name="myEstimator"),
-#      gof.function=list(name="myGof"))
-# isat(y, user.diagnostics=list(name="SWtest", pval=1e-10),
-#      user.estimator=list(name="myEstimator"),
-#      gof.function=list(name="myGof"))
-# 
-# ##adjusted R-squared:
-# myGof <- function(object){
-#   yvar <- object$fit + object$residuals
-#   TSS <- sum( (yvar - mean(yvar))^2 )
-#   RSS <- sum(object$residuals^2)
-#   Rsquared <- 1 - RSS/TSS
-#   result <- 1 - (1-Rsquared)*(object$n-1)/(object$n-object$k)
-#   return(result)
-# }
-# 
-# ##do isat while maximising R-squared:
-# isat(y, gof.function=list(name="myGof"), gof.method="max")
-# 
-# ##minimise the number of parameters/regressors:
-# myGof <- function(x, ...){ return( x$k ) }
-# isat(y, gof.function=list(name="myGof"), gof.method="min")
-# 
-# 
-# ##################################################
-# ## 7 TEST PARALLEL COMPUTING
-# ##################################################
-# 
-# ##user-defined Shapiro-Wilks test for normality in the residuals:
-# SWtest <- function(x, ...){
-#   tmp <- shapiro.test(x$residuals)
-#   result <- c(tmp$statistic, NA, tmp$p.value)
-#   return(result)
-# }
-# isat(y, user.diagnostics=list(name="SWtest", pval=1e-10))
-# isat(y, user.diagnostics=list(name="SWtest", pval=1e-10),
-#      parallel.options=2)
-# 
-# ##user-defined estimator:
-# myEstimator <- function(y, x){ ols(y,x) }
-# isat(y, user.estimator=list(name="myEstimator"))
-# isat(y, user.estimator=list(name="myEstimator"),
-#      parallel.options=2)
-# 
-# ##user-defined gof:
-# myGof <- function(x, ...){ return( x$k ) }
-# isat(y, gof.function=list(name="myGof"), gof.method="min")
-# isat(y, gof.function=list(name="myGof"), gof.method="min",
-#      parallel.options=2)
-# 
-# ##all three user-defined:
-# isat(y, user.diagnostics=list(name="SWtest", pval=1e-10),
-#      user.estimator=list(name="myEstimator"),
-#      gof.function=list(name="myGof"), gof.method="min",
-#      parallel.options=2)
-# 
-# 
-# ##################################################
-# ## 8 TEST ROBUST COEFFICIENT COVARIANCES
-# ##################################################
-# 
-# ##"white" and "newey-west" coefficient covariances generally lead to
-# ##either outright errors, or strange results. Currently, therefore,
-# ##until more numerically stable versions are derived, users are
-# ##discouraged to use these robust coefficient covariances. The tests
-# ##here, therefore, only check whether the arguments work or not. The
-# ##last set of checks suggest the source of the problem is near-zero
-# ##residuals.
+# set.seed(123) 
+# dgp.n <- 100
+# y <- rnorm(dgp.n)
+# plotarg <- FALSE
 # 
 # ##test "white" vcov (all yield errors?):
-# isat(y, iis=TRUE, sis=FALSE, vcov.type="w")
-# isat(y, iis=FALSE, sis=TRUE, vcov.type="w")
-# isat(y, iis=TRUE, sis=TRUE, vcov.type="w")
-# isat(y, iis=FALSE, tis=TRUE, vcov.type="w")
-# isat(y, iis=TRUE, tis=TRUE, vcov.type="w")
-# isat(y, iis=FALSE, sis=TRUE, vcov.type="w", tis=TRUE, plot=plotarg)
-# isat(y, iis=TRUE, sis=TRUE, vcov.type="w", tis=TRUE, plot=plotarg)
+# expect_warning(isat(y, iis=TRUE, sis=FALSE, vcov.type="w", print.searchinfo = FALSE))
+# expect_warning(expect_error(isat(y, iis=FALSE, sis=TRUE, vcov.type="w", print.searchinfo = FALSE)))
+# expect_warning(expect_error(isat(y, iis=TRUE, sis=TRUE, vcov.type="w", print.searchinfo = FALSE)))
+# expect_warning(expect_error(isat(y, iis=FALSE, tis=TRUE, vcov.type="w", print.searchinfo = FALSE)))
+# expect_warning(expect_error(isat(y, iis=TRUE, tis=TRUE, vcov.type="w", print.searchinfo = FALSE)))
+# expect_warning(expect_error(isat(y, iis=FALSE, sis=TRUE, vcov.type="w", tis=TRUE, plot=plotarg, print.searchinfo = FALSE)))
+# expect_warning(expect_error(isat(y, iis=TRUE, sis=TRUE, vcov.type="w", tis=TRUE, plot=plotarg, print.searchinfo = FALSE)))
 # 
 # ##test "newey-west" vcov:
-# set.seed(123); dgp.n <- 100
+# set.seed(123) 
+# dgp.n <- 100
 # y <- rnorm(dgp.n)
 # #y <- rt(dgp.n, df=4.1)
 # mX <- matrix(rnorm(dgp.n*3),dgp.n,3)
@@ -767,10 +866,8 @@ test_that("TEST USER-DEFINED DIAGNOSTICS",{
 # isat(y, iis=TRUE, sis=TRUE, vcov.type="n")
 # isat(y, iis=FALSE, tis=TRUE, vcov.type="n")
 # isat(y, iis=TRUE, tis=TRUE, vcov.type="n")
-# isat(y, iis=FALSE, sis=TRUE, vcov.type="n", tis=TRUE,
-#      plot=plotarg)
-# isat(y, iis=TRUE, sis=TRUE, vcov.type="w", tis=TRUE,
-#      plot=plotarg)
+# isat(y, iis=FALSE, sis=TRUE, vcov.type="n", tis=TRUE, plot=plotarg)
+# isat(y, iis=TRUE, sis=TRUE, vcov.type="w", tis=TRUE, plot=plotarg)
 # 
 # ##code that sheds light on what the possible source of
 # ##the problem is (near-zero residuals)
@@ -778,19 +875,21 @@ test_that("TEST USER-DEFINED DIAGNOSTICS",{
 # y <- rnorm(100, 0, 1)
 # isat(y, vcov.type=c("newey-west"))
 # isat(y, sis=FALSE, uis=sim(y, which.ones=1:10))
-# isat(y, sis=FALSE, uis=sim(y, which.ones=1:10),
-#      vcov.type="newey-west")
-# isat(y, sis=FALSE, uis=sim(y, which.ones=seq(1,20,2)),
-#      vcov.type="newey-west")
+# isat(y, sis=FALSE, uis=sim(y, which.ones=1:10), vcov.type="newey-west")
+# isat(y, sis=FALSE, uis=sim(y, which.ones=seq(1,20,2)), vcov.type="newey-west")
 # 
-# 
-# ##################################################
-# ## 9 SIMULATIONS
-# ##################################################
-# 
-# ##For the future...
-# 
-# 
+# })
+
+
+
+
+##################################################
+## 9 SIMULATIONS
+##################################################
+
+##For the future...
+
+
 
 
 # ##################################################
