@@ -8,10 +8,6 @@ on:
 
 name: R-CMD-check
 
-defaults:
-      run:
-        working-directory: gets
-
 jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
@@ -35,8 +31,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      
-
       - uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ matrix.config.r }}
@@ -52,3 +46,7 @@ jobs:
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
+          working-directory: gets
+          args: 'c("--no-manual", "--as-cran", "--ignore-vignettes", "--no-build-vignettes")'
+          build-args : 'c("--ignore-vignettes", "--no-build-vignettes")'
+          error-on: '"error"'
