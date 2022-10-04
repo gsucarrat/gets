@@ -31,9 +31,11 @@ require(zoo)
 rm(list=ls())
 
 ##load source:
-source("./gets/R/gets-base-source.R")
-source("./gets/R/gets-isat-source.R")
-source("./gets/R/gets-isat-outlier-distortion-source.R")
+library(gets)
+library(testthat)
+#source("./gets/R/gets-base-source.R")
+#source("./gets/R/gets-isat-source.R")
+#source("./gets/R/gets-isat-outlier-distortion-source.R")
 
 
 ##################################################
@@ -101,8 +103,8 @@ xmatrix$GYDQ_lincom <- xmatrix$GYDQ * 4
 b <- isat(dlogy, mxreg=xmatrix, iis=TRUE, sis = FALSE, t.pval =0.05, plot = TRUE)
 
 ##should be identical, bu were not in (until?) version 0.36:
-a
-b
+all(coef(a)==coef(b))
+all(vcov(a)==vcov(b))
 
 
 ##################################################
