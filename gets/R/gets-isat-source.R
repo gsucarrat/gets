@@ -114,10 +114,10 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   }
 
   ##check include.gum argument:
-  if(!is.null(include.gum)){
-    warning("The 'include.gum' argument is ignored (temporarily deprecated in isat)")
-  }
-  include.gum <- TRUE
+  # if(!is.null(include.gum)){
+  #   warning("The 'include.gum' argument is ignored (temporarily deprecated in isat)")
+  # }
+  # include.gum <- TRUE
 
   ##make userEstArg:
   if(is.null(user.estimator)){ #default (ols):
