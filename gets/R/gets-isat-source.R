@@ -547,6 +547,111 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
         mXis <- cbind(mX,ISmatrices[[i]][,isNames])
         colnames(mXis) <- mXisNames
         
+        # check if the number of x-variables exceeds the sample
+        # this happens when e.g. t.pval is too high and too many indicators are retained
+        # if we were not doing the next step, dropvar would just remove the columns most to the right
+        # TODO implement if someone does supply the blocks argument
+        if(NCOL(mXis) > y.n){ # checks if the total number of columns are larger than possible
+          
+          mXis.intermed.models <- list()
+          
+          if(print.searchinfo){
+            message("\n", appendLF=FALSE)
+            message(paste0("Too many inital indicators returned for ",names(ISmatrices)[i],", carrying out additional block search with 2 blocks."),appendLF=TRUE)
+          }
+          
+          mXis.ncol.adj <- length(isNames)
+          
+          # mXis.blockratio.value <- mXis.ncol.adj/(ratio.threshold*mXis.ncol.adj) # slight change here, mXncol does not appear
+          # mXis.blocksize.value <- mXis.ncol.adj/min(y.n*ratio.threshold, max.block.size)
+          # mXis.no.of.blocks <- max(2,mXis.blockratio.value,mXis.blocksize.value)
+          # mXis.no.of.blocks <- ceiling(mXis.no.of.blocks)
+          # mXis.no.of.blocks <- min(mXis.ncol.adj, mXis.no.of.blocks) #ensure blocks < NCOL
+          
+          mXis.no.of.blocks <- 2
+          
+          mXis.blocksize <- ceiling(mXis.ncol.adj/mXis.no.of.blocks)
+          mXis.partitions.t2 <- mXis.blocksize
+          for(j in 1:mXis.no.of.blocks){
+            if( mXis.blocksize*j <= mXis.ncol.adj ) {
+              mXis.partitions.t2[j] <- mXis.blocksize*j
+            }
+          }
+          #check if last block contains last indicator:
+          if(mXis.partitions.t2[length(mXis.partitions.t2)] < mXis.ncol.adj){
+            mXis.partitions.t2 <- c(mXis.partitions.t2, mXis.ncol.adj)
+          }
+          mXis.blocksadj <- length(mXis.partitions.t2)
+          mXis.partitions.t1 <- mXis.partitions.t2 + 1
+          mXis.partitions.t1 <- c(1,mXis.partitions.t1[-mXis.blocksadj])
+          
+          tmp <- list()
+          for(j in 1:mXis.blocksadj){
+            tmp[[j]] <- mXis.partitions.t1[j]:mXis.partitions.t2[j]
+          }
+          mXis.blocks <- tmp
+          
+          for(mxisblocks in 1:length(mXis.blocks)){
+            
+            mXisNames <- c(mXnames, isNames[mXis.blocks[[mxisblocks]]])
+            mXis <- cbind(mX,ISmatrices[[i]][,isNames[mXis.blocks[[mxisblocks]]]])
+            colnames(mXis) <- mXisNames
+            
+            # apply dropvar
+            mXis.names <- colnames(mXis)
+            original.mxkeep.names <- mXis.names[mxkeep]
+            mXis <- dropvar(mXis, tol=tol, LAPACK=LAPACK,
+                            silent=!print.searchinfo)
+            mXis.names.afterdropvar <- colnames(mXis)
+            mxkeep.afterdropvar <- which(mXis.names.afterdropvar %in% original.mxkeep.names)
+            
+            getsis <- getsFun(y, mXis, untransformed.residuals=NULL,
+                              user.estimator=userEstArg, gum.result=NULL, t.pval=t.pval,
+                              wald.pval=wald.pval, do.pet=do.pet, ar.LjungB=arLjungB,
+                              arch.LjungB=archLjungB, normality.JarqueB=normality.JarqueB,
+                              user.diagnostics=user.diagnostics, gof.function=gofFunArg,
+                              gof.method=gof.method, keep=mxkeep.afterdropvar, include.gum=include.gum,
+                              include.1cut=include.1cut, include.empty=include.empty,
+                              max.paths=max.paths, turbo=turbo, tol=tol, LAPACK=LAPACK,
+                              max.regs=max.regs, print.searchinfo=print.searchinfo,
+                              alarm=FALSE)
+            
+            # only done if at least one indicator of this type has been retained
+            # so if no search was done (because failed diagnostics), then not here
+            estimations.counter <- estimations.counter + getsis$no.of.estimations
+            getsFun.counter <- getsFun.counter + 1
+            
+            mXis.intermed.models[[mxisblocks]] <- names(getsis$specific.spec)
+            
+          }
+          
+          isNames <- NULL
+          
+          for(j in 1:length(mXis.intermed.models)){
+            #check if mean is non-empty:
+            if(!is.null(mXis.intermed.models[[j]])){
+              isNames <- union(isNames, mXis.intermed.models[[j]])
+            }
+          } #end for(j) loop
+          isNames <- setdiff(isNames, mXnames)
+          
+          #redo gets with union of retained indicators:
+          if(length(isNames) == 0){
+            ISfinalmodels[[i]] <- mXnames
+          }else{
+            mXisNames <- c(mXnames, isNames)
+            mXis <- cbind(mX,ISmatrices[[i]][,isNames])
+            colnames(mXis) <- mXisNames
+          }
+          
+          # if problem persists, give warning              
+          if(NCOL(mXis) > y.n){
+            warning(paste0("'isat' retains too many indicators for ",names(ISmatrices)[i]," even despite additional block search. Significant issues in the following code expected. Consider setting a tighter (smaller) t.pval argument or improving the model specification."))
+          }
+        }
+        
+        
+        
         # apply dropvar
         mXis.names <- colnames(mXis)
         original.mxkeep.names <- mXis.names[mxkeep]
@@ -618,6 +723,115 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       }
     } #end for loop
 
+    
+    
+    # check if the number of x-variables exceeds the sample
+    # this happens when e.g. t.pval is too high and too many indicators are retained
+    # if we were not doing the next step, dropvar would just remove the columns most to the right
+    # TODO implement if someone does supply the blocks argument
+    if(NCOL(mIS) > y.n){ # checks if the total number of columns are larger than possible
+      
+      mIS.intermed.models <- list()
+      
+      if(print.searchinfo){
+        message("\n", appendLF=FALSE)
+        message(paste0("Too many inital indicators returned for ",names(ISmatrices)[i],", carrying out additional block search with 2 blocks."),appendLF=TRUE)
+      }
+      
+      mIS.ncol.adj <- length(isNames)
+      
+      # mIS.blockratio.value <- mIS.ncol.adj/(ratio.threshold*mIS.ncol.adj) # slight change here, mXncol does not appear
+      # mIS.blocksize.value <- mIS.ncol.adj/min(y.n*ratio.threshold, max.block.size)
+      # mIS.no.of.blocks <- max(2,mIS.blockratio.value,mIS.blocksize.value)
+      # mIS.no.of.blocks <- ceiling(mIS.no.of.blocks)
+      # mIS.no.of.blocks <- min(mIS.ncol.adj, mIS.no.of.blocks) #ensure blocks < NCOL
+      
+      mIS.no.of.blocks <- 2
+      
+      mIS.blocksize <- ceiling(mIS.ncol.adj/mIS.no.of.blocks)
+      mIS.partitions.t2 <- mIS.blocksize
+      for(j in 1:mIS.no.of.blocks){
+        if( mIS.blocksize*j <= mIS.ncol.adj ) {
+          mIS.partitions.t2[j] <- mIS.blocksize*j
+        }
+      }
+      #check if last block contains last indicator:
+      if(mIS.partitions.t2[length(mIS.partitions.t2)] < mIS.ncol.adj){
+        mIS.partitions.t2 <- c(mIS.partitions.t2, mIS.ncol.adj)
+      }
+      mIS.blocksadj <- length(mIS.partitions.t2)
+      mIS.partitions.t1 <- mIS.partitions.t2 + 1
+      mIS.partitions.t1 <- c(1,mIS.partitions.t1[-mIS.blocksadj])
+      
+      tmp <- list()
+      for(j in 1:mIS.blocksadj){
+        tmp[[j]] <- mIS.partitions.t1[j]:mIS.partitions.t2[j]
+      }
+      mIS.blocks <- tmp
+      
+      for(mISblocks in 1:length(mIS.blocks)){
+        
+        mISNames <- c(mXnames, isNames[mIS.blocks[[mISblocks]]])
+        mIS <- cbind(mX,ISmatrices[[i]][,isNames[mIS.blocks[[mISblocks]]]])
+        colnames(mIS) <- mISNames
+        
+        # apply dropvar
+        mIS.names <- colnames(mIS)
+        original.mxkeep.names <- mIS.names[mxkeep]
+        mIS <- dropvar(mIS, tol=tol, LAPACK=LAPACK,
+                        silent=!print.searchinfo)
+        mIS.names.afterdropvar <- colnames(mIS)
+        mxkeep.afterdropvar <- which(mIS.names.afterdropvar %in% original.mxkeep.names)
+        
+        getsis <- getsFun(y, mIS, untransformed.residuals=NULL,
+                          user.estimator=userEstArg, gum.result=NULL, t.pval=t.pval,
+                          wald.pval=wald.pval, do.pet=do.pet, ar.LjungB=arLjungB,
+                          arch.LjungB=archLjungB, normality.JarqueB=normality.JarqueB,
+                          user.diagnostics=user.diagnostics, gof.function=gofFunArg,
+                          gof.method=gof.method, keep=mxkeep.afterdropvar, include.gum=include.gum,
+                          include.1cut=include.1cut, include.empty=include.empty,
+                          max.paths=max.paths, turbo=turbo, tol=tol, LAPACK=LAPACK,
+                          max.regs=max.regs, print.searchinfo=print.searchinfo,
+                          alarm=FALSE)
+        
+        # only done if at least one indicator of this type has been retained
+        # so if no search was done (because failed diagnostics), then not here
+        estimations.counter <- estimations.counter + getsis$no.of.estimations
+        getsFun.counter <- getsFun.counter + 1
+        
+        mIS.intermed.models[[mISblocks]] <- names(getsis$specific.spec)
+        
+      }
+      
+      isNames <- NULL
+      
+      for(j in 1:length(mIS.intermed.models)){
+        #check if mean is non-empty:
+        if(!is.null(mIS.intermed.models[[j]])){
+          isNames <- union(isNames, mIS.intermed.models[[j]])
+        }
+      } #end for(j) loop
+      isNames <- setdiff(isNames, mXnames)
+      
+      #redo gets with union of retained indicators:
+      if(length(isNames) == 0){
+        ISfinalmodels[[i]] <- mXnames
+      }else{
+        mISNames <- c(mXnames, isNames)
+        mIS <- cbind(mX,ISmatrices[[i]][,isNames])
+        colnames(mIS) <- mISNames
+      }
+      
+      # if problem persists, give warning              
+      if(NCOL(mIS) > y.n){
+        warning(paste0("'isat' retains too many indicators for ",names(ISmatrices)[i]," even despite additional block search. Significant issues in the following code expected. Consider setting a tighter (smaller) t.pval argument or improving the model specification."))
+      }
+    }
+    
+    
+    
+    
+    
     # apply dropvar
     mXis.names <- colnames(cbind(mX,mIS))
     original.mxkeep.names <- mXis.names[mxkeep]
