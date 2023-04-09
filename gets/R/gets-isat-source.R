@@ -583,28 +583,6 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
             message(paste0("Too many inital indicators returned for ",names(ISmatrices)[i],", carrying out additional block search with ",mXis.no.of.blocks," blocks using a Leave-one-Out Method."),appendLF=TRUE)
           }
           
-          if(FALSE){
-            mXis.blocksize <- ceiling(mXis.ncol.adj/mXis.no.of.blocks)
-            mXis.partitions.t2 <- mXis.blocksize
-            for(j in 1:mXis.no.of.blocks){
-              if( mXis.blocksize*j <= mXis.ncol.adj ) {
-                mXis.partitions.t2[j] <- mXis.blocksize*j
-              }
-            }
-            #check if last block contains last indicator:
-            if(mXis.partitions.t2[length(mXis.partitions.t2)] < mXis.ncol.adj){
-              mXis.partitions.t2 <- c(mXis.partitions.t2, mXis.ncol.adj)
-            }
-            mXis.blocksadj <- length(mXis.partitions.t2)
-            mXis.partitions.t1 <- mXis.partitions.t2 + 1
-            mXis.partitions.t1 <- c(1,mXis.partitions.t1[-mXis.blocksadj])
-            
-            tmp <- list()
-            for(j in 1:mXis.blocksadj){
-              tmp[[j]] <- mXis.partitions.t1[j]:mXis.partitions.t2[j]
-            } 
-          } 
-          
           mXis.blocks <- tmp
           
           for(mxisblocks in 1:length(mXis.blocks)){
@@ -770,28 +748,6 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       if(print.searchinfo){
         message("\n", appendLF=FALSE)
         message(paste0("Too many inital indicators returned for the union of indicators, carrying out additional block search with ",mIS.no.of.blocks," blocks using a Leave-one-Out Method."),appendLF=TRUE)
-      }
-      
-      if(FALSE){
-        mIS.blocksize <- ceiling(mIS.ncol.adj/mIS.no.of.blocks)
-        mIS.partitions.t2 <- mIS.blocksize
-        for(j in 1:mIS.no.of.blocks){
-          if( mIS.blocksize*j <= mIS.ncol.adj ) {
-            mIS.partitions.t2[j] <- mIS.blocksize*j
-          }
-        }
-        #check if last block contains last indicator:
-        if(mIS.partitions.t2[length(mIS.partitions.t2)] < mIS.ncol.adj){
-          mIS.partitions.t2 <- c(mIS.partitions.t2, mIS.ncol.adj)
-        }
-        mIS.blocksadj <- length(mIS.partitions.t2)
-        mIS.partitions.t1 <- mIS.partitions.t2 + 1
-        mIS.partitions.t1 <- c(1,mIS.partitions.t1[-mIS.blocksadj])
-        
-        tmp <- list()
-        for(j in 1:mIS.blocksadj){
-          tmp[[j]] <- mIS.partitions.t1[j]:mIS.partitions.t2[j]
-        } 
       }
       
       mIS.blocks <- tmp
