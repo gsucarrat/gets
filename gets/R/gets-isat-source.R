@@ -409,6 +409,10 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       }
 
       ##apply dropvar:
+      if(ncol(mXis)>y.n){
+        stop("Too many x-variables and indicators for the sample size. No sensible model estimateable. Set a smaller max.block.size (e.g. max.block.size = 2 or max.block.size = 10) or remove x-variables in mxreg or consider removing x-variables from the specification in mxreg.")
+      }
+
       mXis.names <- colnames(mXis)
       original.mxkeep.names <- mXis.names[mxkeep]
       mXis <- dropvar(mXis, tol=tol, LAPACK=LAPACK,
@@ -524,7 +528,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       isNames <- NULL
       ISfinalmodels[[i]] <- NULL
     }
-
+    
     ##when indicators/variables(uis) retained from the blocks:
     if(length(ISspecific.models) > 0){
 
@@ -551,44 +555,56 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
         # this happens when e.g. t.pval is too high and too many indicators are retained
         # if we were not doing the next step, dropvar would just remove the columns most to the right
         # TODO implement if someone does supply the blocks argument
-        if(NCOL(mXis) > y.n){ # checks if the total number of columns are larger than possible
+        if(NCOL(mXis) >= y.n){ # checks if the total number of columns are larger than possible
           
           mXis.intermed.models <- list()
           
-          if(print.searchinfo){
-            message("\n", appendLF=FALSE)
-            message(paste0("Too many inital indicators returned for ",names(ISmatrices)[i],", carrying out additional block search with 2 blocks."),appendLF=TRUE)
-          }
           
           mXis.ncol.adj <- length(isNames)
           
-          # mXis.blockratio.value <- mXis.ncol.adj/(ratio.threshold*mXis.ncol.adj) # slight change here, mXncol does not appear
-          # mXis.blocksize.value <- mXis.ncol.adj/min(y.n*ratio.threshold, max.block.size)
-          # mXis.no.of.blocks <- max(2,mXis.blockratio.value,mXis.blocksize.value)
-          # mXis.no.of.blocks <- ceiling(mXis.no.of.blocks)
-          # mXis.no.of.blocks <- min(mXis.ncol.adj, mXis.no.of.blocks) #ensure blocks < NCOL
+          mXis.blockratio.value <- mXis.ncol.adj/(ratio.threshold*mXis.ncol.adj) # slight change here, mXncol does not appear
+          mXis.blocksize.value <- mXis.ncol.adj/min(y.n*ratio.threshold, max.block.size)
+          mXis.no.of.blocks <- max(2,mXis.blockratio.value,mXis.blocksize.value)
+          mXis.no.of.blocks <- ceiling(mXis.no.of.blocks)
+          mXis.no.of.blocks <- min(mXis.ncol.adj, mXis.no.of.blocks) #ensure blocks < NCOL
           
-          mXis.no.of.blocks <- 2
+          #mXis.no.of.blocks <- 2
           
-          mXis.blocksize <- ceiling(mXis.ncol.adj/mXis.no.of.blocks)
-          mXis.partitions.t2 <- mXis.blocksize
-          for(j in 1:mXis.no.of.blocks){
-            if( mXis.blocksize*j <= mXis.ncol.adj ) {
-              mXis.partitions.t2[j] <- mXis.blocksize*j
-            }
-          }
-          #check if last block contains last indicator:
-          if(mXis.partitions.t2[length(mXis.partitions.t2)] < mXis.ncol.adj){
-            mXis.partitions.t2 <- c(mXis.partitions.t2, mXis.ncol.adj)
-          }
-          mXis.blocksadj <- length(mXis.partitions.t2)
-          mXis.partitions.t1 <- mXis.partitions.t2 + 1
-          mXis.partitions.t1 <- c(1,mXis.partitions.t1[-mXis.blocksadj])
-          
+          #coding up a simple leave one out block structure
           tmp <- list()
-          for(j in 1:mXis.blocksadj){
-            tmp[[j]] <- mXis.partitions.t1[j]:mXis.partitions.t2[j]
+          for(j in 1:mXis.no.of.blocks){
+            tmp[[j]] <- seq(j,mXis.ncol.adj, mXis.no.of.blocks)
           }
+          #tmp[[2]] <- seq(2,mXis.ncol.adj, 2)
+          
+          
+          if(print.searchinfo){
+            message("\n", appendLF=FALSE)
+            message(paste0("Too many inital indicators returned for ",names(ISmatrices)[i],", carrying out additional block search with ",mXis.no.of.blocks," blocks using a Leave-one-Out Method."),appendLF=TRUE)
+          }
+          
+          if(FALSE){
+            mXis.blocksize <- ceiling(mXis.ncol.adj/mXis.no.of.blocks)
+            mXis.partitions.t2 <- mXis.blocksize
+            for(j in 1:mXis.no.of.blocks){
+              if( mXis.blocksize*j <= mXis.ncol.adj ) {
+                mXis.partitions.t2[j] <- mXis.blocksize*j
+              }
+            }
+            #check if last block contains last indicator:
+            if(mXis.partitions.t2[length(mXis.partitions.t2)] < mXis.ncol.adj){
+              mXis.partitions.t2 <- c(mXis.partitions.t2, mXis.ncol.adj)
+            }
+            mXis.blocksadj <- length(mXis.partitions.t2)
+            mXis.partitions.t1 <- mXis.partitions.t2 + 1
+            mXis.partitions.t1 <- c(1,mXis.partitions.t1[-mXis.blocksadj])
+            
+            tmp <- list()
+            for(j in 1:mXis.blocksadj){
+              tmp[[j]] <- mXis.partitions.t1[j]:mXis.partitions.t2[j]
+            } 
+          } 
+          
           mXis.blocks <- tmp
           
           for(mxisblocks in 1:length(mXis.blocks)){
@@ -615,6 +631,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
                               max.paths=max.paths, turbo=turbo, tol=tol, LAPACK=LAPACK,
                               max.regs=max.regs, print.searchinfo=print.searchinfo,
                               alarm=FALSE)
+            
             
             # only done if at least one indicator of this type has been retained
             # so if no search was done (because failed diagnostics), then not here
@@ -646,7 +663,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
           
           # if problem persists, give warning              
           if(NCOL(mXis) > y.n){
-            warning(paste0("'isat' retains too many indicators for ",names(ISmatrices)[i]," even despite additional block search. Significant issues in the following code expected. Consider setting a tighter (smaller) t.pval argument or improving the model specification."))
+            stop(paste0("\n'isat' retains too many indicators for ",names(ISmatrices)[i]," even despite additional block search. Significant issues in the following code expected. Consider setting a tighter (smaller) t.pval argument, turning off/relaxing diagnostic testing or improving the model specification."))
           }
         }
         
@@ -733,40 +750,50 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       
       mIS.intermed.models <- list()
       
-      if(print.searchinfo){
-        message("\n", appendLF=FALSE)
-        message(paste0("Too many inital indicators returned for ",names(ISmatrices)[i],", carrying out additional block search with 2 blocks."),appendLF=TRUE)
-      }
-      
       mIS.ncol.adj <- length(isNames)
       
-      # mIS.blockratio.value <- mIS.ncol.adj/(ratio.threshold*mIS.ncol.adj) # slight change here, mXncol does not appear
-      # mIS.blocksize.value <- mIS.ncol.adj/min(y.n*ratio.threshold, max.block.size)
-      # mIS.no.of.blocks <- max(2,mIS.blockratio.value,mIS.blocksize.value)
-      # mIS.no.of.blocks <- ceiling(mIS.no.of.blocks)
-      # mIS.no.of.blocks <- min(mIS.ncol.adj, mIS.no.of.blocks) #ensure blocks < NCOL
+      mIS.blockratio.value <- mIS.ncol.adj/(ratio.threshold*mIS.ncol.adj) # slight change here, mXncol does not appear
+      mIS.blocksize.value <- mIS.ncol.adj/min(y.n*ratio.threshold, max.block.size)
+      mIS.no.of.blocks <- max(2,mIS.blockratio.value,mIS.blocksize.value)
+      mIS.no.of.blocks <- ceiling(mIS.no.of.blocks)
+      mIS.no.of.blocks <- min(mIS.ncol.adj, mIS.no.of.blocks) #ensure blocks < NCOL
       
-      mIS.no.of.blocks <- 2
+      #mIS.no.of.blocks <- 2
       
-      mIS.blocksize <- ceiling(mIS.ncol.adj/mIS.no.of.blocks)
-      mIS.partitions.t2 <- mIS.blocksize
-      for(j in 1:mIS.no.of.blocks){
-        if( mIS.blocksize*j <= mIS.ncol.adj ) {
-          mIS.partitions.t2[j] <- mIS.blocksize*j
-        }
-      }
-      #check if last block contains last indicator:
-      if(mIS.partitions.t2[length(mIS.partitions.t2)] < mIS.ncol.adj){
-        mIS.partitions.t2 <- c(mIS.partitions.t2, mIS.ncol.adj)
-      }
-      mIS.blocksadj <- length(mIS.partitions.t2)
-      mIS.partitions.t1 <- mIS.partitions.t2 + 1
-      mIS.partitions.t1 <- c(1,mIS.partitions.t1[-mIS.blocksadj])
-      
+      #coding up a simple leave one out block structure
       tmp <- list()
-      for(j in 1:mIS.blocksadj){
-        tmp[[j]] <- mIS.partitions.t1[j]:mIS.partitions.t2[j]
+      for(j in 1:mIS.no.of.blocks){
+        tmp[[j]] <- seq(j,mIS.ncol.adj, mIS.no.of.blocks)
       }
+      #tmp[[2]] <- seq(2,mXis.ncol.adj, 2)
+      
+      if(print.searchinfo){
+        message("\n", appendLF=FALSE)
+        message(paste0("Too many inital indicators returned for the union of indicators, carrying out additional block search with ",mIS.no.of.blocks," blocks using a Leave-one-Out Method."),appendLF=TRUE)
+      }
+      
+      if(FALSE){
+        mIS.blocksize <- ceiling(mIS.ncol.adj/mIS.no.of.blocks)
+        mIS.partitions.t2 <- mIS.blocksize
+        for(j in 1:mIS.no.of.blocks){
+          if( mIS.blocksize*j <= mIS.ncol.adj ) {
+            mIS.partitions.t2[j] <- mIS.blocksize*j
+          }
+        }
+        #check if last block contains last indicator:
+        if(mIS.partitions.t2[length(mIS.partitions.t2)] < mIS.ncol.adj){
+          mIS.partitions.t2 <- c(mIS.partitions.t2, mIS.ncol.adj)
+        }
+        mIS.blocksadj <- length(mIS.partitions.t2)
+        mIS.partitions.t1 <- mIS.partitions.t2 + 1
+        mIS.partitions.t1 <- c(1,mIS.partitions.t1[-mIS.blocksadj])
+        
+        tmp <- list()
+        for(j in 1:mIS.blocksadj){
+          tmp[[j]] <- mIS.partitions.t1[j]:mIS.partitions.t2[j]
+        } 
+      }
+      
       mIS.blocks <- tmp
       
       for(mISblocks in 1:length(mIS.blocks)){
