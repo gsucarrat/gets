@@ -722,11 +722,11 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     # this happens when e.g. t.pval is too high and too many indicators are retained
     # if we were not doing the next step, dropvar would just remove the columns most to the right
     # TODO implement if someone does supply the blocks argument
-    if(NCOL(cbind(mX,mIS)) > y.n){ # checks if the total number of columns are larger than possible
+    if(NCOL(cbind(mX,mIS)) >= y.n){ # checks if the total number of columns are larger than possible
       
       mIS.intermed.models <- list()
       
-      mIS.ncol.adj <- length(isNames)
+      mIS.ncol.adj <- length(colnames(mIS))
       
       mIS.blockratio.value <- mIS.ncol.adj/(ratio.threshold*mIS.ncol.adj) # slight change here, mXncol does not appear
       mIS.blocksize.value <- mIS.ncol.adj/min(y.n*ratio.threshold, max.block.size)
@@ -752,24 +752,27 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       
       for(mISblocks in 1:length(mIS.blocks)){
         
-        mISNames <- c(mXnames, isNames[mIS.blocks[[mISblocks]]])
-        mIS <- cbind(mX,ISmatrices[[i]][,isNames[mIS.blocks[[mISblocks]]]])
-        colnames(mIS) <- mISNames
+        addblocks.mISNames <- c(mXnames, colnames(mIS[,mIS.blocks[[mISblocks]], drop = FALSE]))
+        addblocks.mIS <- cbind(mX,mIS[,mIS.blocks[[mISblocks]], drop = FALSE])
+
+        # mISNames <- c(mXnames, colnames(mIS[,mIS.blocks[[mISblocks]], drop = FALSE]))
+        # mIS <- cbind(mX,ISmatrices[[i]][,isNames[mIS.blocks[[mISblocks]]]])
+        # colnames(mIS) <- mISNames
         
         # apply dropvar
-        mIS.names <- colnames(mIS)
-        original.mxkeep.names <- mIS.names[mxkeep]
-        mIS <- dropvar(mIS, tol=tol, LAPACK=LAPACK,
+        addblocks.mIS.names <- colnames(addblocks.mIS)
+        addblocks.original.mxkeep.names <- addblocks.mIS.names[mxkeep]
+        addblocks.mIS <- dropvar(addblocks.mIS, tol=tol, LAPACK=LAPACK,
                         silent=!print.searchinfo)
-        mIS.names.afterdropvar <- colnames(mIS)
-        mxkeep.afterdropvar <- which(mIS.names.afterdropvar %in% original.mxkeep.names)
+        addblocks.mIS.names.afterdropvar <- colnames(addblocks.mIS)
+        addblocks.mxkeep.afterdropvar <- which(addblocks.mIS.names.afterdropvar %in% addblocks.original.mxkeep.names)
         
-        getsis <- getsFun(y, mIS, untransformed.residuals=NULL,
+        getsis <- getsFun(y, addblocks.mIS, untransformed.residuals=NULL,
                           user.estimator=userEstArg, gum.result=NULL, t.pval=t.pval,
                           wald.pval=wald.pval, do.pet=do.pet, ar.LjungB=arLjungB,
                           arch.LjungB=archLjungB, normality.JarqueB=normality.JarqueB,
                           user.diagnostics=user.diagnostics, gof.function=gofFunArg,
-                          gof.method=gof.method, keep=mxkeep.afterdropvar, include.gum=include.gum,
+                          gof.method=gof.method, keep=addblocks.mxkeep.afterdropvar, include.gum=include.gum,
                           include.1cut=include.1cut, include.empty=include.empty,
                           max.paths=max.paths, turbo=turbo, tol=tol, LAPACK=LAPACK,
                           max.regs=max.regs, print.searchinfo=print.searchinfo,
@@ -798,9 +801,8 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       if(length(isNames) == 0){
         ISfinalmodels[[i]] <- mXnames
       }else{
-        mISNames <- c(mXnames, isNames)
-        mIS <- cbind(mX,ISmatrices[[i]][,isNames])
-        colnames(mIS) <- mISNames
+        mIS <- mIS[,isNames]
+        colnames(mIS) <- isNames
       }
       
       # if problem persists, give warning              
@@ -808,9 +810,6 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
         stop(paste0("'isat' retains too many indicators for the union of all indicators even despite additional block search. Significant issues in the following code expected. Consider setting a tighter (smaller) t.pval argument or improving the model specification."))
       }
     }
-    
-    
-    
     
     
     # apply dropvar
