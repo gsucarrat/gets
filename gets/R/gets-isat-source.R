@@ -717,14 +717,12 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
         mIS <- cbind(mIS, tmp)
       }
     } #end for loop
-
-    
     
     # check if the number of x-variables exceeds the sample
     # this happens when e.g. t.pval is too high and too many indicators are retained
     # if we were not doing the next step, dropvar would just remove the columns most to the right
     # TODO implement if someone does supply the blocks argument
-    if(NCOL(mIS) > y.n){ # checks if the total number of columns are larger than possible
+    if(NCOL(cbind(mX,mIS)) > y.n){ # checks if the total number of columns are larger than possible
       
       mIS.intermed.models <- list()
       
@@ -806,8 +804,8 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       }
       
       # if problem persists, give warning              
-      if(NCOL(mIS) > y.n){
-        warning(paste0("'isat' retains too many indicators for ",names(ISmatrices)[i]," even despite additional block search. Significant issues in the following code expected. Consider setting a tighter (smaller) t.pval argument or improving the model specification."))
+      if(NCOL(cbind(mX,mIS)) > y.n){
+        stop(paste0("'isat' retains too many indicators for the union of all indicators even despite additional block search. Significant issues in the following code expected. Consider setting a tighter (smaller) t.pval argument or improving the model specification."))
       }
     }
     
