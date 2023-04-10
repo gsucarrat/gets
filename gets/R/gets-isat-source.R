@@ -407,9 +407,9 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       }else{
         mXis <- cbind(mX,ISmatrices[[i]][, ISblocks[[i]][[j]] ])
       }
-
+      
       ##apply dropvar:
-      if(ncol(mXis)>y.n){
+      if(ncol(mXis)>=y.n){
         stop("Too many x-variables and indicators for the sample size. No sensible model estimateable. Set a smaller max.block.size (e.g. max.block.size = 2 or max.block.size = 10) or remove x-variables in mxreg or consider removing x-variables from the specification in mxreg.")
       }
 
