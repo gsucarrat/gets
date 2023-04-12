@@ -640,7 +640,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
           }
           
           # if problem persists, give warning              
-          if(NCOL(mXis) > y.n){
+          if(NCOL(mXis) >= y.n){
             stop(paste0("\n'isat' retains too many indicators for ",names(ISmatrices)[i]," even despite additional block search. Significant issues in the following code expected. Consider setting a tighter (smaller) t.pval argument, turning off/relaxing diagnostic testing or improving the model specification."))
           }
         }
@@ -806,11 +806,10 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       }
       
       # if problem persists, give warning              
-      if(NCOL(cbind(mX,mIS)) > y.n){
+      if(NCOL(cbind(mX,mIS)) >= y.n){
         stop(paste0("'isat' retains too many indicators for the union of all indicators even despite additional block search. Significant issues in the following code expected. Consider setting a tighter (smaller) t.pval argument or improving the model specification."))
       }
     }
-    
     
     # apply dropvar
     mXis.names <- colnames(cbind(mX,mIS))
