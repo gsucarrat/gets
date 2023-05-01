@@ -237,104 +237,10 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       archLjungB[1] <- arch.LjungB$lag
     }
   }
-
-  ##indicator saturation matrices:
-  ISmatrices <- list()
-
-  if(iis){ #impulse indicators
-    mIIS <- matrix(0,y.n,y.n)
-    diag(mIIS) <- 1
-    colnames(mIIS) <- paste0("iis", y.index.as.char)
-    ISmatrices <- c(ISmatrices,list(IIS=mIIS))
-  }
-
-  if(sis){ #step-shift indicators
-    mSIS <-matrix(0,y.n,y.n) #replace by , y.n, y.n-1 ?
-    loop.indx <- 1:y.n #replace by 2:y.n ?
-    tmp <- function(i){ mSIS[i,1:i] <<- 1 }
-    tmp <- sapply(loop.indx,tmp)
-    colnames(mSIS) <- paste0("sis", y.index.as.char)
-    mSIS <- mSIS[,-1]
-    ISmatrices <- c(ISmatrices,list(SIS=mSIS))
-  }
-
-  if(tis){ #trend indicators
-    mTIS <- matrix(0,y.n,y.n)
-    v1n <- seq(1,y.n)
-    loop.indx <- 1:y.n
-    tmp <- function(i){
-      mTIS[c(i:y.n),i] <<- v1n[1:c(y.n-i+1)]
-    }
-    tmp <- sapply(loop.indx,tmp)
-    colnames(mTIS) <- paste0("tis", y.index.as.char)
-    mTIS <- mTIS[,-1]
-    ISmatrices <- c(ISmatrices,list(TIS=mTIS))
-  }
-
-  ##user-defined indicators/variables:
-  ##----------------------------------
   
-  #if uis is a matrix or a data.frame:
-  if(!is.list(uis) && !identical(as.numeric(uis),0) || is.data.frame(uis)){
-
-    ##handle colnames:
-    uis <- as.zoo(cbind(uis))
-    uis.names <- colnames(uis)
-    if(is.null(uis.names)){
-      uis.names <- paste0("uisxreg", 1:NCOL(uis))
-    }
-    if(any(uis.names == "")){
-      missing.colnames <- which(uis.names == "")
-      for(i in 1:length(missing.colnames)){
-       uis.names[missing.colnames[i]] <- paste0("uisxreg", missing.colnames[i])
-      }
-    }
-
-    ##select sample:
-    uis <- na.trim(uis, sides="both", is.na="any")
-    uis.index.as.char <- as.character(index(uis))
-    t1 <- which(uis.index.as.char==y.index.as.char[1])
-    t2 <- which(uis.index.as.char
-      == y.index.as.char[length(y.index.as.char)])
-    uis <- coredata(uis)
-    uis <- window(uis, start=t1, end=t2)
-    uis <- cbind(coredata(as.zoo(uis)))
-    colnames(uis) <- uis.names
-
-    #check nrow(uis):
-    if(nrow(uis) != y.n) stop("nrow(uis) is unequal to no. of observations")
-    ISmatrices <- c(ISmatrices,list(UIS=uis))
-
-  } #end if uis is a matrix
-
-  ##if uis is a list of matrices:
-  if(is.list(uis)){
-
-    #check nrow(uis[[i]]):
-    for(i in 1:length(uis)){
-      uis[[i]] <- as.matrix(coredata(as.zoo(uis[[i]])))
-      if(nrow(uis[[i]]) != y.n){
-        stop(paste("nrow(uis[[",i,"]]) is unequal to no. of observations",
-          sep=""))
-      }
-    } #end check nrow
-    uis.names <- paste0("UIS", 1:length(uis))
-    if(is.null(names(uis))){
-      names(uis) <- uis.names
-    }else{
-      for(i in 1:length(uis)){
-        if(names(uis)[i]==""){
-          names(uis)[i] <- uis.names[i]
-        }else{
-          names(uis)[i] <- paste0(uis.names[i], ".", names(uis)[i])
-        } #close if..else
-      } #close for..loop
-    }
-    ISmatrices <- c(ISmatrices,uis)
-
-    ##to do: check indices of matrix against index(y)?
-
-  } #end if uis is a list of matrices
+  ##indicator saturation matrices:
+  ISmatrices <- create.ISmatrices(iis = iis, sis = sis, tis = tis, uis = uis, 
+                                  y.n = y.n, y.index.as.char = y.index.as.char)
 
   ##check blocks:
   if(is.list(blocks)){
@@ -394,82 +300,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
 
     } #end if(!blocks.is.list)
     
-    ##make blocks function for lapply/parLapply:
-    ISblocksFun <- function(j, i, ISmatrices, ISblocks, mX,
-      parallel.options, y, userEstArg, t.pval, wald.pval, do.pet,
-      arLjungB, archLjungB, normality.JarqueB, user.diagnostics,
-      gofFunArg, gof.method, mxkeep, include.gum, include.1cut,
-      include.empty, max.paths, turbo, tol, LAPACK, max.regs,
-      print.searchinfo){
-
-      ##check if block contains 1 regressor:
-      if( length(ISblocks[[i]][[j]])==1 ){
-        tmp <- colnames(ISmatrices[[i]])[ ISblocks[[i]][[j]] ]
-        mXis <- cbind(ISmatrices[[i]][, ISblocks[[i]][[j]] ])
-        colnames(mXis) <- tmp
-        mXis <- cbind(mX, mXis)
-      }else{
-        mXis <- cbind(mX,ISmatrices[[i]][, ISblocks[[i]][[j]] ])
-      }
-      
-      ##apply dropvar:
-      if(ncol(mXis)>=y.n){
-        stop("Too many x-variables and indicators for the sample size. Not able to estimate sensible model (not enough degrees of freedom). Set a smaller max.block.size (e.g. max.block.size = 2 or max.block.size = 10) or consider removing x-variables from the specification in mxreg.")
-      }
-
-      mXis.names <- colnames(mXis)
-      original.mxkeep.names <- mXis.names[mxkeep]
-      mXis <- dropvar(mXis, tol=tol, LAPACK=LAPACK,
-                      silent=!print.searchinfo)
-      mXis.names.afterdropvar <- colnames(mXis)
-      mxkeep.afterdropvar <- which(mXis.names.afterdropvar %in% original.mxkeep.names)
-
-      ##print info:
-      if(is.null(parallel.options)){
-        if(print.searchinfo){
-          message("\n", appendLF=FALSE)
-          message(names(ISmatrices)[i],
-            " block ", j, " of ", length(ISblocks[[i]]), ":",
-            appendLF=TRUE)
-          #message("\n", appendLF=FALSE)
-        }
-      }
-
-      ##gum:
-      getsis <- getsFun(y, mXis, untransformed.residuals=NULL,
-        user.estimator=userEstArg, gum.result=NULL, t.pval=t.pval,
-        wald.pval=wald.pval, do.pet=do.pet, ar.LjungB=arLjungB,
-        arch.LjungB=archLjungB, normality.JarqueB=normality.JarqueB,
-        user.diagnostics=user.diagnostics, gof.function=gofFunArg,
-        gof.method=gof.method, keep=mxkeep.afterdropvar, include.gum=include.gum,
-        include.1cut=include.1cut, include.empty=include.empty,
-        max.paths=max.paths, turbo=turbo, tol=tol, LAPACK=LAPACK,
-        max.regs=max.regs, print.searchinfo=print.searchinfo,
-        alarm=FALSE)
-      
-
-      #estimations.counter counts the number of estimations for a single type of indicators
-      estimations.counter <<- estimations.counter + getsis$no.of.estimations
-      getsFun.counter <<- getsFun.counter + 1
-
-
-      if(is.null(getsis$specific.spec)){
-        ISspecific.models <- NULL
-      }else{
-        ISspecific.models <- names(getsis$specific.spec)
-        #For the future?:
-        #        ISgums[[j]] <- getsis$gum.mean
-        #        ISpaths[[j]] <- getsis$paths
-        #        ISterminals.results[[j]] <- getsis$terminals.results
-      }
-
-      ##return
-      return(ISspecific.models)
-
-    } #close ISblocksFun
-
-    
-
+  
     # initialise counter for number of estimations of this type of indicator
     estimations.counter <- 0
     getsFun.counter <- 0
@@ -477,13 +308,29 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
 
     ##do gets on each block: no parallel computing
     if(is.null(parallel.options)){
-      ISspecific.models <- lapply(1:length(ISblocks[[i]]),
-        ISblocksFun, i, ISmatrices, ISblocks, mX, parallel.options,
-        y, userEstArg, t.pval, wald.pval, do.pet, arLjungB,
-        archLjungB, normality.JarqueB, user.diagnostics, gofFunArg,
-        gof.method, mxkeep, include.gum, include.1cut,
-        include.empty, max.paths, turbo, tol, LAPACK, max.regs,
-        print.searchinfo)
+      # ISspecific.models <- lapply(1:length(ISblocks[[i]]),
+      #   ISblocksFun, i, ISmatrices, ISblocks, mX, parallel.options,
+      #   y, userEstArg, t.pval, wald.pval, do.pet, arLjungB,
+      #   archLjungB, normality.JarqueB, user.diagnostics, gofFunArg,
+      #   gof.method, mxkeep, include.gum, include.1cut,
+      #   include.empty, max.paths, turbo, tol, LAPACK, max.regs,
+      #   print.searchinfo)
+      
+      ISspecific.models <- lapply(1:length(ISblocks[[i]]), FUN = ISblocksFun,
+                                  i = i, ISmatrices = ISmatrices, ISblocks = ISblocks, mX = mX,
+                                  parallel.options = parallel.options, y = y, userEstArg = userEstArg,
+                                  t.pval = t.pval, wald.pval = wald.pval, do.pet = do.pet,
+                                  arLjungB = arLjungB, archLjungB = archLjungB, normality.JarqueB = normality.JarqueB,
+                                  user.diagnostics = user.diagnostics, gofFunArg = gofFunArg,
+                                  gof.method = gof.method, mxkeep = mxkeep, include.gum = include.gum,
+                                  include.1cut = include.1cut, include.empty = include.empty, max.paths = max.paths,
+                                  turbo = turbo, tol = tol, LAPACK = LAPACK,
+                                  max.regs = max.regs, print.searchinfo = print.searchinfo,
+                                  
+                                  y.n = y.n,
+                                  estimations.counter = estimations.counter,
+                                  getsFun.counter = getsFun.counter
+      )
     }
 
     ##do gets on each block: with parallel computing
@@ -508,15 +355,24 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
 #      clusterExport(blocksClust,
 #        c("dropvar", "getsFun", "ols", "infocrit", "diagnostics"),
 #        envir=.GlobalEnv)
-      ISspecific.models <- parLapply(blocksClust,
-        1:length(ISblocks[[i]]), ISblocksFun, i, ISmatrices,
-        ISblocks, mX, parallel.options, y, userEstArg, t.pval,
-        wald.pval, do.pet, arLjungB, archLjungB, normality.JarqueB,
-        user.diagnostics, gofFunArg, gof.method, mxkeep,
-        include.gum, include.1cut, include.empty, max.paths, turbo,
-        tol, LAPACK, max.regs, print.searchinfo)
+     
+      ISspecific.models <- parLapply(cl = blocksClust,X = 1:length(ISblocks[[i]]), fun = ISblocksFun,
+                                     i = i, ISmatrices = ISmatrices, ISblocks = ISblocks, mX = mX,
+                                     parallel.options = parallel.options, y = y, userEstArg = userEstArg,
+                                     t.pval = t.pval, wald.pval = wald.pval, do.pet = do.pet,
+                                     arLjungB = arLjungB, archLjungB = archLjungB, normality.JarqueB = normality.JarqueB,
+                                     user.diagnostics = user.diagnostics, gofFunArg = gofFunArg,
+                                     gof.method = gof.method, mxkeep = mxkeep, include.gum = include.gum,
+                                     include.1cut = include.1cut, include.empty = include.empty, max.paths = max.paths,
+                                     turbo = turbo, tol = tol, LAPACK = LAPACK,
+                                     max.regs = max.regs, print.searchinfo = print.searchinfo,
+                                     
+                                     y.n = y.n,
+                                     estimations.counter = estimations.counter,
+                                     getsFun.counter = getsFun.counter
+      )
       stopCluster(blocksClust)
-
+      
     } #end if..
 
     ##print info:
@@ -815,19 +671,9 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
      !any(isat.args$sis, isat.args$tis, isat.args$uis.logical)){
     
     ## Outlier Proportion and Distortion Test 
-    # Proportion Test was previously executed in the print.isat function
-    #if(!is.null(getsis$call$iis) & isTRUE(eval(getsis$call$iis))){
-    #  if(!any(eval(getsis$call$sis), eval(getsis$call$tis), 
-    ##change suggested by J-bat (implemented by G-man 12 June 2022):
-    #          ifelse(is.logical(eval(getsis$call$uis)) & isTRUE(eval(getsis$call$uis)), TRUE, FALSE),
-    #          !identical(userEstArg$name, "ols"))){
-                
     getsis$outlier.proportion.test <- outliertest(getsis)
     getsis$outlier.distortion.test <- distorttest(getsis)
-    #  }
   }
-  
-  
   
   return(getsis)
 
@@ -3195,8 +3041,206 @@ outlierscaletest <- function(x, nsim = 10000){
 
 
 #######################
-##### IS Additional Block Search
+##### ISblocksfun
 ########################
+# A function that was formerly defined within isat.default
+
+
+##make blocks function for lapply/parLapply:
+ISblocksFun <- function(j, i, ISmatrices, ISblocks, mX,
+                        parallel.options, y, userEstArg, t.pval, wald.pval, do.pet,
+                        arLjungB, archLjungB, normality.JarqueB, user.diagnostics,
+                        gofFunArg, gof.method, mxkeep, include.gum, include.1cut,
+                        include.empty, max.paths, turbo, tol, LAPACK, max.regs,
+                        print.searchinfo,
+                        
+                        y.n,
+                        estimations.counter,
+                        getsFun.counter){
+  
+  ##check if block contains 1 regressor:
+  if( length(ISblocks[[i]][[j]])==1 ){
+    tmp <- colnames(ISmatrices[[i]])[ ISblocks[[i]][[j]] ]
+    mXis <- cbind(ISmatrices[[i]][, ISblocks[[i]][[j]] ])
+    colnames(mXis) <- tmp
+    mXis <- cbind(mX, mXis)
+  }else{
+    mXis <- cbind(mX,ISmatrices[[i]][, ISblocks[[i]][[j]] ])
+  }
+  
+  ##apply dropvar:
+  if(ncol(mXis)>=y.n){
+    stop("Too many x-variables and indicators for the sample size. No sensible model estimateable. Set a smaller max.block.size (e.g. max.block.size = 2 or max.block.size = 10) or remove x-variables in mxreg or consider removing x-variables from the specification in mxreg.")
+  }
+  
+  mXis.names <- colnames(mXis)
+  original.mxkeep.names <- mXis.names[mxkeep]
+  mXis <- dropvar(mXis, tol=tol, LAPACK=LAPACK,
+                  silent=!print.searchinfo)
+  mXis.names.afterdropvar <- colnames(mXis)
+  mxkeep.afterdropvar <- which(mXis.names.afterdropvar %in% original.mxkeep.names)
+  
+  ##print info:
+  if(is.null(parallel.options)){
+    if(print.searchinfo){
+      message("\n", appendLF=FALSE)
+      message(names(ISmatrices)[i],
+              " block ", j, " of ", length(ISblocks[[i]]), ":",
+              appendLF=TRUE)
+      #message("\n", appendLF=FALSE)
+    }
+  }
+  
+  ##gum:
+  getsis <- getsFun(y, mXis, untransformed.residuals=NULL,
+                    user.estimator=userEstArg, gum.result=NULL, t.pval=t.pval,
+                    wald.pval=wald.pval, do.pet=do.pet, ar.LjungB=arLjungB,
+                    arch.LjungB=archLjungB, normality.JarqueB=normality.JarqueB,
+                    user.diagnostics=user.diagnostics, gof.function=gofFunArg,
+                    gof.method=gof.method, keep=mxkeep.afterdropvar, include.gum=include.gum,
+                    include.1cut=include.1cut, include.empty=include.empty,
+                    max.paths=max.paths, turbo=turbo, tol=tol, LAPACK=LAPACK,
+                    max.regs=max.regs, print.searchinfo=print.searchinfo,
+                    alarm=FALSE)
+  
+  
+  #estimations.counter counts the number of estimations for a single type of indicators
+  estimations.counter <<- estimations.counter + getsis$no.of.estimations
+  getsFun.counter <<- getsFun.counter + 1
+  
+  
+  if(is.null(getsis$specific.spec)){
+    ISspecific.models <- NULL
+  }else{
+    ISspecific.models <- names(getsis$specific.spec)
+    #For the future?:
+    #        ISgums[[j]] <- getsis$gum.mean
+    #        ISpaths[[j]] <- getsis$paths
+    #        ISterminals.results[[j]] <- getsis$terminals.results
+  }
+  
+  ##return
+  return(ISspecific.models)
+  
+} #close ISblocksFun
+
+
+
+####
+#### Create IS matrices
+####
+
+create.ISmatrices <- function(iis, 
+                              sis, 
+                              tis, 
+                              uis, 
+                              
+                              y.n,
+                              y.index.as.char){
+  
+  ##indicator saturation matrices:
+  ISmatrices <- list()
+  
+  if(iis){ #impulse indicators
+    mIIS <- matrix(0,y.n,y.n)
+    diag(mIIS) <- 1
+    colnames(mIIS) <- paste0("iis", y.index.as.char)
+    ISmatrices <- c(ISmatrices,list(IIS=mIIS))
+  }
+  
+  if(sis){ #step-shift indicators
+    mSIS <-matrix(0,y.n,y.n) #replace by , y.n, y.n-1 ?
+    loop.indx <- 1:y.n #replace by 2:y.n ?
+    tmp <- sapply(loop.indx,function(i){ mSIS[i,1:i] <<- 1 })
+    colnames(mSIS) <- paste0("sis", y.index.as.char)
+    mSIS <- mSIS[,-1]
+    ISmatrices <- c(ISmatrices,list(SIS=mSIS))
+  }
+  
+  if(tis){ #trend indicators
+    mTIS <- matrix(0,y.n,y.n)
+    v1n <- seq(1,y.n)
+    loop.indx <- 1:y.n
+    tmp <- sapply(loop.indx,function(i){mTIS[c(i:y.n),i] <<- v1n[1:c(y.n-i+1)]})
+    colnames(mTIS) <- paste0("tis", y.index.as.char)
+    mTIS <- mTIS[,-1]
+    ISmatrices <- c(ISmatrices,list(TIS=mTIS))
+  }
+  
+  ##user-defined indicators/variables:
+  ##---
+  
+  #if uis is a matrix or a data.frame:
+  if(!is.list(uis) && !identical(as.numeric(uis),0) || is.data.frame(uis)){
+    
+    ##handle colnames:
+    uis <- as.zoo(cbind(uis))
+    uis.names <- colnames(uis)
+    if(is.null(uis.names)){
+      uis.names <- paste0("uisxreg", 1:NCOL(uis))
+    }
+    if(any(uis.names == "")){
+      missing.colnames <- which(uis.names == "")
+      for(i in 1:length(missing.colnames)){
+        uis.names[missing.colnames[i]] <- paste0("uisxreg", missing.colnames[i])
+      }
+    }
+    
+    ##select sample:
+    uis <- na.trim(uis, sides="both", is.na="any")
+    uis.index.as.char <- as.character(index(uis))
+    t1 <- which(uis.index.as.char==y.index.as.char[1])
+    t2 <- which(uis.index.as.char
+                == y.index.as.char[length(y.index.as.char)])
+    uis <- coredata(uis)
+    uis <- window(uis, start=t1, end=t2)
+    uis <- cbind(coredata(as.zoo(uis)))
+    colnames(uis) <- uis.names
+    
+    #check nrow(uis):
+    if(nrow(uis) != y.n) stop("nrow(uis) is unequal to no. of observations")
+    ISmatrices <- c(ISmatrices,list(UIS=uis))
+    
+  } #end if uis is a matrix
+  
+  ##if uis is a list of matrices:
+  if(is.list(uis)){
+    
+    #check nrow(uis[[i]]):
+    for(i in 1:length(uis)){
+      uis[[i]] <- as.matrix(coredata(as.zoo(uis[[i]])))
+      if(nrow(uis[[i]]) != y.n){
+        stop(paste("nrow(uis[[",i,"]]) is unequal to no. of observations",
+                   sep=""))
+      }
+    } #end check nrow
+    uis.names <- paste0("UIS", 1:length(uis))
+    if(is.null(names(uis))){
+      names(uis) <- uis.names
+    }else{
+      for(i in 1:length(uis)){
+        if(names(uis)[i]==""){
+          names(uis)[i] <- uis.names[i]
+        }else{
+          names(uis)[i] <- paste0(uis.names[i], ".", names(uis)[i])
+        } #close if..else
+      } #close for..loop
+    }
+    ISmatrices <- c(ISmatrices,uis)
+    
+    ##to do: check indices of matrix against index(y)?
+    
+  } #end if uis is a list of matrices
+  
+  
+  return(ISmatrices)
+
+}
+
+
+####
+#### IS Additional Block Search
+####
 # check if the number of x-variables exceeds the sample
 # this happens when e.g. t.pval is too high and too many indicators are retained
 # if we were not doing the next step, dropvar would just remove the columns most to the right
@@ -3304,15 +3348,9 @@ ISadditionalblocksearch <- function(mXis,
   isNames <- setdiff(isNames, mXnames)
   
   #redo gets with union of retained indicators:
-  if(length(isNames) == 0){
-    #ISfinalmodels[[i]] <- mXnames
-    #mXis <- NULL
-    stop("Error in result_additional_blocksearch. Contact package owner on GitHub.")
-  } else{
-    mXisNames <- c(mXnames, isNames)
-    mXis <- cbind(mX, indicator.set[, isNames])
-    colnames(mXis) <- mXisNames
-  }
+  mXisNames <- c(mXnames, isNames)
+  mXis <- cbind(mX, indicator.set[, isNames])
+  colnames(mXis) <- mXisNames
   
   # if problem persists, give warning              
   if(NCOL(mXis) >= y.n){
