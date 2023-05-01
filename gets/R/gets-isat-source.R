@@ -3233,19 +3233,18 @@ ISadditionalblocksearch <- function(mXis,
                                     turbo, 
                                     do.pet){
    # TODO implement if someone does supply the blocks argument
-  
-  
   mXis.intermed.models <- list()
   
   
   mXis.ncol.adj <- length(isNames)
 
   mXis.no.of.blocks = 2
-  remaining_df <- y.n - (NCOL(mXis) - mXis.ncol.adj)
-  while(mXis.ncol.adj/mXis.no.of.blocks > remaining_df){
+  mX.df <- NCOL(mX)
+  IS.df <- mXis.ncol.adj
+  
+  while(mX.df + ceiling(IS.df/mXis.no.of.blocks) >= y.n){
     mXis.no.of.blocks = mXis.no.of.blocks + 1
   }
-  
   
   #coding up a simple leave one out block structure
   tmp <- list()
@@ -3317,7 +3316,7 @@ ISadditionalblocksearch <- function(mXis,
   
   # if problem persists, give warning              
   if(NCOL(mXis) >= y.n){
-    stop(paste0("\n'isat' retains too many indicators for ",ISmatrixname," even despite additional block search. Significant issues in the following code expected. Consider setting a tighter (smaller) t.pval argument, turning off/relaxing diagnostic testing or improving the model specification."))
+    stop(paste0("\n'isat' retains too many indicators for ",ISmatrixname," even despite additional block search. Consider setting a tighter (smaller) t.pval argument, setting a smaller 'max.block.size', turning off/relaxing diagnostic testing or improving the model specification."))
   }
   
   result <- list()
