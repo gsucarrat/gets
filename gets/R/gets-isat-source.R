@@ -443,7 +443,9 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
             include.1cut = include.1cut,
             include.empty = include.empty, 
             turbo = turbo, 
-            do.pet = do.pet)
+            do.pet = do.pet, 
+            ratio.threshold = ratio.threshold, 
+            max.block.size = max.block.size)
           
           mXis <- result_additional_blocksearch$mXis
           estimations.counter <- result_additional_blocksearch$estimations.counter
@@ -556,7 +558,9 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
         include.1cut = include.1cut,
         include.empty = include.empty, 
         turbo = turbo, 
-        do.pet = do.pet)
+        do.pet = do.pet, 
+        ratio.threshold = ratio.threshold,
+        max.block.size = max.block.size)
       
       
       addblocksearch.names <- colnames(result_additional_blocksearch$mXis)
@@ -3275,27 +3279,33 @@ ISadditionalblocksearch <- function(mXis,
                                     include.1cut, 
                                     include.empty, 
                                     turbo, 
-                                    do.pet){
+                                    do.pet, 
+                                    ratio.threshold, 
+                                    max.block.size){
    # TODO implement if someone does supply the blocks argument
   mXis.intermed.models <- list()
-  
-  
   mXis.ncol.adj <- length(isNames)
 
+  # Option 1: Simple Leave one out
   mXis.no.of.blocks = 2
   mX.df <- NCOL(mX)
   IS.df <- mXis.ncol.adj
-  
   while(mX.df + ceiling(IS.df/mXis.no.of.blocks) >= y.n){
     mXis.no.of.blocks = mXis.no.of.blocks + 1
   }
+  
+  # Option 2: Follow block logic as in other places of isat
+  # mXis.blockratio.value <- mXis.ncol.adj/(ratio.threshold * mXis.ncol.adj)
+  # mXis.blocksize.value <- mXis.ncol.adj/min(y.n * ratio.threshold, max.block.size)
+  # mXis.no.of.blocks <- max(2, mXis.blockratio.value, mXis.blocksize.value)
+  # mXis.no.of.blocks <- ceiling(mXis.no.of.blocks)
+  # mXis.no.of.blocks <- min(mXis.ncol.adj, mXis.no.of.blocks)
   
   #coding up a simple leave one out block structure
   tmp <- list()
   for(j in 1:mXis.no.of.blocks){
     tmp[[j]] <- seq(j,mXis.ncol.adj, mXis.no.of.blocks)
   }
-  
   
   if(print.searchinfo){
     message("\n", appendLF=FALSE)
