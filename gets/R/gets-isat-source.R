@@ -261,235 +261,49 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   getsFun.total <- 0
   ISfinalmodels <- list()
   for(i in 1:length(ISmatrices)){
-
-    ##blocks:
-    if(!blocks.is.list){
-
-      ncol.adj <- NCOL(ISmatrices[[i]])
-
-      if(is.null(blocks)){
-        blockratio.value <- ncol.adj/(ratio.threshold*ncol.adj - mXncol)
-        blocksize.value <- ncol.adj/min(y.n*ratio.threshold, max.block.size)
-        no.of.blocks <- max(2,blockratio.value,blocksize.value)
-        no.of.blocks <- ceiling(no.of.blocks)
-        no.of.blocks <- min(ncol.adj, no.of.blocks) #ensure blocks < NCOL
-      }else{
-        no.of.blocks <- blocks
-      }
-
-      blocksize <- ceiling(ncol.adj/no.of.blocks)
-      partitions.t2 <- blocksize
-      for(j in 1:no.of.blocks){
-        if( blocksize*j <= ncol.adj ){
-          partitions.t2[j] <- blocksize*j
-        }
-      }
-      #check if last block contains last indicator:
-      if(partitions.t2[length(partitions.t2)] < ncol.adj){
-        partitions.t2 <- c(partitions.t2, ncol.adj)
-      }
-      blocksadj <- length(partitions.t2)
-      partitions.t1 <- partitions.t2 + 1
-      partitions.t1 <- c(1,partitions.t1[-blocksadj])
-
-      tmp <- list()
-      for(j in 1:blocksadj){
-        tmp[[j]] <- partitions.t1[j]:partitions.t2[j]
-      }
-      ISblocks[[i]] <- tmp
-
-    } #end if(!blocks.is.list)
+    result_ISMatricesLoop <- ISMatricesLoop(blocks.is.list = blocks.is.list,
+                                            ISmatrices = ISmatrices,
+                                            ratio.threshold = ratio.threshold,
+                                            mXncol = mXncol,
+                                            parallel.options = parallel.options,
+                                            ISblocks = ISblocks,
+                                            i = i,
+                                            y = y,
+                                            y.n = y.n,
+                                            mX = mX,
+                                            userEstArg = userEstArg,
+                                            t.pval = t.pval,
+                                            wald.pval = wald.pval,
+                                            do.pet = do.pet,
+                                            arLjungB = arLjungB,
+                                            archLjungB = archLjungB,
+                                            normality.JarqueB = normality.JarqueB,
+                                            user.diagnostics = user.diagnostics,
+                                            gofFunArg = gofFunArg,
+                                            gof.method = gof.method,
+                                            mxkeep = mxkeep,
+                                            include.gum = include.gum,
+                                            include.1cut = include.1cut,
+                                            include.empty = include.empty,
+                                            max.paths = max.paths,
+                                            turbo = turbo,
+                                            tol = tol,
+                                            LAPACK = LAPACK,
+                                            max.regs = max.regs,
+                                            print.searchinfo = print.searchinfo, 
+                                            clusterSpec = clusterSpec,
+                                            blocks = blocks,
+                                            max.block.size = max.block.size,
+                                            mXnames = mXnames)
     
-  
-    # initialise counter for number of estimations of this type of indicator
-    estimations.counter <- 0
-    getsFun.counter <- 0
-
-
-    ##do gets on each block: no parallel computing
-    if(is.null(parallel.options)){
-      # ISspecific.models <- lapply(1:length(ISblocks[[i]]),
-      #   ISblocksFun, i, ISmatrices, ISblocks, mX, parallel.options,
-      #   y, userEstArg, t.pval, wald.pval, do.pet, arLjungB,
-      #   archLjungB, normality.JarqueB, user.diagnostics, gofFunArg,
-      #   gof.method, mxkeep, include.gum, include.1cut,
-      #   include.empty, max.paths, turbo, tol, LAPACK, max.regs,
-      #   print.searchinfo)
-      
-      ISspecific.models <- lapply(1:length(ISblocks[[i]]), FUN = ISblocksFun,
-                                  i = i, ISmatrices = ISmatrices, ISblocks = ISblocks, mX = mX,
-                                  parallel.options = parallel.options, y = y, userEstArg = userEstArg,
-                                  t.pval = t.pval, wald.pval = wald.pval, do.pet = do.pet,
-                                  arLjungB = arLjungB, archLjungB = archLjungB, normality.JarqueB = normality.JarqueB,
-                                  user.diagnostics = user.diagnostics, gofFunArg = gofFunArg,
-                                  gof.method = gof.method, mxkeep = mxkeep, include.gum = include.gum,
-                                  include.1cut = include.1cut, include.empty = include.empty, max.paths = max.paths,
-                                  turbo = turbo, tol = tol, LAPACK = LAPACK,
-                                  max.regs = max.regs, print.searchinfo = print.searchinfo,
-                                  
-                                  y.n = y.n,
-                                  estimations.counter = estimations.counter,
-                                  getsFun.counter = getsFun.counter
-      )
-    }
-
-    ##do gets on each block: with parallel computing
-    if(!is.null(parallel.options)){
-
-      ##print info:
-      if(print.searchinfo){
-        message("\n", appendLF=FALSE)
-        message("Preparing parallel computing...",
-          appendLF=TRUE)
-        message(names(ISmatrices)[i],
-          " blocks to search in parallel: ", length(ISblocks[[i]]),
-          appendLF=TRUE)
-        message("Searching...", appendLF=TRUE)
-        #message("\n", appendLF=FALSE)
-      }
-      
-      blocksClust <- makeCluster(clusterSpec, outfile="") #make cluster
-      clusterExport(blocksClust, clusterVarlist,
-        envir=.GlobalEnv) #idea for the future?: envir=clusterEnvir
-#OLD:
-#      clusterExport(blocksClust,
-#        c("dropvar", "getsFun", "ols", "infocrit", "diagnostics"),
-#        envir=.GlobalEnv)
-     
-      ISspecific.models <- parLapply(cl = blocksClust,X = 1:length(ISblocks[[i]]), fun = ISblocksFun,
-                                     i = i, ISmatrices = ISmatrices, ISblocks = ISblocks, mX = mX,
-                                     parallel.options = parallel.options, y = y, userEstArg = userEstArg,
-                                     t.pval = t.pval, wald.pval = wald.pval, do.pet = do.pet,
-                                     arLjungB = arLjungB, archLjungB = archLjungB, normality.JarqueB = normality.JarqueB,
-                                     user.diagnostics = user.diagnostics, gofFunArg = gofFunArg,
-                                     gof.method = gof.method, mxkeep = mxkeep, include.gum = include.gum,
-                                     include.1cut = include.1cut, include.empty = include.empty, max.paths = max.paths,
-                                     turbo = turbo, tol = tol, LAPACK = LAPACK,
-                                     max.regs = max.regs, print.searchinfo = print.searchinfo,
-                                     
-                                     y.n = y.n,
-                                     estimations.counter = estimations.counter,
-                                     getsFun.counter = getsFun.counter
-      )
-      stopCluster(blocksClust)
-      
-    } #end if..
-
-    ##print info:
-    if(print.searchinfo){
-      message("\n", appendLF=FALSE)
-      message("GETS of union of retained ",
-        names(ISmatrices)[i], " variables... ",
-        appendLF=TRUE)
-    }
     
-    ##if no indicators retained from the blocks:
-    if(length(ISspecific.models) == 0){
-      isNames <- NULL
-      ISfinalmodels[[i]] <- NULL
-    }
+    ISblocks <- result_ISMatricesLoop$ISblocks
+    ISfinalmodels[[i]] <- result_ISMatricesLoop$ISfinalmodel
     
-    ##when indicators/variables(uis) retained from the blocks:
-    if(length(ISspecific.models) > 0){
-
-      isNames <- NULL
-
-      #which indicators/variables(uis) retained?:
-      for(j in 1:length(ISspecific.models)){
-        #check if mean is non-empty:
-        if(!is.null(ISspecific.models[[j]])){
-          isNames <- union(isNames, ISspecific.models[[j]])
-        }
-      } #end for(j) loop
-      isNames <- setdiff(isNames, mXnames)
-
-      #redo gets with union of retained indicators:
-      if(length(isNames) == 0){
-        ISfinalmodels[[i]] <- mXnames
-      }else{
-        mXisNames <- c(mXnames, isNames)
-        mXis <- cbind(mX,ISmatrices[[i]][,isNames])
-        colnames(mXis) <- mXisNames
-        
-        # check if the number of x-variables exceeds the sample
-        if(NCOL(mXis) >= y.n){ # checks if the total number of columns are larger than possible
-          
-          result_additional_blocksearch <- ISadditionalblocksearch(
-            mXis = mXis,
-            isNames = isNames,
-            y = y,
-            y.n = y.n,
-            mX = mX,
-            mXnames = mXnames,
-            mxkeep = mxkeep,
-            ISmatrixname = names(ISmatrices)[i],
-            indicator.set = ISmatrices[[i]],
-            estimations.counter = estimations.counter,
-            getsFun.counter = getsFun.counter,
-            print.searchinfo = print.searchinfo,
-            tol = tol,
-            LAPACK = LAPACK,
-            userEstArg = userEstArg,
-            t.pval = t.pval,
-            gof.method = gof.method,
-            gofFunArg = gofFunArg,
-            max.regs = max.regs,
-            max.paths = max.paths,
-            arLjungB = arLjungB,
-            archLjungB = archLjungB,
-            normality.JarqueB = normality.JarqueB,
-            user.diagnostics = user.diagnostics,
-            include.gum = include.gum,
-            include.1cut = include.1cut,
-            include.empty = include.empty, 
-            turbo = turbo, 
-            do.pet = do.pet, 
-            ratio.threshold = ratio.threshold, 
-            max.block.size = max.block.size)
-          
-          mXis <- result_additional_blocksearch$mXis
-          estimations.counter <- result_additional_blocksearch$estimations.counter
-          getsFun.counter <- result_additional_blocksearch$getsFun.counter
-         
-        }
-        
-        
-        
-        # apply dropvar
-        mXis.names <- colnames(mXis)
-        original.mxkeep.names <- mXis.names[mxkeep]
-        mXis <- dropvar(mXis, tol=tol, LAPACK=LAPACK,
-          silent=!print.searchinfo)
-        mXis.names.afterdropvar <- colnames(mXis)
-        mxkeep.afterdropvar <- which(mXis.names.afterdropvar %in% original.mxkeep.names)
-        
-        getsis <- getsFun(y, mXis, untransformed.residuals=NULL,
-          user.estimator=userEstArg, gum.result=NULL, t.pval=t.pval,
-          wald.pval=wald.pval, do.pet=do.pet, ar.LjungB=arLjungB,
-          arch.LjungB=archLjungB, normality.JarqueB=normality.JarqueB,
-          user.diagnostics=user.diagnostics, gof.function=gofFunArg,
-          gof.method=gof.method, keep=mxkeep.afterdropvar, include.gum=include.gum,
-          include.1cut=include.1cut, include.empty=include.empty,
-          max.paths=max.paths, turbo=turbo, tol=tol, LAPACK=LAPACK,
-          max.regs=max.regs, print.searchinfo=print.searchinfo,
-          alarm=FALSE)
-        
-
-        # only done if at least one indicator of this type has been retained
-        # so if no search was done (because failed diagnostics), then not here
-        estimations.counter <- estimations.counter + getsis$no.of.estimations
-        getsFun.counter <- getsFun.counter + 1
-
-
-        ISfinalmodels[[i]] <- names(getsis$specific.spec)
-      }
-
-    } #end if(length(ISspecific.models > 0)
+    # before go to next type of indicator, save the number of estimations done
+    estimations.total <- estimations.total + result_ISMatricesLoop$estimations.counter
+    getsFun.total <- getsFun.total + result_ISMatricesLoop$getsFun.counter
     
-  # before go to next type of indicator, save the number of estimations done
-  estimations.total <- estimations.total + estimations.counter
-  getsFun.total <- getsFun.total + getsFun.counter
-
   } #end for(i) loop (on ISmatrices)
 
   ##add names to ISblocks:
@@ -3376,4 +3190,280 @@ ISadditionalblocksearch <- function(mXis,
 }
 
 
+####
+#### ISMatricesLoop
+####
+# simply extracted from isat to enable simpler debugging
 
+# for(i in 1:length(ISmatrices)){
+
+ISMatricesLoop <- function(blocks.is.list,
+                           ISmatrices,
+                           ratio.threshold,
+                           mXncol,
+                           
+                           parallel.options,
+                           i,
+                           ISblocks,
+                           
+                           y,
+                           y.n,
+                           mX,
+                           userEstArg,
+                           t.pval,
+                           wald.pval,
+                           do.pet,
+                           arLjungB,
+                           archLjungB,
+                           normality.JarqueB,
+                           user.diagnostics,
+                           gofFunArg,
+                           gof.method,
+                           mxkeep,
+                           include.gum,
+                           include.1cut,
+                           include.empty,
+                           max.paths,
+                           turbo,
+                           tol,
+                           LAPACK,
+                           max.regs,
+                           print.searchinfo, 
+                           clusterSpec,
+                           blocks,
+                           max.block.size,
+                           mXnames){
+  
+  ##blocks:
+  if(!blocks.is.list){
+    
+    ncol.adj <- NCOL(ISmatrices[[i]])
+    
+    if(is.null(blocks)){
+      blockratio.value <- ncol.adj/(ratio.threshold*ncol.adj - mXncol)
+      blocksize.value <- ncol.adj/min(y.n*ratio.threshold, max.block.size)
+      no.of.blocks <- max(2,blockratio.value,blocksize.value)
+      no.of.blocks <- ceiling(no.of.blocks)
+      no.of.blocks <- min(ncol.adj, no.of.blocks) #ensure blocks < NCOL
+    }else{
+      no.of.blocks <- blocks
+    }
+    
+    blocksize <- ceiling(ncol.adj/no.of.blocks)
+    partitions.t2 <- blocksize
+    for(j in 1:no.of.blocks){
+      if( blocksize*j <= ncol.adj ){
+        partitions.t2[j] <- blocksize*j
+      }
+    }
+    #check if last block contains last indicator:
+    if(partitions.t2[length(partitions.t2)] < ncol.adj){
+      partitions.t2 <- c(partitions.t2, ncol.adj)
+    }
+    blocksadj <- length(partitions.t2)
+    partitions.t1 <- partitions.t2 + 1
+    partitions.t1 <- c(1,partitions.t1[-blocksadj])
+    
+    tmp <- list()
+    for(j in 1:blocksadj){
+      tmp[[j]] <- partitions.t1[j]:partitions.t2[j]
+    }
+    ISblocks[[i]] <- tmp
+    
+  } #end if(!blocks.is.list)
+  
+  
+  # initialise counter for number of estimations of this type of indicator
+  estimations.counter <- 0
+  getsFun.counter <- 0
+  
+  
+  ##do gets on each block: no parallel computing
+  if(is.null(parallel.options)){
+    # ISspecific.models <- lapply(1:length(ISblocks[[i]]),
+    #   ISblocksFun, i, ISmatrices, ISblocks, mX, parallel.options,
+    #   y, userEstArg, t.pval, wald.pval, do.pet, arLjungB,
+    #   archLjungB, normality.JarqueB, user.diagnostics, gofFunArg,
+    #   gof.method, mxkeep, include.gum, include.1cut,
+    #   include.empty, max.paths, turbo, tol, LAPACK, max.regs,
+    #   print.searchinfo)
+    
+    ISspecific.models <- lapply(1:length(ISblocks[[i]]), FUN = ISblocksFun,
+                                i = i, ISmatrices = ISmatrices, ISblocks = ISblocks, mX = mX,
+                                parallel.options = parallel.options, y = y, userEstArg = userEstArg,
+                                t.pval = t.pval, wald.pval = wald.pval, do.pet = do.pet,
+                                arLjungB = arLjungB, archLjungB = archLjungB, normality.JarqueB = normality.JarqueB,
+                                user.diagnostics = user.diagnostics, gofFunArg = gofFunArg,
+                                gof.method = gof.method, mxkeep = mxkeep, include.gum = include.gum,
+                                include.1cut = include.1cut, include.empty = include.empty, max.paths = max.paths,
+                                turbo = turbo, tol = tol, LAPACK = LAPACK,
+                                max.regs = max.regs, print.searchinfo = print.searchinfo,
+                                
+                                y.n = y.n,
+                                estimations.counter = estimations.counter,
+                                getsFun.counter = getsFun.counter
+    )
+  }
+  
+  ##do gets on each block: with parallel computing
+  if(!is.null(parallel.options)){
+    
+    ##print info:
+    if(print.searchinfo){
+      message("\n", appendLF=FALSE)
+      message("Preparing parallel computing...",
+              appendLF=TRUE)
+      message(names(ISmatrices)[i],
+              " blocks to search in parallel: ", length(ISblocks[[i]]),
+              appendLF=TRUE)
+      message("Searching...", appendLF=TRUE)
+      #message("\n", appendLF=FALSE)
+    }
+    
+    blocksClust <- makeCluster(clusterSpec, outfile="") #make cluster
+    clusterExport(blocksClust, clusterVarlist,
+                  envir=.GlobalEnv) #idea for the future?: envir=clusterEnvir
+    #OLD:
+    #      clusterExport(blocksClust,
+    #        c("dropvar", "getsFun", "ols", "infocrit", "diagnostics"),
+    #        envir=.GlobalEnv)
+    
+    ISspecific.models <- parLapply(cl = blocksClust,X = 1:length(ISblocks[[i]]), fun = ISblocksFun,
+                                   i = i, ISmatrices = ISmatrices, ISblocks = ISblocks, mX = mX,
+                                   parallel.options = parallel.options, y = y, userEstArg = userEstArg,
+                                   t.pval = t.pval, wald.pval = wald.pval, do.pet = do.pet,
+                                   arLjungB = arLjungB, archLjungB = archLjungB, normality.JarqueB = normality.JarqueB,
+                                   user.diagnostics = user.diagnostics, gofFunArg = gofFunArg,
+                                   gof.method = gof.method, mxkeep = mxkeep, include.gum = include.gum,
+                                   include.1cut = include.1cut, include.empty = include.empty, max.paths = max.paths,
+                                   turbo = turbo, tol = tol, LAPACK = LAPACK,
+                                   max.regs = max.regs, print.searchinfo = print.searchinfo,
+                                   
+                                   y.n = y.n,
+                                   estimations.counter = estimations.counter,
+                                   getsFun.counter = getsFun.counter
+    )
+    stopCluster(blocksClust)
+    
+  } #end if..
+  
+  ##print info:
+  if(print.searchinfo){
+    message("\n", appendLF=FALSE)
+    message("GETS of union of retained ",
+            names(ISmatrices)[i], " variables... ",
+            appendLF=TRUE)
+  }
+  
+  ##if no indicators retained from the blocks:
+  if(length(ISspecific.models) == 0){
+    isNames <- NULL
+    ISfinalmodels[[i]] <- NULL
+  }
+  
+  ##when indicators/variables(uis) retained from the blocks:
+  if(length(ISspecific.models) > 0){
+    
+    isNames <- NULL
+    
+    #which indicators/variables(uis) retained?:
+    for(j in 1:length(ISspecific.models)){
+      #check if mean is non-empty:
+      if(!is.null(ISspecific.models[[j]])){
+        isNames <- union(isNames, ISspecific.models[[j]])
+      }
+    } #end for(j) loop
+    isNames <- setdiff(isNames, mXnames)
+    
+    #redo gets with union of retained indicators:
+    if(length(isNames) == 0){
+      ISfinalmodels[[i]] <- mXnames
+    }else{
+      mXisNames <- c(mXnames, isNames)
+      mXis <- cbind(mX,ISmatrices[[i]][,isNames])
+      colnames(mXis) <- mXisNames
+      
+      # check if the number of x-variables exceeds the sample
+      if(NCOL(mXis) >= y.n){ # checks if the total number of columns are larger than possible
+        
+        result_additional_blocksearch <- ISadditionalblocksearch(
+          mXis = mXis,
+          isNames = isNames,
+          y = y,
+          y.n = y.n,
+          mX = mX,
+          mXnames = mXnames,
+          mxkeep = mxkeep,
+          ISmatrixname = names(ISmatrices)[i],
+          indicator.set = ISmatrices[[i]],
+          estimations.counter = estimations.counter,
+          getsFun.counter = getsFun.counter,
+          print.searchinfo = print.searchinfo,
+          tol = tol,
+          LAPACK = LAPACK,
+          userEstArg = userEstArg,
+          t.pval = t.pval,
+          gof.method = gof.method,
+          gofFunArg = gofFunArg,
+          max.regs = max.regs,
+          max.paths = max.paths,
+          arLjungB = arLjungB,
+          archLjungB = archLjungB,
+          normality.JarqueB = normality.JarqueB,
+          user.diagnostics = user.diagnostics,
+          include.gum = include.gum,
+          include.1cut = include.1cut,
+          include.empty = include.empty, 
+          turbo = turbo, 
+          do.pet = do.pet, 
+          ratio.threshold = ratio.threshold, 
+          max.block.size = max.block.size)
+        
+        mXis <- result_additional_blocksearch$mXis
+        estimations.counter <- result_additional_blocksearch$estimations.counter
+        getsFun.counter <- result_additional_blocksearch$getsFun.counter
+        
+      }
+      
+      # apply dropvar
+      mXis.names <- colnames(mXis)
+      original.mxkeep.names <- mXis.names[mxkeep]
+      mXis <- dropvar(mXis, tol=tol, LAPACK=LAPACK,
+                      silent=!print.searchinfo)
+      mXis.names.afterdropvar <- colnames(mXis)
+      mxkeep.afterdropvar <- which(mXis.names.afterdropvar %in% original.mxkeep.names)
+      
+      getsis <- getsFun(y, mXis, untransformed.residuals=NULL,
+                        user.estimator=userEstArg, gum.result=NULL, t.pval=t.pval,
+                        wald.pval=wald.pval, do.pet=do.pet, ar.LjungB=arLjungB,
+                        arch.LjungB=archLjungB, normality.JarqueB=normality.JarqueB,
+                        user.diagnostics=user.diagnostics, gof.function=gofFunArg,
+                        gof.method=gof.method, keep=mxkeep.afterdropvar, include.gum=include.gum,
+                        include.1cut=include.1cut, include.empty=include.empty,
+                        max.paths=max.paths, turbo=turbo, tol=tol, LAPACK=LAPACK,
+                        max.regs=max.regs, print.searchinfo=print.searchinfo,
+                        alarm=FALSE)
+      
+      
+      # only done if at least one indicator of this type has been retained
+      # so if no search was done (because failed diagnostics), then not here
+      estimations.counter <- estimations.counter + getsis$no.of.estimations
+      getsFun.counter <- getsFun.counter + 1
+      
+      
+      ISfinalmodel <- names(getsis$specific.spec)
+    }
+    
+    out <- list()
+    
+    
+    out$ISfinalmodel <- ISfinalmodel
+    out$estimations.counter <- estimations.counter
+    out$getsFun.counter <- getsFun.counter
+    out$ISblocks <- ISblocks
+    return(out)
+    
+    
+  } #end if(length(ISspecific.models > 0)
+
+} #end for(i) loop (on ISmatrices)
