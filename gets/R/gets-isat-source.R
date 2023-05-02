@@ -292,6 +292,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
                                             max.regs = max.regs,
                                             print.searchinfo = print.searchinfo, 
                                             clusterSpec = clusterSpec,
+                                            clusterVarlist = clusterVarlist,
                                             blocks = blocks,
                                             max.block.size = max.block.size,
                                             mXnames = mXnames)
@@ -3230,6 +3231,7 @@ ISMatricesLoop <- function(blocks.is.list,
                            max.regs,
                            print.searchinfo, 
                            clusterSpec,
+                           clusterVarlist,
                            blocks,
                            max.block.size,
                            mXnames){
@@ -3358,7 +3360,7 @@ ISMatricesLoop <- function(blocks.is.list,
   ##if no indicators retained from the blocks:
   if(length(ISspecific.models) == 0){
     isNames <- NULL
-    ISfinalmodels[[i]] <- NULL
+    ISfinalmodel <- NULL
   }
   
   ##when indicators/variables(uis) retained from the blocks:
@@ -3377,7 +3379,7 @@ ISMatricesLoop <- function(blocks.is.list,
     
     #redo gets with union of retained indicators:
     if(length(isNames) == 0){
-      ISfinalmodels[[i]] <- mXnames
+      ISfinalmodel <- mXnames
     }else{
       mXisNames <- c(mXnames, isNames)
       mXis <- cbind(mX,ISmatrices[[i]][,isNames])
