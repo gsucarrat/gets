@@ -2,7 +2,7 @@
 {
   ##set start-up message:
   txt <- c("\n",
-    paste(sQuote("gets"), "version 0.37\n"),
+    paste(sQuote("gets"), "version 0.38\n"),
     "\n",
     paste("General-to-Specific (GETS) and Indicator Saturation (ISAT) methods"),
     "\n",
@@ -12,8 +12,6 @@
     paste("* Type help(", dQuote("gets-package", q=FALSE), ") for details and browseVignettes(", dQuote("gets", q=FALSE), ") for an introduction", sep=""),
     "\n",
     paste("* For automatic plotting, set plot = TRUE in options: options(plot = TRUE)"),
-    "\n",
-    paste("* WARNING: New default 'mc = TRUE' in arx() as of version 0.28"),
     "\n")
   
   ##print message:

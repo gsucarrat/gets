@@ -4,7 +4,7 @@
 ## First created 26 June 2017, Zaragoza.
 ##
 ## 1 INITIATE 
-## 2 TEST MAIN getsFun ARGUMENTS
+## 2 TEST MAIN getsFun() ARGUMENTS
 ## 3 TEST SOME SPECIAL CASES
 ## 4 TEST getsFun() BOOKKEEPING
 ## 5 TEST USER-DEFINED DIAGNOSTICS
@@ -35,7 +35,7 @@ source("./gets/R/gets-base-source.R")
 
 
 ##################################################
-## 2 TEST MAIN getsFun ARGUMENTS
+## 2 TEST MAIN getsFun() ARGUMENTS
 ##################################################
 
 ##dgp:
@@ -68,12 +68,30 @@ getsFun(vY, mX, include.1cut=TRUE)
 getsFun(vY, mX, include.empty=TRUE)
 getsFun(vY, mX, include.gum=TRUE, include.1cut=TRUE, include.empty=TRUE)
 getsFun(vY, mX, max.paths=1)
+getsFun(vY, mX, max.paths=0)
+getsFun(vY, mX, max.paths=0, include.1cut=TRUE)
 getsFun(vY, mX, turbo=TRUE)
 getsFun(vY, mX, tol=1) #should give error
 getsFun(vY, mX, LAPACK=TRUE)
 getsFun(vY, mX, max.regs=5) #should give error
 mod01 <- getsFun(vY, mX, print.searchinfo=FALSE)
 getsFun(vY, mX, alarm=TRUE)
+
+##issue raised by Moritz Schwarz in email 28 June 2024. 
+##-----------------------------------------------------
+
+##The following isat() code crashed in the devel-version of 0.38:
+set.seed(123)
+y <- rnorm(30)
+isat(y, arch.LjungB = list(lag = NULL, pval = 0.9))
+##the following code re-produced the crash in getsFun():
+set.seed(123)
+y <- rnorm(30)
+SISblock <- coredata(sim(y))[,1:15]
+mconst <- rep(1,length(y))
+x <- cbind(mconst,SISblock)
+getsFun(y,x, arch.LjungB=c(1,0.9)) #should return "GUM does not pass..."
+##Solved by G in the published CRAN version of 0.38
 
 
 ##################################################
@@ -289,7 +307,9 @@ ols2 <- function(y, x){
   if (is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
   out$df <- out$n - out$k
   if (out$k > 0) {
-    x <- as(x, "dgeMatrix")
+    x <- as(as(as(x,"Matrix"), "generalMatrix"), "unpackedMatrix")
+#OLD:  
+#    x <- as(x, "dgeMatrix")
     out$xpy <- crossprod(x, y)
     out$xtx <- crossprod(x)
     out$coefficients <- as.numeric(solve(out$xtx,out$xpy))
@@ -320,8 +340,8 @@ system.time(getsFun(vY, mX, user.estimator=list(name="ols2")))
 ##https://nelsonareal.net/blog/2017/06/speeding_up_ols.html
 library(microbenchmark)
 microbenchmark( ols(vY,mX), ols2(vY,mX), times=10)
-microbenchmark( getsFun(vY, mX),
-  getsFun(vY, mX, user.estimator=list(name="ols2")),
+microbenchmark( getsFun(vY, mX, print.searchinfo=FALSE),
+  getsFun(vY, mX, user.estimator=list(name="ols2"), print.searchinfo=FALSE),
   times=10)
 
 ##compare speed 2 (large T):

@@ -3,6 +3,7 @@
 \alias{fitted.arx}
 \alias{logLik.arx}
 \alias{model.matrix.arx}
+\alias{nobs.arx}
 \alias{plot.arx}
 \alias{print.arx}
 \alias{residuals.arx}
@@ -19,6 +20,7 @@
   \method{fitted}{arx}(object, spec=NULL, ...)
   \method{logLik}{arx}(object, ...)
   \method{model.matrix}{arx}(object, spec=c("mean","variance"), response=FALSE, as.zoo=TRUE, ...)
+  \method{nobs}{arx}(object, spec=NULL, ...)
   \method{plot}{arx}(x, spec=NULL, col=c("red","blue"),
     lty=c("solid","solid"), lwd=c(1,1), ...)
   \method{print}{arx}(x, signif.stars=TRUE, ...)
@@ -33,7 +35,7 @@
   \item{x}{an object of class 'arx'}
   \item{spec}{\code{NULL}, \code{"mean"}, \code{"variance"} or, in some instances, "both". When \code{NULL} is a valid value, then it is automatically determined whether information pertaining to the mean or variance specification should be returned}
   \item{response}{\code{logical}. If \code{TRUE}, then the response is included in the first column}
-  \item{as.zoo}{\code{logical}. If \code{TRUE} (default), then the returned matrix is of class \code{\link{zoo}} }
+  \item{as.zoo}{\code{logical}. If \code{TRUE} (default), then the returned matrix is of class \code{\link[zoo]{zoo}} }
   \item{signif.stars}{\code{logical}. If \code{TRUE}, then p-values are additionally encoded visually, 
   see \code{\link{printCoefmat}} }
   \item{std}{\code{logical}. If \code{FALSE} (default), then the mean residuals are returned. If TRUE, then the standardised residuals are returned}
@@ -45,21 +47,22 @@
 
 \value{
   \item{coef:}{a numeric vector containing parameter estimates}
-  \item{fitted:}{a \code{\link{zoo}} object with fitted values}
+  \item{fitted:}{a \code{\link[zoo]{zoo}} object with fitted values}
   \item{logLik:}{log-likelihood (normal density)}
   \item{model.matrix:}{a matrix with the regressors and, optionally, the response}
+  \item{nobs:}{the number of observations}
   \item{plot:}{a plot of the fitted values and the residuals}
   \item{print:}{a print of the estimation results}
-  \item{residuals:}{a \code{\link{zoo}} object with the residuals}
+  \item{residuals:}{a \code{\link[zoo]{zoo}} object with the residuals}
   \item{sigma:}{the regression standard error ('SE of regression')}
   \item{summary:}{a print of the items in the \code{\link{arx}} object}
   \item{vcov:}{variance-covariance matrix}
 }
 
 \author{
-Felix Pretis, \url{http://www.felixpretis.org/}\cr
+Felix Pretis, \url{https://felixpretis.climateeconometrics.org/}\cr
 James Reade, \url{https://sites.google.com/site/jjamesreade/}\cr
-Moritz Schwarz, \url{https://www.inet.ox.ac.uk/people/moritz-schwarz/}\cr
+Moritz Schwarz, \url{https://www.inet.ox.ac.uk/people/moritz-schwarz}\cr
 Genaro Sucarrat, \url{http://www.sucarrat.net/}
 }
 

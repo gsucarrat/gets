@@ -83,6 +83,7 @@ getsm(gum01, include.gum=TRUE)
 getsm(gum01, include.1cut=TRUE)
 getsm(gum01, include.empty=TRUE)
 getsm(gum01, include.gum=TRUE, include.1cut=TRUE, include.empty=TRUE)
+getsm(gum01, max.paths=0) #Should return: "Error in getsm(gum01..."
 getsm(gum01, max.paths=1)
 getsm(gum01, max.paths=2)
 getsm(gum01, tol=1) ##should return error: "Error in qr.solve..."
@@ -132,7 +133,7 @@ recursive(getsm01)
 recursive(getsm01, std.errors=FALSE)
 terminals(getsm01)
 terminals(mod01) #should return the error-message: object 'mod01' not found
-terminals(gum01) #should return the error-messase: object not of class...
+terminals(gum01) #should return NULL
 plot(VaR(getsm01, level=c(0.99,0.95,0.9)), #value-at-risk
   plot.type="single", col=c("blue","red","green4"))
 vcov(getsm01)

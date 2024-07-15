@@ -60,7 +60,7 @@ library(gets)
   result <- getsFun(y, x)
 
   #items in result:
-  summary(result)
+  summary(result) #why only 1 'no.of.estimations'?
 
 
   ##User-specified estimation:
@@ -384,7 +384,7 @@ library(gets)
     if (is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
       out$df <- out$n - out$k
       if (out$k > 0) {
-        x <- as(x, "dgeMatrix")
+        x <- as(as(as(x,"Matrix"), "generalMatrix"), "unpackedMatrix")
         out$xpy <- crossprod(x, y)
         out$xtx <- crossprod(x)
         out$coefficients <- as.numeric(solve(out$xtx,out$xpy))
@@ -401,10 +401,12 @@ library(gets)
   }
 
   set.seed(123) #for reproducibility
-  y <- rnorm(1000)
+  y <- rnorm(2000)
   x <- matrix(rnorm(length(y)*20), length(y), 20)
   #w/ols:
-  system.time( finalmodel <- isat(y, mxreg = x, max.paths = 5))
+  system.time( finalmodel <- isat(y, mxreg = x, max.paths = 5,
+    print.searchinfo=FALSE))
   #w/olsFaster:
   system.time( finalmodel <- isat(y, mxreg = x, max.paths = 5,
-    user.estimator = list(name = "olsFaster")) )
+    user.estimator = list(name = "olsFaster"),
+    print.searchinfo=FALSE) )

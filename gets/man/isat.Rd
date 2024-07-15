@@ -52,11 +52,11 @@ isat(y, ...)
 }
   
 \arguments{
-  \item{y}{numeric vector, time-series, \code{\link{zoo}}, or object of class \code{\link{lm}} or \code{\link{arx}}. Missing values in the beginning and at the end of the series is allowed, as they are removed with the \code{\link{na.trim}} command}
+  \item{y}{numeric vector, time-series, \code{\link[zoo]{zoo}}, or object of class \code{\link{lm}} or \code{\link{arx}}. Missing values in the beginning and at the end of the series is allowed, as they are removed with the \code{\link[zoo]{na.trim}} command}
   \item{mc}{logical. \code{TRUE} (default) includes an intercept in the mean specification, whereas FALSE does not}
   \item{ar}{integer vector, say, c(2,4) or 1:4. The AR-lags to include in the mean specification}
   \item{ewma}{either NULL (default) or a list with arguments sent to the \code{\link{eqwma}} function. In the latter case a lagged moving average of y is included as a regressor}
-  \item{mxreg}{numeric vector or matrix, say, a \code{\link{zoo}} object, of conditioning variables. Note that missing values in the beginning or at the end of the series is allowed, as they are removed with the \code{\link{na.trim}} command. Note also that, if both \code{y} and \code{mxreg} are \code{zoo} objects, then their samples are chosen to match}
+  \item{mxreg}{numeric vector or matrix, say, a \code{\link[zoo]{zoo}} object, of conditioning variables. Note that missing values in the beginning or at the end of the series is allowed, as they are removed with the \code{\link[zoo]{na.trim}} command. Note also that, if both \code{y} and \code{mxreg} are \code{\link[zoo]{zoo}} objects, then their samples are chosen to match}
   \item{iis}{logical. If \code{TRUE}, impulse indicator saturation is performed.}
   \item{sis}{logical. If \code{TRUE}, step indicator saturation is performed.}
   \item{tis}{logical. If \code{TRUE}, trend indicator saturation is performed.}
@@ -105,17 +105,17 @@ Pretis, Felix, Reade, James and Sucarrat, Genaro (2018): 'Automated General-to-S
 
 \author{
 Jonas Kurle, \url{https://www.jonaskurle.com/}\cr
-Felix Pretis, \url{http://www.felixpretis.org/}\cr
+Felix Pretis, \url{https://felixpretis.climateeconometrics.org/}\cr
 James Reade,  \url{https://sites.google.com/site/jjamesreade/}\cr
-Moritz Schwarz, \url{https://www.inet.ox.ac.uk/people/moritz-schwarz/}\cr
-Genaro Sucarrat \url{http://www.sucarrat.net/}\cr\cr
+Moritz Schwarz, \url{https://www.inet.ox.ac.uk/people/moritz-schwarz}\cr
+Genaro Sucarrat \url{https://www.sucarrat.net/}\cr\cr
 }
 
 \seealso{
 Extraction functions for 'isat' objects: \code{\link{coef.isat}}, \code{\link{fitted.isat}}, \code{\link{paths}}, \code{\link{plot.isat}}, \code{\link{print.isat}},\cr
 \code{\link{residuals.isat}}, \code{\link{summary.isat}}, \code{\link{terminals}}, \code{\link{vcov.isat}}\cr
 
-Related functions: \code{\link{arx}}, \code{\link{eqwma}}, \code{\link{leqwma}}, \code{\link{zoo}}, \code{\link{getsFun}}
+Related functions: \code{\link{arx}}, \code{\link{eqwma}}, \code{\link{leqwma}}, \code{\link[zoo]{zoo}}, \code{\link{getsFun}}
 }
 
 \examples{

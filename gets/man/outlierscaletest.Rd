@@ -30,7 +30,7 @@
 }
 
 \author{
-  Xiyu Jiao, & Felix Pretis, \url{http://www.felixpretis.org/}
+  Xiyu Jiao, & Felix Pretis, \url{https://felixpretis.climateeconometrics.org/}
 }
 
 \seealso{

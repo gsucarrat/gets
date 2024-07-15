@@ -38,7 +38,7 @@ Xiyu Jiao, Felix Pretis,and Moritz Schwarz. Testing for Coefficient Distortion d
 
 \author{
   Xiyu Jiao \url{https://sites.google.com/view/xiyujiao}\cr\cr
-  Felix Pretis \url{http://www.felixpretis.org} \cr\cr
+  Felix Pretis \url{https://felixpretis.climateeconometrics.org/} \cr\cr
   Moritz Schwarz \url{https://moritzschwarz.org}\cr\cr
 }
 

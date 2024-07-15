@@ -1,5 +1,5 @@
 ###########################################################
-## This file contains the source of the dlogitx()
+## This file contains the source of the logitx()
 ## functions.
 ##
 ## Created 8 December 2020, Oslo.
@@ -645,7 +645,7 @@ summary.logitx <- function(object, ...)
 ############################################################
 ### LaTeX code (equation form)
 toLatex.logitx <- function(object, digits=4, gof=TRUE,
-  nonumber=FALSE, nobs="T", ...)
+  nonumber=FALSE, nobs="T", ...) #new argument?: print.info=TRUE
 {
 
   ##probability equation:
@@ -698,7 +698,14 @@ toLatex.logitx <- function(object, digits=4, gof=TRUE,
 
   ##print code:
   ##-----------
-
+  
+#  if( print.info ){
+    cat("% Date:", date(), "\n")
+    notetxt <- paste0("% LaTeX code generated in R ",
+      version$major, ".", version$minor, " by the gets package\n")
+    cat(notetxt)
+    cat("% Note: The {eqnarray} environment requires the {amsmath} package\n")
+#  }
   cat("\\begin{eqnarray}\n")
   cat(probtxt)
   cat(eqtxt)

@@ -3,7 +3,7 @@
 \title{Make matrix of periodicity (e.g. seasonal) dummies}
 
 \description{
-Auxiliary function that generates periodicity dummies (e.g. seasonal dummies) for regular time series. The function is similar to, but more general than, the \code{seasonaldummy} function in the forecast package.
+Auxiliary function that creates periodicity dummies (e.g. seasonal dummies) for regular time series. The function is similar to, but more general than, the \code{\link[forecast]{seasonaldummy}} function in the package \pkg{forecast}.
 }
 
 \usage{
@@ -11,16 +11,16 @@ periodicdummies(x, values=1)
 }
 \arguments{
   \item{x}{a regular time series (vector or matrix)}
-  \item{values}{numeric of length 1 (default) or numeric vector of length equal to frequency(x) }
+  \item{values}{numeric of length 1 (default) or numeric vector of length equal to \code{frequency(x)} }
 }
 
-\value{A matrix of class zoo with the periodicity dummies}
+\value{A matrix of class \code{\link[zoo]{zoo}} with periodicity dummies}
 
 \author{
 Genaro Sucarrat, \url{http://www.sucarrat.net/}
 }
 
-\seealso{\code{\link{is.regular}}, \code{\link{zooreg}}, \code{\link{zoo}}, \code{\link{ts}} }
+\seealso{\code{\link[zoo]{is.regular}}, \code{\link[zoo]{zooreg}}, \code{\link[zoo]{zoo}}, \code{\link{ts}} }
 
 \examples{
 ##quarterly dummies:

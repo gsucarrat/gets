@@ -59,13 +59,16 @@ y.n <- 60
 y <- arima.sim(list(ar=0.7),y.n)
 y <- ts(y, frequency=4, end=c(2015,4))
 mX <- matrix(rnorm(10*y.n), y.n, 10)
-colnames(mX) <- paste("xvar", 1:NCOL(mX), sep="")
 mX <- ts(mX, frequency=4, end=c(2015,4))
 mX[1:5,2] <- NA
-stepdum1 <- sim(y, which.ones=index(y)[floor(y.n/2)])
-stepdum2 <- sim(y, which.ones=index(y)[floor(y.n/1.5)])
-mX <- cbind(as.zoo(mX), as.zoo(stepdum1), as.zoo(stepdum2))
+stepdum1 <- sim(y)[,floor(y.n/2)]
+stepdum2 <- sim(y)[,floor(y.n/1.5)]
+##DO NOT WORK!!:
+#stepdum1 <- sim(y, which.ones=index(y)[c(floor(y.n/2))])
+#stepdum2 <- sim(y, which.ones=index(y)[floor(y.n/1.5)])
+mX <- cbind(mX, stepdum1, stepdum2)
 y[1] <- NA; y[y.n] <- NA
+colnames(mX) <- c(paste0("xvar",1:10), "stepdum1", "stepdum2")
 
 ##test each argument separately and together:
 arx(y, mc=FALSE) #should return "Warning message: In plot.arx(out) : No estimated...etc."
@@ -77,7 +80,7 @@ arx(y, mc=FALSE, mxreg=mX)
 arx(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)), mxreg=mX)
 arx(y, mc=FALSE, vc=TRUE)
 arx(y, mc=FALSE, arch=c(2,4))
-arx(y, mc=FALSE, asym=c(1,3))
+arx(y, mc=FALSE, asym=c(2,4))
 arx(y, mc=FALSE, log.ewma=list(length=c(3,5)))
 arx(y, mc=FALSE, vxreg=cbind(log(mX[,1:2]^2), mX[,3:4]))
 arx(y, mc=FALSE, vc=TRUE, arch=c(2,4), asym=c(1,3),
@@ -88,7 +91,7 @@ arx(y, mc=TRUE, ar=c(1,3), vcov.type="w")
 arx(y, mc=TRUE, ar=c(1,3), vcov.type="n")
 arx(y, mc=TRUE, ar=c(1,3), qstat.options=c(5,5))
 arx(y, mc=TRUE, ar=c(1,3), tol=1e-15)
-arx(y, mc=TRUE, ar=c(1,3), tol=1, LAPACK=TRUE)
+arx(y, mc=TRUE, ar=c(1,3), tol=1, LAPACK=TRUE) #Returns error, but should it?: "Error in ols...: singular regressor-matrix"
 arx(y, mc=TRUE, ar=c(1,3), tol=1, LAPACK=FALSE) #should give warning about removed regressors
 
 ##only mean specification:
@@ -310,16 +313,16 @@ coef(mod07, spec="b") #mean coefs only
 residuals(mod07) #should be null 
 residuals(mod07, std=FALSE) #should be null
 residuals(mod07, std=TRUE) #should be null
-fitted(mod07) #should be null
-fitted(mod07, spec="m")
-fitted(mod07, spec="v")
+fitted(mod07) #should be NULL
+fitted(mod07, spec="m") #should be NULL
+fitted(mod07, spec="v") #should be NULL
 fitted(mod07, spec="b") #should be NULL
 logLik(mod07) #should produce warning: 'object$logl' is NULL
 plot(mod07) #should return "...no plot produced"
 recursive(mod07) #should return the error-message "...Not available..."
 vcov(mod07)
-vcov(mod07, spec="m")
-vcov(mod07, spec="v")
+vcov(mod07, spec="m") #should be NULL
+vcov(mod07, spec="v") #should be NULL
 
 ##user-defined estimator (usual):
 Gfun <- function(y, x, ...){
@@ -352,10 +355,10 @@ plot(mod08) #should produce warning
 predict(mod08, n.ahead=24, newmxreg=matrix(0,24,2))
 recursive(mod08) #should return the error-message "...Not available..."
 vcov(mod08)
-vcov(mod08, spec="m")
+vcov(mod08, spec="m") #should return NULL
 vcov(mod08, spec="v") #should return NULL
 
-##user-defined estimator (fast ols):
+##user-defined estimator (fast ols in 'big' problems):
 library(Matrix)
 ols2 <- function(y, x){
   out <- list()
@@ -363,7 +366,9 @@ ols2 <- function(y, x){
   if (is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
   out$df <- out$n - out$k
   if (out$k > 0) {
-    x <- as(x, "dgeMatrix")
+    x <- as(as(as(x,"Matrix"), "generalMatrix"), "unpackedMatrix")
+#OLD:  
+#    x <- as(x, "dgeMatrix")
     out$xpy <- crossprod(x, y)
     out$xtx <- crossprod(x)
     out$coefficients <- as.numeric(solve(out$xtx,out$xpy))

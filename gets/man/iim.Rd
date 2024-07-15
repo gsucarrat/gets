@@ -27,19 +27,19 @@ tim(x, which.ones = NULL, log.trend = FALSE)
 }
 
 \details{
-If \code{x} is a series or vector of observations, then the index of \code{x} will be used for the labelling of the impulses, and in the returned \code{\link{zoo}} object.
+If \code{x} is a series or vector of observations, then the index of \code{x} will be used for the labelling of the impulses, and in the returned \code{\link[zoo]{zoo}} object.
 
 Note: For \code{sim} and \code{tim} the first indicator is removed, since it is exactly colinear with the others.
 }
 
 \value{
-A \code{\link{zoo}} matrix containing the impulses
+A \code{\link[zoo]{zoo}} matrix containing the impulses
 }
 
 \author{Genaro Sucarrat, \url{http://www.sucarrat.net/} }
 
 \seealso{
-\code{\link{isat}}, \code{\link{zoo}}
+\code{\link{isat}}, \code{\link[zoo]{zoo}}
 }
 \examples{
 ##generate series:

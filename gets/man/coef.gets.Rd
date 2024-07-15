@@ -41,7 +41,7 @@
   \item{n.ahead}{\code{integer} that determines how many steps ahead predictions should be generated (the default is 12)}
   \item{newmxreg}{a \code{matrix} of \code{n.ahead} rows and \code{NCOL(mxreg)} columns with the out-of-sample values of the \code{mxreg} regressors}
   \item{newvxreg}{a \code{matrix} of \code{n.ahead} rows and \code{NCOL(vxreg)} columns with the out-of-sample values of the \code{vxreg} regressors}
-  \item{newindex}{\code{NULL} (default) or the date-index for the \code{zoo} object returned by \code{predict.arx}. If \code{NULL}, then the function uses the in-sample \code{index} to generate the out-of-sample index}
+  \item{newindex}{\code{NULL} (default) or the date-index for the \code{\link[zoo]{zoo}} object returned by \code{predict.arx}. If \code{NULL}, then the function uses the in-sample \code{index} to generate the out-of-sample index}
   \item{n.sim}{\code{integer}, the number of replications used for the generation of the forecasts}
   \item{innov}{\code{NULL} (default) or a vector of length \code{n.ahead * n.sim} containing the standardised errors (that is, zero mean and unit variance) used for the forecast simulations. If \code{NULL}, then a classica bootstrap procedure is used to draw from the standardised in-sample residuals}
   \item{probs}{\code{NULL} (default) or a \code{vector} with the quantile-levels (values strictly between 0 and 1) of the forecast distribution. If \code{NULL}, then no quantiles are returned unless \code{ci.levels} is non-\code{NULL}}
@@ -63,22 +63,22 @@ The \code{plot.options} argument is a \code{list} that controls the prediction p
 
 \value{
   \item{coef:}{a numeric vector containing parameter estimates}
-  \item{fitted:}{a \code{\link{zoo}} object with fitted values}
+  \item{fitted:}{a \code{\link[zoo]{zoo}} object with fitted values}
   \item{logLik:}{a numeric, the log-likelihood (normal density)}
   \item{plot:}{a plot of the fitted values and the residuals}
-  \item{predict:}{a \code{vector} of class \code{\link{zoo}} containing the out-of-sample forecasts, or a \code{matrix} of class \code{\link{zoo}} containing the out-of-sample forecasts together with prediction-quantiles, or - if \code{return=FALSE} - \code{NULL} }
+  \item{predict:}{a \code{vector} of class \code{\link[zoo]{zoo}} containing the out-of-sample forecasts, or a \code{matrix} of class \code{\link[zoo]{zoo}} containing the out-of-sample forecasts together with prediction-quantiles, or - if \code{return=FALSE} - \code{NULL} }
   \item{print:}{a print of the estimation results}
-  \item{residuals:}{a \code{\link{zoo}} object with the residuals}
+  \item{residuals:}{a \code{\link[zoo]{zoo}} object with the residuals}
   \item{sigma:}{the regression standard error ('SE of regression')}
   \item{summary:}{a print of the items in the \code{\link{gets}} object}
   \item{vcov:}{a variance-covariance matrix}
 }
 
 \author{
-Felix Pretis, \url{http://www.felixpretis.org/}\cr
+Felix Pretis, \url{https://felixpretis.climateeconometrics.org/}\cr
 James Reade, \url{https://sites.google.com/site/jjamesreade/}\cr
-Moritz Schwarz, \url{https://www.inet.ox.ac.uk/people/moritz-schwarz/}\cr
-Genaro Sucarrat, \url{http://www.sucarrat.net/}
+Moritz Schwarz, \url{https://www.inet.ox.ac.uk/people/moritz-schwarz}\cr
+Genaro Sucarrat, \url{https://www.sucarrat.net/}
 }
 
 \seealso{ \code{\link{getsm}}, \code{\link{getsv}}, \code{\link{isat}} }

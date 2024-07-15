@@ -14,8 +14,8 @@ The code of the package originated in relation with the research project G. Suca
 \details{
 
 \tabular{ll}{
-	Version: \tab 0.37\cr
-	Date: \tab 2022-10-04\cr
+	Version: \tab 0.38\cr
+	Date: \tab 2024-07-11\cr
 	Licence: \tab GPL-2\cr
 }
 
@@ -23,7 +23,7 @@ The code of the package originated in relation with the research project G. Suca
 
 \section{GETS modelling}{
 
-	GETS methods are available for the following model classes:\cr
+	In the package \pkg{gets}, GETS methods are available for the following model classes:\cr
 
 	\itemize{
 	  \item Linear regression, both static and dynamic, see \code{\link{arx}}, \code{\link{gets.arx}} and \code{\link{gets.lm}}
@@ -66,10 +66,10 @@ The code of the package originated in relation with the research project G. Suca
 
 \tabular{lll}{
 	Jonas Kurle: \tab \tab \url{https://www.jonaskurle.com/}\cr
-	Felix Pretis: \tab \tab \url{http://www.felixpretis.org/}\cr
+	Felix Pretis: \tab \tab \url{https://felixpretis.climateeconometrics.org/}\cr
 	James Reade: \tab \tab \url{https://sites.google.com/site/jjamesreade/}\cr
-	Moritz Schwarz: \tab \tab  \url{https://www.inet.ox.ac.uk/people/moritz-schwarz/}\cr
-	Genaro Sucarrat: \tab \tab \url{http://www.sucarrat.net/}\cr
+	Moritz Schwarz: \tab \tab  \url{https://www.inet.ox.ac.uk/people/moritz-schwarz}\cr
+	Genaro Sucarrat: \tab \tab \url{https://www.sucarrat.net/}\cr
 }
 
 Maintainer: Genaro Sucarrat            

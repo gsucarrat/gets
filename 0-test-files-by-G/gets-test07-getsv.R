@@ -157,6 +157,13 @@ vcov(vgets02)
 vcov(vgets02, spec="m") #should be NULL
 vcov(vgets02, spec="v")
 
+##predict() produces error in version 0.37:
+set.seed(123)
+y <- rnorm(100); x <- matrix(rnorm(10*100), 100,10)
+mymod <- arx(y, mc=FALSE, vc=TRUE, arch=1, log.ewma=c(5,20), asym=1, vxreg=x)
+simple <- gets(mymod, max.paths=1)
+predict(simple) #solved in 0.38
+
 
 ##################################################
 ## 3 SIMULATIONS (FOR THE FUTURE)

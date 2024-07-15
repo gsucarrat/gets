@@ -51,8 +51,8 @@ Internally, \code{gets.isat} invokes \code{\link{getsm}} for the GETS-modelling.
 \value{A list of class \code{\link{gets}}.  }
 
 \author{
-Moritz Schwarz, \url{https://www.inet.ox.ac.uk/people/moritz-schwarz/}\cr
-Genaro Sucarrat, \url{http://www.sucarrat.net/}
+Moritz Schwarz, \url{https://www.inet.ox.ac.uk/people/moritz-schwarz}\cr
+Genaro Sucarrat, \url{https://www.sucarrat.net/}
 }
 
 \seealso{
