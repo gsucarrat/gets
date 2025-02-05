@@ -20,7 +20,7 @@ isat(y, ...)
   vcov.type= c("ordinary","white","newey-west"), do.pet=FALSE, ar.LjungB=NULL,
   arch.LjungB=NULL, normality.JarqueB=NULL, info.method=c("sc","aic","hq"),
   user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL,
-  gof.method = c("min", "max"), include.gum=NULL, include.1cut=FALSE,
+  gof.method = c("min", "max"), include.gum=TRUE, include.1cut=FALSE,
   include.empty=FALSE, max.paths=NULL, parallel.options=NULL, turbo=FALSE,
   tol=1e-07, LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE, plot=NULL,
   alarm=FALSE, ...)
@@ -32,7 +32,7 @@ isat(y, ...)
   vcov.type= c("ordinary","white","newey-west"), do.pet=FALSE, ar.LjungB=NULL,
   arch.LjungB=NULL, normality.JarqueB=NULL, info.method=c("sc","aic","hq"),
   user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL,
-  gof.method = c("min", "max"), include.gum=NULL, include.1cut=FALSE,
+  gof.method = c("min", "max"), include.gum=TRUE, include.1cut=FALSE,
   include.empty=FALSE, max.paths=NULL, parallel.options=NULL, turbo=FALSE,
   tol=1e-07, LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE, plot=NULL,
   alarm=FALSE, ...)
@@ -44,7 +44,7 @@ isat(y, ...)
   vcov.type= c("ordinary","white","newey-west"), do.pet=FALSE, ar.LjungB=NULL,
   arch.LjungB=NULL, normality.JarqueB=NULL, info.method=c("sc","aic","hq"),
   user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL,
-  gof.method = c("min", "max"), include.gum=NULL, include.1cut=FALSE,
+  gof.method = c("min", "max"), include.gum=TRUE, include.1cut=FALSE,
   include.empty=FALSE, max.paths=NULL, parallel.options=NULL, turbo=FALSE,
   tol=1e-07, LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE, plot=NULL,
   alarm=FALSE, ...)

@@ -3100,7 +3100,8 @@ ISadditionalblocksearch <- function(mXis,
                                     turbo, 
                                     do.pet, 
                                     ratio.threshold, 
-                                    max.block.size){
+                                    max.block.size,
+                                    wald.pval){
    # TODO implement if someone does supply the blocks argument
   mXis.intermed.models <- list()
   mXis.ncol.adj <- length(isNames)
@@ -3418,6 +3419,7 @@ ISMatricesLoop <- function(blocks.is.list,
           normality.JarqueB = normality.JarqueB,
           user.diagnostics = user.diagnostics,
           include.gum = include.gum,
+          wald.pval = wald.pval,
           include.1cut = include.1cut,
           include.empty = include.empty, 
           turbo = turbo, 
