@@ -265,8 +265,11 @@ test_that("TEST MAIN isat() ARGUMENTS - test further arguments",{
   
   expect_silent(isat(y, print.searchinfo = FALSE, arch.LjungB = list(lag = NULL, pval = 0.9))) #default: NULL
   
-  #should return warning:
-  expect_warning(isat(y, print.searchinfo = FALSE, include.gum = TRUE)) #default: NULL
+  #should return warning: --> NOT ANYMORE
+  # fixed by M-Orca Feb 2025
+  expect_silent(isat(y, print.searchinfo = FALSE, include.gum = TRUE)) #default: TRUE
+  expect_silent(isat(y, print.searchinfo = FALSE, include.gum = FALSE)) #default: TRUE
+  expect_error(isat(y, print.searchinfo = FALSE, include.gum = NULL)) #default: TRUE
   
   expect_silent(isat(y, print.searchinfo = FALSE, include.1cut = TRUE)) #default: FALSE
   expect_silent(isat(y, print.searchinfo = FALSE, include.empty = TRUE)) #default: FALSE

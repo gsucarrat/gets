@@ -76,7 +76,7 @@ isat(y, ...)
   \item{user.estimator}{\code{NULL} or a \code{\link{list}} with at least one entry, \code{name}, see the \code{user.estimator} argument in \code{\link{getsFun}} }
   \item{gof.function}{\code{NULL} or a \code{\link{list}} with at least one entry, \code{name}, see the \code{user.estimator} argument in \code{\link{getsFun}} }
   \item{gof.method}{\code{NULL} or a \code{character} that determines whether the best Goodness-of-Fit is a minimum or maximum }
-  \item{include.gum}{ignored (temporarily deprecated)}
+  \item{include.gum}{logical. If \code{TRUE}, then the GUM (i.e. the starting model) is included among the terminal models. If \code{FALSE} (default), then the GUM is not included}
   \item{include.1cut}{logical. If \code{TRUE}, then the 1-cut model is included among the terminal models, if it passes the diagnostic tests, even if it is not equal to one of the terminals. If FALSE (default), then the 1-cut model is not included (unless it is one of the terminals)}
   \item{include.empty}{logical. If \code{TRUE}, then an empty model is included among the terminal models, if it passes the diagnostic tests, even if it is not equal to one of the terminals. If FALSE (default), then the empty model is not included (unless it is one of the terminals)}
   \item{max.paths}{\code{NULL} (default) or an integer indicating the maximum number of paths to search}
