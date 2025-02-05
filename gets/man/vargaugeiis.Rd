@@ -19,7 +19,7 @@
   \item{infty}{logical, argument used for variance computation}
 }
 
-\details{The function computes the variance of the Gauge (false-positive rate of outliers in impulse indicator saturation) for a given level of significance of selection (\code{t.pval}) and sample size ({\code{T}) based on Jiao and Pretis (2019). This is an auxilliary function used within the \code{\link{outliertest}} function.}}
+\details{The function computes the variance of the Gauge (false-positive rate of outliers in impulse indicator saturation) for a given level of significance of selection (\code{t.pval}) and sample size (\code{T}) based on Jiao and Pretis (2019). This is an auxilliary function used within the \code{\link{outliertest}} function.}
 
 \value{Returns a dataframe of the variance and standard deviation of the gauge, as well the asymptotic variance and standard deviation.}
 
@@ -32,7 +32,7 @@
 }
 
 \author{
-  Felix Pretis, \url{http://www.felixpretis.org/}
+  Felix Pretis, \url{https://felixpretis.climateeconometrics.org/}
 }
 
 \seealso{

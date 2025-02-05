@@ -16,7 +16,7 @@ leqwma(x, length=5, k=1, p=2, as.vector=FALSE, lag=NULL, start=NULL)
 }
 
 \arguments{
-  \item{x}{numeric vector, time-series or \code{zoo} object}
+  \item{x}{numeric vector, time-series or \code{\link[zoo]{zoo}} object}
   \item{length}{integer or vector of integers each equal to or greater than 1. The length or lengths of the moving window or windows of averages}
   \item{k}{integer that determines how many periods the term(s) should be lagged. If 0 (or smaller), then the moving averages are not lagged}
   \item{p}{numeric value. The exponent p in x^p when \code{abs=FALSE}, and in abs(x)^p when \code{abs=TRUE} }
@@ -33,7 +33,7 @@ The intended primary use of \code{eqwma} is to construct mixed frequency regress
 The intended primary use of \code{leqwma} is to construct volatility proxies for the log-variance specification in an \code{\link{arx}} model. In the latter case, the default is the lagged log of an equally weighted moving average of the squared residuals, where each average is made up of m observations. This is equivalent to an integrated ARCH(p) model where the p coefficients are all equal. For further details on the use of log(EqWMA) as a volatility proxy, see Sucarrat and Escribano (2012).
 }
 
-\value{numeric matrix, vector or \code{\link{zoo}} object}
+\value{numeric matrix, vector or \code{\link[zoo]{zoo}} object}
 
 \references{
 Genaro Sucarrat and Alvaro Escribano (2012): 'Automated Financial
@@ -44,10 +44,10 @@ Genaro Sucarrat and Alvaro Escribano (2012): 'Automated Financial
 Pretis, Felix, Reade, James and Sucarrat, Genaro (2018): 'Automated General-to-Specific (GETS) Regression Modeling and Indicator Saturation for Outliers and Structural Breaks'. Journal of Statistical Software 86, Number 3, pp. 1-44
 }
 
-\author{Genaro Sucarrat, \url{http://www.sucarrat.net/} }
+\author{Genaro Sucarrat, \url{https://www.sucarrat.net/} }
 
 \seealso{
-\code{\link{zoo}}, \code{\link{arx}}, \code{\link{getsm}}, \code{\link{getsv}}
+\code{\link[zoo]{zoo}}, \code{\link{arx}}, \code{\link{getsm}}, \code{\link{getsv}}
 }
 
 \examples{

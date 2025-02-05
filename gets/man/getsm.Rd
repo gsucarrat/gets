@@ -79,7 +79,7 @@ Genaro Sucarrat (2020): 'User-Specified General-to-Specific and Indicator Satura
 Extraction functions: \code{\link{coef.gets}}, \code{\link{fitted.gets}}, \code{\link{paths}}, \code{\link{plot.gets}}, \code{\link{print.gets}},\cr
 \code{\link{residuals.gets}}, \code{\link{summary.gets}}, \code{\link{terminals}}, \code{\link{vcov.gets}}\cr
 
-Related functions: \code{\link{arx}}, \code{\link{eqwma}}, \code{\link{leqwma}}, \code{\link{zoo}}, \code{\link{getsFun}}, \code{\link{qr.solve}}
+Related functions: \code{\link{arx}}, \code{\link{eqwma}}, \code{\link{leqwma}}, \code{\link[zoo]{zoo}}, \code{\link{getsFun}}, \code{\link{qr.solve}}
 }
 
 \examples{

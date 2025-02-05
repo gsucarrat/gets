@@ -1,3 +1,32 @@
+Version 0.38 (11 July 2024):
+===========================
+
+* new function: larchEstfun()
+
+* new class and related functions: larch(), coef.larch(), fitted.larch(), gets.larch(), logLik.larch(), model.matrix.larch(), nobs.larch(), plot.larch(), predict.larch(), print.larch(), residuals.larch(), summary.larch(), toLatex.larch(), vcov.larch()
+
+* changes to regressorsVariance():
+- new arguments: harch, asymind, prefix
+- new default on zero.adj argument: NULL (produces same behaviour as under previous default)
+- deprecated argument: vc.adj
+- to ensure uniqueness, column names in 'vxreg' are now modified if they coincide with any of the variable names of the autoregressive dynamics (arch, harch, etc.); a warning is returned if a modification is made
+
+* changes to arx():
+- removed warning about the new default 'mc = TRUE' (introduced in version 0.28)
+- new default on the 'zero.adj' argument: NULL (same behaviour as under previous default)
+
+* changes to ols():
+- now relies on .lm.fit() for faster estimation
+- deprecated argument: LAPACK
+
+* new function: nobs.arx()
+
+* change to getsFunction(): argument 'max.paths' can now be 0
+
+* fixes in predict.gets():
+- now works when the start-model (the GUM) contains more than one log.ewma term
+
+
 Version 0.37 (4 October 2022):
 ==============================
 

@@ -19,11 +19,11 @@ dlogitx(y, ...)
 }
 
 \arguments{
-  \item{y}{a binary numeric vector, time-series or \code{\link{zoo}} object. Missing values in the beginning and at the end of the series is allowed, as they are removed with the \code{\link{na.trim}} command}
+  \item{y}{a binary numeric vector, time-series or \code{\link[zoo]{zoo}} object. Missing values in the beginning and at the end of the series is allowed, as they are removed with the \code{\link[zoo]{na.trim}} command}
   \item{intercept}{logical. \code{TRUE}, the default, includes an intercept in the logit specification, whereas \code{FALSE} does not}
   \item{ar}{either \code{NULL} (default) or an integer vector, say, \code{c(2,4)} or \code{1:4}. The AR-lags to include in the logit specification. If \code{NULL}, then no lags are included}
   \item{ewma}{either \code{NULL} (default) or a \code{\link{list}} with arguments sent to the \code{\link{eqwma}} function. In the latter case a lagged moving average of \code{y} is included as a regressor}
-  \item{xreg}{either \code{NULL} (default) or a numeric vector or matrix, say, a \code{\link{zoo}} object, of covariates. Note that, if both \code{y} and \code{xreg} are \code{zoo} objects, then their samples are chosen to match}
+  \item{xreg}{either \code{NULL} (default) or a numeric vector or matrix, say, a \code{\link[zoo]{zoo}} object, of covariates. Note that, if both \code{y} and \code{xreg} are \code{\link[zoo]{zoo}} objects, then their samples are chosen to match}
   \item{vcov.type}{character vector of length 1, either "ordinary" (default) or "robust". Partial matching is allowed. If "ordinary", then the ordinary variance-covariance matrix is used for inference. If "robust", then a robust coefficient-covariance of the Newey and West (1987) type is used }
   \item{lag.length}{\code{NULL} or an integer that determines the lag-length used in the robust coefficient covariance. If \code{lag.length} is an integer, then it is ignored unless \code{method = 3} }
   \item{initial.values}{\code{NULL} or a numeric vector with the initial parameter values passed on to the optimisation routine, \code{\link{nlminb}}. If \code{NULL}, the default, then the values are chosen automatically }

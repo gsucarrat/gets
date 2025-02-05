@@ -31,7 +31,7 @@ Pretis, Felix, Reade, James and Sucarrat, Genaro (2018): 'Automated General-to-S
 }
 
 \author{
-  Felix Pretis, \url{http://www.felixpretis.org/}
+  Felix Pretis, \url{https://felixpretis.climateeconometrics.org/}
 }
 
 \seealso{

@@ -1,8 +1,8 @@
 import(zoo)
 
-importFrom("stats", "Box.test", "coef", "cycle", "deltat", "dnorm",
+importFrom("stats", ".lm.fit", "Box.test", "coef", "cycle", "deltat", "dnorm",
   "fitted", "as.formula", "frequency", "lm", "logLik", "model.matrix",
-  "nlminb", "pchisq", "pnorm", "poisson.test", "printCoefmat", "pt",
+  "nlminb", "nobs", "pchisq", "pnorm", "poisson.test", "printCoefmat", "pt",
   "qnorm", "qt", "quantile", "residuals", "rnorm", "runif", "sd", "sigma",
   "var", "vcov", "window")
 
@@ -32,9 +32,9 @@ export(
   
   ##arx-class functions:
   "arx", "coef.arx", "ES", "fitted.arx", "gets.arx", "logLik.arx",
-  "model.matrix.arx", "plot.arx", "predict.arx", "print.arx", "recursive",
-  "rsquared", "residuals.arx", "sigma.arx", "summary.arx", "toLatex.arx",
-  "VaR", "vcov.arx",
+  "model.matrix.arx", "nobs.arx", "plot.arx", "predict.arx", "print.arx",
+  "recursive", "rsquared", "residuals.arx", "sigma.arx", "summary.arx",
+  "toLatex.arx", "VaR", "vcov.arx",
   
   ##gets-class functions:
   "getsm", "getsv", "coef.gets", "fitted.gets", "paths",
@@ -48,6 +48,12 @@ export(
   "isvarcor", "isvareffcor", "iim", "sim", "tim", "isatdates",
   "isatloop", "isatvarcorrect", "mvrnormsim", "outlierscaletest",
   "outliertest", "vargaugeiis", "gets.isat", "isat.lm", "isat.arx",
+
+  ##larch-class functions:
+  "larchEstfun", "larch", "coef.larch", "fitted.larch", "gets.larch",
+  "logLik.larch", "model.matrix.larch", "nobs.larch", "plot.larch",
+  "predict.larch", "print.larch", "residuals.larch", "summary.larch",
+  "toLatex.larch", "vcov.larch", 
 
   ##logitx-class functions:
   "logitxSim", "logit", "logitx", "coef.logitx", "fitted.logitx",
@@ -70,6 +76,7 @@ S3method("gets", "arx")
 S3method("isat", "arx")
 S3method("logLik", "arx")
 S3method("model.matrix", "arx")
+S3method("nobs", "arx")
 S3method("plot", "arx")
 S3method("predict", "arx")
 S3method("print", "arx")
@@ -107,6 +114,21 @@ S3method("residuals", "isat")
 S3method("sigma", "isat")
 S3method("summary", "isat")
 S3method("vcov", "isat")
+
+##methods for class larch:
+S3method("coef", "larch")
+S3method("fitted", "larch")
+S3method("gets", "larch")
+S3method("logLik", "larch")
+S3method("model.matrix", "larch")
+S3method("nobs", "larch")
+S3method("plot", "larch")
+S3method("predict", "larch")
+S3method("print", "larch")
+S3method("residuals", "larch")
+S3method("summary", "larch")
+S3method("toLatex", "larch")
+S3method("vcov", "larch")
 
 ##methods for class logitx:
 S3method("coef", "logitx")

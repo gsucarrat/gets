@@ -24,8 +24,8 @@ recursive(object, spec="mean", std.errors=TRUE, from=40, tol=1e-07,
 }
 
 \value{If \code{return=TRUE}, then a \code{\link{list}} is returned with the following components:
-  \item{estimates}{a \code{\link{zoo}} matrix with the recursive estimates}
-  \item{standard.errors}{a \code{\link{zoo}} matrix with the standard errors}
+  \item{estimates}{a \code{\link[zoo]{zoo}} matrix with the recursive estimates}
+  \item{standard.errors}{a \code{\link[zoo]{zoo}} matrix with the standard errors}
 }
 
 \author{Genaro Sucarrat, \url{http://www.sucarrat.net/}}

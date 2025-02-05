@@ -18,7 +18,7 @@
   \item{num}{numeric, target expected number of outliers under the null hypothesis, or target proportion of outliers if \code{t.pval.spec==TRUE}}
   \item{t.pval.spec}{logical, if \code{TRUE}, then \code{num} specifies proportion rather than number of targeted outliers}
   \item{print}{logical, if \code{TRUE}, then iterations are printed}
-  \item{y}{numeric vector, time-series or \code{\link{zoo}} object. Missing values in the beginning and at the end of the series is allowed, as they are removed with the \code{\link{na.trim}} command}
+  \item{y}{numeric vector, time-series or \code{\link[zoo]{zoo}} object. Missing values in the beginning and at the end of the series is allowed, as they are removed with the \code{\link[zoo]{na.trim}} command}
   \item{ar}{integer vector, say, c(2,4) or 1:4. The AR-lags to include in the mean specification}
   \item{iis}{logical, whether to use \code{iis}}
   \item{sis}{logical, whether to use \code{sis}, default is \code{FALSE}}
@@ -38,7 +38,7 @@
 }
 
 \author{
-  Felix Pretis, \url{http://www.felixpretis.org/}
+  Felix Pretis, \url{https://felixpretis.climateeconometrics.org/}
 }
 
 \seealso{

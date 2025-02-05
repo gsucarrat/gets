@@ -18,7 +18,7 @@
   \item{n.ahead}{\code{integer} that determines how many steps ahead predictions should be generated (the default is 12)}
   \item{newmxreg}{a \code{matrix} of \code{n.ahead} rows and \code{NCOL(mxreg)} columns with the out-of-sample values of the \code{mxreg} regressors}
   \item{newvxreg}{a \code{matrix} of \code{n.ahead} rows and \code{NCOL(vxreg)} columns with the out-of-sample values of the \code{vxreg} regressors}
-  \item{newindex}{\code{NULL} (default) or the date-index for the \code{zoo} object returned by \code{predict.arx}. If \code{NULL}, then the function uses the in-sample \code{index} to generate the out-of-sample index}
+  \item{newindex}{\code{NULL} (default) or the date-index for the \code{\link[zoo]{zoo}} object returned by \code{predict.arx}. If \code{NULL}, then the function uses the in-sample \code{index} to generate the out-of-sample index}
   \item{n.sim}{\code{integer}, the number of replications used for the generation of the forecasts}
   \item{innov}{\code{NULL} (default) or a vector of length \code{n.ahead * n.sim} containing the standardised errors (that is, zero mean and unit variance) used for the forecast simulations. If \code{NULL}, then a classica bootstrap procedure is used to draw from the standardised in-sample residuals}
   \item{probs}{\code{NULL} (default) or a \code{vector} with the quantile-levels (values strictly between 0 and 1) of the forecast distribution. If \code{NULL}, then no quantiles are returned unless \code{ci.levels} is non-\code{NULL}}
@@ -32,7 +32,7 @@
 }
 
 \value{
-a \code{vector} of class \code{\link{zoo}} containing the out-of-sample forecasts, or a \code{matrix} of class \code{\link{zoo}} containing the out-of-sample forecasts together with prediction-quantiles, or \code{NULL} if \code{return=FALSE}
+a \code{vector} of class \code{\link[zoo]{zoo}} containing the out-of-sample forecasts, or a \code{matrix} of class \code{\link[zoo]{zoo}} containing the out-of-sample forecasts together with prediction-quantiles, or \code{NULL} if \code{return=FALSE}
 }
 
 \details{
@@ -60,7 +60,7 @@ The \code{plot.options} argument is a \code{list} that, optionally, can contain 
 }
 
 \author{
-Felix Pretis, \url{http://www.felixpretis.org/}\cr
+Felix Pretis, \url{https://felixpretis.climateeconometrics.org/}\cr
 James Reade, \url{https://sites.google.com/site/jjamesreade/}\cr
 Genaro Sucarrat, \url{http://www.sucarrat.net/}
 }

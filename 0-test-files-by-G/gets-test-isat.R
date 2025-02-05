@@ -56,7 +56,10 @@ iim(x); sim(x); tim(x)
 set.seed(123)
 x <- ts(rnorm(6), frequency=4, end=c(2015,4))
 iim(x); sim(x); tim(x)
-which.ones <- c(2014.25,2014.75,2015,2015.50)
+##the following commands return the
+##error-message: 'which.ones' not in index
+##but should not, fix in 0.39?
+which.ones <- c(2014.50,2014.75,2015,2015.50)
 iim(x, which.ones=which.ones)
 sim(x, which.ones=which.ones)
 tim(x, which.ones=which.ones)
@@ -403,11 +406,12 @@ colnames(mxreg) <- c("c1","c2","c3","c4","c5","c6","c7")
 y = zooreg(rnorm(88),start = 2002 ,frequency = 12)
 isat_mod <- isat(y, mxreg = mxreg, mc =TRUE,ar = 4,
   sis = TRUE,t.pval = 0.01,vcov.type = "white")
-newmxreg  <- tail(na.trim(mxreg),12)
-new_index <- index(tail(na.trim(mxreg),12))
-##as of 17 July 2019, does not work:
-prediction_isat <- predict.isat(isat_mod,newmxreg=newmxreg,
-  n.ahead=12,newindex = new_index, return = TRUE)
+newmxreg  <- tail(isat_mod$aux$mX,12)[,-c(1:2)]
+colnames(newmxreg) <- isat_mod$aux$mXnames[-c(1:2)]
+##as of 17 July 2019, does not work, but works in version 0.38:
+##(the problem was the example, not the predict.isat() function, it seems)
+prediction_isat <- predict.isat(isat_mod, newmxreg=coredata(newmxreg),
+  n.ahead=12, return = TRUE)
 prediction_isat
 
 
@@ -498,7 +502,9 @@ ols2 <- function(y, x){
   if (is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
   out$df <- out$n - out$k
   if (out$k > 0) {
-    x <- as(x, "dgeMatrix")
+    x <- as(as(as(x,"Matrix"), "generalMatrix"), "unpackedMatrix")
+#OLD:  
+#    x <- as(x, "dgeMatrix")
     out$xpy <- crossprod(x, y)
     out$xtx <- crossprod(x)
     out$coefficients <- as.numeric(solve(out$xtx,out$xpy))
@@ -525,21 +531,12 @@ system.time(isat(y))
 system.time(isat(y, user.estimator=list(name="ols2")))
 ##Conclusion: here, ols is faster than ols2
 
-##comparisons 2: w/microbenchmark, see
-##https://nelsonareal.net/blog/2017/06/speeding_up_ols.html
-library(microbenchmark)
-microbenchmark( ols(y,mX), ols2(y,mX), times=10)
-microbenchmark( isat(y),
-  isat(y, user.estimator=list(name="ols2")),
-  times=10)
-##Conclusion ("small T"): ols is faster than ols2
-
 ##compare speed 2:
 set.seed(123); dgp.n <- 1000; y <- rnorm(dgp.n)
 system.time(isat(y))
 system.time(isat(y, user.estimator=list(name="ols2")))
-##Conclusion: sample size matters, additional experiments
-##suggests the speed increase is increasing in sample size
+##Conclusion: as of version 0.38, ols is still faster
+##than ols2
 
 
 ##################################################

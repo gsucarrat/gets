@@ -497,7 +497,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   
   return(getsis)
 
-} #close isat function
+} #close isat.default() function
 
 ##==================================================
 coef.isat <- function(object, ...)

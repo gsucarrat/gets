@@ -14,6 +14,7 @@
 ##
 ##################################################
 
+
 ##################################################
 ##1 INITIATE
 ##################################################
@@ -34,6 +35,7 @@ source("./gets/R/gets-base-source.R")
 
 ##load library used for some of the tests:
 library(testthat)
+library(microbenchmark)
 
 
 ##################################################
@@ -62,9 +64,13 @@ mCoefs[6,] <- lm(vY ~ mX-1)$coefficients #compare with lm
 rownames(mCoefs) <- paste("method ",1:NROW(mCoefs), ":", sep="")
 mCoefs
 
-##compare log-likelihoods:
+##check log-likelihoods:
 test_that("Log-Likelihoods are the same",{
   tmp <- ols(vY, mX, method=3)
+  expect_equal(tmp$logl,sum(dnorm(tmp$residuals, sd=sqrt(tmp$sigma2), log=TRUE)))
+  tmp <- ols(vY, mX, method=4)
+  expect_equal(tmp$logl,sum(dnorm(tmp$residuals, sd=sqrt(tmp$sigma2), log=TRUE)))
+  tmp <- ols(vY, mX, method=5)
   expect_equal(tmp$logl,sum(dnorm(tmp$residuals, sd=sqrt(tmp$sigma2), log=TRUE)))
 })
 
@@ -98,16 +104,13 @@ test_that("verify that ols with method=0 yields error",{
 ##verify that method=0 returns the info "method = 0 has been deprecated":
 ols(vY, mX, method=0)
 
-##test tol argument (only used if LAPACK=FALSE):
-test_that("test tol argument (only used if LAPACK=FALSE)",{
-  expect_error(ols(vY, mX, tol=1, LAPACK=FALSE)) #should return 'Error...'
-  expect_silent(ols(vY, mX, tol=1, LAPACK=TRUE)) #should work
-  expect_error(ols(vY, mX, tol=0.96, LAPACK=FALSE)) #should return 'Error...'
-  expect_silent(ols(vY, mX, tol=0.96, LAPACK=TRUE)) #should work
-  expect_silent(ols(vY, mX, tol=0.95, LAPACK=FALSE)) #should work
-  expect_silent(ols(vY, mX, tol=0.95, LAPACK=TRUE)) #should work
-  
-})
+##verify that singularity fails:
+ols(vY, mX, method=1, tol=1) #Should return "Error in ols(vY, mX, method = 1, tol = 1) : singular regressor-matrix" 
+ols(vY, mX, method=2, tol=1) #Should return "Error in..."
+ols(vY, mX, method=3, tol=1) #Should return "Error in..."
+ols(vY, mX, method=4, tol=1) #Should return "Error in..."
+ols(vY, mX, method=5, tol=1) #Should return "Error in..."
+ols(vY, mX, method=6, tol=1) #Should return "Error in..."
 
 ##view the return values of methods 1 to 6:
 names(ols(vY, mX, method=1))
@@ -116,6 +119,73 @@ names(ols(vY, mX, method=3))
 names(ols(vY, mX, method=4))
 names(ols(vY, mX, method=5))
 names(ols(vY, mX, method=6))
+
+
+##speed comparisons:
+##==================
+
+##20 observations:
+##----------------
+
+set.seed(123)
+y <- rnorm(20)
+x <- matrix(rnorm(20*5),20,5)
+
+microbenchmark(
+  ols(y,x,method=1),
+  ols(y,x,method=2),
+  ols(y,x,method=3),
+  ols(y,x,method=4),
+  ols(y,x,method=5),
+  .lm.fit(x,y),
+  lm.fit(x,y),
+  lsfit(x,y),
+  lm(y~x-1)
+)
+
+#Unit: microseconds
+#                  expr   min     lq    mean median     uq   max neval
+# ols(y, x, method = 1)   5.4   7.20   9.976   9.70  11.60  21.3   100
+# ols(y, x, method = 2)   9.9  13.30  17.981  16.40  20.30  63.4   100
+# ols(y, x, method = 3)  18.5  26.70  30.431  29.10  34.15  48.3   100
+# ols(y, x, method = 4)  23.8  30.00  35.135  34.50  39.35  49.8   100
+# ols(y, x, method = 5)  42.0  54.00  59.820  59.40  65.50  83.3   100
+#         .lm.fit(x, y)   3.1   4.55   6.410   5.45   7.45  16.9   100
+#          lm.fit(x, y)  27.1  37.70  41.910  41.40  45.70  62.3   100
+#           lsfit(x, y)  53.9  68.65  77.486  73.65  79.20 368.3   100
+#         lm(y ~ x - 1) 508.3 525.00 566.123 537.15 610.70 818.4   100
+
+
+##1000 observations, many variables:
+##----------------------------------
+
+set.seed(123)
+y <- rnorm(1000)
+x <- matrix(rnorm(1000*30),1000,30)
+
+microbenchmark(
+  ols(y,x,method=1),
+  ols(y,x,method=2),
+  ols(y,x,method=3),
+  ols(y,x,method=4),
+  ols(y,x,method=5),
+  .lm.fit(x,y),
+  lm.fit(x,y),
+  lsfit(x,y),
+  lm(y~x-1)
+)
+
+#Unit: microseconds
+#                  expr     min       lq      mean   median       uq     max neval
+# ols(y, x, method = 1)   766.1   834.75   855.626   848.15   866.80  1011.3   100
+# ols(y, x, method = 2)   828.0   874.55   899.553   891.05   916.45  1087.2   100
+# ols(y, x, method = 3)   824.6   895.90   980.789   915.20   936.05  6795.2   100
+# ols(y, x, method = 4)  1771.6  1902.05  2003.275  1945.90  1995.35  7780.7   100
+# ols(y, x, method = 5) 12865.7 14107.20 14676.436 14242.95 14466.30 20852.7   100
+#         .lm.fit(x, y)   770.1   826.60   903.578   839.30   863.65  6660.1   100
+#          lm.fit(x, y)   812.4   884.75   915.807   910.10   941.90  1076.6   100
+#           lsfit(x, y)  1021.6  1146.55  1303.762  1181.55  1211.10  7385.7   100
+#         lm(y ~ x - 1)  1661.9  2030.95  2234.919  2134.30  2210.65  8359.4   100
 
 
 ##################################################
@@ -399,6 +469,7 @@ diagnostics(x, user.fun=list(name="SWtest", pval=0.025))
 diagnostics(x,
   user.fun=list(name="SWtest", pval=0.025),
   verbose=FALSE) #should return FALSE
+##SHOULD THIS ONE RETURN FALSE??:
 diagnostics(x,
   user.fun=list(name="SWtest", pval=0.85, is.reject.bad=c(TRUE,FALSE)),
   verbose=FALSE) #should return TRUE
@@ -506,6 +577,7 @@ regressorsMean(y, mc=TRUE, ar=c(1,3), ewma=list(length=c(2,4)),
 ##erroneous until version 0.23:
 colnames(mxreg) <- c("a", "", "c", "", "e")
 regressorsMean(y, mxreg=mxreg)
+regressorsMean(y, mxreg=mxreg, prefix="")
  
 ##unit test:
 test_that("Testing the regressorsMean() function - Test 1",{
@@ -615,16 +687,22 @@ eps[3] <- 0
 vxreg <- matrix(rnorm(5*iT), iT, 5)
 #vxreg <- cbind(rep(1, iT)); colnames(mX) <- "mconst"
 #vxreg[1:5,2] <- NA
-
+    
 ##for visual inspection:
 regressorsVariance(eps)
 regressorsVariance(eps, vc=FALSE)
-regressorsVariance(eps, arch=c(1,3))
+regressorsVariance(eps, arch=1)
+regressorsVariance(eps, arch=c(2,3))
+regressorsVariance(eps, harch=1)
+regressorsVariance(eps, harch=c(2,3))
+regressorsVariance(eps, asym=c(1))
+regressorsVariance(eps, asymind=c(2,4))
 regressorsVariance(eps, log.ewma=5)
 regressorsVariance(eps, log.ewma=c(2,4))
+regressorsVariance(eps, log.ewma=list(length=c(2,4)))
 regressorsVariance(eps, vxreg=vxreg)
 regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),
-  vxreg=vxreg)
+  vxreg=vxreg, prefix="G")
 regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),
   vxreg=vxreg, return.regressand=FALSE)
 regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),
@@ -637,33 +715,16 @@ regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),
 ##check naming when "" in colnames:
 colnames(vxreg) <- c("a", "", "c", "", "d")
 regressorsVariance(eps, vxreg=vxreg)
-
-##unit testing:  
-test_that("regressorsVariance() - Test 1",{
-  expect_silent(regressorsVariance(eps))
-  expect_silent(regressorsVariance(eps, vc=FALSE))
-  expect_silent(regressorsVariance(eps, arch=c(1,3)))
-  expect_silent(regressorsVariance(eps, log.ewma=5))
-  expect_silent(regressorsVariance(eps, log.ewma=c(2,4)))
-  expect_silent(regressorsVariance(eps, vxreg=vxreg))
-  expect_silent(regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),vxreg=vxreg))
-  expect_silent(regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),vxreg=vxreg, return.regressand=FALSE))
-  expect_silent(regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),vxreg=vxreg, return.as.zoo=FALSE))
-  expect_silent(regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),vxreg=vxreg, na.trim=FALSE))
-  expect_silent(regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),vxreg=vxreg, return.regressand=FALSE, return.as.zoo=FALSE,na.trim=FALSE))
-  
-  ##check naming when "" in colnames:
-  colnames(vxreg) <- c("a", "", "c", "", "d")
-  expect_silent(regressorsVariance(eps, vxreg=vxreg))
-  
-})
+##check that unique naming works:
+colnames(vxreg) <- paste0("arch", 1:5)
+regressorsVariance(eps, arch=1, vxreg=vxreg)
 
 
 ##test 2:
 ##=======
 
 set.seed(123)
-iT <- 10 #60 or 100. If iT=60, then usually no specific
+iT <- 10
 eps <- arima.sim(list(arch=0.3),iT)
 eps <- ts(eps, frequency=4, end=c(2015,4))
 vxreg <- matrix(rnorm(4*iT), iT, 4)
@@ -675,6 +736,9 @@ eps[3] <- 0
 regressorsVariance(eps)
 regressorsVariance(eps, vc=FALSE)
 regressorsVariance(eps, arch=c(1,3))
+regressorsVariance(eps, harch=c(2,4))
+regressorsVariance(eps, asym=c(1,3))
+regressorsVariance(eps, asymind=c(2,4))
 regressorsVariance(eps, log.ewma=c(2,4))
 regressorsVariance(eps, vxreg=vxreg)
 regressorsVariance(eps, vc=TRUE, arch=c(1,3), log.ewma=c(2,4),

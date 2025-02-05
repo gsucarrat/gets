@@ -265,7 +265,7 @@ dropvar <- function(x, tol=1e-7, LAPACK=FALSE, silent=FALSE)
   ## test and match arguments:
   stopifnot(is.matrix(x))
   silent <- as.logical(silent)[1]
-  ## perform the qr-decomposition of X using LINPACK methods:
+  ## do the qr-decomposition of X using LINPACK methods:
   qr.X <- qr(x, tol=tol, LAPACK=LAPACK)
   if(qr.X$rank == NCOL(x))
     return(x) ## return x if x has full column rank
@@ -274,9 +274,6 @@ dropvar <- function(x, tol=1e-7, LAPACK=FALSE, silent=FALSE)
       NCOL(x) - qr.X$rank, " regressors", appendLF=TRUE)
     message("\n", appendLF=FALSE)
   }
-#OLD:
-#    message(gettextf("regressor-matrix is column rank deficient, so dropping %d regressors",
-#                     NCOL(x) - qr.X$rank))
   ## return the columns correponding to the first qr.x$rank pivot
   ## elements of x:
   newX <- x[, qr.X$pivot[1:qr.X$rank], drop = FALSE]
@@ -414,7 +411,7 @@ leqwma <- function(x, length=5, k=1, p=2, as.vector=FALSE,
 } #close leqwma
 
 ##==================================================
-##Create the mean regressors of an arx model:
+##create regressors for a model of the mean:
 regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
   prefix="m", return.regressand=TRUE, return.as.zoo=TRUE, na.trim=TRUE,
   na.omit=FALSE)
@@ -569,11 +566,11 @@ regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
 } #close regressorsMean()
 
 ##==================================================
-##Create the variance regressors of an arch-x model:
-regressorsVariance <- function(e, vc=TRUE, arch=NULL, asym=NULL,
-  log.ewma=NULL, vxreg=NULL, zero.adj=0.1, vc.adj=TRUE,
-  return.regressand=TRUE, return.as.zoo=TRUE, na.trim=TRUE,
-  na.omit=FALSE)
+##create regressors for a model of the variance:
+regressorsVariance <- function(e, vc=TRUE, arch=NULL, harch=NULL,
+  asym=NULL, asymind=NULL, log.ewma=NULL, vxreg=NULL, prefix="v",
+  zero.adj=NULL, vc.adj=TRUE, return.regressand=TRUE, return.as.zoo=TRUE,
+  na.trim=TRUE, na.omit=FALSE)
 {
 
   ##regressand:
@@ -584,25 +581,34 @@ regressorsVariance <- function(e, vc=TRUE, arch=NULL, asym=NULL,
   e <- coredata(e)
   t1 <- loge2.index[1]
   t2 <- loge2.index[e.n]
-  zero.where <- which(e==0)
-  eabs <- abs(e)
+  e2 <- e^2
+  
+  ##zero adjustment for arch/harch/log.ewma terms:
+  zero.where <- which(e2==0)
   if( length(zero.where)>0 ){
-    eabs[zero.where] <- quantile(eabs[-zero.where], zero.adj, na.rm=TRUE)
+    if( is.null(zero.adj) ){
+      zero.adj <- quantile(e2[-zero.where], 0.1, na.rm=TRUE)
+    }
+    e2[zero.where] <- zero.adj
+  }else{
+    if( is.null(zero.adj) ){
+      zero.adj <- quantile(e2, 0.1, na.rm=TRUE) 
+    }
   }
-  loge2 <- log(eabs^2)
-
-  ##create regressor matrix:
+  loge2 <- log(e2)
+  
+  ##create regressor matrix and regressors names:
   vX <- NULL
   vXnames <- NULL
 
   ##variance intercept:
-  if( identical(as.numeric(vc),1) ){
+  if( vc==TRUE ){
     vX <- cbind(rep(1,e.n))
-    vXnames <- "vconst"
+    vXnames <- paste0(prefix, "const")
   }
 
   ##arch terms:
-  if(!is.null(arch) && !identical(as.numeric(arch),0) ){
+  if( !is.null(arch) && !identical(as.numeric(arch),0) ){
     tmp <- NULL
     nas <- rep(NA, max(arch))
     tmpfun <- function(i){
@@ -612,9 +618,25 @@ regressorsVariance <- function(e, vc=TRUE, arch=NULL, asym=NULL,
     vX <- cbind(vX, tmp)
     vXnames <- c(vXnames, paste0("arch", arch))
   }
-
+  
+  ##harch terms:
+  if( !is.null(harch) && !identical(as.numeric(harch),0) ){
+    tmp <- NULL
+    for(i in 1:length(harch)){
+      x <- rollsum(e, k=harch[i], na.pad=TRUE, align="right" )^2
+      zero.where <- which(x==0)
+      if( length(zero.where)>0 ){ x[zero.where] <- zero.adj }
+      x <- log(x)
+      x <- c(NA, x[-e.n])
+      tmp <- cbind(tmp, x)
+      colnames(tmp) <- NULL
+    }    
+    vX <- cbind(vX,tmp)
+    vXnames <- c(vXnames, paste0("harch", harch))
+  }
+  
   ##asym terms:
-  if(!is.null(asym) && !identical(as.numeric(asym),0) ){
+  if( !is.null(asym) && !identical(as.numeric(asym),0) ){
     tmp <- NULL
     nas <- rep(NA, max(asym))
     tmpfun <- function(i){
@@ -626,15 +648,39 @@ regressorsVariance <- function(e, vc=TRUE, arch=NULL, asym=NULL,
     vXnames <- c(vXnames, paste0("asym", asym))
   }
 
-  ##log.ewma term:
-  if(!is.null(log.ewma)){
-    if(is.list(log.ewma)){
-      log.ewma$k <- 1
-    }else{
-      log.ewma <- list(length=log.ewma)
+  ##asymind terms:
+  if(!is.null(asymind) && !identical(as.numeric(asymind),0) ){
+    tmp <- NULL
+    nas <- rep(NA, max(asymind))
+    tmpfun <- function(i){
+      tmp <<- cbind(tmp, c(nas[1:i], as.numeric(e[1:c(e.n-i)]<0)))
     }
-    tmp <- do.call(leqwma, c(list(e),log.ewma) )
-    vXnames <- c(vXnames, colnames(tmp))
+    tmpfun <- sapply(asymind,tmpfun)
+    vX <- cbind(vX, tmp)
+    vXnames <- c(vXnames, paste0("asymind", asymind))
+  }
+  
+  ##log.ewma term:
+  if( !is.null(log.ewma) ){
+    if( is.list(log.ewma) ){
+      log.ewma$k <- 1
+      tmp <- do.call(leqwma, c(list(e),log.ewma) )
+      vXnames <- c(vXnames, colnames(tmp))
+    }
+    if( is.numeric(log.ewma) && !identical(log.ewma,0) ){
+      xNames <- NULL
+      tmp <- NULL
+      for(i in 1:length(log.ewma)){
+        x <- rollmean(e^2, k=log.ewma[i], na.pad=TRUE, align="right" )
+        zero.where <- which(x==0)
+        if( length(zero.where)>0 ){ x[zero.where] <- zero.adj }
+        x <- log(x)
+        x <- c(NA, x[-e.n])
+        tmp <- cbind(tmp, x)
+        xNames <- c(xNames, paste0("logEqWMA(", log.ewma[i], ")"))
+      } #close for(i)    
+      vXnames <- c(vXnames, xNames)
+    }
     colnames(tmp) <- NULL
     vX <- cbind(vX, tmp)
   }
@@ -658,18 +704,25 @@ regressorsVariance <- function(e, vc=TRUE, arch=NULL, asym=NULL,
   }
 
   ##vxreg:
-  if(!is.null(vxreg)){
+  if( !is.null(vxreg) ){
     vxreg <- as.zoo(cbind(vxreg))
     vxreg.names <- colnames(vxreg)
-    if(is.null(vxreg.names)){
-      vxreg.names <- paste0("vxreg", 1:NCOL(vxreg))
+    xregLabel <- paste0( prefix, "xreg" )
+    if( is.null(vxreg.names )){
+      vxreg.names <- paste0(xregLabel, 1:NCOL(vxreg))
     }
-    if(any(vxreg.names == "")){
+    if( any(vxreg.names == "") ){
       missing.colnames <- which(vxreg.names == "")
       for(i in 1:length(missing.colnames)){
-        vxreg.names[missing.colnames[i]] <- paste0("vxreg", i)
+        vxreg.names[missing.colnames[i]] <- paste0(xregLabel, i)
       }
     }
+    whichOnes <- which( vxreg.names %in% vXnames )
+    if( length(whichOnes) > 0 ){
+      warning("to ensure unique names, the following are changed in 'vxreg': ", vxreg.names[ whichOnes ])
+      vxreg.names[ whichOnes ] <-
+        paste0(paste0(xregLabel, "."), vxreg.names[ whichOnes ])      
+    }      
     vXnames <- c(vXnames, vxreg.names)
     vxreg <- window(vxreg, start=t1, end=t2)
     vxreg <- cbind(coredata(vxreg))
@@ -694,7 +747,7 @@ regressorsVariance <- function(e, vc=TRUE, arch=NULL, asym=NULL,
   } #end if(!is.null(vxreg))
 
   ##remove rows with NAs:
-  if(na.omit){
+  if( na.omit ){
     tmp <- zoo(cbind(loge2,vX), order.by=loge2.index)
     tmp <- na.omit(tmp)
     loge2.n <- NROW(tmp) #re-define
@@ -730,12 +783,10 @@ ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
   LAPACK=FALSE, method=3, variance.spec=NULL, ...)
 {
 
-  ##for the future:
+  ##idea(s) for the future:
   ## - new argument: options=NULL (default), to control how the
   ## Newey and West (1987) coefficient-covariance is computed,
   ## amongst other
-  ## - rename ols to estFun? Split estFun into two functions,
-  ## estFun and vcovFun?
 
   ##user-specified:
   ##---------------
@@ -746,22 +797,17 @@ ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
   ##fastest, usually only for estimates:
   ##------------------------------------
   if(method==1){
-    out <- list()
-    qx <- qr(x, tol, LAPACK=LAPACK)
-    out <- c(out, qx)
-    out$coefficients <- solve.qr(qx, y, tol=tol)
+    out <- .lm.fit(x, y, tol=tol)
+    if( out$rank != NCOL(x) ){ stop("singular regressor-matrix") } 
   }
 
   ##second fastest (slightly more output):
   ##--------------------------------------
   if(method==2){
-    out <- list()
-    qx <- qr(x, tol, LAPACK=LAPACK) ## compute qr-decomposition of x
-    out <- c(out, qx)
-    out$coefficients <- solve.qr(qx, y, tol=tol)
-    out$xtxinv <- chol2inv(qx$qr) #(x'x)^-1
+    out <- .lm.fit(x, y, tol=tol)  
+    if( out$rank != NCOL(x) ){ stop("singular regressor-matrix") }
     out$fit <- as.vector(x %*% out$coefficients)
-    out$residuals <- y - out$fit
+    out$xtxinv <- chol2inv(out$qr) #(x'x)^-1
   }
 
   ##ordinary vcov:
@@ -774,15 +820,20 @@ ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
     if(is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
     out$df <- out$n - out$k
     if(out$k > 0){
-      qx <- qr(x, tol, LAPACK=LAPACK) ## compute qr-decomposition of x
-      out <- c(out, qx)
-      out$coefficients <- solve.qr(qx, y, tol=tol)
-      out$xtxinv <- chol2inv(qx$qr) #(x'x)^-1
+      tmp <- .lm.fit(x, y, tol=tol)  
+      if( tmp$rank != out$k ){ stop("singular regressor-matrix") }
+      out$qr <- tmp$qr
+      out$rank <- tmp$rank
+      out$qraux <- tmp$qraux
+      out$pivot <- tmp$pivot
+      out$coefficients <- tmp$coefficients
+      out$xtxinv <- chol2inv(out$qr) #(x'x)^-1
       out$fit <- as.vector(x %*% out$coefficients)
+      out$residuals <- tmp$residuals
     }else{
       out$fit <- rep(0, out$n)
+      out$residuals <- y - out$fit
     }
-    out$residuals <- y - out$fit
     out$residuals2 <- out$residuals^2
     out$rss <- sum(out$residuals2)
     out$sigma2 <- out$rss/out$df
@@ -803,15 +854,20 @@ ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
     if(is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
     out$df <- out$n - out$k
     if(out$k > 0){
-      qx <- qr(x, tol, LAPACK=LAPACK) ## compute qr-decomposition of x
-      out <- c(out, qx)
-      out$coefficients <- solve.qr(qx, y, tol=tol)
-      out$xtxinv <- chol2inv(qx$qr) #(x'x)^-1
+      tmp <- .lm.fit(x, y, tol=tol)  
+      if( tmp$rank != out$k ){ stop("singular regressor-matrix") }
+      out$qr <- tmp$qr
+      out$rank <- tmp$rank
+      out$qraux <- tmp$qraux
+      out$pivot <- tmp$pivot
+      out$coefficients <- tmp$coefficients
+      out$xtxinv <- chol2inv(out$qr) #(x'x)^-1
       out$fit <- as.vector(x %*% out$coefficients)
+      out$residuals <- tmp$residuals
     }else{
       out$fit <- rep(0, out$n)
+      out$residuals <- y - out$fit
     }
-    out$residuals <- y - out$fit
     out$residuals2 <- out$residuals^2
     out$rss <- sum(out$residuals2)
     out$sigma2 <- out$rss/out$df
@@ -832,16 +888,21 @@ ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
     out$n <- length(y)
     if(is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
     out$df <- out$n - out$k
-    if(out$k>0){
-      qx <- qr(x, tol, LAPACK=LAPACK) ## compute qr-decomposition of x
-      out <- c(out, qx)
-      out$coefficients <- solve.qr(qx, y, tol=tol)
-      out$xtxinv <- chol2inv(qx$qr) #(x'x)^-1
+    if(out$k > 0){
+      tmp <- .lm.fit(x, y, tol=tol)  
+      if( tmp$rank != out$k ){ stop("singular regressor-matrix") }
+      out$qr <- tmp$qr
+      out$rank <- tmp$rank
+      out$qraux <- tmp$qraux
+      out$pivot <- tmp$pivot
+      out$coefficients <- tmp$coefficients
+      out$xtxinv <- chol2inv(out$qr) #(x'x)^-1
       out$fit <- as.vector(x %*% out$coefficients)
+      out$residuals <- tmp$residuals
     }else{
       out$fit <- rep(0, out$n)
+      out$residuals <- y - out$fit
     }
-    out$residuals <- y - out$fit
     out$residuals2 <- out$residuals^2
     out$rss <- sum(out$residuals2)
     out$sigma2 <- out$rss/out$df
@@ -878,15 +939,20 @@ ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
     if(is.null(x)){ out$k <- 0 }else{ out$k <- NCOL(x) }
     out$df <- out$n - out$k
     if(out$k > 0){
-      qx <- qr(x, tol, LAPACK=LAPACK) ## compute qr-decomposition of x
-      out <- c(out, qx)
-      out$coefficients <- solve.qr(qx, y, tol=tol)
-      out$xtxinv <- chol2inv(qx$qr) #(x'x)^-1
+      tmp <- .lm.fit(x, y, tol=tol)  
+      if( tmp$rank != out$k ){ stop("singular regressor-matrix") }
+      out$qr <- tmp$qr
+      out$rank <- tmp$rank
+      out$qraux <- tmp$qraux
+      out$pivot <- tmp$pivot
+      out$coefficients <- tmp$coefficients
+      out$xtxinv <- chol2inv(out$qr) #(x'x)^-1
       out$fit <- as.vector(x %*% out$coefficients)
+      out$residuals <- tmp$residuals
     }else{
       out$fit <- rep(0, out$n)
+      out$residuals <- y - out$fit
     }
-    out$residuals <- y - out$fit #residuals of AR-X representation
     out$residuals2 <- out$residuals^2
     out$rss <- sum(out$residuals2)
     out$sigma2 <- out$rss/out$df
@@ -923,7 +989,7 @@ ols <- function(y, x, untransformed.residuals=NULL, tol=1e-07,
     vX <- cbind(tmp[,-1])
     e <- e[c(length(e)-length(loge2)+1):length(e)]
     estVar <- ols(loge2, vX, untransformed.residuals=e, tol=tol,
-      LAPACK=LAPACK, method=6)
+      LAPACK=FALSE, method=6)
     out$regressorsVariance <- tmp
     out$var.coefficients <- estVar$coefficients
     out$Elnz2 <- estVar$Elnz2
@@ -1129,6 +1195,7 @@ getsFun <- function(y, x, untransformed.residuals=NULL,
   include.empty=FALSE, max.paths=NULL, turbo=FALSE, tol=1e-07,
   LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE, alarm=FALSE)
 {
+
   ## DO NOT:
   ## - introduce a check of the type NROW(y)==NCOL(x), since this will
   ##   invalidate situations where the x's contain coefficients rather
@@ -1160,8 +1227,6 @@ getsFun <- function(y, x, untransformed.residuals=NULL,
   ## 1 arguments
   ##-----------------------
 
-  gof.method <- match.arg(gof.method)
-
   ##y, x, make auxiliary list:
   if( is.null(x) || NCOL(x)==0 ){ stop("GUM regressor matrix is empty") }
   x <- cbind(x) #ensure x is a matrix
@@ -1184,9 +1249,14 @@ getsFun <- function(y, x, untransformed.residuals=NULL,
   gofFunArg$envir <- NULL
   if( length(gofFunArg)==0 ){ gofFunArg <- NULL }
 
+  ##gof.method:
+  types <- c("min", "max")
+  whichType <- charmatch(gof.method[1], types)
+  gof.method <- types[ whichType ]
+
   ##max.paths argument:
-  if( !is.null(max.paths) && max.paths < 1 ){
-    stop("'max.paths' cannot be smaller than 1")
+  if( !is.null(max.paths) && max.paths < 0 ){
+    stop("'max.paths' cannot be smaller than 0")
   }
 
   ##do diagnostics?:
@@ -1229,8 +1299,8 @@ getsFun <- function(y, x, untransformed.residuals=NULL,
   ##if all regressors in keep, add gum to terminals:
   if( delete.n==0 && include.gum==FALSE ){
     include.gum <- TRUE
-    out$messages <- paste(out$messages,
-      "- All regressors in 'keep', GUM added to terminals", sep="")
+    out$messages <- paste0(out$messages,
+      "- All regressors in 'keep', GUM added to terminals\n")
   }
 
   ##-----------------------
@@ -1294,8 +1364,10 @@ getsFun <- function(y, x, untransformed.residuals=NULL,
     } #end if(include.gum)
 
   }else{
-    out$messages <- paste(out$messages,
-      "- GUM does not pass one or more diagnostic checks", sep="")
+
+    insig.regs <- numeric(0)
+    out$messages <- paste0(out$messages,
+      "- GUM does not pass one or more diagnostic checks\n")
   }
 
 
@@ -1307,9 +1379,8 @@ getsFun <- function(y, x, untransformed.residuals=NULL,
 
     ##all non-keep regressors significant:
     if( n.paths==0 ){
-      out$messages <- paste(out$messages,
-        "- 1-CUT not included (all non-keep regressors are significant)",
-        sep="")
+      out$messages <- paste0(out$messages,
+        "- 1-CUT not included (all non-keep regressors are significant)\n")
     }
 
     ##one or more non-keep regressor insignificant:
@@ -1363,7 +1434,12 @@ getsFun <- function(y, x, untransformed.residuals=NULL,
           row.labels <- c(row.labels,
             paste("spec ", length(out$terminals), " (1-cut):", sep=""))
 
-        } #end if(petOK)
+        }else{
+          if( do.pet ){
+            out$messages <- paste0(out$messages,
+            "- 1-CUT excluded from terminals, since it does not pass the PET\n")
+          }
+        } #end if(petOK){..}else{..}
 
       } ##end if(diagnosticsOK)
 
@@ -1388,7 +1464,7 @@ getsFun <- function(y, x, untransformed.residuals=NULL,
     ##empty equal to 1cut?:
     if( emptyEqualTo1cut ){
         out$messages <- paste0(out$messages,
-          "- The empty model is equal to the 1-cut model")
+          "- The empty model is equal to the 1-cut model\n")
     }else{
 
       ## estimate model:
@@ -1429,7 +1505,7 @@ getsFun <- function(y, x, untransformed.residuals=NULL,
       }else{
 
           out$messages <- paste0(out$messages,
-            "- Empty model not included (it does not pass one or more diagnostics)")
+            "- Empty model excluded from terminals, since it does not pass one or more diagnostics\n")
 
       } #end if(empty passes diagnostics==TRUE){..}else{..}
 
@@ -1443,21 +1519,20 @@ getsFun <- function(y, x, untransformed.residuals=NULL,
   ##-----------------------
 
 pathsTerminals <- list()
-if( gumDiagnosticsOK && delete.n>0 ){
+if( is.null(max.paths) ){ max.paths <- length(insig.regs) }
+if( max.paths>0 && gumDiagnosticsOK && delete.n>0 ){
 
   ##re-define insig.regs due to max.paths?
-  if( !is.null(max.paths) ){
-    if(max.paths < length(insig.regs)){
-      pvalRanksInv <- rank( 1-gum.pval[insig.regs] )
-      insig.regs <- insig.regs[ pvalRanksInv <= max.paths ]
-    }
+  if(max.paths < length(insig.regs)){
+    pvalRanksInv <- rank( 1-gum.pval[insig.regs] )
+    insig.regs <- insig.regs[ pvalRanksInv <= max.paths ]
   }
   n.paths <- length(insig.regs) #re-define n.paths
 
   ## if paths = 0:
   if(n.paths == 0){
-    out$messages <- paste(out$messages,
-      "- All non-keep regressors significant in GUM", sep="")
+    out$messages <- paste0(out$messages,
+      "- All non-keep regressors significant in GUM\n")
   }
 
   ## if paths > 0:
@@ -1678,7 +1753,7 @@ if( gumDiagnosticsOK && delete.n>0 ){
 
   } ###end if paths > 0
 
-} #####end if( gumDiagnosticsOK && delete.n>0 )
+} #####end if( max.paths>0 && gumDiagnosticsOK && delete.n>0 )
 
 
   ##-----------------------
@@ -1696,8 +1771,8 @@ if( gumDiagnosticsOK && delete.n>0 ){
 
     ##check for several minimums:
     if( length(out$best.terminal)>1 ){
-      out$messages <- paste(out$messages,
-        "- Several 'best' terminals, the first selected", sep="")
+      out$messages <- paste0(out$messages,
+        "- Several 'best' terminals, the first selected\n")
     }
     out$best.terminal <- out$best.terminal[1]
     out$specific.spec <- out$terminals[[ out$best.terminal ]] #the winner
@@ -1735,7 +1810,7 @@ if( gumDiagnosticsOK && delete.n>0 ){
   if(alarm){ alarm() }
   return(out)
 
-} #close getsFun function
+} #close getsFun() function
 
 ##==================================================
 ##do block-based gets with full flexibility (for advanced users)
@@ -2173,7 +2248,7 @@ blocksFun <- function(y, x, untransformed.residuals=NULL,
 ##Estimate AR-X model with log-ARCH-X errors
 arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   vc=FALSE, arch=NULL, asym=NULL, log.ewma=NULL, vxreg=NULL,
-  zero.adj=0.1, vc.adj=TRUE,
+  zero.adj=NULL, vc.adj=TRUE,
   vcov.type=c("ordinary", "white", "newey-west"),
   qstat.options=NULL, normality.JarqueB=FALSE, user.estimator=NULL,
   user.diagnostics=NULL, tol=1e-07, LAPACK=FALSE, singular.ok=TRUE,
@@ -2194,31 +2269,12 @@ arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   ## 1 selected arguments
   ##-----------------------------------
 
-  ##record y name:
-  y.name <- deparse(substitute(y))
-  
-  ##mc.warning about new default:
-  mc.warning <- getOption("mc.warning")
-  if(is.null(mc.warning)){
-    mc.warning <- TRUE
-    options(mc.warning = FALSE)
-  }
-  if(mc.warning){
-    warning(
-      "\n\n",
-      "New default 'mc = TRUE' in arx() as of version 0.28\n",
-      "This warning only appears the first time arx() is invoked\n",
-      "To suppress this warning, set options(mc.warning = FALSE)\n"
-    )
-  }
-
   ##regressand, regressors:
-  #should be here instead of above/in the beginning?:
-  #y.name <- deparse(substitute(y))
+  y.name <- deparse(substitute(y))
   tmp <- regressorsMean(y, mc=mc, ar=ar, ewma=ewma, mxreg=mxreg,
     return.regressand=TRUE, return.as.zoo=TRUE,
     na.trim=TRUE, na.omit=FALSE)
-  #use y.name to set correct name on y in tmp?
+  #idea: use y.name to set correct name on y in tmp?
 
   ##determine vcov:
   types <- c("ordinary", "white", "newey-west")
@@ -2649,9 +2705,9 @@ gets.arx <- function(x, spec=NULL, ...)
     if( is.null(x$mean.results)
       && !is.null(x$variance.results) ){ spec <- "variance" }
   }else{
-    specType <- c("mean", "variance")
-    whichType <- charmatch(spec, specType)
-    spec <- specType[ whichType ]  
+    types <- c("mean", "variance")
+    whichType <- charmatch(spec[1], types)
+    spec <- types[ whichType ]  
   }
   
   ##do the gets modelling:
@@ -2800,6 +2856,34 @@ model.matrix.arx <- function(object, spec=c("mean","variance"),
 } #close model.matrix.arx() function
 
 ##==================================================
+##obtain number of observations
+nobs.arx <- function(object, spec=NULL, ...)
+{
+  ##determine spec type:
+  if( is.null(spec) ){
+    objectNames <- names(object)
+    if( "residuals" %in% objectNames ){ spec <- "mean" }
+    if( is.null(spec) && "std.residuals" %in% objectNames ){ spec <- "variance" }
+  }else{
+    types <- c("mean", "variance")
+    whichType <- charmatch(spec[1], types)
+    spec <- types[ whichType ]
+  }
+
+  ##compute no. of observations:
+  if( is.null(spec) ){
+    result <- NULL
+  }else{
+    if( spec=="mean" ){ result <- length(na.trim(object$residuals)) }
+    if( spec=="variance" ){ result <- length(na.trim(object$std.residuals)) }
+  }
+
+  ##return result:
+  return(result)
+
+} #close nobs.arx()
+
+##==================================================
 ##plot results from arx
 plot.arx <- function(x, spec=NULL, col=c("red","blue"),
   lty=c("solid","solid"), lwd=c(1,1), ...)
@@ -2831,7 +2915,7 @@ plot.arx <- function(x, spec=NULL, col=c("red","blue"),
     if(length(lty)==1){
       print("lty needs two arguments, but only one provided. Single argument applied to all lines plotted.")
       lty=rep(lty,2)
-    }else if (length(lwd)>2){
+    }else if (length(lty)>2){
       print("lty needs two arguments, but more provided. First two used.")
       lty=lty[1:2]
     }
@@ -4063,10 +4147,11 @@ print.arx <- function(x, signif.stars=TRUE, ...)
   ##header - first part:
   cat("\n")
   cat("Date:", x$date, "\n")
+  cat("Dependent var.:", x$aux$y.name, "\n")
   if(meanResults || varianceResults){
     estType <- ifelse(is.null(x$aux$user.estimator),
       "Ordinary Least Squares (OLS)", "User defined")
-    cat("Dependent var.:", x$aux$y.name, "\n")
+#OLD:    cat("Dependent var.:", x$aux$y.name, "\n")
     cat("Method:", estType, "\n")
   }
 
@@ -5131,7 +5216,7 @@ predict.gets <- function(object, spec=NULL, n.ahead=12,
 #      objectNew$call$mxreg <- xreg
     }
 
-  } #end if( length(coefsMean)>0 )
+  } #close if( length(coefsMean)>0 )
   
 
   ##-----------------------------------
@@ -5186,7 +5271,12 @@ predict.gets <- function(object, spec=NULL, n.ahead=12,
     
     ##log.ewma argument:
     gumTerms <- eval(object$aux$call.gum$log.ewma)
-    gumNamesLogEwma <- paste0("logEqWMA(", gumTerms$length, ")")
+    if( is.list(gumTerms) ){
+      gumNamesLogEwma <- paste0("logEqWMA(", gumTerms$length, ")")
+    }else{
+      gumNamesLogEwma <- paste0("logEqWMA(", gumTerms, ")")
+    }
+    ##OLD: gumNamesLogEwma <- paste0("logEqWMA(", gumTerms$length, ")")
     whichRetained <- which( gumNamesLogEwma %in% names(coefsVar) )
     if( length(whichRetained)==0 ){
       objectNew$call$log.ewma <- NULL
@@ -5210,7 +5300,7 @@ predict.gets <- function(object, spec=NULL, n.ahead=12,
 #      objectNew$call$vxreg <- vxreg
     }
 
-  } #end if( length(coefsVar)>0 )
+  } #close if( length(coefsVar)>0 )
 
 
   ##----------------------------------
@@ -5288,63 +5378,6 @@ print.gets <- function(x, signif.stars=TRUE, ...)
     }
     cat("Sample:", startAsChar, "to", endAsChar, "\n")
   } #end if(!is.null..)
-
-##OLD:
-#  ##gum:
-#  if( specType=="mean" && !is.null(x$gum.mean) ){
-#    cat("\n")
-#    cat("GUM mean equation:\n")
-#    cat("\n")
-#    printCoefmat(x$gum.mean, tst.ind=c(1,2),
-#      signif.stars=signif.stars)
-#  }
-#  if( !is.null(x$gum.variance) ){
-#    cat("\n")
-#    cat("GUM log-variance equation:\n")
-#    cat("\n")
-#    if(specType=="mean"){
-#      printCoefmat(x$gum.variance, signif.stars=FALSE)
-#    }
-#    if(specType=="variance"){
-#      printCoefmat(x$gum.variance, tst.ind=c(1,2),
-#        signif.stars=signif.stars)
-#    }
-#  }
-#  if( !is.null(x$gum.diagnostics) ){
-#    cat("\n")
-#    cat("Diagnostics:\n")
-#    cat("\n")
-#    printCoefmat(x$gum.diagnostics, tst.ind=2, has.Pvalue = TRUE, signif.stars=signif.stars)
-#  }
-#
-#  ##paths:
-#  cat("\n")
-#  cat("Paths searched: \n")
-#  cat("\n")
-#  if( is.null(x$paths) || length(x$paths)==0 ){
-#    print(NULL)
-#  }else{
-#    for(i in 1:length(x$paths)){
-#      cat("path",i,":",x$paths[[i]],"\n")
-#    }
-#  } #end if(is.null(x$paths))
-#
-#  ##terminal models and results:
-#  if( !is.null(x$terminals) && length(x$terminals)>0 ){
-#    cat("\n")
-#    cat("Terminal models: \n")
-#    if(!is.null(x$terminals)){
-#      cat("\n")
-#      for(i in 1:length(x$terminals)){
-#        cat("spec",i,":",x$terminals[[i]],"\n")
-#      }
-#    }
-#  }
-#  if( !is.null(x$terminals.results) ){
-#    cat("\n")
-#    printCoefmat(x$terminals.results, dig.tst=0, tst.ind=c(3,4),
-#      signif.stars=FALSE)
-#  }
   
   ##specific mean model:
   if( specType=="mean" && !is.null(x$terminals.results) ){
@@ -5397,6 +5430,7 @@ print.gets <- function(x, signif.stars=TRUE, ...)
 
   }
 
+  ##should we really print this??
   ##messages:
   if(!is.null(x$messages)){
     message("\n", appendLF=FALSE)
@@ -5629,12 +5663,12 @@ printtex <- function(x, fitted.name=NULL, xreg.names=NULL,
   ##---------------
 
   ##y name:
-  if( xClass %in% c("arx","gets","isat") ){
+  if( xClass %in% c("arx","gets","isat","larch") ){
     yName <- ifelse(is.null(fitted.name), x$aux$y.name, fitted.name)
   }else{
     yName <- ifelse(is.null(fitted.name), "y", fitted.name)
-    message(paste0("\n '", xName, "'", " is not of class 'arx', ",
-      "'gets' or 'isat', LaTeX code may contain errors:\n"))
+#    message(paste0("\n '", xName, "'", " is not of class 'arx', ",
+#      "'gets', 'isat' or 'larch', LaTeX code may contain errors:\n"))
   }
   yName <- paste0("\\widehat{", yName, "}")
   
@@ -5765,7 +5799,7 @@ printtex <- function(x, fitted.name=NULL, xreg.names=NULL,
   cat(diagtxt)
   cat("\\end{eqnarray}\n")
 
-}   #close printtex
+}   #close printtex()
 
 ##==================================================
 ##convert to model of class 'lm':
@@ -5794,4 +5828,4 @@ as.lm <- function(object)
   ##return result:
   return(result)
   
-}
+} #close as.lm()

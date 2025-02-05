@@ -42,7 +42,7 @@ Hendry, David, F., Johansen, Soren, and Santos, Carlos (2007):  'Automatic selec
 }
 
 \author{
-  Felix Pretis, \url{http://www.felixpretis.org/}\cr
+  Felix Pretis, \url{https://felixpretis.climateeconometrics.org/}\cr
 }
 
 \seealso{

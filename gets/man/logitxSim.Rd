@@ -21,14 +21,14 @@ dlogitxSim(n, ...)
   \item{ar}{\code{NULL} or a numeric vector with the autoregressive parameters}
   \item{xreg}{\code{NULL} or numeric vector with the values of the X-term}
   \item{verbose}{\code{logical}. If \code{FALSE}, then only the binary process (a vector) is returned. If \code{TRUE}, then a matrix with all the simulated information is returned (binary process, probabilities, etc.)}
-  \item{as.zoo}{\code{logical}. If \code{TRUE}, then the returned object - a vector or matrix - will be of class \code{\link{zoo}} }
+  \item{as.zoo}{\code{logical}. If \code{TRUE}, then the returned object - a vector or matrix - will be of class \code{\link[zoo]{zoo}} }
   \item{...}{arguments passed on to \code{logitxSim}}
 }
 
 \details{No details, for the moment.}
 
 \value{
-A vector or matrix, depending on whether \code{verbose} is \code{FALSE} or \code{TRUE}, of class \code{\link{zoo}}, depending on whether \code{as.zoo} is \code{TRUE} or \code{FALSE}
+A vector or matrix, depending on whether \code{verbose} is \code{FALSE} or \code{TRUE}, of class \code{\link[zoo]{zoo}}, depending on whether \code{as.zoo} is \code{TRUE} or \code{FALSE}
 }
 
 \references{

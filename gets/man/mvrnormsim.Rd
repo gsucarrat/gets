@@ -35,7 +35,7 @@ Original function \code{mvrnorm} developed by Venables, W. N. & Ripley. in packa
 }
 
 \author{
-  Venables, W. N. & Ripley, with modifications by Felix Pretis, \url{http://www.felixpretis.org/}
+  Venables, W. N. & Ripley, with modifications by Felix Pretis, \url{https://felixpretis.climateeconometrics.org/}
 }
 
 \seealso{\code{\link{outlierscaletest}}}

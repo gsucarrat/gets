@@ -26,7 +26,7 @@ Pretis, F., Reade, J., & Sucarrat, G. (2018). Automated General-to-Specific (GET
 }
 
 \author{
-  Felix Pretis, \url{http://www.felixpretis.org/}
+  Felix Pretis, \url{https://felixpretis.climateeconometrics.org/}
 }
 
 \seealso{
