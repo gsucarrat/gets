@@ -2323,7 +2323,9 @@ iim <- function(x, which.ones=NULL)
     if(!is.null(which.ones)){
       where.indicators <- which(index(mIIS) %in% which.ones)
       if(length(where.indicators > 0)){
+        mIIS_names <- colnames(mIIS)[where.indicators]
         mIIS <- cbind(mIIS[,where.indicators])
+        colnames(mIIS) <- mIIS_names
       }else{
         stop("'which.ones' not in index")
       }
