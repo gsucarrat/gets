@@ -2731,7 +2731,7 @@ isat.arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL,
                      do.pet=FALSE, ar.LjungB=NULL, arch.LjungB=NULL,
                      normality.JarqueB=NULL, info.method=c("sc", "aic", "hq"), 
                      user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL, 
-                     gof.method=c("min","max"), include.gum=NULL,
+                     gof.method=c("min","max"), include.gum=TRUE,
                      include.1cut=FALSE, include.empty=FALSE, max.paths=NULL,
                      parallel.options=NULL, turbo=FALSE, tol=1e-07, LAPACK=FALSE,
                      max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...
@@ -2757,9 +2757,11 @@ isat.arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL,
 
   mxreg <- y$aux$mX
   colnames(mxreg) <- y$aux$mXnames
+  yvar <- y$aux$y
+  names(yvar) <- y$aux$index
 
   out <- isat.default(
-    y$aux$y,
+    yvar,
     FALSE, # mc would already be set in arx
     NULL, # ar would already be set in arx
     ewma,
