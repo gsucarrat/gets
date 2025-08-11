@@ -337,27 +337,27 @@ test_that("TEST MAIN isat() ARGUMENTS - additional test of predict.isat",{
   ##additional test of predict.isat():
   ##==================================
   
-  expect_snapshot_plot("Test 1",predict(isatmod, newmxreg = matrix(0,12,5),  ci.levels=seq(0.20,0.95,by=0.05),n.sim=20000))
-  expect_snapshot_plot("Test 2",predict(isatmod, newmxreg = matrix(0,12,5),  ci.levels=seq(0.20,0.95,by=0.05),n.sim=20000, plot.options=list(shades=seq(20,95,by=5))))
-  expect_snapshot_plot("Test 3",predict(isatmod, newmxreg = matrix(0,12,5),  ci.levels=seq(0.20,0.95,by=0.05),n.sim=20000, plot.options=list(shades=seq(95,20,by=-5))))
-  expect_snapshot_plot("Test 4",predict(isatmod, newmxreg = matrix(0,12,5),  ci.levels=seq(0.20,0.95,by=0.05),n.sim=20000, plot.options=list(shades=seq(100,25,by=-5))))
-  expect_snapshot_plot("Test 5",predict(isatmod, newmxreg = matrix(0,12,5),  plot.options = list(keep=1)))
-  expect_snapshot_plot("Test 6",predict(isatmod, newmxreg = matrix(0,12,5),  plot.options = list(line.at.origin=FALSE)))
-  expect_snapshot_plot("Test 7",predict(isatmod, newmxreg = matrix(0,12,5),  plot.options = list(start.at.origin=TRUE)))
-  expect_snapshot_plot("Test 8",predict(isatmod, newmxreg = matrix(0,12,5),  plot.options = list(start.at.origin=TRUE, fitted=FALSE)))
-  expect_snapshot_plot("Test 9",predict(isatmod, newmxreg = matrix(0,12,5),  plot.options = list(dot.at.origin=FALSE)))
-  expect_snapshot_plot("Test 10",predict(isatmod, newmxreg = matrix(0,12,5), plot.options = list(hlines=c(-2,0,2,4,6,8))))
-  expect_snapshot_plot("Test 11",predict(isatmod, newmxreg = matrix(0,12,5), plot.options = list(col=c("darkred","green"))))
-  expect_snapshot_plot("Test 12",predict(isatmod, newmxreg = matrix(0,12,5), plot.options = list(lty=c(3,2))))
-  expect_snapshot_plot("Test 13",predict(isatmod, newmxreg = matrix(0,12,5), plot.options = list(lwd=3)))
-  expect_snapshot_plot("Test 14",predict(isatmod, newmxreg = matrix(0,12,5), plot.options = list(ylim=c(-8,16))))
-  expect_snapshot_plot("Test 15",predict(isatmod, newmxreg = matrix(0,12,5), plot.options = list(ylab="G-values")))
-  expect_snapshot_plot("Test 16",predict(isatmod, newmxreg = matrix(0,12,5), plot.options = list(main="Plot slightly lower when 'main' is specified")))
-  expect_snapshot_plot("Test 17",predict(isatmod, newmxreg = matrix(0,12,5), plot.options = list(legend.text=c("Prognose","Faktisk"))))
-  expect_snapshot_plot("Test 18",predict(isatmod, newmxreg = matrix(0,12,5), plot.options = list(fitted=FALSE)))
-  expect_snapshot_plot("Test 19",predict(isatmod, newmxreg=matrix(0,12,5),   plot.options = list(newmactual=rep(0,6))))
-  expect_snapshot_plot("Test 20",predict(isatmod, newmxreg=matrix(0,12,5),   plot.options = list(shades=c(95,50))))
-  expect_snapshot_plot("Test 21",predict(isatmod, newmxreg = matrix(0, 12, 5), plot.options = list(shades = c(50, 95)))) #invert shades
+  expect_snapshot_plot("Test_1",predict(isatmod, newmxreg = matrix(0,12,5),  ci.levels=seq(0.20,0.95,by=0.05),n.sim=20000))
+  expect_snapshot_plot("Test_2",predict(isatmod, newmxreg = matrix(0,12,5),  ci.levels=seq(0.20,0.95,by=0.05),n.sim=20000, plot.options=list(shades=seq(20,95,by=5))))
+  expect_snapshot_plot("Test_3",predict(isatmod, newmxreg = matrix(0,12,5),  ci.levels=seq(0.20,0.95,by=0.05),n.sim=20000, plot.options=list(shades=seq(95,20,by=-5))))
+  expect_snapshot_plot("Test_4",predict(isatmod, newmxreg = matrix(0,12,5),  ci.levels=seq(0.20,0.95,by=0.05),n.sim=20000, plot.options=list(shades=seq(100,25,by=-5))))
+  expect_snapshot_plot("Test_5",predict(isatmod, newmxreg = matrix(0,12,5),  plot.options = list(keep=1)))
+  expect_snapshot_plot("Test_6",predict(isatmod, newmxreg = matrix(0,12,5),  plot.options = list(line.at.origin=FALSE)))
+  expect_snapshot_plot("Test_7",predict(isatmod, newmxreg = matrix(0,12,5),  plot.options = list(start.at.origin=TRUE)))
+  expect_snapshot_plot("Test_8",predict(isatmod, newmxreg = matrix(0,12,5),  plot.options = list(start.at.origin=TRUE, fitted=FALSE)))
+  expect_snapshot_plot("Test_9",predict(isatmod, newmxreg = matrix(0,12,5),  plot.options = list(dot.at.origin=FALSE)))
+  expect_snapshot_plot("Test_10",predict(isatmod, newmxreg = matrix(0,12,5), plot.options = list(hlines=c(-2,0,2,4,6,8))))
+  expect_snapshot_plot("Test_11",predict(isatmod, newmxreg = matrix(0,12,5), plot.options = list(col=c("darkred","green"))))
+  expect_snapshot_plot("Test_12",predict(isatmod, newmxreg = matrix(0,12,5), plot.options = list(lty=c(3,2))))
+  expect_snapshot_plot("Test_13",predict(isatmod, newmxreg = matrix(0,12,5), plot.options = list(lwd=3)))
+  expect_snapshot_plot("Test_14",predict(isatmod, newmxreg = matrix(0,12,5), plot.options = list(ylim=c(-8,16))))
+  expect_snapshot_plot("Test_15",predict(isatmod, newmxreg = matrix(0,12,5), plot.options = list(ylab="G-values")))
+  expect_snapshot_plot("Test_16",predict(isatmod, newmxreg = matrix(0,12,5), plot.options = list(main="Plot slightly lower when 'main' is specified")))
+  expect_snapshot_plot("Test_17",predict(isatmod, newmxreg = matrix(0,12,5), plot.options = list(legend.text=c("Prognose","Faktisk"))))
+  expect_snapshot_plot("Test_18",predict(isatmod, newmxreg = matrix(0,12,5), plot.options = list(fitted=FALSE)))
+  expect_snapshot_plot("Test_19",predict(isatmod, newmxreg=matrix(0,12,5),   plot.options = list(newmactual=rep(0,6))))
+  expect_snapshot_plot("Test_20",predict(isatmod, newmxreg=matrix(0,12,5),   plot.options = list(shades=c(95,50))))
+  expect_snapshot_plot("Test_21",predict(isatmod, newmxreg = matrix(0, 12, 5), plot.options = list(shades = c(50, 95)))) #invert shades
   
 })
 
@@ -372,12 +372,12 @@ test_that("TEST MAIN isat() ARGUMENTS - Test that mconst is named correctly",{
   y <- rnorm(30)
   isatmod <- isat(y, print.searchinfo = FALSE)
   expect_identical(names(coef(isatmod))[1], "mconst")
-  expect_snapshot_plot("Test 22",predict(isatmod, plot=TRUE))
+  expect_snapshot_plot("Test_22",predict(isatmod, plot=TRUE))
   
   ##same y, but slightly different model:
   isatmod <- isat(y, ar=1, print.searchinfo = FALSE)
   expect_identical(names(coef(isatmod))[1], "mconst")
-  expect_snapshot_plot("Test 23",predict(isatmod, plot=TRUE))
+  expect_snapshot_plot("Test_23",predict(isatmod, plot=TRUE))
   
   
 })
@@ -433,8 +433,8 @@ test_that("TEST MAIN isat() ARGUMENTS - test uis argument",{
   expect_message(isat(y, print.searchinfo = FALSE, ar=1, mxreg=x, sis=FALSE, uis = x_mis, t.pval=0.05))
   expect_message(isat(y, print.searchinfo = FALSE, ar=1, mxreg=x, sis=FALSE, uis = x_mis, t.pval=0.05, max.paths=1))
   
-  expect_snapshot_plot("Test 24",isat(y, ar = 1, mxreg = x, sis = FALSE, uis = x_mis, t.pval = 0.05, plot = TRUE, print.searchinfo = FALSE))
-  expect_snapshot_plot("Test 25",isat(y, ar = 1, mxreg = x, sis = FALSE, uis = x_mis, t.pval = 0.05, max.paths = 1, plot =
+  expect_snapshot_plot("Test_24",isat(y, ar = 1, mxreg = x, sis = FALSE, uis = x_mis, t.pval = 0.05, plot = TRUE, print.searchinfo = FALSE))
+  expect_snapshot_plot("Test_25",isat(y, ar = 1, mxreg = x, sis = FALSE, uis = x_mis, t.pval = 0.05, max.paths = 1, plot =
                                         TRUE, print.searchinfo = FALSE))
   
   ##used to yield error because NCOL(mX) > length(y):

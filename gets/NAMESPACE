@@ -48,6 +48,8 @@ export(
   "isvarcor", "isvareffcor", "iim", "sim", "tim", "isatdates",
   "isatloop", "isatvarcorrect", "mvrnormsim", "outlierscaletest",
   "outliertest", "vargaugeiis", "gets.isat", "isat.lm", "isat.arx",
+  # isat helper functions
+  "create.ISmatrices", "ISMatricesLoop", "ISadditionalblocksearch", "ISblocksFun",
 
   ##larch-class functions:
   "larchEstfun", "larch", "coef.larch", "fitted.larch", "gets.larch",

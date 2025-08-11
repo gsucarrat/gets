@@ -26,8 +26,10 @@
 ## tim #make matrix of trend indicators
 ##
 ## auxiliary functions to streamline isat()
+## ISblocksFun
+## create.ISmatrices
 ## ISadditionalblocksearch
-## 
+## ISMatricesLoop
 
 ####################################################
 

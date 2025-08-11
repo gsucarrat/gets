@@ -107,7 +107,7 @@ Pretis, Felix, Reade, James and Sucarrat, Genaro (2018): 'Automated General-to-S
 Jonas Kurle, \url{https://www.jonaskurle.com/}\cr
 Felix Pretis, \url{https://felixpretis.climateeconometrics.org/}\cr
 James Reade,  \url{https://sites.google.com/site/jjamesreade/}\cr
-Moritz Schwarz, \url{https://www.inet.ox.ac.uk/people/moritz-schwarz}\cr
+Moritz Schwarz, \url{https://www.moritzschwarz.org/}\cr
 Genaro Sucarrat \url{https://www.sucarrat.net/}\cr\cr
 }
 
