@@ -79,7 +79,7 @@ toLatex(mymod)
 ##plot the fitted vs. actual values, and the standardised residuals:
 plot(mymod)
 
-##extract coefficient estimates (automatically determined):
+##extract coefficient estimates:
 coef(mymod)
 
 ##extract the fitted values:

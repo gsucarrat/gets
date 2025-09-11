@@ -1,9 +1,14 @@
 Package: gets
 Type: Package
 Title: General-to-Specific (GETS) Modelling and Indicator Saturation Methods
-Version: 0.38
-Date: 2024-07-11
-Author: Genaro Sucarrat [aut, cre], Felix Pretis [aut], James Reade [aut], Jonas Kurle [ctb], Moritz Schwarz [ctb]
+Version: 0.39
+Date: 2025-09-11
+Authors@R: c(person(given = "Genaro", family = "Sucarrat", role = c("aut", "cre"), email = "genaro.sucarrat@bi.no", comment = c(ORCID = "0000-0002-8433-837X")),
+	person(given = "Felix", family = "Pretis", role = "aut"),
+        person(given = "James", family = "Reade", role = "aut"),
+        person(given = "Jonas", family = "Kurle", role = "ctb"),
+        person(given = "Moritz", family = "Schwarz", role = "ctb"))
+Author: Genaro Sucarrat [aut, cre] (<https://orcid.org/0000-0002-8433-837X>), Felix Pretis [aut], James Reade [aut], Jonas Kurle [ctb], Moritz Schwarz [ctb]
 Maintainer: Genaro Sucarrat <genaro.sucarrat@bi.no>
 Description: Automated General-to-Specific (GETS) modelling of the mean and variance of a regression, and indicator saturation methods for detecting and testing for structural breaks in the mean, see Pretis, Reade and Sucarrat (2018) <doi:10.18637/jss.v086.i03> for an overview of the package. In advanced use, the estimator and diagnostics tests can be fully user-specified, see Sucarrat (2021) <doi:10.32614/RJ-2021-024>.
 License: GPL (>= 2)

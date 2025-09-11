@@ -10,7 +10,7 @@
     ar.LjungB=NULL, arch.LjungB=NULL, normality.JarqueB=NULL, 
     user.diagnostics=NULL, info.method=c("sc", "aic", "aicc", "hq"),
     gof.function=NULL, gof.method=NULL, keep=c(1), include.gum=FALSE,
-    include.1cut=TRUE, include.empty=FALSE, max.paths=NULL, tol=1e-07,
+    include.1cut=FALSE, include.empty=FALSE, max.paths=NULL, tol=1e-07,
     turbo=FALSE, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...)
 }
 

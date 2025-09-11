@@ -7,9 +7,9 @@
 
 \usage{
 regressorsVariance(e, vc = TRUE, arch = NULL, harch = NULL, asym = NULL,
-  asymind = NULL, log.ewma = NULL, vxreg = NULL, prefix = "v", zero.adj = NULL,
-  vc.adj = TRUE, return.regressand = TRUE, return.as.zoo = TRUE, na.trim = TRUE,
-  na.omit = FALSE) 
+  asymind = NULL, log.ewma = NULL, vxreg = NULL, prefix = "v",
+  arch.prefix="arch", zero.adj = NULL, vc.adj = TRUE, return.regressand = TRUE,
+  log.regressand=TRUE, return.as.zoo = TRUE, na.trim = TRUE, na.omit = FALSE) 
 }
 
 \arguments{
@@ -22,9 +22,11 @@ regressorsVariance(e, vc = TRUE, arch = NULL, harch = NULL, asym = NULL,
   \item{log.ewma}{either \code{NULL} (default) or a vector of the lengths of the volatility proxies, see \code{\link{leqwma}}. The log of heterogenous volatility proxies similar to those of Corsi (2009). }
   \item{vxreg}{either \code{NULL} (default) or a numeric vector or matrix, say, a \code{\link[zoo]{zoo}} object, of conditioning variables. If both \code{y} and \code{mxreg} are \code{\link[zoo]{zoo}} objects, then their samples are chosen to match. }
   \item{prefix}{a \code{character} used as prefix in the labelling of the variables in \code{vxreg} and of the intercept. } 
+  \item{arch.prefix}{a \code{character} used as prefix in the labelling of the ARCH-terms (\code{arch}). } 
   \item{zero.adj}{\code{NULL} (default) or a strictly positive \code{numeric} scalar. If \code{NULL}, the zeros in the squared e's are replaced by the 10 percent quantile of the non-zero squared e's. If \code{zero.adj} is a strictly positive \code{numeric} scalar, then this value is used to replace the zeros of the squared e's. }
   \item{vc.adj}{deprecated and ignored. }
   \item{return.regressand}{\code{logical}. \code{TRUE} (default) includes the regressand as column one in the returned matrix. }
+  \item{log.regressand}{\code{logical}. Whether to return the log of the squared regressand (default) when \code{return.regressand} is \code{TRUE}. }
   \item{return.as.zoo}{\code{logical}. \code{TRUE} (default) returns the matrix as a \code{\link[zoo]{zoo}} object. }
   \item{na.trim}{\code{logical}. \code{TRUE} (default) removes observations with \code{NA}-values in the beginning and the end with \code{\link[zoo]{na.trim}}. }
   \item{na.omit}{\code{logical}. \code{FALSE} (default) means \code{NA}-observations that are not in the beginning or at the end are kept (i.e. not omitted). \code{TRUE} removes with \code{\link{na.omit}}. }
