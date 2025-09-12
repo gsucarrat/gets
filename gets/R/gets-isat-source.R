@@ -12,7 +12,7 @@ isat.arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL,
                      parallel.options=NULL, turbo=FALSE, tol=1e-07, LAPACK=FALSE,
                      max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...
 ){
-  
+
   # warnings and checks (mainly for variance specification)
   if(!is.null(y$variance.results)){
     warning("Input object contains variance specification. Note that 'isat' is not configured for variance specifications.\nVariance specification in 'isat' are dropped.")

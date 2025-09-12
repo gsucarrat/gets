@@ -1,5 +1,21 @@
+Version 0.39 (11 September 2025):
+=================================
+
+* stylistic changes to DESCRIPTION file
+
+* print.logitx(): bug-fix, p-values are now correct (earlier they were half the correct size)
+
+* larch(): new argument 'user.estimator'
+
+* gets.larch(): new default (FALSE) on argument 'include.1cut'
+
+* changes to regressorsVariance():
+ - new argument 'arch.prefix'
+ - new argument 'log.regressand'
+
+
 Version 0.38 (11 July 2024):
-===========================
+============================
 
 * new function: larchEstfun()
 
@@ -24,7 +40,7 @@ Version 0.38 (11 July 2024):
 * change to getsFunction(): argument 'max.paths' can now be 0
 
 * fixes in predict.gets():
-- now works when the start-model (the GUM) contains more than one log.ewma term
+- now works when the start model (the GUM) contains more than one log.ewma term
 
 
 Version 0.37 (4 October 2022):

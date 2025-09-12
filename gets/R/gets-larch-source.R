@@ -124,7 +124,7 @@ larchEstfun <- function(loge2, x, e, vcov.type=c("robust", "hac"),
 larch <- function(e, vc=TRUE, arch=NULL, harch=NULL, asym=NULL,
   asymind=NULL, log.ewma=NULL, vxreg=NULL, zero.adj=NULL,
   vcov.type=c("robust", "hac"), #bandwidth=NULL
-  qstat.options=NULL, normality.JarqueB=FALSE, #user.estimator=NULL, user.diagnostics=NULL,
+  qstat.options=NULL, normality.JarqueB=FALSE, user.estimator=NULL, #user.diagnostics=NULL,
   tol=1e-07, singular.ok=TRUE, plot=NULL)
 {
   ## contents:
@@ -190,7 +190,7 @@ larch <- function(e, vc=TRUE, arch=NULL, harch=NULL, asym=NULL,
 
   ##aux: auxiliary list, also to be used by getsv
   aux <- list()
-#  aux$e.original <- e.original
+  #add in the future?: aux$e.original <- e.original
   aux$e <- coredata(e)
   aux$e2 <- aux$e^2
   aux$e.index <- index(e)
@@ -198,17 +198,8 @@ larch <- function(e, vc=TRUE, arch=NULL, harch=NULL, asym=NULL,
   aux$loge2 <- coredata(tmp[,1])
   aux$vX <- cbind(coredata(tmp[,-1]))
   aux$vXnames <- colnames(tmp)[-1]
-  colnames(aux$vX) <- NULL
-#  aux$vXncol <- NCOL(aux$vX)
-#  aux$vc <- TRUE #obligatory, but may change in the future
+#  colnames(aux$vX) <- NULL
   aux$zero.adj <- zero.adj
-#do we really need these?:
-#  aux$arch <- arch
-#  aux$harch <- harch
-#  aux$asym <- asym
-#  aux$asymind <- asymind
-#  aux$log.ewma <- log.ewma
-#  aux$vcov.type <- vcov.type
   aux$qstat.options <- qstat.options
   aux$normality.JarqueB <- normality.JarqueB
   aux$tol <- tol
@@ -218,14 +209,45 @@ larch <- function(e, vc=TRUE, arch=NULL, harch=NULL, asym=NULL,
   ## 3 estimation
   ##-----------------------------------
 
-  out <- larchEstfun(aux$loge2, aux$vX, aux$e, vcov.type=vcov.type,
-    tol=tol)
-  names(out$coefficients) <- aux$vXnames
-  colnames(out$vcov) <- aux$vXnames
-  rownames(out$vcov) <- aux$vXnames
-  where <- which( names(out) == "fit" )
-  names(out)[ where ] <- "fitted" #rename
-  aux <- c(aux,out)
+  ## default estimator:
+  if( is.null(user.estimator) ){
+
+    out <- larchEstfun(aux$loge2, aux$vX, aux$e, vcov.type=vcov.type,
+      tol=tol)
+    names(out$coefficients) <- aux$vXnames
+    colnames(out$vcov) <- aux$vXnames
+    rownames(out$vcov) <- aux$vXnames
+    where <- which( names(out) == "fit" )
+    names(out)[ where ] <- "fitted" #rename
+    aux <- c(aux,out)
+
+  }
+  
+  ## user-defined estimator:
+  if( !is.null(user.estimator) ){
+
+    ##make user-estimator argument:
+    if( is.null(user.estimator$envir) ){
+      user.estimator$envir <- .GlobalEnv
+    }
+    userEstArg <- user.estimator
+    userEstArg$name <- NULL
+    userEstArg$envir <- NULL
+    if( length(userEstArg)==0 ){ userEstArg <- NULL }
+    
+    ##user-defined estimator:
+    if( is.null(user.estimator$envir) ){
+      out <- do.call(user.estimator$name,
+        c(list(aux$loge2, aux$vX, aux$e), userEstArg))
+    }else{
+      out <- do.call(user.estimator$name,
+        c(list(aux$loge2, aux$vX, aux$e), userEstArg), envir=user.estimator$envir)
+    }
+
+    ##add out to aux:
+    aux <- c(aux,out)
+    
+  }
 
   ##build 'results' data frame:
   s.e. <- sqrt(as.vector(diag(aux$vcov)))
@@ -315,7 +337,7 @@ gets.larch <- function(x, t.pval=0.05, wald.pval=t.pval, do.pet=TRUE,
   ar.LjungB=NULL, arch.LjungB=NULL, normality.JarqueB=NULL,
   user.diagnostics=NULL, info.method=c("sc", "aic", "aicc", "hq"),
   gof.function=NULL, gof.method=NULL, keep=c(1), include.gum=FALSE,
-  include.1cut=TRUE, include.empty=FALSE, max.paths=NULL, tol=1e-07,
+  include.1cut=FALSE, include.empty=FALSE, max.paths=NULL, tol=1e-07,
   turbo=FALSE, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...)
 {
   ## contents:
@@ -1146,7 +1168,7 @@ predict.larch <- function(object, n.ahead=12, newvxreg=NULL, newindex=NULL,
 
 
 ###########################################################
-## print.larch() prints the estimation result
+## print.larch() print the estimation result
 ###########################################################
 
 print.larch <- function(x, signif.stars=TRUE, verbose=FALSE, ...)

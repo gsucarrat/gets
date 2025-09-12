@@ -14,7 +14,7 @@
 ## gets.logitx
 ## logLik.logitx
 ## plot.logitx
-## WIP: predict.logitx
+## For the future: predict.logitx
 ## print.logitx
 ## summary.logitx
 ## toLatex.logitx
@@ -607,7 +607,7 @@ print.logitx <- function(x, signif.stars=TRUE, ...)
     resultsmat[,"std.error"] <- sqrt(diag(x$vcov))
     resultsmat[,"t-stat"] <- resultsmat[,1]/resultsmat[,2]
     resultsmat[,"p-value"] <-
-      pt(abs(resultsmat[,3]), df=x$df, lower.tail=FALSE) 
+      pt(abs(resultsmat[,3]), df=x$df, lower.tail=FALSE)*2 
     
     cat("\n")
     if( is.null(x$gum.result) ){

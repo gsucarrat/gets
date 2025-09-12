@@ -11,7 +11,8 @@ The function \code{larch()} estimates a heterogeneous log-ARCH-X model, which is
 larch(e, vc=TRUE, arch = NULL, harch = NULL, asym = NULL, asymind = NULL,
   log.ewma = NULL, vxreg = NULL, zero.adj = NULL, 
   vcov.type = c("robust", "hac"), qstat.options = NULL,
-  normality.JarqueB = FALSE, tol = 1e-07, singular.ok = TRUE,  plot = NULL)
+  normality.JarqueB = FALSE, user.estimator = NULL, tol = 1e-07,
+  singular.ok = TRUE, plot = NULL)
 }
 
 \arguments{
@@ -27,6 +28,7 @@ larch(e, vc=TRUE, arch = NULL, harch = NULL, asym = NULL, asymind = NULL,
   \item{vcov.type}{\code{character}. "robust" (default) or "hac" (partial matching is allowed). If "robust", the robust variance-covariance matrix of the White (1980) type is used. If "hac", the Newey and West (1987) heteroscedasticity and autocorrelation-robust matrix is used}
   \item{qstat.options}{\code{NULL} (default) or an integer vector of length two, say, \code{c(1,1)}. The first value sets the lag-order of the AR diagnostic test of the standardised residuals, whereas the second value sets the lag-order of the ARCH diagnostic test of the standardised residuals. If \code{NULL}, then the two values of the vector are set automatically }
   \item{normality.JarqueB}{\code{FALSE} (default) or \code{TRUE}. If \code{TRUE}, then the results of the Jarque and Bera (1980) test for non-normality in the residuals are included in the estimation results }
+  \item{user.estimator}{\code{NULL} (default) or a \code{\link{list}} with at least one entry, \code{name}, containing the name of the user-defined estimator. Additional items, if any, are passed on as arguments to the estimator in question }
   \item{tol}{\code{numeric} value. The tolerance (the default is \code{1e-07}) for detecting linear dependencies in the columns of the regressors (see \code{\link{ols}} and \code{\link{qr}}). Only used if \code{LAPACK} is \code{FALSE} (default) }
   \item{singular.ok}{\code{logical}. If \code{TRUE} (default), the regressors are checked for singularity, and the ones causing it are automatically removed. If \code{FALSE}, then the function returns an error }
   \item{plot}{\code{NULL} (default) or \code{logical}. If \code{TRUE}, the fitted values and the residuals are plotted. If \code{NULL}, then the value set by \code{\link{options}} determines whether a plot is produced or not }

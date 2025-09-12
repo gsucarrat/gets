@@ -14,8 +14,8 @@ The code of the package originated in relation with the research project G. Suca
 \details{
 
 \tabular{ll}{
-	Version: \tab 0.38\cr
-	Date: \tab 2024-07-11\cr
+	Version: \tab 0.39\cr
+	Date: \tab 2025-09-11\cr
 	Licence: \tab GPL-2\cr
 }
 
@@ -65,7 +65,7 @@ The code of the package originated in relation with the research project G. Suca
 \author{
 
 \tabular{lll}{
-	Jonas Kurle: \tab \tab \url{https://www.jonaskurle.com/}\cr
+	Jonas Kurle: \tab \tab \url{https://jonaskurle.com/}\cr
 	Felix Pretis: \tab \tab \url{https://felixpretis.climateeconometrics.org/}\cr
 	James Reade: \tab \tab \url{https://sites.google.com/site/jjamesreade/}\cr
 	Moritz Schwarz: \tab \tab  \url{https://www.moritzschwarz.org/}\cr

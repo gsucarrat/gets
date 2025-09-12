@@ -44,9 +44,10 @@
 ## ES               #(some are S3 methods)
 ## fitted.arx
 ## gets.arx
-## isat.arx
+## isat.arx         #moved to gets-isat-source.R !
 ## logLik.arx
 ## model.matrix.arx
+## nobs.arx
 ## plot.arx
 ## predict.arx
 ## print.arx
@@ -569,15 +570,16 @@ regressorsMean <- function(y, mc=FALSE, ar=NULL, ewma=NULL, mxreg=NULL,
 ##create regressors for a model of the variance:
 regressorsVariance <- function(e, vc=TRUE, arch=NULL, harch=NULL,
   asym=NULL, asymind=NULL, log.ewma=NULL, vxreg=NULL, prefix="v",
-  zero.adj=NULL, vc.adj=TRUE, return.regressand=TRUE, return.as.zoo=TRUE,
-  na.trim=TRUE, na.omit=FALSE)
+  arch.prefix="arch", zero.adj=NULL, vc.adj=TRUE, return.regressand=TRUE,
+  log.regressand=TRUE, return.as.zoo=TRUE, na.trim=TRUE, na.omit=FALSE)
 {
 
   ##regressand:
   if(is.zoo(e)){ e <- cbind(e) }else{ e <- as.zoo(cbind(e)) }
   if(NCOL(e) > 1) stop("Dependent variable not 1-dimensional")
   e.n <- NROW(e)
-  loge2.index <- index(e)
+  e.index <- index(e)
+  loge2.index <- e.index 
   e <- coredata(e)
   t1 <- loge2.index[1]
   t2 <- loge2.index[e.n]
@@ -616,7 +618,9 @@ regressorsVariance <- function(e, vc=TRUE, arch=NULL, harch=NULL,
     }
     tmpfun <- sapply(arch,tmpfun)
     vX <- cbind(vX, tmp)
-    vXnames <- c(vXnames, paste0("arch", arch))
+    vXnames <- c(vXnames, paste0(arch.prefix, arch))
+#OLD:
+#    vXnames <- c(vXnames, paste0("arch", arch))
   }
   
   ##harch terms:
@@ -766,8 +770,16 @@ regressorsVariance <- function(e, vc=TRUE, arch=NULL, harch=NULL,
   ### OUTPUT: ######################
 
   if(return.regressand){
-    result <- cbind(loge2, vX)
-    colnames(result) <- c("loge2", vXnames)
+    if( log.regressand ){
+      result <- cbind(loge2, vX)
+      colnames(result) <- c("loge2", vXnames)
+    }else{
+      e.t1 <- which( e.index==t1 )
+      e.t2 <- which( e.index==t2 )
+      e <- e[t1:t2]
+      result <- cbind(e, vX)
+      colnames(result) <- c("e", vXnames)
+    }
   }else{
     result <- vX
     if(!is.null(result)){ colnames(result) <- vXnames }

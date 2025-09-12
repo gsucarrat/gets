@@ -42,7 +42,7 @@ G. Ljung and G. Box (1979): 'On a Measure of Lack of Fit in Time
 
 \author{
 Genaro Sucarrat, \url{http://www.sucarrat.net/}\cr
-Jonas Kurle, \url{https://www.jonaskurle.com/}
+Jonas Kurle, \url{https://jonaskurle.com/}
 }
 
 \seealso{\code{\link{arx}}, \code{\link{getsm}}, \code{\link{getsv}}, \code{\link{isat}}, \code{\link{getsFun}}, \code{\link{blocksFun}}}
