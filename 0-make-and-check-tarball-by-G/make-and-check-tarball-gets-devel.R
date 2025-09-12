@@ -89,6 +89,15 @@ if( doDelete ){
   
 } #end if(doDelete)
 
+##OLD code for Github-version:
+##modify DESCRIPTION file:
+#fileName <- paste0(getwd(), "/gets/DESCRIPTION")
+#fileTxt <- readChar(fileName, file.info(fileName)$size)
+#fileTxt <- gsub("lgarch, xtable, Matrix, microbenchmark, testthat",
+#  "lgarch, xtable, Matrix, microbenchmark", fileTxt)
+#fileTxt <- gsub("\nConfig/testthat/edition: 3\r\n|\r", "", fileTxt)
+#writeChar(fileTxt, fileName)
+
 
 ####################################################
 ## 3 BUILD AND CHECK THE TARBALL
@@ -153,7 +162,7 @@ system( paste0("R CMD check ", tarballName, " --as-cran") )
 ## This is not detected by the tarball check.
 ## An alternative way to check the tarball (recommended!), which often
 ## finds errors that are usually not found on personal laptops, is via:
-##   http://win-builder.r-project.org/
+##   https://win-builder.r-project.org/
 
 
 ####################################################

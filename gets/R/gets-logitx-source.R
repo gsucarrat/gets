@@ -723,8 +723,14 @@ vcov.logitx <- function(object, ...)
 
 ############################################################
 ## create alias
-dlogitxSim <- function(n, ...){ logitxSim(n, ...) }
+dlogitxSim <- function(n, ...){
+  warning("use 'logitxSim()' instead, 'dlogitxSim()' will soon be deprecated")
+  logitxSim(n, ...)
+}
 
 ############################################################
 ## create alias
-dlogitx <- function(y, ...){ logitx(y, ...) }
+dlogitx <- function(y, ...){
+  warning("use 'logitx()' instead, 'dlogitx()' will soon be deprecated")
+  logitx(y, ...)
+}

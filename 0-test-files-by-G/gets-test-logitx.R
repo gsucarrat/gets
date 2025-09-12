@@ -52,6 +52,7 @@ logitxSim(n, intercept=1, ar=c(0.2,0.1), xreg=0.5*z, verbose=TRUE,
   as.zoo=FALSE)
 
 ##test the alias dlogitxSim():
+##from 0.39: a warning is returned!
 dlogitxSim(n)
 dlogitxSim(n, intercept=1)
 dlogitxSim(n, ar=c(0.2,0.1))
