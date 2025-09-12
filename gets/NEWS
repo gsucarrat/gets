@@ -13,6 +13,13 @@ Version 0.39 (11 September 2025):
  - new argument 'arch.prefix'
  - new argument 'log.regressand'
 
+* substantial changes to isat():
+ - Enabling include.gum() argument that was temporarily deprecated (small change in coef.isat() and isat.lm() to reflect that as well)
+ - Introduction of additional algorithm that attempts to deal with small sample challenges. Currently, when the initial block-search retained too many indicators relative to the degrees of freedom, the function failed (without an appropriate error message).
+ - Creation of internal subfunctions create.ISmatrices(), ISMatricesLoop(), ISadditionalblocksearch(), ISblocksFun() to improve isat() structure
+ - Improve error messages within isat()
+ - small change to isat.arx() and iim() to standardise behaviour of column naming
+ - associated test changes
 
 Version 0.38 (11 July 2024):
 ============================
