@@ -68,7 +68,7 @@ The code of the package originated in relation with the research project G. Suca
 	Jonas Kurle: \tab \tab \url{https://jonaskurle.com/}\cr
 	Felix Pretis: \tab \tab \url{https://felixpretis.climateeconometrics.org/}\cr
 	James Reade: \tab \tab \url{https://sites.google.com/site/jjamesreade/}\cr
-	Moritz Schwarz: \tab \tab  \url{https://www.inet.ox.ac.uk/people/moritz-schwarz}\cr
+	Moritz Schwarz: \tab \tab  \url{https://www.moritzschwarz.org/}\cr
 	Genaro Sucarrat: \tab \tab \url{https://www.sucarrat.net/}\cr
 }
 
