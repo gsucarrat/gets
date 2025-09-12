@@ -1,3 +1,86 @@
+##==================================================
+## isat on 'arx' objects:
+isat.arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL, 
+                     iis=FALSE, sis=TRUE, tis=FALSE, uis=FALSE, blocks=NULL,
+                     ratio.threshold=0.8, max.block.size=30, t.pval=0.001,
+                     wald.pval=t.pval, vcov.type=c("ordinary", "white", "newey-west"),
+                     do.pet=FALSE, ar.LjungB=NULL, arch.LjungB=NULL,
+                     normality.JarqueB=NULL, info.method=c("sc", "aic", "hq"), 
+                     user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL, 
+                     gof.method=c("min","max"), include.gum=TRUE,
+                     include.1cut=FALSE, include.empty=FALSE, max.paths=NULL,
+                     parallel.options=NULL, turbo=FALSE, tol=1e-07, LAPACK=FALSE,
+                     max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...
+){
+  
+  # warnings and checks (mainly for variance specification)
+  if(!is.null(y$variance.results)){
+    warning("Input object contains variance specification. Note that 'isat' is not configured for variance specifications.\nVariance specification in 'isat' are dropped.")
+  }
+  
+  # Check if one of these arguments is explicitly supplied to the function
+  # if not, then check if the original item has this arguemnt supplied
+  # if it does, take the setting of the original object
+  # if it does not, then take the default
+  if(missing(ar)){ar <- if(is.null(y$aux$arguments[["ar"]])) {NULL} else{y$aux$arguments[["ar"]]}}
+  if(missing(vcov.type)){vcov.type <- y$aux[["vcov.type"]]}
+  if(missing(normality.JarqueB)){normality.JarqueB <- if(is.null(y$aux$arguments[["normality.JarqueB"]])){FALSE}else{y$aux$arguments[["normality.JarqueB"]]}}
+  if(missing(user.estimator)){user.estimator <- if(is.null(y$aux$arguments[["user.estimator"]])){NULL}else{y$aux$arguments[["user.estimator"]]}}
+  if(missing(user.diagnostics)){user.diagnostics <- if(is.null(y$aux$arguments[["user.diagnostics"]])){NULL}else{y$aux$arguments[["user.diagnostics"]]}}
+  if(missing(LAPACK)){LAPACK <- if(is.null(y$aux$arguments[["LAPACK"]])){FALSE}else{y$aux$arguments[["LAPACK"]]}}
+  if(missing(plot)){plot <- if(is.null(y$aux$arguments[["plot"]])){NULL}else{y$aux$arguments[["plot"]]}}
+  if(missing(tol)){tol <- if(is.null(y$aux$arguments[["tol"]])){1e-07}else{y$aux$arguments[["tol"]]}}
+  
+  mxreg <- y$aux$mX
+  colnames(mxreg) <- y$aux$mXnames
+  yvar <- y$aux$y
+  names(yvar) <- y$aux$index
+  
+  out <- isat.default(
+    yvar,
+    FALSE, # mc would already be set in arx
+    NULL, # ar would already be set in arx
+    ewma,
+    mxreg,
+    iis,
+    sis,
+    tis,
+    uis,
+    blocks,
+    ratio.threshold,
+    max.block.size,
+    t.pval,
+    wald.pval,
+    vcov.type,
+    do.pet,
+    ar.LjungB,
+    arch.LjungB,
+    normality.JarqueB,
+    info.method,
+    user.diagnostics,
+    user.estimator,
+    gof.function,
+    gof.method,
+    include.gum,
+    include.1cut,
+    include.empty,
+    max.paths,
+    parallel.options,
+    turbo,
+    tol,
+    LAPACK,
+    max.regs,
+    print.searchinfo,
+    plot,
+    alarm
+  )
+  
+  return(out)
+  
+} #close isat.arx()
+
+
+
 ####################################################
 ## This file contains the isat-source of the gets
 ## package.
