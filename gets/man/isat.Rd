@@ -21,7 +21,8 @@ isat(y, ...)
   arch.LjungB=NULL, normality.JarqueB=NULL, info.method=c("sc","aic","hq"),
   user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL,
   gof.method = c("min", "max"), include.gum=TRUE, include.1cut=FALSE,
-  include.empty=FALSE, max.paths=NULL, parallel.options=NULL, turbo=FALSE,
+  include.empty=FALSE, max.paths=NULL, additional.block.search = FALSE, 
+  parallel.options=NULL, turbo=FALSE,
   tol=1e-07, LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE, plot=NULL,
   alarm=FALSE, ...)
   
@@ -33,7 +34,8 @@ isat(y, ...)
   arch.LjungB=NULL, normality.JarqueB=NULL, info.method=c("sc","aic","hq"),
   user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL,
   gof.method = c("min", "max"), include.gum=TRUE, include.1cut=FALSE,
-  include.empty=FALSE, max.paths=NULL, parallel.options=NULL, turbo=FALSE,
+  include.empty=FALSE, max.paths=NULL, additional.block.search = FALSE, 
+  parallel.options=NULL, turbo=FALSE,
   tol=1e-07, LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE, plot=NULL,
   alarm=FALSE, ...)
 
@@ -45,7 +47,8 @@ isat(y, ...)
   arch.LjungB=NULL, normality.JarqueB=NULL, info.method=c("sc","aic","hq"),
   user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL,
   gof.method = c("min", "max"), include.gum=TRUE, include.1cut=FALSE,
-  include.empty=FALSE, max.paths=NULL, parallel.options=NULL, turbo=FALSE,
+  include.empty=FALSE, max.paths=NULL, additional.block.search = FALSE, 
+  parallel.options=NULL, turbo=FALSE,
   tol=1e-07, LAPACK=FALSE, max.regs=NULL, print.searchinfo=TRUE, plot=NULL,
   alarm=FALSE, ...)
 
@@ -62,7 +65,7 @@ isat(y, ...)
   \item{tis}{logical. If \code{TRUE}, trend indicator saturation is performed.}
   \item{uis}{a matrix of regressors, or a list of matrices.}
   \item{blocks}{\code{NULL} (default), an integer (the number of blocks) or a user-specified \code{list} that indicates how blocks should be put together. If \code{NULL}, then the number of blocks is determined automatically}
-  \item{ratio.threshold}{Minimum ratio of variables in each block to total observations to determine the block size, default=0.8. Only relevant if blocks = \code{NULL} }
+  \item{ratio.threshold}{Minimum ratio of variables in each block to total observations to determine the block size, \code{default=0.8}. Only relevant if blocks = \code{NULL} }
   \item{max.block.size}{Maximum size of block of variables to be selected over, default=30. Block size used is the maximum of given by either the ratio.threshold and max.block.size }
   \item{t.pval}{numeric value between 0 and 1. The significance level used for the two-sided regressor significance t-tests}
   \item{wald.pval}{numeric value between 0 and 1. The significance level used for the Parsimonious Encompassing Tests (PETs)}
@@ -80,6 +83,7 @@ isat(y, ...)
   \item{include.1cut}{logical. If \code{TRUE}, then the 1-cut model is included among the terminal models, if it passes the diagnostic tests, even if it is not equal to one of the terminals. If FALSE (default), then the 1-cut model is not included (unless it is one of the terminals)}
   \item{include.empty}{logical. If \code{TRUE}, then an empty model is included among the terminal models, if it passes the diagnostic tests, even if it is not equal to one of the terminals. If FALSE (default), then the empty model is not included (unless it is one of the terminals)}
   \item{max.paths}{\code{NULL} (default) or an integer indicating the maximum number of paths to search}
+  \item{additional.block.search}{Default is \code{FALSE}. If \code{isat()} identifies (retains) too many indicators in the block search, a sensible model might not be estimable (e.g. due to a lack of available degrees of freedom). In this case, setting \code{additional.block.search = TRUE} carries out an additional block search using a Leave-one-Out method (e.g. for three blocks, indicators are assigned to block \code{1,2,3,1,2,3,1,2,3}). This is an experimental feature.}
   \item{parallel.options}{\code{NULL} or an integer, i.e. the number of cores/threads to be used for parallel computing (implemented w/\code{makeCluster} and \code{parLapply})}
   \item{turbo}{logical. If \code{TRUE}, then (parts of) paths are not searched twice (or more) unnecessarily, thus yielding a significant potential for speed-gain. However, the checking of whether the search has arrived at a point it has already been comes with a slight computational overhead. Accordingly, if \code{turbo=TRUE}, then the total search time might in fact be higher than if \code{turbo=FALSE}. This happens if estimation is very fast, say, less than quarter of a second. Hence the default is \code{FALSE}}
   \item{tol}{numeric value (default = 1e-07). The tolerance for detecting linear dependencies in the columns of the regressors (see \code{\link{qr}} function). Only used if LAPACK is FALSE (default)}
@@ -124,35 +128,35 @@ data(Nile)
 isat(Nile, sis=TRUE, iis=FALSE, plot=TRUE, t.pval=0.005)
 
 ##SIS using the Nile data in an autoregressive model
-#isat(Nile, ar=1:2, sis=TRUE, iis=FALSE, plot=TRUE, t.pval=0.005)
+isat(Nile, ar=1:2, sis=TRUE, iis=FALSE, plot=TRUE, t.pval=0.005)
 
+\dontrun{
 ##HP Data
 ##load Hoover and Perez (1999) data:
-#data(hpdata)
+data(hpdata)
 
 ##make quarterly data-matrix of zoo type
 ##(GCQ = personal consumption expenditure):
-#y <- zooreg(hpdata$GCQ, 1959, frequency=4)
+y <- zooreg(hpdata$GCQ, 1959, frequency=4)
 
 ##transform data to log-differences:
-#dlogy <- diff(log(y))
+dlogy <- diff(log(y))
 
 ##run isat with step impulse saturation on four
 ##lags and a constant 1 percent significance level:
-#isat(dlogy, ar=1:4, sis=TRUE, t.pval =0.01)
+isat(dlogy, ar=1:4, sis=TRUE, t.pval =0.01)
 
 ##Example with additional covariates entering through mxreg:
-
 ##(GYDQ = disposable personal income):
-#x <- zooreg(hpdata$GYDQ, 1959, frequency=4)
+x <- zooreg(hpdata$GYDQ, 1959, frequency=4)
 
 ##transform data to log-differences:
-#dlogx <- diff(log(x))
+dlogx <- diff(log(x))
 
 ##run isat with step impulse saturation on four
 ##lags and a constant 1 percent significance level:
-#isat(dlogy, mxreg=dlogx, ar=1:4, sis=TRUE, t.pval =0.01)
-
+isat(dlogy, mxreg=dlogx, ar=1:4, sis=TRUE, t.pval =0.01)
+}
 }
 
 \keyword{Statistical Models}

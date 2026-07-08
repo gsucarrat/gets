@@ -50,6 +50,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL, 
   gof.method=c("min","max"), include.gum=TRUE,
   include.1cut=FALSE, include.empty=FALSE, max.paths=NULL,
+  additional.block.search = FALSE, 
   parallel.options=NULL, turbo=FALSE, tol=1e-07, LAPACK=FALSE,
   max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...)
 {
@@ -96,9 +97,9 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   )
   
   ##check that any indicator method is selected
-  if(sis == FALSE && iis == FALSE && tis == FALSE && identical(uis, FALSE)){
-    stop("No Indicator Selection Method was selected. Either set iis, sis or tis as TRUE or specify uis.")
-  }
+  # if(sis == FALSE && iis == FALSE && tis == FALSE && identical(uis, FALSE)){
+  #   stop("No Indicator Selection Method was selected. Either set iis, sis or tis as TRUE or specify uis.")
+  # }
   
   ##warn to use robust coefficient variances
   # suggestion by M-orca 02/10/2022: no time to test this, but potentially useful addition
@@ -108,6 +109,17 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
 
   if(!is.null(ar) && identical(ar,0)){ar <- NULL}
   if(!(is.numeric(ar) | is.null(ar))){stop("The 'ar' argument must be NULL or numeric.")}
+  
+  # check additional.block.search
+  if(!is.logical(additional.block.search)){
+    stop("additional.block.search must be logical (TRUE/FALSE)")
+  }
+  
+  # check include.gum
+  if(is.null(include.gum)){include.gum <- TRUE}
+  if(!is.logical(include.gum)){
+    stop("include.gum must be logical (TRUE/FALSE)")
+  }
   
   ##name of regressand:
   y.name <- deparse(substitute(y))
@@ -219,7 +231,12 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     mXncol <- NCOL(mX)
     mxkeep <- 1:mXncol
   }
-
+  
+  ## check that even enough df to start the blocks
+  if(ncol(mX) > nrow(mX) - 1){
+    stop("Not enough degrees of freedom to start isat block search. Too many x-variables provided for the sample size.")
+  }
+  
   ##ar.LjungB argument:
   arLjungB <- NULL
   if(!is.null(ar.LjungB)){
@@ -264,7 +281,8 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   estimations.total <- 0
   getsFun.total <- 0
   ISfinalmodels <- list()
-  for(i in 1:length(ISmatrices)){
+  
+  for(i in seq_len(length(ISmatrices))){
     result_ISMatricesLoop <- ISMatricesLoop(blocks.is.list = blocks.is.list,
                                             ISmatrices = ISmatrices,
                                             ratio.threshold = ratio.threshold,
@@ -299,7 +317,8 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
                                             clusterVarlist = clusterVarlist,
                                             blocks = blocks,
                                             max.block.size = max.block.size,
-                                            mXnames = mXnames)
+                                            mXnames = mXnames,
+                                            additional.block.search = additional.block.search)
     
     
     ISblocks <- result_ISMatricesLoop$ISblocks
@@ -319,7 +338,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   ##-------------------------------
   
   ##some info:
-  if(print.searchinfo){
+  if(print.searchinfo & length(ISfinalmodels)>0){
     message("\n", appendLF=FALSE)
     message("GETS of union of ALL retained variables...",
       appendLF=TRUE)
@@ -379,7 +398,8 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
         turbo = turbo, 
         do.pet = do.pet, 
         ratio.threshold = ratio.threshold,
-        max.block.size = max.block.size)
+        max.block.size = max.block.size,
+        additional.block.search = additional.block.search)
       
       
       addblocksearch.names <- colnames(result_additional_blocksearch$mXis)
@@ -407,6 +427,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     if(is.null(mX)){ mXis <- NULL }else{
       mXis <- cbind(mX)
       colnames(mXis) <- mXnames
+      mxkeep.afterdropvar <- 1:mXncol
     }
   }
 
@@ -1014,160 +1035,167 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
 ##==================================================
 # ## print isat results
 print.isat <- function(x, signif.stars=TRUE, ...)
-  {
-    
-    ##messages from final gets:
-    #if(!is.null(x$messages)){ message(x$messages) }
-    
-    ##header:
+{
+  
+  ##messages from final gets:
+  #if(!is.null(x$messages)){ message(x$messages) }
+  
+  ##header:
+  cat("\n")
+  cat("Date:", x$date, "\n")
+  cat("Dependent var.:", x$aux$y.name, "\n")
+  cat("Method: Ordinary Least Squares (OLS)\n")
+  cat("Variance-Covariance:", switch(x$aux$vcov.type,
+                                     ordinary = "Ordinary", white = "White (1980)",
+                                     "newey-west" = "Newey and West (1987)"), "\n")
+  
+  ##header - sample info:
+  cat("No. of observations (mean eq.):", x$aux$y.n, "\n")
+  tmp <- zoo(x$aux$y, order.by=x$aux$y.index)
+  
+  indexTrimmed <- index(na.trim(tmp))
+  isRegular <- is.regular(tmp, strict=TRUE)
+  isCyclical <- frequency(tmp) > 1
+  if(isRegular && isCyclical){
+    cycleTrimmed <- cycle(na.trim(tmp))
+    startYear <- floor(as.numeric(indexTrimmed[1]))
+    startAsChar <- paste(startYear,
+                         "(", cycleTrimmed[1], ")", sep="")
+    endYear <- floor(as.numeric(indexTrimmed[length(indexTrimmed)]))
+    endAsChar <- paste(endYear,
+                       "(", cycleTrimmed[length(indexTrimmed)], ")", sep="")
+  }else{
+    startAsChar <- as.character(indexTrimmed[1])
+    endAsChar <- as.character(indexTrimmed[length(indexTrimmed)])
+  }
+  cat("Sample:", startAsChar, "to", endAsChar, "\n")
+  
+  ####### START the part commented out 17 July 2019 by G-man:  
+  #
+  #  ##gum:
+  #  if(specType=="mean"){
+  #    cat("\n")
+  #    cat("GUM mean equation:\n")
+  #    cat("\n")
+  #    printCoefmat(x$gum.mean, dig.tst=0, tst.ind=c(1,2),
+  #                 signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
+  #  }
+  #  if(!is.null(x$gum.variance)){
+  #    cat("\n")
+  #    cat("GUM log-variance equation:\n")
+  #    cat("\n")
+  #    printCoefmat(x$gum.variance, signif.stars=FALSE)
+  #  }
+  #  cat("\n")
+  #  cat("Diagnostics and fit:\n")
+  #  cat("\n")
+  #  printCoefmat(x$gum.diagnostics, dig.tst=0, tst.ind=2,
+  #               signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
+  #  
+  #
+  #  ##paths:
+  #  cat("\n")
+  #  cat("Paths searched: \n")
+  #  cat("\n")
+  #  if(is.null(x$paths)){
+  #    print(NULL)
+  #  }else{
+  #    for(i in 1:length(x$paths)){
+  #      cat("path",i,":",x$paths[[i]],"\n")
+  #    }
+  #  } #end if(is.null(x$paths))
+  #  
+  #  ##terminal models and results:
+  #  if(!is.null(x$terminals)){
+  #    cat("\n")
+  #    cat("Terminal models: \n")
+  #    cat("\n")
+  #    for(i in 1:length(x$terminals)){
+  #      cat("spec",i,":",x$terminals[[i]],"\n")
+  #    }
+  #  }
+  #  if(!is.null(x$terminals.results)){
+  #    cat("\n")
+  #    printCoefmat(x$terminals.results, dig.tst=0, tst.ind=c(3,4),
+  #                 signif.stars=FALSE)
+  #  }
+  #
+  ####### END the part commented out 17 July 2019 by G-man  
+  
+  ##specific model:
+  if(!is.null(x$specific.spec)){
     cat("\n")
-    cat("Date:", x$date, "\n")
-    cat("Dependent var.:", x$aux$y.name, "\n")
-    cat("Method: Ordinary Least Squares (OLS)\n")
-    cat("Variance-Covariance:", switch(x$aux$vcov.type,
-                                       ordinary = "Ordinary", white = "White (1980)",
-                                       "newey-west" = "Newey and West (1987)"), "\n")
-    
-    ##header - sample info:
-    cat("No. of observations (mean eq.):", x$aux$y.n, "\n")
-    tmp <- zoo(x$aux$y, order.by=x$aux$y.index)
-    
-    indexTrimmed <- index(na.trim(tmp))
-    isRegular <- is.regular(tmp, strict=TRUE)
-    isCyclical <- frequency(tmp) > 1
-    if(isRegular && isCyclical){
-      cycleTrimmed <- cycle(na.trim(tmp))
-      startYear <- floor(as.numeric(indexTrimmed[1]))
-      startAsChar <- paste(startYear,
-                           "(", cycleTrimmed[1], ")", sep="")
-      endYear <- floor(as.numeric(indexTrimmed[length(indexTrimmed)]))
-      endAsChar <- paste(endYear,
-                         "(", cycleTrimmed[length(indexTrimmed)], ")", sep="")
-    }else{
-      startAsChar <- as.character(indexTrimmed[1])
-      endAsChar <- as.character(indexTrimmed[length(indexTrimmed)])
+    cat("SPECIFIC mean equation:\n")
+    cat("\n")
+    if(!is.null(x$mean.results)){
+      #print(x$mean.results)
+      # NEW (from Moritz, July 2020) as this more simple command works as expected: 
+      printCoefmat(x$mean.results,signif.stars = signif.stars)
+      
+      #OLD: DOES NOT WORK IN A PREDICTABLE WAY!
+      #      printCoefmat(x$mean.results, signif.stars=FALSE,
+      #        P.values=FALSE, has.Pvalues=FALSE)
     }
-    cat("Sample:", startAsChar, "to", endAsChar, "\n")
+    if(x$specific.spec[1]==0){
+      cat("empty\n")
+    }
+    ##in the future: use estimate.specific=FALSE more directly?
+    if(x$specific.spec[1]!=0 && is.null(x$mean.results)){
+      cat("Not estimated\n")
+    }
+  }
+  
+  # Information regarding include.gum argument
+  indicator.coefs <- x$mean.results[row.names(x$mean.results) %in% x$ISnames, ]
+  if(x$aux$args$include.gum & any(indicator.coefs$`p-value` > x$aux$args$t.pval)){
+    cat("\nNOTE: Result includes indicators that exceed the target p-value 't.pval'.\n")
+    cat("This could be caused by 'include.gum = TRUE'. Setting this to FALSE might avoid this.\n")
+  }
+  
+  ##diagnostics and fit:
+  if(!is.null(x$diagnostics)){
     
-    ####### START the part commented out 17 July 2019 by G-man:  
-    #
-    #  ##gum:
-    #  if(specType=="mean"){
-    #    cat("\n")
-    #    cat("GUM mean equation:\n")
-    #    cat("\n")
-    #    printCoefmat(x$gum.mean, dig.tst=0, tst.ind=c(1,2),
-    #                 signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
-    #  }
-    #  if(!is.null(x$gum.variance)){
-    #    cat("\n")
-    #    cat("GUM log-variance equation:\n")
-    #    cat("\n")
-    #    printCoefmat(x$gum.variance, signif.stars=FALSE)
-    #  }
-    #  cat("\n")
-    #  cat("Diagnostics and fit:\n")
-    #  cat("\n")
-    #  printCoefmat(x$gum.diagnostics, dig.tst=0, tst.ind=2,
-    #               signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
-    #  
-    #
-    #  ##paths:
-    #  cat("\n")
-    #  cat("Paths searched: \n")
-    #  cat("\n")
-    #  if(is.null(x$paths)){
-    #    print(NULL)
-    #  }else{
-    #    for(i in 1:length(x$paths)){
-    #      cat("path",i,":",x$paths[[i]],"\n")
-    #    }
-    #  } #end if(is.null(x$paths))
-    #  
-    #  ##terminal models and results:
-    #  if(!is.null(x$terminals)){
-    #    cat("\n")
-    #    cat("Terminal models: \n")
-    #    cat("\n")
-    #    for(i in 1:length(x$terminals)){
-    #      cat("spec",i,":",x$terminals[[i]],"\n")
-    #    }
-    #  }
-    #  if(!is.null(x$terminals.results)){
-    #    cat("\n")
-    #    printCoefmat(x$terminals.results, dig.tst=0, tst.ind=c(3,4),
-    #                 signif.stars=FALSE)
-    #  }
-    #
-    ####### END the part commented out 17 July 2019 by G-man  
+    #fit-measures:
+    mGOF <- matrix(NA, 3, 1)
+    rownames(mGOF) <- c("SE of regression", "R-squared",
+                        paste0("Log-lik.(n=", x$n, ")"))
+    colnames(mGOF) <- ""
+    mGOF[1,1] <- sigma.isat(x) #OLD: sqrt(x$sigma2)
+    mGOF[2,1] <- rsquared(x) #OLD: x$specific.diagnostics[4,1]
+    mGOF[3,1] <- as.numeric(logLik.isat(x)) #OLD: x$logl
+    #mGOF[4,1] <- outliertest(x)$#x$logl #OLD: as.numeric(logLik.arx(x))
     
-    ##specific model:
-    if(!is.null(x$specific.spec)){
+    cat("\n")
+    cat("Diagnostics and fit:\n")
+    cat("\n")
+    printCoefmat(x$diagnostics, tst.ind=2,signif.stars=signif.stars, has.Pvalue = TRUE)
+    
+    
+    if(!is.null(x$outlier.distortion.test)){
+      #cat("\nJiao-Pretis-Schwarz Outlier Distortion Test")
+      mOutl_d <- matrix(NA, 1, 3)
+      colnames(mOutl_d) <- c("Chi-sq","df", "p-value")
+      rownames(mOutl_d) <- c("Jiao-Pretis-Schwarz Outlier Distortion")
+      mOutl_d[1,] <- c(x$outlier.distortion.test$statistic,x$outlier.distortion.test$df,x$outlier.distortion.test$p.value)
       cat("\n")
-      cat("SPECIFIC mean equation:\n")
-      cat("\n")
-      if(!is.null(x$mean.results)){
-        #print(x$mean.results)
-        # NEW (from Moritz, July 2020) as this more simple command works as expected: 
-        printCoefmat(x$mean.results,signif.stars = signif.stars)
-        
-        #OLD: DOES NOT WORK IN A PREDICTABLE WAY!
-        #      printCoefmat(x$mean.results, signif.stars=FALSE,
-        #        P.values=FALSE, has.Pvalues=FALSE)
-      }
-      if(x$specific.spec[1]==0){
-        cat("empty\n")
-      }
-      ##in the future: use estimate.specific=FALSE more directly?
-      if(x$specific.spec[1]!=0 && is.null(x$mean.results)){
-        cat("Not estimated\n")
-      }
+      printCoefmat(mOutl_d, digits=6, signif.stars = TRUE,P.values = TRUE, has.Pvalue = TRUE, signif.legend = FALSE)
     }
     
-    ##diagnostics and fit:
-    if(!is.null(x$diagnostics)){
-      
-      #fit-measures:
-      mGOF <- matrix(NA, 3, 1)
-      rownames(mGOF) <- c("SE of regression", "R-squared",
-                          paste0("Log-lik.(n=", x$n, ")"))
-      colnames(mGOF) <- ""
-      mGOF[1,1] <- sigma.isat(x) #OLD: sqrt(x$sigma2)
-      mGOF[2,1] <- rsquared(x) #OLD: x$specific.diagnostics[4,1]
-      mGOF[3,1] <- as.numeric(logLik.isat(x)) #OLD: x$logl
-      #mGOF[4,1] <- outliertest(x)$#x$logl #OLD: as.numeric(logLik.arx(x))
-      
+    if(!is.null(x$outlier.proportion.test)){
+      #cat("\nJiao-Pretis Outlier Proportion Test")
+      mOutl_p <- matrix(NA, 2, 2)
+      colnames(mOutl_p) <- c("Stat.", "p-value")
+      rownames(mOutl_p) <- c("Jiao-Pretis Outlier Proportion", "Jiao-Pretis Outlier Count")
+      mOutl_p[1,] <- c(x$outlier.proportion.test$prop$statistic, x$outlier.proportion.test$prop$p.value)
+      mOutl_p[2,] <- c(x$outlier.proportion.test$count$statistic, x$outlier.proportion.test$count$p.value)
       cat("\n")
-      cat("Diagnostics and fit:\n")
-      cat("\n")
-      printCoefmat(x$diagnostics, tst.ind=2,signif.stars=signif.stars, has.Pvalue = TRUE)
-      
-      
-      if(!is.null(x$outlier.distortion.test)){
-        #cat("\nJiao-Pretis-Schwarz Outlier Distortion Test")
-        mOutl_d <- matrix(NA, 1, 3)
-        colnames(mOutl_d) <- c("Chi-sq","df", "p-value")
-        rownames(mOutl_d) <- c("Jiao-Pretis-Schwarz Outlier Distortion")
-        mOutl_d[1,] <- c(x$outlier.distortion.test$statistic,x$outlier.distortion.test$df,x$outlier.distortion.test$p.value)
-        cat("\n")
-        printCoefmat(mOutl_d, digits=6, signif.stars = TRUE,P.values = TRUE, has.Pvalue = TRUE, signif.legend = FALSE)
-      }
-      
-      if(!is.null(x$outlier.proportion.test)){
-        #cat("\nJiao-Pretis Outlier Proportion Test")
-        mOutl_p <- matrix(NA, 2, 2)
-        colnames(mOutl_p) <- c("Stat.", "p-value")
-        rownames(mOutl_p) <- c("Jiao-Pretis Outlier Proportion", "Jiao-Pretis Outlier Count")
-        mOutl_p[1,] <- c(x$outlier.proportion.test$prop$statistic, x$outlier.proportion.test$prop$p.value)
-        mOutl_p[2,] <- c(x$outlier.proportion.test$count$statistic, x$outlier.proportion.test$count$p.value)
-        cat("\n")
-        printCoefmat(mOutl_p, digits=6, signif.stars = TRUE,P.values = TRUE, has.Pvalue = TRUE, signif.legend = FALSE) 
-      }
-      
-      printCoefmat(mGOF, digits=6, signif.stars=signif.stars)
-      
+      printCoefmat(mOutl_p, digits=6, signif.stars = TRUE,P.values = TRUE, has.Pvalue = TRUE, signif.legend = FALSE) 
     }
     
+    printCoefmat(mGOF, digits=6, signif.stars=signif.stars)
+    
+  }
+  
 }
 
 #OLD:
@@ -2979,7 +3007,7 @@ ISblocksFun <- function(j, i, ISmatrices, ISblocks, mX,
   
   ##apply dropvar:
   if(ncol(mXis)>=y.n){
-    stop("Too many x-variables and indicators for the sample size. No sensible model estimateable. Set a smaller max.block.size (e.g. max.block.size = 2 or max.block.size = 10) or remove x-variables in mxreg or consider removing x-variables from the specification in mxreg.")
+    stop("Too many x-variables and indicators for the sample size. No sensible model estimable. Set a smaller max.block.size (e.g. max.block.size = 2 or max.block.size = 10) or consider removing x-variables from the specification in mxreg.")
   }
   
   mXis.names <- colnames(mXis)
@@ -3143,7 +3171,7 @@ create.ISmatrices <- function(iis,
   
   
   return(ISmatrices)
-
+  
 }
 
 
@@ -3187,8 +3215,9 @@ ISadditionalblocksearch <- function(mXis,
                                     do.pet, 
                                     ratio.threshold, 
                                     max.block.size,
-                                    wald.pval){
-   # TODO implement if someone does supply the blocks argument
+                                    wald.pval,
+                                    additional.block.search){
+  # TODO implement if someone does supply the blocks argument
   mXis.intermed.models <- list()
   mXis.ncol.adj <- length(isNames)
 
@@ -3213,9 +3242,18 @@ ISadditionalblocksearch <- function(mXis,
     tmp[[j]] <- seq(j,mXis.ncol.adj, mXis.no.of.blocks)
   }
   
-  if(print.searchinfo){
-    message("\n", appendLF=FALSE)
-    message(paste0("Too many inital indicators returned for ",ISmatrixname,", carrying out additional block search with ",mXis.no.of.blocks," blocks using a Leave-one-Out Method."),appendLF=TRUE)
+  if(!additional.block.search){
+    stop(paste0("\nToo many initial indicators returned for ",ISmatrixname," to estimate a sensible model.\n",
+                "Try setting 'additional.block.search = TRUE' in 'isat()' to attempt  an additional block search to reduce the number of indicators (experimental feature).\n\n",
+                "Additionally/Alternatively consider setting a tighter (smaller) t.pval argument, setting a smaller 'max.block.size', turning off/relaxing diagnostic testing or improving the model specification.\n"))
+  } else {
+    if(print.searchinfo){
+      message("\n", appendLF=FALSE)
+      message(paste0("\nToo many initial indicators returned for ",ISmatrixname," to estimate a sensible model.\n",
+                     "Because 'additional.block.search = TRUE', isat() is carrying out an additional block search.\nUsing ",
+                     mXis.no.of.blocks," blocks with a Leave-one-Out Method.\n"),
+              appendLF=TRUE)
+    }
   }
   
   mXis.blocks <- tmp
@@ -3270,7 +3308,7 @@ ISadditionalblocksearch <- function(mXis,
   
   # if problem persists, give warning              
   if(NCOL(mXis) >= y.n){
-    stop(paste0("\n'isat' retains too many indicators for ",ISmatrixname," even despite additional block search. Consider setting a tighter (smaller) t.pval argument, setting a smaller 'max.block.size', turning off/relaxing diagnostic testing or improving the model specification."))
+    stop(paste0("\n'isat()' retains too many indicators for ",ISmatrixname," even despite additional block search.\nConsider setting a tighter (smaller) t.pval argument, setting a smaller 'max.block.size', turning off/relaxing diagnostic testing or improving the model specification."))
   }
   
   result <- list()
@@ -3325,7 +3363,8 @@ ISMatricesLoop <- function(blocks.is.list,
                            clusterVarlist,
                            blocks,
                            max.block.size,
-                           mXnames){
+                           mXnames,
+                           additional.block.search){
   
   ##blocks:
   if(!blocks.is.list){
@@ -3511,7 +3550,8 @@ ISMatricesLoop <- function(blocks.is.list,
           turbo = turbo, 
           do.pet = do.pet, 
           ratio.threshold = ratio.threshold, 
-          max.block.size = max.block.size)
+          max.block.size = max.block.size,
+          additional.block.search = additional.block.search)
         
         mXis <- result_additional_blocksearch$mXis
         estimations.counter <- result_additional_blocksearch$estimations.counter
@@ -3559,5 +3599,5 @@ ISMatricesLoop <- function(blocks.is.list,
     
     
   } #end if(length(ISspecific.models > 0)
-
+  
 } #end for(i) loop (on ISmatrices)

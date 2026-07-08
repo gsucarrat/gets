@@ -18,7 +18,7 @@ ISadditionalblocksearch(mXis, isNames, y, y.n, mX, mXnames, mxkeep,
   print.searchinfo, tol, LAPACK, userEstArg, t.pval, gof.method, 
   gofFunArg, max.regs, max.paths, arLjungB, archLjungB, normality.JarqueB, 
   user.diagnostics, include.gum, include.1cut, include.empty, turbo, do.pet, 
-  ratio.threshold, max.block.size, wald.pval)
+  ratio.threshold, max.block.size, wald.pval, additional.block.search)
 }
 
 \arguments{
@@ -124,6 +124,7 @@ ISadditionalblocksearch(mXis, isNames, y, y.n, mX, mXnames, mxkeep,
   \item{wald.pval}{
     Significance threshold for Wald tests in the GETS algorithm.
   }
+  \item{additional.block.search}{Default is \code{FALSE}. If \code{isat()} identifies (retains) too many indicators in the block search, a sensible model might not be estimable (e.g. due to a lack of available degrees of freedom). In this case, setting \code{additional.block.search = TRUE} carries out an additional block search using a Leave-one-Out method (e.g. for three blocks, indicators are assigned to block \code{1,2,3,1,2,3,1,2,3}). This is an experimental feature.}
 }
 
 \value{
