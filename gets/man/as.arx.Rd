@@ -6,17 +6,17 @@
 \title{Convert an object to class 'arx'}
 
 \description{
-The function \code{as.arx} is a generic function and its methods returns an object of class \code{\link{arx}}.
+The function \code{as.arx} is a generic function and its methods return an object of class \code{\link{arx}}.
 }
 
 \usage{
 as.arx(object, ...)
 
 ##S3 method for objects of class 'lm':
-\method{as.arx}{lm}(object, ...) 
+\method{as.arx}{lm}(object, ...)
 
 ##S3 method for objects of class 'isat':
-\method{as.arx}{isat}(object, ...) 
+\method{as.arx}{isat}(object, ...)
 
 }
 
