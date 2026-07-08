@@ -71,7 +71,7 @@ Whitney K. Newey and Kenned D. West (1987): 'A Simple, Positive Semi-Definite, H
 
 \tabular{lll}{
 	Jonas Kurle: \tab \tab \url{https://jonaskurle.com/}\cr
-	Moritz Schwarz: \tab \tab  \url{https://www.inet.ox.ac.uk/people/moritz-schwarz}\cr
+	Moritz Schwarz: \tab \tab  \url{https://www.moritzschwarz.org/}\cr
 	Genaro Sucarrat: \tab \tab \url{https://www.sucarrat.net/}\cr
 }
 
