@@ -1,4 +1,22 @@
 
+test_that("Test a the additional.block.search and include.gum arugments",{
+  
+  data("Nile")
+  expect_silent(isat(y = Nile, additional.block.search = TRUE, include.gum = TRUE, print.searchinfo = FALSE))
+  
+  # check the type of arguments of additional.block.search 
+  expect_silent(isat(y = Nile, additional.block.search = FALSE,  print.searchinfo = FALSE))
+  expect_error(isat(y = Nile, additional.block.search = "FALSE",  print.searchinfo = FALSE), regexp = "additional.block.search must be logical")
+  expect_error(isat(y = Nile, additional.block.search = 0,  print.searchinfo = FALSE), regexp = "additional.block.search must be logical")
+  
+  # check the type of arguments of include.gum
+  expect_silent(isat(y = Nile, include.gum = FALSE,  print.searchinfo = FALSE))
+  expect_error(isat(y = Nile, include.gum = "FALSE",  print.searchinfo = FALSE), regexp = "include.gum must be logical")
+  expect_error(isat(y = Nile, include.gum = 0,  print.searchinfo = FALSE), regexp = "include.gum must be logical")
+  
+})
+
+
 
 test_that("Trials to ensure the sample sizes work (data from Agg Model)", {
   
@@ -169,7 +187,8 @@ test_that("Trials to ensure the sample sizes work (data from Agg Model)", {
     sis = TRUE,
     t.pval = 0.001,
     max.block.size = 12, 
-    plot = FALSE
+    plot = FALSE, 
+    additional.block.search = TRUE
   ))
   
   expect_equal(c("iis47", "iis6", "iis8", "iis10", "iis12", "iis14", "iis16", 
@@ -177,8 +196,188 @@ test_that("Trials to ensure the sample sizes work (data from Agg Model)", {
                  "iis44", "iis46", "iis48", "iis50", "sis41", "sis42", "sis45", 
                  "sis47", "sis50"), agg_model$ISnames)
   
+  expect_output(print(agg_model), regexp = "NOTE: Result includes indicators that exceed the target p-value 't.pval'")
+})
+
+test_that("Test include.gum", {
+  
+  
+  yvar <- c(9.50500054078296, 9.51204368579022, 9.53178598658077, 9.54163494187085, 
+            9.54104601370306, 9.5541995436028, 9.55526960432986, 9.55139495075547, 
+            9.56134929428829, 9.54496089523392, 9.53418319219725, 9.53339441450843, 
+            9.52195623259853, 9.52498321451057, 9.53278612436426, 9.53736093910627, 
+            9.54181442417258, 9.54857533978779, 9.545897904669, 9.55185700705637, 
+            9.55853647189377, 9.55594931293098, 9.56272110899189, 9.55725786645893, 
+            9.56396466741496, 9.56484897108349, 9.56939847393666, 9.57641995335005, 
+            9.57228540457043, 9.58013685080489, 9.58036481354433, 9.58926983682252, 
+            9.60150369537349, 9.60336170986001, 9.60347645571494, 9.62244340026453, 
+            9.62463306868703, 9.61699144321864, 9.62229769332068, 9.61905353277881, 
+            9.54834714487982, 9.32222158162414, 9.54908858801872, 9.40210057758126, 
+            9.29431380575236, 9.45930760329985, 9.586733625931, 9.53116220601524, 
+            9.54686260734744, 9.5991475031882, 9.60483889969116)
+  
+  
+  xvars <- structure(
+    c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 
+      16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 
+      32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 
+      48, 49, 50, 51, 10.4121378119118, 10.461356100651, 10.4958249582037, 
+      10.5088030197225, 10.5199291593254, 10.5314933636153, 10.531218493543, 
+      10.5452940691656, 10.5415421251854, 10.5471293131922, 10.551231950267, 
+      10.556406312376, 10.5377574899739, 10.5550833059378, 10.5636310540741, 
+      10.5619682337501, 10.5653788165704, 10.5746932701207, 10.5868116441473, 
+      10.6001261310667, 10.6112991825361, 10.6070527763369, 10.6198262195602, 
+      10.6098791374773, 10.6381221062029, 10.6338703040809, 10.6483586847375, 
+      10.6377910717171, 10.6686018438119, 10.689031582362, 10.6953572660137, 
+      10.7144266576018, 10.7256631902066, 10.7464417069628, 10.7367574799387, 
+      10.7558561066275, 10.7894304109339, 10.7774718553287, 10.7771421453244, 
+      10.7737594764832, 10.7419161974543, 10.5267834575715, 10.6642022559227, 
+      10.6872498172593, 10.6621321693276, 10.7523898394282, 10.7795436173795, 
+      10.8184654229847, 10.8265691740356, 10.8623951471904, 10.8858188019862, 
+      4.4200447018614, 4.42604352009066, 4.43438186500781, 4.47506150064107, 
+      4.44734610079452, 4.4624538837865, 4.47847253294213, 4.48074010760991, 
+      4.49200148788245, 4.52070102936164, 4.51633897228148, 4.52504414150881, 
+      4.52720864451838, 4.53152364581979, 4.56642935767166, 4.54116485601218, 
+      4.55071400019203, 4.57264699428253, 4.56642935767166, 4.56538931597625, 
+      4.59915211366253, 4.59309760475382, 4.58394654953646, 4.62301010411642, 
+      4.60816569496789, 4.58394654953646, 4.60416968565451, 4.62301010411642, 
+      4.62399194022868, 4.65014355163082, 4.66060489287619, 4.65871095291612, 
+      4.67095792652609, 4.68213122712422, 4.6931810633108, 4.68767140749983, 
+      4.68859179412716, 4.72472942104573, 4.71312732749318, 4.69866052907543, 
+      4.78832472908594, 4.79081953287472, 4.73092139129365, 4.80647704269313, 
+      4.75100063419963, 4.75874927391639, 4.79081953287472, 4.82751341713153, 
+      4.80402104473326, 4.82510860635335, 4.85046654194343, NA, 10.4121378119118, 
+      10.461356100651, 10.4958249582037, 10.5088030197225, 10.5199291593254, 
+      10.5314933636153, 10.531218493543, 10.5452940691656, 10.5415421251854, 
+      10.5471293131922, 10.551231950267, 10.556406312376, 10.5377574899739, 
+      10.5550833059378, 10.5636310540741, 10.5619682337501, 10.5653788165704, 
+      10.5746932701207, 10.5868116441473, 10.6001261310667, 10.6112991825361, 
+      10.6070527763369, 10.6198262195602, 10.6098791374773, 10.6381221062029, 
+      10.6338703040809, 10.6483586847375, 10.6377910717171, 10.6686018438119, 
+      10.689031582362, 10.6953572660137, 10.7144266576018, 10.7256631902066, 
+      10.7464417069628, 10.7367574799387, 10.7558561066275, 10.7894304109339, 
+      10.7774718553287, 10.7771421453244, 10.7737594764832, 10.7419161974543, 
+      10.5267834575715, 10.6642022559227, 10.6872498172593, 10.6621321693276, 
+      10.7523898394282, 10.7795436173795, 10.8184654229847, 10.8265691740356, 
+      10.8623951471904, NA, 4.4200447018614, 4.42604352009066, 4.43438186500781, 
+      4.47506150064107, 4.44734610079452, 4.4624538837865, 4.47847253294213, 
+      4.48074010760991, 4.49200148788245, 4.52070102936164, 4.51633897228148, 
+      4.52504414150881, 4.52720864451838, 4.53152364581979, 4.56642935767166, 
+      4.54116485601218, 4.55071400019203, 4.57264699428253, 4.56642935767166, 
+      4.56538931597625, 4.59915211366253, 4.59309760475382, 4.58394654953646, 
+      4.62301010411642, 4.60816569496789, 4.58394654953646, 4.60416968565451, 
+      4.62301010411642, 4.62399194022868, 4.65014355163082, 4.66060489287619, 
+      4.65871095291612, 4.67095792652609, 4.68213122712422, 4.6931810633108, 
+      4.68767140749983, 4.68859179412716, 4.72472942104573, 4.71312732749318, 
+      4.69866052907543, 4.78832472908594, 4.79081953287472, 4.73092139129365, 
+      4.80647704269313, 4.75100063419963, 4.75874927391639, 4.79081953287472, 
+      4.82751341713153, 4.80402104473326, 4.82510860635335, NA, NA, 
+      10.4121378119118, 10.461356100651, 10.4958249582037, 10.5088030197225, 
+      10.5199291593254, 10.5314933636153, 10.531218493543, 10.5452940691656, 
+      10.5415421251854, 10.5471293131922, 10.551231950267, 10.556406312376, 
+      10.5377574899739, 10.5550833059378, 10.5636310540741, 10.5619682337501, 
+      10.5653788165704, 10.5746932701207, 10.5868116441473, 10.6001261310667, 
+      10.6112991825361, 10.6070527763369, 10.6198262195602, 10.6098791374773, 
+      10.6381221062029, 10.6338703040809, 10.6483586847375, 10.6377910717171, 
+      10.6686018438119, 10.689031582362, 10.6953572660137, 10.7144266576018, 
+      10.7256631902066, 10.7464417069628, 10.7367574799387, 10.7558561066275, 
+      10.7894304109339, 10.7774718553287, 10.7771421453244, 10.7737594764832, 
+      10.7419161974543, 10.5267834575715, 10.6642022559227, 10.6872498172593, 
+      10.6621321693276, 10.7523898394282, 10.7795436173795, 10.8184654229847, 
+      10.8265691740356, NA, NA, 4.4200447018614, 4.42604352009066, 
+      4.43438186500781, 4.47506150064107, 4.44734610079452, 4.4624538837865, 
+      4.47847253294213, 4.48074010760991, 4.49200148788245, 4.52070102936164, 
+      4.51633897228148, 4.52504414150881, 4.52720864451838, 4.53152364581979, 
+      4.56642935767166, 4.54116485601218, 4.55071400019203, 4.57264699428253, 
+      4.56642935767166, 4.56538931597625, 4.59915211366253, 4.59309760475382, 
+      4.58394654953646, 4.62301010411642, 4.60816569496789, 4.58394654953646, 
+      4.60416968565451, 4.62301010411642, 4.62399194022868, 4.65014355163082, 
+      4.66060489287619, 4.65871095291612, 4.67095792652609, 4.68213122712422, 
+      4.6931810633108, 4.68767140749983, 4.68859179412716, 4.72472942104573, 
+      4.71312732749318, 4.69866052907543, 4.78832472908594, 4.79081953287472, 
+      4.73092139129365, 4.80647704269313, 4.75100063419963, 4.75874927391639, 
+      4.79081953287472, 4.82751341713153, 4.80402104473326, NA, NA, 
+      NA, 10.4121378119118, 10.461356100651, 10.4958249582037, 10.5088030197225, 
+      10.5199291593254, 10.5314933636153, 10.531218493543, 10.5452940691656, 
+      10.5415421251854, 10.5471293131922, 10.551231950267, 10.556406312376, 
+      10.5377574899739, 10.5550833059378, 10.5636310540741, 10.5619682337501, 
+      10.5653788165704, 10.5746932701207, 10.5868116441473, 10.6001261310667, 
+      10.6112991825361, 10.6070527763369, 10.6198262195602, 10.6098791374773, 
+      10.6381221062029, 10.6338703040809, 10.6483586847375, 10.6377910717171, 
+      10.6686018438119, 10.689031582362, 10.6953572660137, 10.7144266576018, 
+      10.7256631902066, 10.7464417069628, 10.7367574799387, 10.7558561066275, 
+      10.7894304109339, 10.7774718553287, 10.7771421453244, 10.7737594764832, 
+      10.7419161974543, 10.5267834575715, 10.6642022559227, 10.6872498172593, 
+      10.6621321693276, 10.7523898394282, 10.7795436173795, 10.8184654229847, 
+      NA, NA, NA, 4.4200447018614, 4.42604352009066, 4.43438186500781, 
+      4.47506150064107, 4.44734610079452, 4.4624538837865, 4.47847253294213, 
+      4.48074010760991, 4.49200148788245, 4.52070102936164, 4.51633897228148, 
+      4.52504414150881, 4.52720864451838, 4.53152364581979, 4.56642935767166, 
+      4.54116485601218, 4.55071400019203, 4.57264699428253, 4.56642935767166, 
+      4.56538931597625, 4.59915211366253, 4.59309760475382, 4.58394654953646, 
+      4.62301010411642, 4.60816569496789, 4.58394654953646, 4.60416968565451, 
+      4.62301010411642, 4.62399194022868, 4.65014355163082, 4.66060489287619, 
+      4.65871095291612, 4.67095792652609, 4.68213122712422, 4.6931810633108, 
+      4.68767140749983, 4.68859179412716, 4.72472942104573, 4.71312732749318, 
+      4.69866052907543, 4.78832472908594, 4.79081953287472, 4.73092139129365, 
+      4.80647704269313, 4.75100063419963, 4.75874927391639, 4.79081953287472, 
+      4.82751341713153, NA, NA, NA, NA, 10.4121378119118, 10.461356100651, 
+      10.4958249582037, 10.5088030197225, 10.5199291593254, 10.5314933636153, 
+      10.531218493543, 10.5452940691656, 10.5415421251854, 10.5471293131922, 
+      10.551231950267, 10.556406312376, 10.5377574899739, 10.5550833059378, 
+      10.5636310540741, 10.5619682337501, 10.5653788165704, 10.5746932701207, 
+      10.5868116441473, 10.6001261310667, 10.6112991825361, 10.6070527763369, 
+      10.6198262195602, 10.6098791374773, 10.6381221062029, 10.6338703040809, 
+      10.6483586847375, 10.6377910717171, 10.6686018438119, 10.689031582362, 
+      10.6953572660137, 10.7144266576018, 10.7256631902066, 10.7464417069628, 
+      10.7367574799387, 10.7558561066275, 10.7894304109339, 10.7774718553287, 
+      10.7771421453244, 10.7737594764832, 10.7419161974543, 10.5267834575715, 
+      10.6642022559227, 10.6872498172593, 10.6621321693276, 10.7523898394282, 
+      10.7795436173795, NA, NA, NA, NA, 4.4200447018614, 4.42604352009066, 
+      4.43438186500781, 4.47506150064107, 4.44734610079452, 4.4624538837865, 
+      4.47847253294213, 4.48074010760991, 4.49200148788245, 4.52070102936164, 
+      4.51633897228148, 4.52504414150881, 4.52720864451838, 4.53152364581979, 
+      4.56642935767166, 4.54116485601218, 4.55071400019203, 4.57264699428253, 
+      4.56642935767166, 4.56538931597625, 4.59915211366253, 4.59309760475382, 
+      4.58394654953646, 4.62301010411642, 4.60816569496789, 4.58394654953646, 
+      4.60416968565451, 4.62301010411642, 4.62399194022868, 4.65014355163082, 
+      4.66060489287619, 4.65871095291612, 4.67095792652609, 4.68213122712422, 
+      4.6931810633108, 4.68767140749983, 4.68859179412716, 4.72472942104573, 
+      4.71312732749318, 4.69866052907543, 4.78832472908594, 4.79081953287472, 
+      4.73092139129365, 4.80647704269313, 4.75100063419963, 4.75874927391639, 
+      4.79081953287472, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 
+      0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 
+      0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 
+      1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 
+      0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 
+      0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 
+      0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 
+      1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0), dim = c(51L, 14L), dimnames = list(
+        NULL, c("trend", "ln.Export", "ln.LabCostService", "L1.ln.Export", 
+                "L1.ln.LabCostService", "L2.ln.Export", "L2.ln.LabCostService", 
+                "L3.ln.Export", "L3.ln.LabCostService", "L4.ln.Export", "L4.ln.LabCostService", 
+                "q_2", "q_3", "q_4")))
+  
+  # works with many indicators retained
+  expect_silent(agg_model2 <- isat(
+    y = yvar,
+    mxreg = xvars,
+    ar = 1:4,
+    print.searchinfo = FALSE,
+    iis = TRUE,
+    sis = TRUE,
+    t.pval = 0.001,
+    max.block.size = 12, 
+    plot = FALSE, 
+    additional.block.search = TRUE,
+    include.gum = FALSE
+  ))
+  
+  expect_equal(c("iis42", "iis44", "iis46", "iis49", "iis50"), agg_model2$ISnames)
+  
   
 })
+
 
 
 test_that("Test that sample works with simulated data with very few dof", {
@@ -279,10 +478,21 @@ test_that("Test that sample works with simulated data with very few dof", {
   
   expect_error(isat(y = y, mxreg = xvar, max.block.size = 30), regexp = "Too many x-variables and indicators for the sample size.") # gives error
   expect_error(isat(y = y, mxreg = xvar, max.block.size = 10), regexp = "Too many x-variables and indicators for the sample size.") # gives error
-  expect_error(isat(y = y, mxreg = xvar, max.block.size = 2, print.searchinfo = FALSE), regexp = "'isat' retains too many indicators for SIS even despite additional block search")
-  expect_silent(test_model <- isat(y = y, mxreg = xvar, max.block.size = 1, print.searchinfo = FALSE)) # works
-  expect_silent(isat(y = y, mxreg = xvar, max.block.size = 1, ar.LjungB = NULL,arch.LjungB = NULL, wald.pval = NULL, t.pval = 0.0001, print.searchinfo = FALSE)) # works
-  expect_silent(isat(y = y, mxreg = xvar, max.block.size = 1, ar.LjungB = NULL,arch.LjungB = NULL, wald.pval = NULL, t.pval = 0.00000001, print.searchinfo = FALSE)) # works
+  
+  expect_error(isat(y = y, mxreg = xvar, max.block.size = 2, print.searchinfo = FALSE), regexp = "Too many initial indicators returned for SIS")
+  
+  expect_error(test_model <- isat(y = y, mxreg = xvar, max.block.size = 1, print.searchinfo = FALSE, additional.block.search = FALSE)) # fails
+  expect_silent(test_model <- isat(y = y, mxreg = xvar, max.block.size = 1, print.searchinfo = FALSE, additional.block.search = TRUE)) # works
+  
+  expect_error(isat(y = y, mxreg = xvar, max.block.size = 1, ar.LjungB = NULL,arch.LjungB = NULL, wald.pval = NULL, t.pval = 0.0001, print.searchinfo = FALSE)) # fails
+  expect_silent(isat(y = y, mxreg = xvar, max.block.size = 1, ar.LjungB = NULL,arch.LjungB = NULL, wald.pval = NULL, t.pval = 0.0001, print.searchinfo = FALSE, additional.block.search = TRUE)) # works
+  expect_error(isat(y = y, mxreg = xvar, max.block.size = 1, ar.LjungB = NULL,arch.LjungB = NULL, wald.pval = NULL, t.pval = 0.00000001, print.searchinfo = FALSE)) # fails
+  expect_silent(isat(y = y, mxreg = xvar, max.block.size = 1, ar.LjungB = NULL,arch.LjungB = NULL, wald.pval = NULL, t.pval = 0.00000001, print.searchinfo = FALSE, additional.block.search = TRUE)) # works
+  
+  expect_error(isat(y = y, mxreg = xvar, max.block.size = 1, t.pval = 0.0001, print.searchinfo = FALSE)) # fails
+  expect_silent(isat(y = y, mxreg = xvar, max.block.size = 1, t.pval = 0.0001, print.searchinfo = FALSE, additional.block.search = TRUE)) # works
+  expect_error(isat(y = y, mxreg = xvar, max.block.size = 1, t.pval = 0.00000001, print.searchinfo = FALSE)) # fails
+  expect_silent(isat(y = y, mxreg = xvar, max.block.size = 1, t.pval = 0.00000001, print.searchinfo = FALSE, additional.block.search = TRUE)) # works
   
   
   expect_equal(test_model$ISnames, c("sis11", "sis15", "sis20"))
@@ -370,10 +580,8 @@ test_that("Test that sample works with simulated data with very few dof", {
                       -1.94295641358195, -0.116302517158606, 1.13939629170942, 0.636124035182149, 
                       -0.492937424161977), dim = c(20L, 15L))
   
-  expect_silent(test_model2 <- isat(y = y, mxreg = xvar, max.block.size = 2, print.searchinfo = FALSE))
+  expect_silent(test_model2 <- isat(y = y, mxreg = xvar, max.block.size = 2, print.searchinfo = FALSE,additional.block.search = TRUE))
   expect_equal(test_model2$ISnames, NULL)
-  
-  
   
 })
 
@@ -381,15 +589,13 @@ test_that("Test that sample works with simulated data with very few dof", {
 
 ### NOTE: in getsFun the include.gum = TRUE but in getsm it is not!!!
 
-
-
 test_that("Sample size issues are dealt with using the Nile data", {
   
   
   data(Nile)
-  expect_error(isat(Nile, sis = TRUE, iis = TRUE, plot = TRUE, t.pval = 0.9, print.searchinfo = FALSE), regexp ="'isat' retains too many indicators for the union of indicators") # fails
-  expect_error(isat(Nile, sis = TRUE, iis = TRUE, plot = TRUE, t.pval = 0.9, ar = 1:3, print.searchinfo = FALSE), regexp ="'isat' retains too many indicators for the union of indicators") # fails
-  expect_error(isat(Nile, sis = TRUE, iis = TRUE, plot = TRUE, t.pval = 0.9, print.searchinfo = FALSE), regexp ="'isat' retains too many indicators for the union of indicators") # fails
+  expect_error(isat(Nile, sis = TRUE, iis = TRUE, plot = TRUE, t.pval = 0.9, print.searchinfo = FALSE), regexp ="Too many initial indicators returned for the union of indicators to estimate a sensible model") # fails
+  expect_error(isat(Nile, sis = TRUE, iis = TRUE, plot = TRUE, t.pval = 0.9, ar = 1:3, print.searchinfo = FALSE), regexp ="Too many initial indicators returned for the union of indicators to estimate a sensible model") # fails
+  expect_error(isat(Nile, sis = TRUE, iis = TRUE, plot = TRUE, t.pval = 0.9, print.searchinfo = FALSE), regexp ="Too many initial indicators returned for the union of indicators to estimate a sensible model") # fails
   
   expect_silent(isat(Nile, sis = TRUE, iis = TRUE, plot = TRUE, t.pval = 0.01, ar = 1:3, print.searchinfo = FALSE)) # works
   
@@ -454,14 +660,10 @@ test_that("Some more AggMod Models", {
                                              "q_2", "q_3", "q_4")))
   
   expect_error(isat(yvar, ar = 1:4, mxreg = xvars, iis = TRUE, 
-       sis = TRUE, max.block.size = 6, t.pval = 0.0001, print.searchinfo = FALSE), 
-       regexp = "'isat' retains too many indicators for the union of indicators even despite additional block search.") # gives explicit error message
-  
-  
+                    sis = TRUE, max.block.size = 6, t.pval = 0.0001, print.searchinfo = FALSE, additional.block.search = TRUE), 
+               regexp = "too many indicators for the union of indicators even despite additional block search") # gives explicit error message
   
   ##################### 
-  
-  
   
   yvar <- c(9.24603564730063, 9.25812050242372, 9.26062465748544, 9.26326483528407, 
             9.26604940263427, 9.26170816358875, 9.26025371466821, 9.26820353742037, 
@@ -516,8 +718,15 @@ test_that("Some more AggMod Models", {
                             "q_2", "q_3", "q_4")))
   
   
-  expect_silent(test_model <- isat(yvar, ar = 1:4, mxreg = xvars, iis = TRUE, sis = TRUE,
-       max.block.size = 6, t.pval = 0.001, plot = TRUE, print.searchinfo = FALSE)) # works (no indicator)
+  expect_silent(test_model <- isat(yvar, ar = 1:4, mxreg = xvars, iis = TRUE, sis = TRUE, 
+                                   additional.block.search = TRUE,
+                                   max.block.size = 6, t.pval = 0.001, 
+                                   plot = TRUE, print.searchinfo = FALSE)) # works (no indicator)
+  
+  expect_error(test_model <- isat(yvar, ar = 1:4, mxreg = xvars, iis = TRUE, sis = TRUE, 
+                                  additional.block.search = FALSE,
+                                  max.block.size = 6, t.pval = 0.001, 
+                                  plot = TRUE, print.searchinfo = FALSE)) # works (no indicator)
   
   expect_null(test_model$ISnames)
   
@@ -802,7 +1011,7 @@ test_that("Some more AggMod Models", {
     sis = TRUE,
     t.pval = 0.001,
     max.block.size = 6
-  ), regexp = "'isat' retains too many indicators for the union of indicators")
+  ), regexp = "Too many initial indicators returned for the union of indicators to estimate a sensible model")
   
   # fails
   expect_error(isat(
@@ -815,8 +1024,20 @@ test_that("Some more AggMod Models", {
     sis = TRUE,
     t.pval = 0.00000001,
     max.block.size = 1
-  ), regexp = "'isat' retains too many indicators for SIS")
+  ), regexp = "Too many initial indicators returned for SIS to estimate a sensible model")
   
+  expect_error(isat(
+    y = yvar,
+    mxreg = xvars,
+    ar = 1:4,
+    plot = TRUE,
+    print.searchinfo = FALSE,
+    iis = TRUE,
+    sis = TRUE,
+    t.pval = 0.00000001,
+    max.block.size = 1,
+    additional.block.search = TRUE
+  ), regexp = "retains too many indicators for SIS even despite additional block search")
   
   
 })

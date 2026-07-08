@@ -120,8 +120,6 @@ test_that("TEST MAIN isat() ARGUMENTS - very basic", {
   expect_silent(isat(y, iis=TRUE, sis=FALSE, tis=TRUE, print.searchinfo = FALSE))
   expect_silent(isat(y, iis=TRUE, sis=TRUE, tis=TRUE, print.searchinfo = FALSE))
   
-  expect_error(isat(y, sis=FALSE))
-  
   expect_silent(isat(y, ar=0, sis=TRUE, print.searchinfo = FALSE)) # checking that ar=0 works
   expect_silent(isat(y, ar=1:2, sis=TRUE, print.searchinfo = FALSE))
   expect_silent(isat(y, ar=1:2, iis=TRUE, sis=TRUE, print.searchinfo = FALSE))
@@ -141,13 +139,20 @@ test_that("TEST MAIN isat() ARGUMENTS - very basic", {
   expect_silent(isat(y, ar=1:2, mxreg=mX, iis=TRUE, sis=TRUE, tis=TRUE, print.searchinfo = FALSE))
   
   # Check the messages
-  expect_message(isat(y, ar=1:2, mxreg=mX, iis=TRUE, sis=TRUE, tis=TRUE, print.searchinfo = TRUE))
+  expect_message(isat(y, ar=1:2, mxreg=mX, iis=TRUE, sis=TRUE, tis=TRUE, print.searchinfo = TRUE), regexp = "GETS of union of")
   
   
   ##yielded error in version 0.9 to 0.23:
   expect_silent(isat(y, ar=1:2, mxreg=as.data.frame(mX), print.searchinfo = FALSE))
   
+  # check that isat runs an arx when no indicator saturation is selected
+  set.seed(123)
+  y <- arima.sim(list(ar=0.4), 70)
+  xregs <- matrix(rnorm(4*70), 70, 4)
+  mx_result <- arx(y, ar=1:2, mxreg=xregs)
   
+  expect_silent(isat_result <- isat(y, ar=1:2, mxreg=xregs, iis=FALSE, sis=FALSE, tis=FALSE, print.searchinfo = FALSE))
+  expect_equal(coef(mx_result), coef(isat_result)) 
 })
 
 test_that("TEST MAIN isat() ARGUMENTS - slightly more advanced",{
@@ -269,7 +274,7 @@ test_that("TEST MAIN isat() ARGUMENTS - test further arguments",{
   # fixed by M-Orca Feb 2025
   expect_silent(isat(y, print.searchinfo = FALSE, include.gum = TRUE)) #default: TRUE
   expect_silent(isat(y, print.searchinfo = FALSE, include.gum = FALSE)) #default: TRUE
-  expect_error(isat(y, print.searchinfo = FALSE, include.gum = NULL)) #default: TRUE
+  expect_silent(isat(y, print.searchinfo = FALSE, include.gum = NULL)) #default: TRUE
   
   expect_silent(isat(y, print.searchinfo = FALSE, include.1cut = TRUE)) #default: FALSE
   expect_silent(isat(y, print.searchinfo = FALSE, include.empty = TRUE)) #default: FALSE
