@@ -1147,7 +1147,8 @@ print.isat <- function(x, signif.stars=TRUE, ...)
   
   # Information regarding include.gum argument
   indicator.coefs <- x$mean.results[row.names(x$mean.results) %in% x$ISnames, ]
-  if(x$aux$args$include.gum & any(indicator.coefs$`p-value` > x$aux$args$t.pval)){
+  incl.gum.arg <- if(is.null(x$aux$args$include.gum)){TRUE} else {x$aux$args$include.gum}
+  if(incl.gum.arg & any(indicator.coefs$`p-value` > x$aux$args$t.pval)){
     cat("\nNOTE: Result includes indicators that exceed the target p-value 't.pval'.\n")
     cat("This could be caused by 'include.gum = TRUE'. Setting this to FALSE might avoid this.\n")
   }
@@ -3601,3 +3602,111 @@ ISMatricesLoop <- function(blocks.is.list,
   } #end if(length(ISspecific.models > 0)
   
 } #end for(i) loop (on ISmatrices)
+
+
+## S3 method: convert 'isat' object to 'arx' object:
+as.arx.isat <- function(object, ...)
+{ 
+  ##'isat' object?:
+  if( !is(object,"isat") ){
+    objectName <- deparse(substitute(object))
+    stop(paste0("'", objectName, "' not of class 'lm'"))
+  }
+
+  ##make y:
+  #y <- object$aux$y
+  yName <- object$aux$y.name
+  #names(y) <- if(is.numeric(object$aux$y.index)){as.double(object$aux$y.index)}else{object$aux$y.index}
+  y <- zoo::zoo(x = object$aux$y, order.by = object$aux$y.index)
+  
+  ##make x, intercept?:
+  coefs <- coef(object)
+  if( length(coefs)==0 ){
+    x <- NULL
+    mc <- FALSE
+  }else{
+    x <- object$aux$mX
+    colnames(x) <- object$aux$mXnames
+    mc <- object$aux$args$mc
+    x <- x[, !colnames(x) %in% "mconst", drop=FALSE]
+    x <- as.zoo(x, order.by = object$aux$y.index)
+  }
+  
+  ##estimate arx-model:
+  result <- arx(y,mxreg=x, mc = mc, ...)
+  result$aux$y.name <- yName
+  return(result)
+  
+} #close as.arx.isat()  
+
+
+##convert to model of class 'isat':
+as.isat <- function(object, indicator_regex = list(iis = "^iis", sis = "^sis", tis = "^tis", uis = "^uis"), ...){
+  
+  ##what kind of class?:
+  objectClass <- class(object)
+  classOK <- ifelse(objectClass %in% c("arx","gets"), TRUE, FALSE)
+  
+  ##class not OK:
+  if(!classOK){ 
+    stop("'object' must be of class 'arx' or 'gets'")
+  }
+  
+  # check indicator_regex
+  if(!is.list(indicator_regex) || !all(c("iis", "sis", "tis", "uis") %in% names(indicator_regex))){
+    stop("'indicator_regex' must be a list with named elements 'iis', 'sis', 'tis', and 'uis'")
+  }
+  
+  # stop if iis, sis, tis, or uis are supplied
+  if(!is.null(list(...)$iis) || !is.null(list(...)$sis) || !is.null(list(...)$tis) || !is.null(list(...)$uis)){
+    stop("Please use 'indicator_regex' argument to specify indicator patterns instead of 'iis', 'sis', 'tis', or 'uis'.\nIf you actually want to run indicator saturation use isat().")
+  }
+  
+  ##make y:
+  yName <- object$aux$y.name
+  y <- zoo::zoo(x = object$aux$y, order.by = object$aux$y.index)
+  
+  ##make x, intercept?:
+  coefs <- coef(object)
+  if( length(coefs)==0 ){
+    x <- NULL
+    mc <- FALSE
+  }else{
+    
+    x <- object$aux$mX
+    colnames(x) <- object$aux$mXnames
+    mc <- ifelse("mconst" %in% colnames(x), TRUE, FALSE)
+    x <- x[, !colnames(x) %in% "mconst", drop=FALSE]
+  }
+  
+  ##estimate isat-model:
+  result <- isat(y,mxreg=x, mc = mc, iis = FALSE, sis = FALSE, tis = FALSE, ...)
+  result$aux$y.name <- yName
+  
+  
+  # identify the indicators in the model based on the provided regex patterns
+  indicator_names <- list()
+  for (indicator_type in names(indicator_regex)) {
+    pattern <- indicator_regex[[indicator_type]]
+    indicator_names[[indicator_type]] <- colnames(x)[grepl(pattern, colnames(x))]
+  }  
+  
+  indics <- unlist(indicator_names)
+  names(indics) <- NULL
+  result$ISnames <- indics
+  result$paths <- list()
+  result$ISfinalmodels <- list(result$aux$mXnames)
+  
+  if(any(grepl("^tis",indicator_names))) {
+    result$aux$args$tis <- TRUE
+  }
+  if(any(grepl("^sis",indicator_names))) {
+    result$aux$args$sis <- TRUE
+  }
+  if(any(grepl("^iis",indicator_names))) {
+    result$aux$args$iis <- TRUE
+  }
+  
+  return(result)
+  
+} #close as.isat()
