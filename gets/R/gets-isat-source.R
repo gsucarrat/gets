@@ -3606,39 +3606,150 @@ ISMatricesLoop <- function(blocks.is.list,
 
 
 ## S3 method: convert 'isat' object to 'arx' object:
-as.arx.isat <- function(object, ...)
-{ 
-  ##'isat' object?:
-  if( !is(object,"isat") ){
+# as.arx.isat <- function(object, ...)
+# { 
+#   ##'isat' object?:
+#   if( !is(object,"isat") ){
+#     objectName <- deparse(substitute(object))
+#     stop(paste0("'", objectName, "' not of class 'isat'"))
+#   }
+#   
+#   ##make y:
+#   #y <- object$aux$y
+#   yName <- object$aux$y.name
+#   #names(y) <- if(is.numeric(object$aux$y.index)){as.double(object$aux$y.index)}else{object$aux$y.index}
+#   y <- zoo::zoo(x = object$aux$y, order.by = object$aux$y.index)
+#   
+#   ##make x, intercept?:
+#   coefs <- coef(object)
+#   if( length(coefs)==0 ){
+#     x <- NULL
+#     mc <- FALSE
+#   }else{
+#     x <- object$aux$mX
+#     colnames(x) <- object$aux$mXnames
+#     mc <- object$aux$args$mc
+#     x <- x[, !colnames(x) %in% "mconst", drop=FALSE]
+#     x <- as.zoo(x, order.by = object$aux$y.index)
+#   }
+#   
+#   ##estimate arx-model:
+#   result <- arx(y,mxreg=x, mc = mc, ...)
+#   result$aux$y.name <- yName
+#   return(result)
+#   
+# } #close as.arx.isat()  
+as.arx.isat <- function(object, ...){
+  ## check class
+  if (!is(object, "isat")) {
     objectName <- deparse(substitute(object))
-    stop(paste0("'", objectName, "' not of class 'lm'"))
+    stop(paste0("'", objectName, "' not of class 'isat'"))
   }
   
-  ##make y:
-  #y <- object$aux$y
-  yName <- object$aux$y.name
-  #names(y) <- if(is.numeric(object$aux$y.index)){as.double(object$aux$y.index)}else{object$aux$y.index}
-  y <- zoo::zoo(x = object$aux$y, order.by = object$aux$y.index)
+  dots <- list(...)
+  isat.args <- object$aux[["args"]]
   
-  ##make x, intercept?:
-  coefs <- coef(object)
-  if( length(coefs)==0 ){
-    x <- NULL
-    mc <- FALSE
-  }else{
-    x <- object$aux$mX
-    colnames(x) <- object$aux$mXnames
-    mc <- object$aux$args$mc
-    x <- x[, !colnames(x) %in% "mconst", drop=FALSE]
-    x <- as.zoo(x, order.by = object$aux$y.index)
+  get_arg <- function(name, default = NULL) {
+    if (name %in% names(dots)) {return(dots[[name]])}
+    if (!is.null(isat.args) && name %in% names(isat.args)) {
+      return(isat.args[[name]])
+    }
+    default
   }
   
-  ##estimate arx-model:
-  result <- arx(y,mxreg=x, mc = mc, ...)
+  vcov.type <- get_arg("vcov.type", object$aux[["vcov.type"]])
+  user.diagnostics <- get_arg("user.diagnostics", object$aux[["user.diagnostics"]])
+  tol <- get_arg("tol", object$aux[["tol"]])
+  normality.JarqueB <- get_arg("normality.JarqueB", FALSE)
+  if (is.null(normality.JarqueB)) normality.JarqueB <- FALSE
+  ar <- get_arg("ar", NULL)
+  
+  arch.LjungB <- get_arg("arch.LjungB", NULL)
+  ar.LjungB <- get_arg("ar.LjungB", NULL)
+  user.estimator <- get_arg("user.estimator", object$aux[["user.estimator"]])
+  LAPACK <- get_arg("LAPACK", object$aux[["LAPACK"]])
+  
+  consumed <- c(
+    "vcov.type",
+    "user.diagnostics",
+    "tol",
+    "normality.JarqueB",
+    "arch.LjungB",
+    "ar.LjungB",
+    "user.estimator",
+    "LAPACK",
+    "ar"
+  )
+  
+  dots_for_arx <- dots[setdiff(names(dots), consumed)]
+  
+  ## Reconstruct y with original index
+  yName <- object$aux[["y.name"]]
+  y <- zoo::zoo(x = object$aux[["y"]], order.by = object$aux[["y.index"]])
+  
+  ## Reconstruct mxreg with original index
+  mxreg <- object$aux[["mX"]]
+  if (!is.null(mxreg)) {colnames(mxreg) <- object$aux[["mXnames"]]}
+  
+  ## Constant handling
+  has_mconst <- !is.null(mxreg) && "mconst" %in% colnames(mxreg)
+  if (has_mconst) {mxreg <- mxreg[, colnames(mxreg) != "mconst", drop = FALSE]}
+  mc <- has_mconst
+  
+  # ar handling
+  if (!is.null(ar) && length(ar) > 0 && !is.null(mxreg)) {
+    ar_names <- paste0("ar", ar)
+    mxreg <- mxreg[,!colnames(mxreg) %in% ar_names,drop = FALSE]
+  }
+  
+  if (!is.null(mxreg) && NCOL(mxreg) == 0) {mxreg <- NULL}
+  if (!is.null(mxreg)) {mxreg <- zoo::zoo(x = mxreg, order.by = object$aux[["y.index"]])}
+  
+  ## Estimate arx object
+  arx_args <- c(
+    list(
+      y = y,
+      mxreg = mxreg,
+      mc = mc,
+      ewma = NULL,
+      ar = ar,
+      log.ewma = NULL,
+      vc = FALSE,
+      arch = NULL,
+      asym = NULL,
+      vxreg = NULL,
+      zero.adj = 0.1,
+      vc.adj = TRUE,
+      qstat.options = NULL,
+      vcov.type = vcov.type,
+      normality.JarqueB = normality.JarqueB,
+      #arch.LjungB = arch.LjungB,
+      #ar.LjungB = ar.LjungB,
+      user.estimator = user.estimator,
+      user.diagnostics = user.diagnostics,
+      tol = tol,
+      LAPACK = LAPACK,
+      singular.ok = TRUE,
+      plot = NULL
+    ),
+    dots_for_arx
+  )
+  
+  result <- do.call(arx, arx_args)
+  
+  ## Patch metadata / evaluated call values
   result$aux$y.name <- yName
-  return(result)
+  result$call$mc <- mc
+  result$call$vcov.type <- vcov.type
+  result$call$normality.JarqueB <- normality.JarqueB
+  result$call$user.estimator <- user.estimator
+  result$call$user.diagnostics <- user.diagnostics
+  result$call$tol <- tol
+  result$call$LAPACK <- LAPACK
   
-} #close as.arx.isat()  
+  return(result)
+}
+
 
 
 ##convert to model of class 'isat':
