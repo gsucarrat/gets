@@ -865,14 +865,14 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
   ## 2 make plot.options argument
   ## 3 pass arguments on to predict.arx
   ## 4 return forecasts
-  
+    
+  dots <- list(...)
   ##create new object to add stuff to in order to use predict.arx()
   objectNew <- object
   
   ##-----------------------------------
   ## 1 arguments of mean-equation:
   ##-----------------------------------
-  
   ##coefficients of mean spec in final model:
   coefsMean <- coef.arx(objectNew, spec="mean")
   
@@ -904,7 +904,8 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
     }
     
     ##ar argument:
-    gumTerms <- eval(object$call$ar)
+    # gumTerms <- eval(object$call$ar)
+    gumTerms <- object$aux$args$ar
     #OLD:
     #    gumTerms <- eval(object$aux$call.gum$ar)
     gumNamesAr <- paste0("ar", gumTerms)
@@ -917,7 +918,8 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
     }
     
     ##ewma argument:
-    gumTerms <- eval(object$call$ewma)
+    #gumTerms <- eval(object$call$ewma)
+    gumTerms <- object$aux$args$ewma
     #OLD:
     #    gumTerms <- eval(object$aux$call.gum$ewma)
     gumNamesEwma <- paste0("EqWMA(", gumTerms$length, ")")
@@ -945,6 +947,71 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
       #      objectNew$call$mxreg <- mxreg
     }
     
+    if(!is.null(newmxreg)){
+      if(!is.matrix(newmxreg) && !is.data.frame(newmxreg)){
+        stop("newmxreg must be a matrix or data frame")
+      }
+      
+      if(ncol(newmxreg) == length(whichRetainedNames) & !is.null(object$ISnames) & !object$aux$args$uis.logical){
+        if(is.null(dots$quiet) || !isTRUE(dots$quiet)){
+          message(paste0("You have provided new data for the following IIS, SIS, or TIS indicators (which are also in object$ISnames):\n",
+                         paste0(object$ISnames[object$ISnames %in% colnames(newmxreg)], collapse = ", "),"\n",
+                         "Since gets version 0.39 this is not necessary anymore (for user convenience), as the new indicators can be automatically generated for forecasting.\n",
+                         "The newmxreg argument will still be used but consider removing the indicators. To quiet this message set 'quiet = TRUE'."))
+        }
+        
+      } else {
+        # check if any indicators were supplied in newmxreg
+        indics.isatdates <- isatdates(object)
+        indicators.in.obj <- c(indics.isatdates$iis$breaks,indics.isatdates$sis$breaks,indics.isatdates$tis$breaks)
+        
+        # create the indicators
+        indicators <- matrix(nrow = n.ahead, ncol = 0)
+        if(any(indicators.in.obj %in% indics.isatdates$iis$breaks)){
+          missing_iis <- indicators.in.obj[indicators.in.obj %in% indics.isatdates$iis$breaks]
+          iis_index <- indics.isatdates$iis$index[indics.isatdates$iis$breaks %in% missing_iis]
+          iis_indics <- iim(x = object$aux$y.n + n.ahead, which.ones = iis_index)
+          iis_to_add <- as.data.frame(tail(iis_indics, n.ahead))
+          indicators <- cbind(indicators, iis_to_add)
+        }
+        if(any(indicators.in.obj %in% indics.isatdates$sis$breaks)){
+          missing_sis <- indicators.in.obj[indicators.in.obj %in% indics.isatdates$sis$breaks]
+          sis_index <- indics.isatdates$sis$index[indics.isatdates$sis$breaks %in% missing_sis]
+          sis_indics <- sim(x = object$aux$y.n + n.ahead, which.ones = sis_index)
+          sis_to_add <- as.data.frame(tail(sis_indics, n.ahead))
+          indicators <- cbind(indicators, sis_to_add)
+        }
+        if(any(indicators.in.obj %in% indics.isatdates$tis$breaks)){
+          missing_tis <- indicators.in.obj[indicators.in.obj %in% indics.isatdates$tis$breaks]
+          tis_index <- indics.isatdates$tis$index[indics.isatdates$tis$breaks %in% missing_tis]
+          tis_indics <- tim(x = object$aux$y.n + n.ahead, which.ones = tis_index)
+          tis_to_add <- as.data.frame(tail(tis_indics, n.ahead))
+          indicators <- cbind(indicators, tis_to_add)
+        }
+        # check the UIS indicators
+        if(object$aux$args$uis.logical){
+          if(length(indicators.in.obj) < length(object$ISnames)){
+            if(ncol(newmxreg) < length(whichRetainedNames)){
+              stop(paste0("Your object isat contains UIS indicators but not all UIS indicators are in newmxreg or has fewer columns than the mxreg in the isat object. The following are missing:\n",
+                          paste0(object$ISnames[!object$ISnames %in% colnames(newmxreg)], collapse = ", "),"\n",
+                          "Please provide all UIS indicators in newmxreg. predict.isat can only generate IIS, SIS, and TIS indicators automatically.")) 
+            }}}
+        # check if any indicators are already identically in newmxreg
+        if(ncol(indicators)>0){
+          indics_already_given <- sapply(1:ncol(indicators), function(i) {any(apply(newmxreg, 2, function(x) {all(x == indicators[, i])}))})
+          if(any(indics_already_given)){
+            if(is.null(dots$quiet) || !isTRUE(dots$quiet)){
+              message(paste0("You have provided new data for the following IIS, SIS, or TIS indicators (which are also in object$ISnames):\n",
+                             paste0(object$ISnames[object$ISnames %in% colnames(newmxreg)], collapse = ", "),"\n",
+                             "Since gets version 0.39 this is not necessary anymore (for user convenience), as the new indicators can be automatically generated for forecasting.\n",
+                             "The newmxreg argument will still be used but consider removing the indicators. To quiet this message set 'quiet = TRUE'."))
+            }
+            indicators <- indicators[,!indics_already_given]
+          } 
+          newmxreg <- cbind(newmxreg, indicators)
+        }
+      }
+    }
   } #end if( length(coefsMean)>0 )
   
   ##here: introduce the automated detection of indicators and how they
@@ -974,7 +1041,7 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
                         newmxreg=newmxreg, newvxreg=NULL, newindex=newindex,
                         n.sim=n.sim, innov=innov, probs=probs, ci.levels=ci.levels,
                         quantile.type=quantile.type, return=return, verbose=verbose,
-                        plot=plot, plot.options=plot.options)
+                        plot=plot, plot.options=plot.options, ... = dots)
   
   ##---------------------
   ## 4 return forecasts:
