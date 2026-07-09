@@ -2411,7 +2411,7 @@ iim <- function(x, which.ones=NULL)
     mIIS <- matrix(0,n,n)
     diag(mIIS) <- 1
     colnames(mIIS) <- paste("iis", 1:n, sep="")
-    if(!is.null(which.ones)){ mIIS <- mIIS[,which.ones] }
+    if(!is.null(which.ones)){ mIIS <- mIIS[,which.ones, drop = FALSE] }
     mIIS <- as.zoo(mIIS)
   }else{
     n <- NROW(x)
