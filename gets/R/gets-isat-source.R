@@ -631,52 +631,8 @@ gets.isat <- function(x, t.pval=0.05, wald.pval=t.pval, vcov.type = NULL,
                       include.1cut=TRUE, include.empty=FALSE, max.paths=NULL, tol=1e-07,
                       turbo=FALSE, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...)
 {
-  
-  # Check if one of these arguments is explicitly supplied to the function
-  # if not, then check if the original item has this argument supplied
-  # if it does, take the setting of the original object
-  # if it does not, then take the default
-  if(missing(vcov.type)){vcov.type <- x$aux[["vcov.type"]]}
-  if(missing(user.diagnostics)){user.diagnostics <- x$aux[["user.diagnostics"]]}
-  if(missing(tol)){tol <- x$aux$tol}
-  if(missing(normality.JarqueB)){if(is.null(x$call$normality.JarqueB)){normality.JarqueB <- NULL}else{normality.JarqueB <- x$call$normality.JarqueB}}
-  if(missing(arch.LjungB)){arch.LjungB <- x$call$arch.LjungB}
-  if(missing(ar.LjungB)){ar.LjungB <- x$call$ar.LjungB}
-  
-  user.estimator <- x$aux$user.estimator
-  LAPACK <- x$aux$LAPACK
-  
-  ##create an arx-like object:
-  y <- x$aux$y
-  y <- as.matrix(y)
-  colnames(y) <- x$aux$y.name
-  mxreg <- x$aux$mX
-  colnames(mxreg) <- x$aux$mXnames
-  
-  # Save original arx mc warning setting and disable it here
-  tmpmc <- getOption("mc.warning")
-  options(mc.warning = FALSE)
-  
-  object <- do.call("arx", 
-                    list(y = y, mxreg = mxreg,
-                         ewma = NULL, mc = FALSE, ar = NULL, log.ewma = NULL, # would be in mxreg already
-                         vc = FALSE, arch = NULL, asym = NULL, # currently not possible via isat
-                         vxreg = NULL, zero.adj = 0.1, # currently not possible via isat
-                         vc.adj = TRUE, qstat.options = NULL,  # currently not possible via isat
-                         vcov.type = vcov.type,
-                         normality.JarqueB = if(is.null(normality.JarqueB)){FALSE}else{normality.JarqueB},
-                         user.estimator = user.estimator,
-                         user.diagnostics = user.diagnostics,
-                         tol = tol,
-                         LAPACK = LAPACK, 
-                         singular.ok = TRUE,
-                         plot = NULL))
-  object$aux$y.name <- x$aux$y.name
-  object$call$user.estimator <- user.estimator
-  object$call$user.diagnostics <- user.diagnostics
-  
-  ##github version:             
-  #object <- as.arx(x, plot = FALSE, ar = FALSE) # some arguments pre-set because they will already be in isat if needed
+
+  object <- as.arx(x) 
   
   ##return result:
   out <- getsm(
@@ -703,9 +659,6 @@ gets.isat <- function(x, t.pval=0.05, wald.pval=t.pval, vcov.type = NULL,
     plot,
     alarm
   )
-  
-  # Set the old arx mc warning again
-  options(mc.warning = tmpmc)
   
   return(out)
   
