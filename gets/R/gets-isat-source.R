@@ -956,6 +956,7 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
     if(indxCounter>0){ whichRetainedCoefs <- coefsMean[ -c(1:indxCounter) ] }
     if( length(whichRetainedCoefs)==0 ){
       objectNew$call$mxreg <- NULL
+      whichRetainedNames <- NULL
     }else{
       whichRetainedNames <- names(whichRetainedCoefs)
       objectNew$call$mxreg <- whichRetainedNames

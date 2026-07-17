@@ -55,3 +55,20 @@ test_that("predict.isat",{
                                                                                81, 82), class = "zoo"))
   
 })
+
+
+
+test_that("predict.isat with newdata",{
+  
+  ##step indicator saturation:
+  set.seed(123)
+  y <- rnorm(30)
+  isatmod <- isat(y, print.searchinfo = FALSE)
+  
+  ##generate forecasts of the simplified (specific) model:
+  pred.isatmod <- predict(isatmod, newmxreg=matrix(1,12,1), plot=TRUE)
+  expect_equal(round(pred.isatmod,5),structure(c(-0.0471, -0.0471, -0.0471, -0.0471, -0.0471, -0.0471, 
+                                                 -0.0471, -0.0471, -0.0471, -0.0471, -0.0471, -0.0471), index = c(31, 
+                                                                                                                  32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42), class = "zoo"))
+  
+})
