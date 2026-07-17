@@ -500,14 +500,16 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     c(list(ISfinalmodels=ISfinalmodels, ISnames=ISnames), getsis, mod)
   getsis$aux$t.pval <- t.pval #needed for biascorr
   class(getsis) <- "isat"
+  
+  getsis$aux$args <- isat.args
+  
+  
   if(alarm){ alarm() }
   if( is.null(plot) ){ #determine whether to plot or not
     plot <- getOption("plot")
     if( is.null(plot) ){ plot <- FALSE }
   }
   if(plot){ plot.isat(getsis, coef.path=TRUE) }
-  
-  getsis$aux$args <- isat.args
   
   if(isat.args$iis &&
      identical(userEstArg$name, "ols") &&
@@ -533,6 +535,7 @@ isat.arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL,
                      user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL, 
                      gof.method=c("min","max"), include.gum=TRUE,
                      include.1cut=FALSE, include.empty=FALSE, max.paths=NULL,
+                     additional.block.search = FALSE,
                      parallel.options=NULL, turbo=FALSE, tol=1e-07, LAPACK=FALSE,
                      max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...
 ){
@@ -546,57 +549,73 @@ isat.arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL,
   # if not, then check if the original item has this arguemnt supplied
   # if it does, take the setting of the original object
   # if it does not, then take the default
-  if(missing(ar)){ar <- if(is.null(y$aux$arguments[["ar"]])) {NULL} else{y$aux$arguments[["ar"]]}}
+  if(missing(ar)){ar <- if(is.null(y$call[["ar"]])) {NULL} else{y$call[["ar"]]}}
   if(missing(vcov.type)){vcov.type <- y$aux[["vcov.type"]]}
-  if(missing(normality.JarqueB)){normality.JarqueB <- if(is.null(y$aux$arguments[["normality.JarqueB"]])){FALSE}else{y$aux$arguments[["normality.JarqueB"]]}}
-  if(missing(user.estimator)){user.estimator <- if(is.null(y$aux$arguments[["user.estimator"]])){NULL}else{y$aux$arguments[["user.estimator"]]}}
-  if(missing(user.diagnostics)){user.diagnostics <- if(is.null(y$aux$arguments[["user.diagnostics"]])){NULL}else{y$aux$arguments[["user.diagnostics"]]}}
-  if(missing(LAPACK)){LAPACK <- if(is.null(y$aux$arguments[["LAPACK"]])){FALSE}else{y$aux$arguments[["LAPACK"]]}}
-  if(missing(plot)){plot <- if(is.null(y$aux$arguments[["plot"]])){NULL}else{y$aux$arguments[["plot"]]}}
-  if(missing(tol)){tol <- if(is.null(y$aux$arguments[["tol"]])){1e-07}else{y$aux$arguments[["tol"]]}}
+  if(missing(normality.JarqueB)){normality.JarqueB <- if(is.null(y$call[["normality.JarqueB"]])){FALSE}else{y$call[["normality.JarqueB"]]}}
+  if(missing(user.estimator)){user.estimator <- if(is.null(y$call[["user.estimator"]])){NULL}else{y$call[["user.estimator"]]}}
+  if(missing(user.diagnostics)){user.diagnostics <- if(is.null(y$call[["user.diagnostics"]])){NULL}else{y$call[["user.diagnostics"]]}}
+  if(missing(LAPACK)){LAPACK <- if(is.null(y$call[["LAPACK"]])){FALSE}else{y$call[["LAPACK"]]}}
+  if(missing(plot)){plot <- if(is.null(y$call[["plot"]])){NULL}else{y$call[["plot"]]}}
+  if(missing(tol)){tol <- if(is.null(y$call[["tol"]])){1e-07}else{y$call[["tol"]]}}
   
   mxreg <- y$aux$mX
   colnames(mxreg) <- y$aux$mXnames
   yvar <- y$aux$y
   names(yvar) <- y$aux$index
+
+  # remove ar from mxreg
+  if(!is.null(y$call[["ar"]])){
+    arcols <- grep("^ar", colnames(mxreg))
+    if(length(arcols) > 0){
+      mxreg <- mxreg[, -arcols, drop = FALSE]
+    }
+  }
+  
+  # remove mc from mxreg
+  if(!is.null(y$call[["mc"]])){
+    mccols <- grep("^mc", colnames(mxreg))
+    if(length(mccols) > 0){
+      mxreg <- mxreg[, -mccols, drop = FALSE]
+    }
+  }
   
   out <- isat.default(
-    yvar,
-    FALSE, # mc would already be set in arx
-    NULL, # ar would already be set in arx
-    ewma,
-    mxreg,
-    iis,
-    sis,
-    tis,
-    uis,
-    blocks,
-    ratio.threshold,
-    max.block.size,
-    t.pval,
-    wald.pval,
-    vcov.type,
-    do.pet,
-    ar.LjungB,
-    arch.LjungB,
-    normality.JarqueB,
-    info.method,
-    user.diagnostics,
-    user.estimator,
-    gof.function,
-    gof.method,
-    include.gum,
-    include.1cut,
-    include.empty,
-    max.paths,
-    parallel.options,
-    turbo,
-    tol,
-    LAPACK,
-    max.regs,
-    print.searchinfo,
-    plot,
-    alarm
+    y = yvar,
+    mc = mc, 
+    ar = eval(ar), 
+    ewma = ewma,
+    mxreg = mxreg,
+    iis = iis,
+    sis = sis,
+    tis = tis,
+    uis = uis,
+    blocks = blocks,
+    ratio.threshold = ratio.threshold,
+    max.block.size = max.block.size,
+    t.pval = t.pval,
+    wald.pval = wald.pval,
+    vcov.type = vcov.type,
+    do.pet = do.pet,
+    ar.LjungB = ar.LjungB,
+    arch.LjungB = arch.LjungB,
+    normality.JarqueB = normality.JarqueB,
+    info.method = info.method,
+    user.diagnostics = user.diagnostics,
+    user.estimator = user.estimator,
+    gof.function = gof.function,
+    gof.method = gof.method,
+    include.gum = include.gum,
+    include.1cut = include.1cut,
+    include.empty = include.empty,
+    max.paths = max.paths,
+    parallel.options = parallel.options,
+    turbo = turbo,
+    tol = tol,
+    LAPACK = LAPACK,
+    max.regs = max.regs,
+    print.searchinfo = print.searchinfo,
+    plot = plot,
+    alarm = alarm
   )
   
   return(out)

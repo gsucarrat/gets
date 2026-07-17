@@ -5,7 +5,8 @@
 
 \description{Experimental function to convert 'arx'/'gets' object to 'isat' object. Note that this conversion will naturally differ from a genuine 'isat' object, especially with regard to the list elements of the object that describe the saturation algorithm (paths, best.terminal, no.of.estimations, etc.). So please use with care.}
 
-\usage{as.isat(object, indicator_regex = list(iis = "^iis", sis = "^sis", tis = "^tis", uis = "^uis"), ...)}
+\usage{as.isat(object, indicator_regex = list(iis = "^iis", sis = "^sis", 
+tis = "^tis", uis = "^uis"), ...)}
 
 \arguments{
   \item{object}{object of class \code{\link{arx}} or \code{\link{gets}}}

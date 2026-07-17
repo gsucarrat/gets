@@ -190,3 +190,19 @@ test_that("test that as.isat works",{
   
 })
 
+test_that("test isat.arx",{
+  
+  ##Simulate from an AR(1):
+  set.seed(123)
+  xregs <- matrix(rnorm(2*80), 80, 2)
+  y <- arima.sim(list(ar=0.7), 80) + (xregs[,2]*0.5)
+  y[10] <- y[10] + 5
+  gum01 <- arx(y, mc=TRUE, ar=1:2, mxreg=xregs)
+ 
+  
+  expect_silent(isat_arx_obj <- isat.arx(gum01, iis = TRUE, print.searchinfo = FALSE))
+  expect_identical(isat_arx_obj$aux$args$ar,as.integer(c(1,2)))
+  
+  # TODO: check call for tis in isat plotting 
+  
+})
