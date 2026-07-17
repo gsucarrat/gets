@@ -39,6 +39,15 @@ test_that("test that as.arx.isat works",{
   arx_result$date <- NULL
   expect_identical(manual_arx_result, arx_result, ignore_attr = TRUE)
   
+  data(Nile)
+  isat_object <- isat(Nile, sis=TRUE, iis=FALSE, plot=FALSE, t.pval=0.005, print.searchinfo = FALSE)
+  arx_obj <- as.arx(isat_object)
+  expect_identical(coef(isat_result), coef(arx_result))  
+  
+  isat_object <- isat(Nile, ar = 1:2, sis=TRUE, iis=FALSE, plot=FALSE, t.pval=0.005, print.searchinfo = FALSE)
+  arx_obj <- as.arx(isat_object)
+  expect_identical(coef(isat_result), coef(arx_result)) 
+  
 })
 
 
