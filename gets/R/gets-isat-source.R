@@ -89,6 +89,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     include.1cut = include.1cut, 
     include.empty = include.empty, 
     max.paths = max.paths,
+    additional.block.search = additional.block.search,
     parallel.options = parallel.options, 
     turbo = turbo, 
     tol = tol, 
@@ -401,7 +402,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       
       
       addblocksearch.names <- colnames(result_additional_blocksearch$mXis)
-      mIS <- result_additional_blocksearch$mXis[,setdiff(mXnames ,addblocksearch.names)]
+      mIS <- result_additional_blocksearch$mXis[, setdiff(addblocksearch.names, mXnames),drop = FALSE]
       
       estimations.total <- estimations.total + result_additional_blocksearch$estimations.counter
       getsFun.total <- getsFun.total + result_additional_blocksearch$getsFun.counter
