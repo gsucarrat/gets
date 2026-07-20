@@ -972,7 +972,7 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
       if(!is.matrix(newmxreg) && !is.data.frame(newmxreg)){
         stop("newmxreg must be a matrix or data frame")
       }
-      
+      if(is.null(object$aux$args$uis.logical)) {object$aux$args$uis.logical <- FALSE}
       if(ncol(newmxreg) == length(whichRetainedNames) & !is.null(object$ISnames) & !object$aux$args$uis.logical){
         if(is.null(dots$quiet) || !isTRUE(dots$quiet)){
           message(paste0("You have provided new data for the following IIS, SIS, or TIS indicators (which are also in object$ISnames):\n",
