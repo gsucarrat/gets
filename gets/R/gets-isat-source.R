@@ -977,7 +977,7 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
         if(is.null(dots$quiet) || !isTRUE(dots$quiet)){
           message(paste0("You have provided new data for the following IIS, SIS, or TIS indicators (which are also in object$ISnames):\n",
                          paste0(object$ISnames[object$ISnames %in% colnames(newmxreg)], collapse = ", "),"\n",
-                         "Since gets version 0.39 this is not necessary anymore (for user convenience), as the new indicators can be automatically generated for forecasting.\n",
+                         "Since gets version 0.40 this is not necessary anymore (for user convenience), as the new indicators can be automatically generated for forecasting.\n",
                          "The newmxreg argument will still be used but consider removing the indicators. To quiet this message set 'quiet = TRUE'."))
         }
         
@@ -1024,7 +1024,7 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
             if(is.null(dots$quiet) || !isTRUE(dots$quiet)){
               message(paste0("You have provided new data for the following IIS, SIS, or TIS indicators (which are also in object$ISnames):\n",
                              paste0(object$ISnames[object$ISnames %in% colnames(newmxreg)], collapse = ", "),"\n",
-                             "Since gets version 0.39 this is not necessary anymore (for user convenience), as the new indicators can be automatically generated for forecasting.\n",
+                             "Since gets version 0.40 this is not necessary anymore (for user convenience), as the new indicators can be automatically generated for forecasting.\n",
                              "The newmxreg argument will still be used but consider removing the indicators. To quiet this message set 'quiet = TRUE'."))
             }
             indicators <- indicators[,!indics_already_given]
@@ -3832,8 +3832,16 @@ as.isat <- function(object, indicator_regex = list(iis = "^iis", sis = "^sis", t
     x <- x[, !colnames(x) %in% "mconst", drop=FALSE]
   }
   
+  # deal with the ar terms if present
+  ar <- eval(object$call$ar)
+  if (!is.null(ar) && length(ar) > 0 && !is.null(x)) {
+    ar_names <- paste0("ar", ar)
+    x <- x[, !colnames(x) %in% ar_names, drop = FALSE]
+  }
+  if(ncol(x) == 0) {x <- NULL}
+  
   ##estimate isat-model:
-  result <- isat(y,mxreg=x, mc = mc, iis = FALSE, sis = FALSE, tis = FALSE, ...)
+  result <- isat(y, mxreg=x, mc = mc, ar = ar, iis = FALSE, sis = FALSE, tis = FALSE, ...)
   result$aux$y.name <- yName
   
   

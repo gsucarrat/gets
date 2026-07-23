@@ -29,15 +29,12 @@ Moritz Schwarz, \url{https://www.moritzschwarz.org/}\cr\cr
 set.seed(123)
 y <- rnorm(30)
 arxmod <- arx(y, mc=TRUE, ar=1:3)
-as.lm(arxmod)
+as.isat(arxmod)
 
 ##from 'gets' to 'lm':
 getsmod <- getsm(arxmod, keep=1)
-as.lm(getsmod)
+as.isat(getsmod)
 
-##from 'isat' to 'lm':
-isatmod <- isat(y)
-as.lm(isatmod)
 }
 
 \keyword{Statistical Models}
