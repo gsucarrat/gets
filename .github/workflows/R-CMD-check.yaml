@@ -38,6 +38,8 @@ jobs:
         with:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
+          
+      - uses: r-lib/actions/setup-tinytex@v2
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
@@ -49,6 +51,6 @@ jobs:
         with:
           upload-snapshots: true
           working-directory: gets
-          build_args: 'c("--no-manual","--no-build-vignettes")'
-          args: 'c("--no-build-vignettes")'
+          build_args: 'c("--no-manual", "--compact-vignettes=gs+qpdf")'
+          args: 'c("--no-manual", "--as-cran")'
           error-on: '"error"'
