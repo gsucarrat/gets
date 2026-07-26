@@ -234,7 +234,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   }
   
   ## check that even enough df to start the blocks
-  if(ncol(mX) > nrow(mX) - 1){
+  if (!is.null(mX) && ncol(mX) > nrow(mX) - 1) {
     stop("Not enough degrees of freedom to start isat block search. Too many x-variables provided for the sample size.")
   }
   
@@ -968,10 +968,24 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
       #      objectNew$call$mxreg <- mxreg
     }
     
+    # if newmxreg is NULL, and there are ISnames in the object, and uis.logical is FALSE, 
+    # and all whichRetainedNames are in ISnames, then 
+    # create an empty newmxreg matrix with n.ahead rows and 0 columns
+    # this is to enter the IS creation mode
+    if (is.null(newmxreg) &&
+        !is.null(object$ISnames) &&
+        !isTRUE(object$aux$args$uis.logical) &&
+        length(setdiff(whichRetainedNames, object$ISnames)) == 0L) {
+      newmxreg <- matrix(numeric(0), nrow = n.ahead, ncol = 0)
+    }
+    
     if(!is.null(newmxreg)){
+      
+      # check if newmxreg is the right format
       if(!is.matrix(newmxreg) && !is.data.frame(newmxreg)){
         stop("newmxreg must be a matrix or data frame")
       }
+      
       if(is.null(object$aux$args$uis.logical)) {object$aux$args$uis.logical <- FALSE}
       if(ncol(newmxreg) == length(whichRetainedNames) & !is.null(object$ISnames) & !object$aux$args$uis.logical){
         if(is.null(dots$quiet) || !isTRUE(dots$quiet)){
@@ -979,6 +993,27 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
                          paste0(object$ISnames[object$ISnames %in% colnames(newmxreg)], collapse = ", "),"\n",
                          "Since gets version 0.40 this is not necessary anymore (for user convenience), as the new indicators can be automatically generated for forecasting.\n",
                          "The newmxreg argument will still be used but consider removing the indicators. To quiet this message set 'quiet = TRUE'."))
+        }
+        
+        # check the order of the names
+        if(!all(colnames(newmxreg) == whichRetainedNames)){
+          current_names <- colnames(newmxreg)
+          
+          source_pos <- match(whichRetainedNames, current_names)
+          target_pos <- which(!is.na(source_pos))
+          
+          order_idx <- integer(ncol(newmxreg))
+          
+          # Put matched named columns into their required positions
+          order_idx[target_pos] <- source_pos[target_pos]
+          
+          # Fill the remaining positions with unmatched columns in existing order
+          remaining_targets <- which(order_idx == 0L)
+          remaining_sources <- setdiff(seq_len(ncol(newmxreg)), source_pos[!is.na(source_pos)])
+          
+          order_idx[remaining_targets] <- remaining_sources
+          
+          newmxreg <- newmxreg[, order_idx, drop = FALSE]
         }
         
       } else {
@@ -1017,19 +1052,34 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
                           paste0(object$ISnames[!object$ISnames %in% colnames(newmxreg)], collapse = ", "),"\n",
                           "Please provide all UIS indicators in newmxreg. predict.isat can only generate IIS, SIS, and TIS indicators automatically.")) 
             }}}
+        
         # check if any indicators are already identically in newmxreg
         if(ncol(indicators)>0){
-          indics_already_given <- sapply(1:ncol(indicators), function(i) {any(apply(newmxreg, 2, function(x) {all(x == indicators[, i])}))})
-          if(any(indics_already_given)){
-            if(is.null(dots$quiet) || !isTRUE(dots$quiet)){
-              message(paste0("You have provided new data for the following IIS, SIS, or TIS indicators (which are also in object$ISnames):\n",
-                             paste0(object$ISnames[object$ISnames %in% colnames(newmxreg)], collapse = ", "),"\n",
-                             "Since gets version 0.40 this is not necessary anymore (for user convenience), as the new indicators can be automatically generated for forecasting.\n",
-                             "The newmxreg argument will still be used but consider removing the indicators. To quiet this message set 'quiet = TRUE'."))
+          # find out indicator positions
+          indicator_positions <- vapply(seq_len(ncol(indicators)),function(i) {
+            match_i <- which(apply(newmxreg,2,function(x) all(x == indicators[, i])))
+            if (length(match_i) == 0L) {NA_integer_} else {match_i[1L]}
+          }, integer(1) )
+          
+          if(any(!is.na(indicator_positions)) && (is.null(dots$quiet) || !isTRUE(dots$quiet))){
+            message(paste0("You have provided new data for the following IIS, SIS, or TIS indicators (which are also in object$ISnames):\n",
+                           paste0(object$ISnames[object$ISnames %in% colnames(newmxreg)], collapse = ", "),"\n",
+                           "Since gets version 0.40 this is not necessary anymore (for user convenience), as the new indicators can be automatically generated for forecasting.\n",
+                           "The newmxreg argument will still be used but consider removing the indicators. To quiet this message set 'quiet = TRUE'."))
+          }
+          
+          ordered_indicators <- indicators
+          
+          for (i in seq_len(ncol(indicators))) {
+            if (!is.na(indicator_positions[i])) {
+              ordered_indicators[, i] <- newmxreg[, indicator_positions[i]]
             }
-            indicators <- indicators[,!indics_already_given]
-          } 
-          newmxreg <- cbind(newmxreg, indicators)
+          }
+          
+          supplied_indicator_cols <- unique(na.omit(indicator_positions))
+          
+          if (length(supplied_indicator_cols) > 0L) {newmxreg <- newmxreg[, -supplied_indicator_cols,drop = FALSE]}
+          newmxreg <- cbind(newmxreg, ordered_indicators)
         }
       }
     }
@@ -3738,10 +3788,12 @@ as.arx.isat <- function(object, ...){
   mc <- has_mconst
   
   # ar handling
-  if (!is.null(ar) && length(ar) > 0 && !is.null(mxreg)) {
-    ar_names <- paste0("ar", ar)
-    mxreg <- mxreg[,!colnames(mxreg) %in% ar_names,drop = FALSE]
-  }
+  ar_original <- ar
+  ar_for_arx <- NULL
+  # if (!is.null(ar) && length(ar) > 0 && !is.null(mxreg)) {
+  #   ar_names <- paste0("ar", ar)
+  #   mxreg <- mxreg[,!colnames(mxreg) %in% ar_names,drop = FALSE]
+  # }
   
   if (!is.null(mxreg) && NCOL(mxreg) == 0) {mxreg <- NULL}
   if (!is.null(mxreg)) {mxreg <- zoo::zoo(x = mxreg, order.by = object$aux[["y.index"]])}
@@ -3753,7 +3805,7 @@ as.arx.isat <- function(object, ...){
       mxreg = mxreg,
       mc = mc,
       ewma = NULL,
-      ar = ar,
+      ar = ar_for_arx,
       log.ewma = NULL,
       vc = FALSE,
       arch = NULL,
@@ -3787,6 +3839,12 @@ as.arx.isat <- function(object, ...){
   result$call$user.diagnostics <- user.diagnostics
   result$call$tol <- tol
   result$call$LAPACK <- LAPACK
+  
+  result$call$ar <- ar
+  if(!is.null(ar)){
+    #row.names(result$diagnostics) <- gsub("AR\\(1\\)",paste0("AR(",max(ar),")"),row.names(result$diagnostics))
+    result$diagnostics <- diagnostics(result, ar.LjungB = c(max(ar)+1,0))
+  }
   
   return(result)
 }

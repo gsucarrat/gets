@@ -382,6 +382,16 @@ test_that("Test include.gum", {
 
 test_that("Test that sample works with simulated data with very few dof", {
   
+  expect_error(
+    isat(
+      rnorm(30),
+      mc = FALSE,
+      sis = TRUE,
+      print.searchinfo = FALSE
+    ),
+    "GUM regressor matrix is empty"
+  )
+  
   # set.seed(123)
   # y <- rnorm(20)
   # k = 15
@@ -721,14 +731,16 @@ test_that("Some more AggMod Models", {
   expect_silent(test_model <- isat(yvar, ar = 1:4, mxreg = xvars, iis = TRUE, sis = TRUE, 
                                    additional.block.search = TRUE,
                                    max.block.size = 6, t.pval = 0.001, 
-                                   plot = TRUE, print.searchinfo = FALSE)) # works (no indicator)
+                                   plot = TRUE, print.searchinfo = FALSE)) # works (changed by M-orca 26.06.2026)
+  expect_identical(test_model$ISnames, "sis15")
   
   expect_error(test_model <- isat(yvar, ar = 1:4, mxreg = xvars, iis = TRUE, sis = TRUE, 
                                   additional.block.search = FALSE,
                                   max.block.size = 6, t.pval = 0.001, 
-                                  plot = TRUE, print.searchinfo = FALSE)) # works (no indicator)
+                                  plot = TRUE, print.searchinfo = FALSE), 
+               regexp = "Too many initial indicators returned for the union of indicators to estimate a sensible model") # fails
   
-  expect_null(test_model$ISnames)
+  
   
   
   

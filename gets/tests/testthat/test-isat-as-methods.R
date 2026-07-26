@@ -48,6 +48,9 @@ test_that("test that as.arx.isat works",{
   arx_obj <- as.arx(isat_object)
   expect_identical(coef(isat_object), coef(arx_obj))
   
+  expect_identical(arx(Nile, ar = 1:2, plot = TRUE, mc = TRUE)$diagnostics,
+                   as.arx(isat(Nile, ar = 1:2, plot = TRUE, mc = TRUE, sis = FALSE))$diagnostics)
+  
 })
 
 
