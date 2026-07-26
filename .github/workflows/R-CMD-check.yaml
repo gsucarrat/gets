@@ -43,7 +43,7 @@ jobs:
 
       - name: Install LaTeX packages
         run: |
-          tlmgr install collection-langgreek collection-langenglish
+          tlmgr install babel-english babel-greek
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
