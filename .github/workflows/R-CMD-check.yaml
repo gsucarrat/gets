@@ -50,5 +50,5 @@ jobs:
           upload-snapshots: true
           working-directory: gets
           build_args: 'c("--no-manual","--no-build-vignettes")'
-          args: '--no-build-vignettes'
+          args: 'c("--no-build-vignettes")'
           error-on: '"error"'
