@@ -120,8 +120,6 @@ test_that("TEST MAIN isat() ARGUMENTS - very basic", {
   expect_silent(isat(y, iis=TRUE, sis=FALSE, tis=TRUE, print.searchinfo = FALSE))
   expect_silent(isat(y, iis=TRUE, sis=TRUE, tis=TRUE, print.searchinfo = FALSE))
   
-  expect_error(isat(y, sis=FALSE))
-  
   expect_silent(isat(y, ar=0, sis=TRUE, print.searchinfo = FALSE)) # checking that ar=0 works
   expect_silent(isat(y, ar=1:2, sis=TRUE, print.searchinfo = FALSE))
   expect_silent(isat(y, ar=1:2, iis=TRUE, sis=TRUE, print.searchinfo = FALSE))
@@ -141,13 +139,20 @@ test_that("TEST MAIN isat() ARGUMENTS - very basic", {
   expect_silent(isat(y, ar=1:2, mxreg=mX, iis=TRUE, sis=TRUE, tis=TRUE, print.searchinfo = FALSE))
   
   # Check the messages
-  expect_message(isat(y, ar=1:2, mxreg=mX, iis=TRUE, sis=TRUE, tis=TRUE, print.searchinfo = TRUE))
+  expect_message(isat(y, ar=1:2, mxreg=mX, iis=TRUE, sis=TRUE, tis=TRUE, print.searchinfo = TRUE), regexp = "GETS of union of")
   
   
   ##yielded error in version 0.9 to 0.23:
   expect_silent(isat(y, ar=1:2, mxreg=as.data.frame(mX), print.searchinfo = FALSE))
   
+  # check that isat runs an arx when no indicator saturation is selected
+  set.seed(123)
+  y <- arima.sim(list(ar=0.4), 70)
+  xregs <- matrix(rnorm(4*70), 70, 4)
+  mx_result <- arx(y, ar=1:2, mxreg=xregs)
   
+  expect_silent(isat_result <- isat(y, ar=1:2, mxreg=xregs, iis=FALSE, sis=FALSE, tis=FALSE, print.searchinfo = FALSE))
+  expect_equal(coef(mx_result), coef(isat_result)) 
 })
 
 test_that("TEST MAIN isat() ARGUMENTS - slightly more advanced",{
@@ -217,25 +222,27 @@ test_that("TEST MAIN isat() ARGUMENTS - Testing the extraction functions", {
   expect_equal(length(summary(isatmod)),90)
   
   
-  coef(isatmod)
+  expect_identical(round(coef(isatmod),8), c(mconst = 6.1492937, ar1 = -0.05120203, ar2 = -0.21997496, mxreg1 = -0.08005004, 
+                                             mxreg2 = 0.04840635, mxreg3 = -0.02324178, tis7 = -0.72034325, 
+                                             tis16 = 0.7375278)) 
   plot(cbind(fitted(isatmod),
              fitted(isatmod, spec="m"),
              fitted(isatmod, spec="v")))
-  logLik(isatmod)
+  expect_identical(round(logLik(isatmod),8),structure(-60.8037819, df = 8L, nobs = 48L, class = "logLik"))
   plot(cbind(residuals(isatmod),
              residuals(isatmod, std=FALSE),
              residuals(isatmod, std=TRUE)))
-  paths(isatmod)
+  expect_identical(paths(isatmod),list(7L, 8:9, 9:8))
   expect_error(paths(mod01)) #should return the error-message: object 'mod01' not found
   plot(isatmod)
   expect_error(predict(isatmod),"'newmxreg' is NULL") #should return the error-message: 'newmxreg' is NULL
-  predict(isatmod, newmxreg=matrix(0,12,5))
-  predict(isatmod, n.ahead=1, newmxreg=matrix(0,1,5)) #used to yield error
-  predict(isatmod, newmxreg=matrix(0,12,5), newindex=13:24)
-  predict(isatmod, newmxreg=matrix(0,12,5), return=FALSE)
-  predict(isatmod, newmxreg=matrix(0,12,5), plot=FALSE)
-  predict(isatmod, newmxreg=matrix(0,12,5), return=FALSE, plot=FALSE)
-  terminals(isatmod)
+  predict(isatmod, quiet = TRUE, newmxreg=matrix(0,12,5))
+  predict(isatmod, quiet = TRUE, n.ahead=1, newmxreg=matrix(0,1,5)) #used to yield error
+  predict(isatmod, quiet = TRUE, newmxreg=matrix(0,12,5), newindex=13:24)
+  predict(isatmod, quiet = TRUE, newmxreg=matrix(0,12,5), return=FALSE)
+  predict(isatmod, quiet = TRUE, newmxreg=matrix(0,12,5), plot=FALSE)
+  predict(isatmod, quiet = TRUE, newmxreg=matrix(0,12,5), return=FALSE, plot=FALSE)
+  expect_identical(terminals(isatmod),list(1:9, c(1L, 2L, 3L, 4L, 5L, 6L, 8L, 9L), 1:7))
   expect_error(terminals(mod01), "object 'mod01' not found") #should return the error-message: object 'mod01' not found
   vcov(isatmod)
   
@@ -269,7 +276,7 @@ test_that("TEST MAIN isat() ARGUMENTS - test further arguments",{
   # fixed by M-Orca Feb 2025
   expect_silent(isat(y, print.searchinfo = FALSE, include.gum = TRUE)) #default: TRUE
   expect_silent(isat(y, print.searchinfo = FALSE, include.gum = FALSE)) #default: TRUE
-  expect_error(isat(y, print.searchinfo = FALSE, include.gum = NULL)) #default: TRUE
+  expect_silent(isat(y, print.searchinfo = FALSE, include.gum = NULL)) #default: TRUE
   
   expect_silent(isat(y, print.searchinfo = FALSE, include.1cut = TRUE)) #default: FALSE
   expect_silent(isat(y, print.searchinfo = FALSE, include.empty = TRUE)) #default: FALSE

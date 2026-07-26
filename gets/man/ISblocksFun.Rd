@@ -12,8 +12,7 @@ An internal function that manages the block-wise GETS search within the
 ISblocksFun(j, i, ISmatrices, ISblocks, mX, parallel.options, y, userEstArg, 
   t.pval, wald.pval, do.pet, arLjungB, archLjungB, normality.JarqueB, 
   user.diagnostics, gofFunArg, gof.method, mxkeep, include.gum, include.1cut, 
-  include.empty, max.paths, turbo, tol, LAPACK, max.regs, print.searchinfo, 
-  y.n, estimations.counter, getsFun.counter)
+  include.empty, max.paths, turbo, tol, LAPACK, max.regs, print.searchinfo, y.n)
 }
 
 \arguments{
@@ -118,12 +117,6 @@ ISblocksFun(j, i, ISmatrices, ISblocks, mX, parallel.options, y, userEstArg,
   }
   \item{y.n}{
     Integer; the number of observations in the dependent variable \code{y}.
-  }
-  \item{estimations.counter}{
-    Running counter of model estimations performed. 
-  }
-  \item{getsFun.counter}{
-    Running counter of how many times \code{getsFun} was called. 
   }
 }
 

@@ -14,11 +14,11 @@ isat: Leave-One-Out Block Search for Excessive Indicators}
 }
 \usage{
 ISadditionalblocksearch(mXis, isNames, y, y.n, mX, mXnames, mxkeep, 
-  ISmatrixname, indicator.set, estimations.counter, getsFun.counter, 
-  print.searchinfo, tol, LAPACK, userEstArg, t.pval, gof.method, 
-  gofFunArg, max.regs, max.paths, arLjungB, archLjungB, normality.JarqueB, 
-  user.diagnostics, include.gum, include.1cut, include.empty, turbo, do.pet, 
-  ratio.threshold, max.block.size, wald.pval)
+  ISmatrixname, indicator.set, print.searchinfo, tol, LAPACK, userEstArg, 
+  t.pval, gof.method, gofFunArg, max.regs, max.paths, arLjungB, archLjungB, 
+  normality.JarqueB, user.diagnostics, include.gum, include.1cut, 
+  include.empty, turbo, do.pet, ratio.threshold, max.block.size, 
+  wald.pval, additional.block.search)
 }
 
 \arguments{
@@ -48,12 +48,6 @@ ISadditionalblocksearch(mXis, isNames, y, y.n, mX, mXnames, mxkeep,
   }
   \item{indicator.set}{
     Matrix of candidate indicators from which subsets are selected.
-  }
-  \item{estimations.counter}{
-    Running counter of the number of model estimations performed.
-  }
-  \item{getsFun.counter}{
-    Running counter of how many times \code{getsFun} was called.
   }
   \item{print.searchinfo}{
     Logical; if \code{TRUE}, outputs progress messages during execution.
@@ -124,6 +118,7 @@ ISadditionalblocksearch(mXis, isNames, y, y.n, mX, mXnames, mxkeep,
   \item{wald.pval}{
     Significance threshold for Wald tests in the GETS algorithm.
   }
+  \item{additional.block.search}{Default is \code{FALSE}. If \code{isat()} identifies (retains) too many indicators in the block search, a sensible model might not be estimable (e.g. due to a lack of available degrees of freedom). In this case, setting \code{additional.block.search = TRUE} carries out an additional block search using a Leave-one-Out method (e.g. for three blocks, indicators are assigned to block \code{1,2,3,1,2,3,1,2,3}). This is an experimental feature.}
 }
 
 \value{

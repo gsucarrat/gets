@@ -15,7 +15,7 @@ ISMatricesLoop(blocks.is.list, ISmatrices, ratio.threshold, mXncol,
   do.pet, arLjungB, archLjungB, normality.JarqueB, user.diagnostics, gofFunArg, 
   gof.method, mxkeep, include.gum, include.1cut, include.empty, max.paths, 
   turbo, tol, LAPACK, max.regs, print.searchinfo, clusterSpec, clusterVarlist, 
-  blocks, max.block.size, mXnames)
+  blocks, max.block.size, mXnames, additional.block.search)
 }
 
 \arguments{
@@ -148,6 +148,8 @@ ISMatricesLoop(blocks.is.list, ISmatrices, ratio.threshold, mXncol,
     Character vector of regressor names in \code{mX}, used to identify 
     retained terms.
   }
+  \item{additional.block.search}{Default is \code{FALSE}. If \code{isat()} identifies (retains) too many indicators in the block search, a sensible model might not be estimable (e.g. due to a lack of available degrees of freedom). In this case, setting \code{additional.block.search = TRUE} carries out an additional block search using a Leave-one-Out method (e.g. for three blocks, indicators are assigned to block \code{1,2,3,1,2,3,1,2,3}). This is an experimental feature.}
+
 }
 
 

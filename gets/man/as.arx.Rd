@@ -1,22 +1,27 @@
 \name{as.arx}
 \alias{as.arx}
 \alias{as.arx.lm}
+\alias{as.arx.isat}
 
 \title{Convert an object to class 'arx'}
 
 \description{
-The function \code{as.arx} is a generic function and its methods returns an object of class \code{\link{arx}}.
+The function \code{as.arx} is a generic function and its methods return an object of class \code{\link{arx}}.
 }
 
 \usage{
 as.arx(object, ...)
 
 ##S3 method for objects of class 'lm':
-\method{as.arx}{lm}(object, ...) 
+\method{as.arx}{lm}(object, ...)
+
+##S3 method for objects of class 'isat':
+\method{as.arx}{isat}(object, ...)
+
 }
 
 \arguments{
-  \item{object}{object of class \code{\link{lm}} }
+  \item{object}{object of class \code{\link{lm}} or \code{\link{isat}} }
   \item{...}{arguments passed on to and from other methods }
 }
 
@@ -27,7 +32,7 @@ Genaro Sucarrat \url{http://www.sucarrat.net/}\cr\cr
 }
 
 \seealso{
-\code{\link{lm}}, \code{\link{arx}}
+\code{\link{lm}}, \code{\link{arx}}, \code{\link{isat}}
 }
 
 \examples{
@@ -49,6 +54,11 @@ as.arx(mymodel, ar=1:2)
 
 ##add log-variance specification:
 as.arx(mymodel, arch=1:2)
+
+## isat case to generate an arx object
+data(Nile)
+isat_object <- isat(Nile, sis=TRUE, iis=FALSE, plot=FALSE, t.pval=0.005, print.searchinfo = FALSE)
+as.arx(isat_object)
 
 }
 

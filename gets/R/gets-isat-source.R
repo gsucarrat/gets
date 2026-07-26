@@ -42,18 +42,19 @@
 ##==================================================
 ## indicator saturation
 isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
-  iis=FALSE, sis=TRUE, tis=FALSE, uis=FALSE, blocks=NULL,
-  ratio.threshold=0.8, max.block.size=30, t.pval=0.001,
-  wald.pval=t.pval, vcov.type=c("ordinary", "white", "newey-west"),
-  do.pet=FALSE, ar.LjungB=NULL, arch.LjungB=NULL,
-  normality.JarqueB=NULL, info.method=c("sc", "aic", "hq"), 
-  user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL, 
-  gof.method=c("min","max"), include.gum=TRUE,
-  include.1cut=FALSE, include.empty=FALSE, max.paths=NULL,
-  parallel.options=NULL, turbo=FALSE, tol=1e-07, LAPACK=FALSE,
-  max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...)
+                         iis=FALSE, sis=TRUE, tis=FALSE, uis=FALSE, blocks=NULL,
+                         ratio.threshold=0.8, max.block.size=30, t.pval=0.001,
+                         wald.pval=t.pval, vcov.type=c("ordinary", "white", "newey-west"),
+                         do.pet=FALSE, ar.LjungB=NULL, arch.LjungB=NULL,
+                         normality.JarqueB=NULL, info.method=c("sc", "aic", "hq"), 
+                         user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL, 
+                         gof.method=c("min","max"), include.gum=TRUE,
+                         include.1cut=FALSE, include.empty=FALSE, max.paths=NULL,
+                         additional.block.search = FALSE, 
+                         parallel.options=NULL, turbo=FALSE, tol=1e-07, LAPACK=FALSE,
+                         max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...)
 {
-
+  
   ##arguments:
   isat.call <- sys.call()
   vcov.type <- match.arg(vcov.type)
@@ -88,6 +89,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     include.1cut = include.1cut, 
     include.empty = include.empty, 
     max.paths = max.paths,
+    additional.block.search = additional.block.search,
     parallel.options = parallel.options, 
     turbo = turbo, 
     tol = tol, 
@@ -96,49 +98,60 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   )
   
   ##check that any indicator method is selected
-  if(sis == FALSE && iis == FALSE && tis == FALSE && identical(uis, FALSE)){
-    stop("No Indicator Selection Method was selected. Either set iis, sis or tis as TRUE or specify uis.")
-  }
+  # if(sis == FALSE && iis == FALSE && tis == FALSE && identical(uis, FALSE)){
+  #   stop("No Indicator Selection Method was selected. Either set iis, sis or tis as TRUE or specify uis.")
+  # }
   
   ##warn to use robust coefficient variances
   # suggestion by M-orca 02/10/2022: no time to test this, but potentially useful addition
   # if(vcov.type != "ordinary"){
   #   warning("Using robust coefficient covariances is currently discouraged. Errors are likely and results are unlikely to be useful.\nReason is that robust estimators inflate p-values of indicators, leading to overidentification of indicators.\nRecommended to use 'ordinary' vcov type in isat and then to use robust estimators post-selection (i.e. to run arx() with vcov.type argument on the resulting isat object).")
   # }
-
+  
   if(!is.null(ar) && identical(ar,0)){ar <- NULL}
   if(!(is.numeric(ar) | is.null(ar))){stop("The 'ar' argument must be NULL or numeric.")}
+  
+  # check additional.block.search
+  if(!is.logical(additional.block.search)){
+    stop("additional.block.search must be logical (TRUE/FALSE)")
+  }
+  
+  # check include.gum
+  if(is.null(include.gum)){include.gum <- TRUE}
+  if(!is.logical(include.gum)){
+    stop("include.gum must be logical (TRUE/FALSE)")
+  }
   
   ##name of regressand:
   y.name <- deparse(substitute(y))
   if( y.name[1] == "" ){ y.name <- "y" }
- 
+  
   ##determine qstat.options:
   if(is.null(ar)){
     qstat.options <- c(1,1)
   }else{
     qstat.options <- c(max(ar),1)
   }
-
+  
   # deactivated by M-orca 5.2.2025 - now properly handled
   # ##check include.gum argument:
   # if(!is.null(include.gum)){
   #   warning("The 'include.gum' argument is ignored (temporarily deprecated in isat)")
   # }
   # include.gum <- TRUE
-
+  
   ##make userEstArg:
   if(is.null(user.estimator)){ #default (ols):
     olsMethod <- switch(vcov.type,
-      "ordinary"=3, "white"=4, "newey-west"=5)
+                        "ordinary"=3, "white"=4, "newey-west"=5)
     userEstArg <- list(name="ols", tol=tol, LAPACK=LAPACK,
-      method=olsMethod)
+                       method=olsMethod)
     userEstArgArx <- NULL 
   }else{ #user-defined:
     userEstArg <- user.estimator
     userEstArgArx <- user.estimator
   }
-
+  
   ##make gof.function argument:
   if(is.null(gof.function)){
     gofFunArg <- list(name="infocrit", method=info.method)
@@ -150,10 +163,10 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   if( !is.null(max.paths) && max.paths < 1 ){
     stop("'max.paths' cannot be smaller than 1")
   }
-
+  
   ##parallel.options argument:
   if(!is.null(parallel.options)){
-
+    
     ##if(numeric):
     if(is.numeric(parallel.options)){
       clusterSpec <- parallel.options
@@ -170,7 +183,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       clusterVarlist <- NULL
     }
     clusterVarlist <- c(clusterVarlist,
-      "dropvar", "getsFun", "ols", "infocrit", "diagnostics")
+                        "dropvar", "getsFun", "ols", "infocrit", "diagnostics")
     if(!is.null(user.diagnostics)){
       clusterVarlist <- c(clusterVarlist, user.diagnostics$name)
     }
@@ -182,9 +195,9 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     }
     
     #for the future?: add memory.limit()/memory.size() = max cores check?
-
+    
   } #end if(!is.null(parallel.options))
-
+  
   #OLD:
   #  ##parallel.options argument:
   #  if(!is.null(parallel.options)){
@@ -198,10 +211,10 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   #    #to do: enable exportCluster argument?
   #    #add: memory.limit()/memory.size() = max cores check?
   #  }
-
+  
   ##create regressors (no indicators), record info:
   mX <- regressorsMean(y, mc=mc, ar=ar, ewma=ewma, mxreg=mxreg,
-    return.regressand = TRUE, return.as.zoo = TRUE, na.trim = TRUE)
+                       return.regressand = TRUE, return.as.zoo = TRUE, na.trim = TRUE)
   y.n <- NROW(mX)
   y.index <- index(mX)
   y.index.as.char <- as.character(y.index)
@@ -219,7 +232,12 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     mXncol <- NCOL(mX)
     mxkeep <- 1:mXncol
   }
-
+  
+  ## check that even enough df to start the blocks
+  if (!is.null(mX) && ncol(mX) > nrow(mX) - 1) {
+    stop("Not enough degrees of freedom to start isat block search. Too many x-variables provided for the sample size.")
+  }
+  
   ##ar.LjungB argument:
   arLjungB <- NULL
   if(!is.null(ar.LjungB)){
@@ -230,7 +248,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
       arLjungB[1] <- ar.LjungB$lag
     }
   }
-
+  
   ##arch.LjungB argument:
   archLjungB <- NULL
   if(!is.null(arch.LjungB)){
@@ -245,7 +263,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   ##indicator saturation matrices:
   ISmatrices <- create.ISmatrices(iis = iis, sis = sis, tis = tis, uis = uis, 
                                   y.n = y.n, y.index.as.char = y.index.as.char)
-
+  
   ##check blocks:
   if(is.list(blocks)){
     if(length(ISmatrices)!=length(blocks)){
@@ -257,14 +275,15 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     blocks.is.list <- FALSE
     ISblocks <- list()
   }
-
+  
   ##loop on ISmatrices:
   ##-------------------
   
   estimations.total <- 0
   getsFun.total <- 0
   ISfinalmodels <- list()
-  for(i in 1:length(ISmatrices)){
+  
+  for(i in seq_len(length(ISmatrices))){
     result_ISMatricesLoop <- ISMatricesLoop(blocks.is.list = blocks.is.list,
                                             ISmatrices = ISmatrices,
                                             ratio.threshold = ratio.threshold,
@@ -299,7 +318,8 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
                                             clusterVarlist = clusterVarlist,
                                             blocks = blocks,
                                             max.block.size = max.block.size,
-                                            mXnames = mXnames)
+                                            mXnames = mXnames,
+                                            additional.block.search = additional.block.search)
     
     
     ISblocks <- result_ISMatricesLoop$ISblocks
@@ -310,27 +330,27 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     getsFun.total <- getsFun.total + result_ISMatricesLoop$getsFun.counter
     
   } #end for(i) loop (on ISmatrices)
-
+  
   ##add names to ISblocks:
   names(ISblocks) <- names(ISmatrices)
-
-
+  
+  
   ##gets of union of all variables:
   ##-------------------------------
   
   ##some info:
-  if(print.searchinfo){
+  if(print.searchinfo & length(ISfinalmodels)>0){
     message("\n", appendLF=FALSE)
     message("GETS of union of ALL retained variables...",
-      appendLF=TRUE)
+            appendLF=TRUE)
     #message("\n", appendLF=FALSE)
   }
-
+  
   ##if final models estimated:
   if(length(ISfinalmodels)>0){
-
+    
     mIS <- NULL #becomes a matrix
-
+    
     #which indicators were retained?
     for(i in 1:length(ISfinalmodels)){
       isNames <- NULL
@@ -358,8 +378,6 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
         mxkeep = mxkeep,
         ISmatrixname = "the union of indicators",
         indicator.set = mIS,
-        estimations.counter = estimations.counter,
-        getsFun.counter = getsFun.counter,
         print.searchinfo = print.searchinfo,
         tol = tol,
         LAPACK = LAPACK,
@@ -379,13 +397,15 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
         turbo = turbo, 
         do.pet = do.pet, 
         ratio.threshold = ratio.threshold,
-        max.block.size = max.block.size)
+        max.block.size = max.block.size,
+        additional.block.search = additional.block.search)
       
       
       addblocksearch.names <- colnames(result_additional_blocksearch$mXis)
-      mIS <- result_additional_blocksearch$mXis[,setdiff(mXnames ,addblocksearch.names)]
-      estimations.counter <- result_additional_blocksearch$estimations.counter
-      getsFun.counter <- result_additional_blocksearch$getsFun.counter
+      mIS <- result_additional_blocksearch$mXis[, setdiff(addblocksearch.names, mXnames),drop = FALSE]
+      
+      estimations.total <- estimations.total + result_additional_blocksearch$estimations.counter
+      getsFun.total <- getsFun.total + result_additional_blocksearch$getsFun.counter
       
     }
     
@@ -393,51 +413,52 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     mXis.names <- colnames(cbind(mX,mIS))
     original.mxkeep.names <- mXis.names[mxkeep]
     mXis <- dropvar(cbind(mX,mIS), tol=tol, LAPACK=LAPACK,
-      silent=!print.searchinfo)
+                    silent=!print.searchinfo)
     mXis.names.afterdropvar <- colnames(mXis)
     mxkeep.afterdropvar <- which(mXis.names.afterdropvar %in% original.mxkeep.names)
     
-
+    
   } #end if(length(ISfinalmodels)>0)
-
-
+  
+  
   ##if no final models estimated:
   if(length(ISfinalmodels)==0){
     ISfinalmodels <- NULL
     if(is.null(mX)){ mXis <- NULL }else{
       mXis <- cbind(mX)
       colnames(mXis) <- mXnames
+      mxkeep.afterdropvar <- 1:mXncol
     }
   }
-
-
+  
+  
   ##make return object:
   ##-------------------
-
-  ##do final gets:
-
-  getsis <- getsFun(y, mXis, untransformed.residuals=NULL,
-    user.estimator=userEstArg, gum.result=NULL, t.pval=t.pval,
-    wald.pval=wald.pval, do.pet=do.pet, ar.LjungB=arLjungB,
-    arch.LjungB=archLjungB, normality.JarqueB=normality.JarqueB,
-    user.diagnostics=user.diagnostics, gof.function=gofFunArg,
-    gof.method=gof.method, keep=mxkeep.afterdropvar, include.gum=include.gum,
-    include.1cut=include.1cut, include.empty=include.empty,
-    max.paths=max.paths, turbo=turbo, tol=tol, LAPACK=LAPACK,
-    max.regs=max.regs, print.searchinfo=print.searchinfo,
-    alarm=FALSE)
   
-
+  ##do final gets:
+  
+  getsis <- getsFun(y, mXis, untransformed.residuals=NULL,
+                    user.estimator=userEstArg, gum.result=NULL, t.pval=t.pval,
+                    wald.pval=wald.pval, do.pet=do.pet, ar.LjungB=arLjungB,
+                    arch.LjungB=archLjungB, normality.JarqueB=normality.JarqueB,
+                    user.diagnostics=user.diagnostics, gof.function=gofFunArg,
+                    gof.method=gof.method, keep=mxkeep.afterdropvar, include.gum=include.gum,
+                    include.1cut=include.1cut, include.empty=include.empty,
+                    max.paths=max.paths, turbo=turbo, tol=tol, LAPACK=LAPACK,
+                    max.regs=max.regs, print.searchinfo=print.searchinfo,
+                    alarm=FALSE)
+  
+  
   estimations.total <- estimations.total + getsis$no.of.estimations
   getsis$no.of.estimations <- estimations.total
   getsFun.total <- getsFun.total + 1
   getsis$no.of.getsFun.calls <- getsFun.total
-
+  
   ##messages from final gets:
   if( print.searchinfo && !is.null(getsis$messages)){
     message(getsis$messages)
   }
-       
+  
   ##estimate final model:
   y <- zoo(y, order.by=y.index)
   if(is.null(getsis$specific.spec)){
@@ -460,18 +481,18 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   options(mc.warning = FALSE)
   
   mod <- arx(y, mc=FALSE, mxreg=mXis, vcov.type=vcov.type,
-    qstat.options=qstat.options, normality.JarqueB=normalityArg,
-    user.estimator=userEstArgArx, user.diagnostics=user.diagnostics,
-    tol=tol, LAPACK=LAPACK, plot=FALSE)
+             qstat.options=qstat.options, normality.JarqueB=normalityArg,
+             user.estimator=userEstArgArx, user.diagnostics=user.diagnostics,
+             tol=tol, LAPACK=LAPACK, plot=FALSE)
   mod$call <- NULL
   
   # Set the old arx mc warning again
   options(mc.warning = tmpmc)
-   
+  
   ##complete the returned object (result):
   ISnames <- setdiff(mXisNames, mXnames) #names of retained impulses
-#OLD:
-#  ISnames <- setdiff(getsis$aux$mXnames, mXnames) #names of retained impulses
+  #OLD:
+  #  ISnames <- setdiff(getsis$aux$mXnames, mXnames) #names of retained impulses
   if(length(ISnames)==0){ ISnames <- NULL }
   colnames(mod$aux$mX) <- mod$aux$mXnames #needed for predict.isat?
   getsis$gets.type <- "isat"
@@ -480,14 +501,16 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
     c(list(ISfinalmodels=ISfinalmodels, ISnames=ISnames), getsis, mod)
   getsis$aux$t.pval <- t.pval #needed for biascorr
   class(getsis) <- "isat"
+  
+  getsis$aux$args <- isat.args
+  
+  
   if(alarm){ alarm() }
   if( is.null(plot) ){ #determine whether to plot or not
     plot <- getOption("plot")
     if( is.null(plot) ){ plot <- FALSE }
   }
   if(plot){ plot.isat(getsis, coef.path=TRUE) }
-  
-  getsis$aux$args <- isat.args
   
   if(isat.args$iis &&
      identical(userEstArg$name, "ols") &&
@@ -499,7 +522,7 @@ isat.default <- function(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL,
   }
   
   return(getsis)
-
+  
 } #close isat.default() function
 
 ##==================================================
@@ -513,6 +536,7 @@ isat.arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL,
                      user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL, 
                      gof.method=c("min","max"), include.gum=TRUE,
                      include.1cut=FALSE, include.empty=FALSE, max.paths=NULL,
+                     additional.block.search = FALSE,
                      parallel.options=NULL, turbo=FALSE, tol=1e-07, LAPACK=FALSE,
                      max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...
 ){
@@ -526,57 +550,73 @@ isat.arx <- function(y, mc=TRUE, ar=NULL, ewma=NULL,
   # if not, then check if the original item has this arguemnt supplied
   # if it does, take the setting of the original object
   # if it does not, then take the default
-  if(missing(ar)){ar <- if(is.null(y$aux$arguments[["ar"]])) {NULL} else{y$aux$arguments[["ar"]]}}
+  if(missing(ar)){ar <- if(is.null(y$call[["ar"]])) {NULL} else{y$call[["ar"]]}}
   if(missing(vcov.type)){vcov.type <- y$aux[["vcov.type"]]}
-  if(missing(normality.JarqueB)){normality.JarqueB <- if(is.null(y$aux$arguments[["normality.JarqueB"]])){FALSE}else{y$aux$arguments[["normality.JarqueB"]]}}
-  if(missing(user.estimator)){user.estimator <- if(is.null(y$aux$arguments[["user.estimator"]])){NULL}else{y$aux$arguments[["user.estimator"]]}}
-  if(missing(user.diagnostics)){user.diagnostics <- if(is.null(y$aux$arguments[["user.diagnostics"]])){NULL}else{y$aux$arguments[["user.diagnostics"]]}}
-  if(missing(LAPACK)){LAPACK <- if(is.null(y$aux$arguments[["LAPACK"]])){FALSE}else{y$aux$arguments[["LAPACK"]]}}
-  if(missing(plot)){plot <- if(is.null(y$aux$arguments[["plot"]])){NULL}else{y$aux$arguments[["plot"]]}}
-  if(missing(tol)){tol <- if(is.null(y$aux$arguments[["tol"]])){1e-07}else{y$aux$arguments[["tol"]]}}
+  if(missing(normality.JarqueB)){normality.JarqueB <- if(is.null(y$call[["normality.JarqueB"]])){FALSE}else{y$call[["normality.JarqueB"]]}}
+  if(missing(user.estimator)){user.estimator <- if(is.null(y$call[["user.estimator"]])){NULL}else{y$call[["user.estimator"]]}}
+  if(missing(user.diagnostics)){user.diagnostics <- if(is.null(y$call[["user.diagnostics"]])){NULL}else{y$call[["user.diagnostics"]]}}
+  if(missing(LAPACK)){LAPACK <- if(is.null(y$call[["LAPACK"]])){FALSE}else{y$call[["LAPACK"]]}}
+  if(missing(plot)){plot <- if(is.null(y$call[["plot"]])){NULL}else{y$call[["plot"]]}}
+  if(missing(tol)){tol <- if(is.null(y$call[["tol"]])){1e-07}else{y$call[["tol"]]}}
   
   mxreg <- y$aux$mX
   colnames(mxreg) <- y$aux$mXnames
   yvar <- y$aux$y
   names(yvar) <- y$aux$index
+
+  # remove ar from mxreg
+  if(!is.null(y$call[["ar"]])){
+    arcols <- grep("^ar", colnames(mxreg))
+    if(length(arcols) > 0){
+      mxreg <- mxreg[, -arcols, drop = FALSE]
+    }
+  }
+  
+  # remove mc from mxreg
+  if(!is.null(y$call[["mc"]])){
+    mccols <- grep("^mc", colnames(mxreg))
+    if(length(mccols) > 0){
+      mxreg <- mxreg[, -mccols, drop = FALSE]
+    }
+  }
   
   out <- isat.default(
-    yvar,
-    FALSE, # mc would already be set in arx
-    NULL, # ar would already be set in arx
-    ewma,
-    mxreg,
-    iis,
-    sis,
-    tis,
-    uis,
-    blocks,
-    ratio.threshold,
-    max.block.size,
-    t.pval,
-    wald.pval,
-    vcov.type,
-    do.pet,
-    ar.LjungB,
-    arch.LjungB,
-    normality.JarqueB,
-    info.method,
-    user.diagnostics,
-    user.estimator,
-    gof.function,
-    gof.method,
-    include.gum,
-    include.1cut,
-    include.empty,
-    max.paths,
-    parallel.options,
-    turbo,
-    tol,
-    LAPACK,
-    max.regs,
-    print.searchinfo,
-    plot,
-    alarm
+    y = yvar,
+    mc = mc, 
+    ar = eval(ar), 
+    ewma = ewma,
+    mxreg = mxreg,
+    iis = iis,
+    sis = sis,
+    tis = tis,
+    uis = uis,
+    blocks = blocks,
+    ratio.threshold = ratio.threshold,
+    max.block.size = max.block.size,
+    t.pval = t.pval,
+    wald.pval = wald.pval,
+    vcov.type = vcov.type,
+    do.pet = do.pet,
+    ar.LjungB = ar.LjungB,
+    arch.LjungB = arch.LjungB,
+    normality.JarqueB = normality.JarqueB,
+    info.method = info.method,
+    user.diagnostics = user.diagnostics,
+    user.estimator = user.estimator,
+    gof.function = gof.function,
+    gof.method = gof.method,
+    include.gum = include.gum,
+    include.1cut = include.1cut,
+    include.empty = include.empty,
+    max.paths = max.paths,
+    parallel.options = parallel.options,
+    turbo = turbo,
+    tol = tol,
+    LAPACK = LAPACK,
+    max.regs = max.regs,
+    print.searchinfo = print.searchinfo,
+    plot = plot,
+    alarm = alarm
   )
   
   return(out)
@@ -612,51 +652,7 @@ gets.isat <- function(x, t.pval=0.05, wald.pval=t.pval, vcov.type = NULL,
                       turbo=FALSE, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...)
 {
 
-  # Check if one of these arguments is explicitly supplied to the function
-  # if not, then check if the original item has this argument supplied
-  # if it does, take the setting of the original object
-  # if it does not, then take the default
-  if(missing(vcov.type)){vcov.type <- x$aux[["vcov.type"]]}
-  if(missing(user.diagnostics)){user.diagnostics <- x$aux[["user.diagnostics"]]}
-  if(missing(tol)){tol <- x$aux$tol}
-  if(missing(normality.JarqueB)){if(is.null(x$call$normality.JarqueB)){normality.JarqueB <- NULL}else{normality.JarqueB <- x$call$normality.JarqueB}}
-  if(missing(arch.LjungB)){arch.LjungB <- x$call$arch.LjungB}
-  if(missing(ar.LjungB)){ar.LjungB <- x$call$ar.LjungB}
-  
-  user.estimator <- x$aux$user.estimator
-  LAPACK <- x$aux$LAPACK
-  
-  ##create an arx-like object:
-  y <- x$aux$y
-  y <- as.matrix(y)
-  colnames(y) <- x$aux$y.name
-  mxreg <- x$aux$mX
-  colnames(mxreg) <- x$aux$mXnames
-
-  # Save original arx mc warning setting and disable it here
-  tmpmc <- getOption("mc.warning")
-  options(mc.warning = FALSE)
-  
-  object <- do.call("arx", 
-                    list(y = y, mxreg = mxreg,
-                         ewma = NULL, mc = FALSE, ar = NULL, log.ewma = NULL, # would be in mxreg already
-                         vc = FALSE, arch = NULL, asym = NULL, # currently not possible via isat
-                         vxreg = NULL, zero.adj = 0.1, # currently not possible via isat
-                         vc.adj = TRUE, qstat.options = NULL,  # currently not possible via isat
-                         vcov.type = vcov.type,
-                         normality.JarqueB = if(is.null(normality.JarqueB)){FALSE}else{normality.JarqueB},
-                         user.estimator = user.estimator,
-                         user.diagnostics = user.diagnostics,
-                         tol = tol,
-                         LAPACK = LAPACK, 
-                         singular.ok = TRUE,
-                         plot = NULL))
-  object$aux$y.name <- x$aux$y.name
-  object$call$user.estimator <- user.estimator
-  object$call$user.diagnostics <- user.diagnostics
-  
-  ##github version:             
-  #object <- as.arx(x, plot = FALSE, ar = FALSE) # some arguments pre-set because they will already be in isat if needed
+  object <- as.arx(x) 
   
   ##return result:
   out <- getsm(
@@ -684,9 +680,6 @@ gets.isat <- function(x, t.pval=0.05, wald.pval=t.pval, vcov.type = NULL,
     alarm
   )
   
-  # Set the old arx mc warning again
-  options(mc.warning = tmpmc)
-  
   return(out)
   
 } #close gets.isat() function
@@ -711,17 +704,17 @@ logLik.isat <- function(object, ...)
 ##==================================================
 ## plot isat object
 plot.isat <- function(x, col=c("red","blue"),
-  lty=c("solid","solid"), lwd=c(1,1), coef.path=TRUE, ...)
+                      lty=c("solid","solid"), lwd=c(1,1), coef.path=TRUE, ...)
 {
-
-#  ##check if mean quation:
-#  if( is.null(x$mean.results) ){
-#    cat("No mean equation to plot\n")
-#  }
-
+  
+  #  ##check if mean quation:
+  #  if( is.null(x$mean.results) ){
+  #    cat("No mean equation to plot\n")
+  #  }
+  
   ##if fitted mean:
   if(!is.null(x$mean.fit)){
-
+    
     ##check line width:
     if(length(lwd)==1){
       print("lwd needs two arguments, but only one provided. Single argument applied to all lines plotted.")
@@ -730,7 +723,7 @@ plot.isat <- function(x, col=c("red","blue"),
       print("lwd needs two arguments, but more provided. First two used.")
       lwd=lwd[1:2]
     }
-
+    
     ##check line type:
     if(length(lty)==1){
       print("lty needs two arguments, but only one provided. Single argument applied to all lines plotted.")
@@ -739,10 +732,10 @@ plot.isat <- function(x, col=c("red","blue"),
       print("lty needs two arguments, but more provided. First two used.")
       lty=lty[1:2]
     }
-
+    
     ##check colour:
     if(length(col)!=2){
-
+      
       #####randomcol - returns random combination of colours of length 2
       randomcol <- function()
       {
@@ -761,7 +754,7 @@ plot.isat <- function(x, col=c("red","blue"),
         col<-rgb(runif(2),runif(2),runif(2))
         return(col)
       } #end randomcol
-
+      
       ###clashcol function - returns clashing (opposite) combination of colours
       clashcol <- function()
       {
@@ -773,7 +766,7 @@ plot.isat <- function(x, col=c("red","blue"),
         col <- rgb(c(r.1,b.2-r.1),c(g.1,b.2-g.1),c(b.1,b.2-b.1))
         return(col)
       } #end clashcol
-
+      
       ##if random:
       if(col[1]=="random") {
         col <- randomcol()
@@ -784,17 +777,17 @@ plot.isat <- function(x, col=c("red","blue"),
         col<-randomcol()
       }
     }
-
+    
     ##get fitted and actual values, and dependent variable name
     fitted <- x$mean.fit
     actual <- zoo(x$aux$y, order.by=x$aux$y.index)
     residuals <- x$std.residuals
     actual.name <- x$aux$y.name
-
+    
     ##get current par-values, set new ones:
     def.par <- par(no.readonly=TRUE)
     par(mar=c(2,2,0.5,0.5))
-
+    
     ##if isat or coef-path:
     if( (x$gets.type=="isat" || coef.path==TRUE) && length(x$ISnames)!=0 ){
       par(mfrow=c(3,1))
@@ -804,7 +797,7 @@ plot.isat <- function(x, col=c("red","blue"),
     }else{
       par(mfrow=c(2,1))
     }
-
+    
     ##comment?
     if(is.regular(actual)) {
       plot(actual, main = "",ylim=range(min(actual,fitted,na.rm=TRUE),max(actual,fitted,na.rm=TRUE)),
@@ -818,7 +811,7 @@ plot.isat <- function(x, col=c("red","blue"),
     }else{
       lines(as.Date(index(fitted)),coredata(fitted),col=col[1])
     }
-
+    
     legend("topleft",lty=lty,lwd=lwd,ncol=2,col=col[c(2,1)],legend=c(actual.name,"fitted"),bty="n")
     if(is.regular(residuals)) {
       plot(residuals,type="h",col=col[1])
@@ -826,25 +819,25 @@ plot.isat <- function(x, col=c("red","blue"),
     else{
       plot(as.Date(index(residuals)),coredata(residuals),type="h",col=col[1])
     }
-
+    
     abline(0,0)
     legend("topleft",lty=1,col=col[1],legend="standardised residuals",bty="n")
-#    legend("topleft",lty=1,col=col[1],legend=c(paste(actual.name,"standardised residuals",sep=": ")),bty="n")
-
+    #    legend("topleft",lty=1,col=col[1],legend=c(paste(actual.name,"standardised residuals",sep=": ")),bty="n")
+    
     ##coefficient path
     if( (x$gets.type=="isat" | coef.path==TRUE) & length(x$ISnames)!=0 ) {
       ## we only get standard error bars if TIS *not* run
-
-
+      
+      
       ###if tis is there and it is not null, then don't plot, else
-
-
+      
+      
       if(!is.null(as.list(x$call)$tis) && as.logical(as.character(as.list(x$call)$tis))==TRUE){
         message("\n", appendLF=FALSE)
         message("NB: Because TIS selected, coefficient standard errors invalid hence not plotted",
-          appendLF=TRUE)
-#OLD:
-#        cat("\nNB: Because TIS selected, coefficient standard errors invalid hence not plotted\n", sep="")
+                appendLF=TRUE)
+        #OLD:
+        #        cat("\nNB: Because TIS selected, coefficient standard errors invalid hence not plotted\n", sep="")
         ylim.values <- range(coef.path.0)
         if(is.regular(coef.path.0)) {
           ylim.values <- range(coef.path.0)
@@ -853,7 +846,7 @@ plot.isat <- function(x, col=c("red","blue"),
           plot(as.Date(index(coef.path.0)),coredata(coef.path.0),type="l",col=col[1],ylim=ylim.values)
         }
       }   else {
-
+        
         coef.path.v <- isatvar(x)
         if(is.regular(coef.path.0)) {
           ylim.values <- range(min(coef.path.0-qt(0.975, NROW(coef.path.0))*coef.path.v$const.se),
@@ -866,15 +859,15 @@ plot.isat <- function(x, col=c("red","blue"),
           plot(as.Date(index(coef.path.0)),coredata(coef.path.0),type="l",col=col[1],ylim=ylim.values)
           lines(as.Date(index(coef.path.0)),coredata(coef.path.0)+qt(0.975, NROW(coef.path.0))*coef.path.v$const.se,type="l",col=col[1],lty=3)
           lines(as.Date(index(coef.path.0)),coredata(coef.path.0)-qt(0.975, NROW(coef.path.0))*coef.path.v$const.se,type="l",col=col[1],lty=3)
-
+          
         }
-
+        
       }
-
+      
       abline(0,0,lty=3)
       legend("topleft",lty=1,col=col[1],legend=c(paste(actual.name,"Coefficient Path",sep=": ")),bty="n")
     }
-
+    
     #return to old par-values:
     par(def.par)
   }
@@ -883,42 +876,42 @@ plot.isat <- function(x, col=c("red","blue"),
 ##==================================================
 ## forecast up to n.ahead
 predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
-  newindex=NULL, n.sim=2000, probs=NULL, ci.levels=NULL,
-  quantile.type=7, return=TRUE, verbose=FALSE, plot=NULL,
-  plot.options=list(), ...)
-
+                         newindex=NULL, n.sim=2000, probs=NULL, ci.levels=NULL,
+                         quantile.type=7, return=TRUE, verbose=FALSE, plot=NULL,
+                         plot.options=list(), ...)
+  
 {
   ## 1 arguments of mean-equation
   ## 2 make plot.options argument
   ## 3 pass arguments on to predict.arx
   ## 4 return forecasts
-
+    
+  dots <- list(...)
   ##create new object to add stuff to in order to use predict.arx()
   objectNew <- object
-
+  
   ##-----------------------------------
   ## 1 arguments of mean-equation:
   ##-----------------------------------
-
   ##coefficients of mean spec in final model:
   coefsMean <- coef.arx(objectNew, spec="mean")
-
+  
   ##there is no mean equation:
   if( length(coefsMean)==0 ){
-
+    
     objectNew$call$mc <- NULL
     objectNew$call$ar <- NULL
     objectNew$call$ewma <- NULL
     objectNew$call$mxreg <- NULL
-
+    
   }
-
+  
   ##there is a mean equation:
   if( length(coefsMean)>0 ){
-
+    
     ##initiate index counter (used for mxreg):
     indxCounter <- 0
-
+    
     ##mc argument:
     mconstRetained <- "mconst" %in% names(coefsMean)
     if( mconstRetained ){
@@ -926,14 +919,15 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
       indxCounter <- indxCounter + 1
     }else{
       objectNew$call$mc <- FALSE
-#OLD (until version 0.27):      
-#      objectNew$call$mc <- NULL
+      #OLD (until version 0.27):      
+      #      objectNew$call$mc <- NULL
     }
-
+    
     ##ar argument:
-    gumTerms <- eval(object$call$ar)
-#OLD:
-#    gumTerms <- eval(object$aux$call.gum$ar)
+    # gumTerms <- eval(object$call$ar)
+    gumTerms <- object$aux$args$ar
+    #OLD:
+    #    gumTerms <- eval(object$aux$call.gum$ar)
     gumNamesAr <- paste0("ar", gumTerms)
     whichRetained <- which( gumNamesAr %in% names(coefsMean) )
     if( length(whichRetained)==0 ){
@@ -942,11 +936,12 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
       objectNew$call$ar <- gumTerms[ whichRetained ]
       indxCounter <- indxCounter + length(whichRetained)
     }
-
+    
     ##ewma argument:
-    gumTerms <- eval(object$call$ewma)
-#OLD:
-#    gumTerms <- eval(object$aux$call.gum$ewma)
+    #gumTerms <- eval(object$call$ewma)
+    gumTerms <- object$aux$args$ewma
+    #OLD:
+    #    gumTerms <- eval(object$aux$call.gum$ewma)
     gumNamesEwma <- paste0("EqWMA(", gumTerms$length, ")")
     whichRetained <- which( gumNamesEwma %in% names(coefsMean) )
     if( length(whichRetained)==0 ){
@@ -956,27 +951,143 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
         list( length=gumTerms$length[ whichRetained ] )
       indxCounter <- indxCounter + length(whichRetained)
     }
-
+    
     ##mxreg argument:
     if(indxCounter==0){ whichRetainedCoefs <- coefsMean }
     if(indxCounter>0){ whichRetainedCoefs <- coefsMean[ -c(1:indxCounter) ] }
     if( length(whichRetainedCoefs)==0 ){
       objectNew$call$mxreg <- NULL
+      whichRetainedNames <- NULL
     }else{
       whichRetainedNames <- names(whichRetainedCoefs)
       objectNew$call$mxreg <- whichRetainedNames
-#more correct (but not needed, since mxreg only needs to be non-NULL)?:
-#      whichRetained <- which( object$aux$mXnames %in% whichRetainedNames )
-#      mxreg <- cbind(object$aux$mX[, whichRetained ])
-#      colnames(mxreg) <- whichRetainedNames
-#      objectNew$call$mxreg <- mxreg
+      #more correct (but not needed, since mxreg only needs to be non-NULL)?:
+      #      whichRetained <- which( object$aux$mXnames %in% whichRetainedNames )
+      #      mxreg <- cbind(object$aux$mX[, whichRetained ])
+      #      colnames(mxreg) <- whichRetainedNames
+      #      objectNew$call$mxreg <- mxreg
     }
-
+    
+    # if newmxreg is NULL, and there are ISnames in the object, and uis.logical is FALSE, 
+    # and all whichRetainedNames are in ISnames, then 
+    # create an empty newmxreg matrix with n.ahead rows and 0 columns
+    # this is to enter the IS creation mode
+    if (is.null(newmxreg) &&
+        !is.null(object$ISnames) &&
+        !isTRUE(object$aux$args$uis.logical) &&
+        length(setdiff(whichRetainedNames, object$ISnames)) == 0L) {
+      newmxreg <- matrix(numeric(0), nrow = n.ahead, ncol = 0)
+    }
+    
+    if(!is.null(newmxreg)){
+      
+      # check if newmxreg is the right format
+      if(!is.matrix(newmxreg) && !is.data.frame(newmxreg)){
+        stop("newmxreg must be a matrix or data frame")
+      }
+      
+      if(is.null(object$aux$args$uis.logical)) {object$aux$args$uis.logical <- FALSE}
+      if(ncol(newmxreg) == length(whichRetainedNames) & !is.null(object$ISnames) & !object$aux$args$uis.logical){
+        if(is.null(dots$quiet) || !isTRUE(dots$quiet)){
+          message(paste0("You have provided new data for the following IIS, SIS, or TIS indicators (which are also in object$ISnames):\n",
+                         paste0(object$ISnames[object$ISnames %in% colnames(newmxreg)], collapse = ", "),"\n",
+                         "Since gets version 0.40 this is not necessary anymore (for user convenience), as the new indicators can be automatically generated for forecasting.\n",
+                         "The newmxreg argument will still be used but consider removing the indicators. To quiet this message set 'quiet = TRUE'."))
+        }
+        
+        # check the order of the names
+        if(!all(colnames(newmxreg) == whichRetainedNames)){
+          current_names <- colnames(newmxreg)
+          
+          source_pos <- match(whichRetainedNames, current_names)
+          target_pos <- which(!is.na(source_pos))
+          
+          order_idx <- integer(ncol(newmxreg))
+          
+          # Put matched named columns into their required positions
+          order_idx[target_pos] <- source_pos[target_pos]
+          
+          # Fill the remaining positions with unmatched columns in existing order
+          remaining_targets <- which(order_idx == 0L)
+          remaining_sources <- setdiff(seq_len(ncol(newmxreg)), source_pos[!is.na(source_pos)])
+          
+          order_idx[remaining_targets] <- remaining_sources
+          
+          newmxreg <- newmxreg[, order_idx, drop = FALSE]
+        }
+        
+      } else {
+        # check if any indicators were supplied in newmxreg
+        indics.isatdates <- isatdates(object)
+        indicators.in.obj <- c(indics.isatdates$iis$breaks,indics.isatdates$sis$breaks,indics.isatdates$tis$breaks)
+        
+        # create the indicators
+        indicators <- matrix(nrow = n.ahead, ncol = 0)
+        if(any(indicators.in.obj %in% indics.isatdates$iis$breaks)){
+          missing_iis <- indicators.in.obj[indicators.in.obj %in% indics.isatdates$iis$breaks]
+          iis_index <- indics.isatdates$iis$index[indics.isatdates$iis$breaks %in% missing_iis]
+          iis_indics <- iim(x = object$aux$y.n + n.ahead, which.ones = iis_index)
+          iis_to_add <- as.data.frame(tail(iis_indics, n.ahead))
+          indicators <- cbind(indicators, iis_to_add)
+        }
+        if(any(indicators.in.obj %in% indics.isatdates$sis$breaks)){
+          missing_sis <- indicators.in.obj[indicators.in.obj %in% indics.isatdates$sis$breaks]
+          sis_index <- indics.isatdates$sis$index[indics.isatdates$sis$breaks %in% missing_sis]
+          sis_indics <- sim(x = object$aux$y.n + n.ahead, which.ones = sis_index)
+          sis_to_add <- as.data.frame(tail(sis_indics, n.ahead))
+          indicators <- cbind(indicators, sis_to_add)
+        }
+        if(any(indicators.in.obj %in% indics.isatdates$tis$breaks)){
+          missing_tis <- indicators.in.obj[indicators.in.obj %in% indics.isatdates$tis$breaks]
+          tis_index <- indics.isatdates$tis$index[indics.isatdates$tis$breaks %in% missing_tis]
+          tis_indics <- tim(x = object$aux$y.n + n.ahead, which.ones = tis_index)
+          tis_to_add <- as.data.frame(tail(tis_indics, n.ahead))
+          indicators <- cbind(indicators, tis_to_add)
+        }
+        # check the UIS indicators
+        if(object$aux$args$uis.logical){
+          if(length(indicators.in.obj) < length(object$ISnames)){
+            if(ncol(newmxreg) < length(whichRetainedNames)){
+              stop(paste0("Your object isat contains UIS indicators but not all UIS indicators are in newmxreg or has fewer columns than the mxreg in the isat object. The following are missing:\n",
+                          paste0(object$ISnames[!object$ISnames %in% colnames(newmxreg)], collapse = ", "),"\n",
+                          "Please provide all UIS indicators in newmxreg. predict.isat can only generate IIS, SIS, and TIS indicators automatically.")) 
+            }}}
+        
+        # check if any indicators are already identically in newmxreg
+        if(ncol(indicators)>0){
+          # find out indicator positions
+          indicator_positions <- vapply(seq_len(ncol(indicators)),function(i) {
+            match_i <- which(apply(newmxreg,2,function(x) all(x == indicators[, i])))
+            if (length(match_i) == 0L) {NA_integer_} else {match_i[1L]}
+          }, integer(1) )
+          
+          if(any(!is.na(indicator_positions)) && (is.null(dots$quiet) || !isTRUE(dots$quiet))){
+            message(paste0("You have provided new data for the following IIS, SIS, or TIS indicators (which are also in object$ISnames):\n",
+                           paste0(object$ISnames[object$ISnames %in% colnames(newmxreg)], collapse = ", "),"\n",
+                           "Since gets version 0.40 this is not necessary anymore (for user convenience), as the new indicators can be automatically generated for forecasting.\n",
+                           "The newmxreg argument will still be used but consider removing the indicators. To quiet this message set 'quiet = TRUE'."))
+          }
+          
+          ordered_indicators <- indicators
+          
+          for (i in seq_len(ncol(indicators))) {
+            if (!is.na(indicator_positions[i])) {
+              ordered_indicators[, i] <- newmxreg[, indicator_positions[i]]
+            }
+          }
+          
+          supplied_indicator_cols <- unique(stats::na.omit(indicator_positions))
+          
+          if (length(supplied_indicator_cols) > 0L) {newmxreg <- newmxreg[, -supplied_indicator_cols,drop = FALSE]}
+          newmxreg <- cbind(newmxreg, ordered_indicators)
+        }
+      }
+    }
   } #end if( length(coefsMean)>0 )
-
+  
   ##here: introduce the automated detection of indicators and how they
   ##should modify newmxreg?
-
+  
   ##----------------------------------
   ## 2 make plot.options argument:
   ##----------------------------------
@@ -995,179 +1106,187 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
   ##-------------------------------------
   ## 3 pass arguments on to predict.arx:
   ##-------------------------------------
-
+  
   innov <- rnorm(n.ahead*n.sim) #force normal errors
   result <- predict.arx(objectNew, spec="mean", n.ahead=n.ahead,
-    newmxreg=newmxreg, newvxreg=NULL, newindex=newindex,
-    n.sim=n.sim, innov=innov, probs=probs, ci.levels=ci.levels,
-    quantile.type=quantile.type, return=return, verbose=verbose,
-    plot=plot, plot.options=plot.options)
-
+                        newmxreg=newmxreg, newvxreg=NULL, newindex=newindex,
+                        n.sim=n.sim, innov=innov, probs=probs, ci.levels=ci.levels,
+                        quantile.type=quantile.type, return=return, verbose=verbose,
+                        plot=plot, plot.options=plot.options, ... = dots)
+  
   ##---------------------
   ## 4 return forecasts:
   ##---------------------
-
+  
   if(return){ return(result) }
-
+  
 } #close predict.isat
 
 ##==================================================
 # ## print isat results
 print.isat <- function(x, signif.stars=TRUE, ...)
-  {
-    
-    ##messages from final gets:
-    #if(!is.null(x$messages)){ message(x$messages) }
-    
-    ##header:
+{
+  
+  ##messages from final gets:
+  #if(!is.null(x$messages)){ message(x$messages) }
+  
+  ##header:
+  cat("\n")
+  cat("Date:", x$date, "\n")
+  cat("Dependent var.:", x$aux$y.name, "\n")
+  cat("Method: Ordinary Least Squares (OLS)\n")
+  cat("Variance-Covariance:", switch(x$aux$vcov.type,
+                                     ordinary = "Ordinary", white = "White (1980)",
+                                     "newey-west" = "Newey and West (1987)"), "\n")
+  
+  ##header - sample info:
+  cat("No. of observations (mean eq.):", x$aux$y.n, "\n")
+  tmp <- zoo(x$aux$y, order.by=x$aux$y.index)
+  
+  indexTrimmed <- index(na.trim(tmp))
+  isRegular <- is.regular(tmp, strict=TRUE)
+  isCyclical <- frequency(tmp) > 1
+  if(isRegular && isCyclical){
+    cycleTrimmed <- cycle(na.trim(tmp))
+    startYear <- floor(as.numeric(indexTrimmed[1]))
+    startAsChar <- paste(startYear,
+                         "(", cycleTrimmed[1], ")", sep="")
+    endYear <- floor(as.numeric(indexTrimmed[length(indexTrimmed)]))
+    endAsChar <- paste(endYear,
+                       "(", cycleTrimmed[length(indexTrimmed)], ")", sep="")
+  }else{
+    startAsChar <- as.character(indexTrimmed[1])
+    endAsChar <- as.character(indexTrimmed[length(indexTrimmed)])
+  }
+  cat("Sample:", startAsChar, "to", endAsChar, "\n")
+  
+  ####### START the part commented out 17 July 2019 by G-man:  
+  #
+  #  ##gum:
+  #  if(specType=="mean"){
+  #    cat("\n")
+  #    cat("GUM mean equation:\n")
+  #    cat("\n")
+  #    printCoefmat(x$gum.mean, dig.tst=0, tst.ind=c(1,2),
+  #                 signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
+  #  }
+  #  if(!is.null(x$gum.variance)){
+  #    cat("\n")
+  #    cat("GUM log-variance equation:\n")
+  #    cat("\n")
+  #    printCoefmat(x$gum.variance, signif.stars=FALSE)
+  #  }
+  #  cat("\n")
+  #  cat("Diagnostics and fit:\n")
+  #  cat("\n")
+  #  printCoefmat(x$gum.diagnostics, dig.tst=0, tst.ind=2,
+  #               signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
+  #  
+  #
+  #  ##paths:
+  #  cat("\n")
+  #  cat("Paths searched: \n")
+  #  cat("\n")
+  #  if(is.null(x$paths)){
+  #    print(NULL)
+  #  }else{
+  #    for(i in 1:length(x$paths)){
+  #      cat("path",i,":",x$paths[[i]],"\n")
+  #    }
+  #  } #end if(is.null(x$paths))
+  #  
+  #  ##terminal models and results:
+  #  if(!is.null(x$terminals)){
+  #    cat("\n")
+  #    cat("Terminal models: \n")
+  #    cat("\n")
+  #    for(i in 1:length(x$terminals)){
+  #      cat("spec",i,":",x$terminals[[i]],"\n")
+  #    }
+  #  }
+  #  if(!is.null(x$terminals.results)){
+  #    cat("\n")
+  #    printCoefmat(x$terminals.results, dig.tst=0, tst.ind=c(3,4),
+  #                 signif.stars=FALSE)
+  #  }
+  #
+  ####### END the part commented out 17 July 2019 by G-man  
+  
+  ##specific model:
+  if(!is.null(x$specific.spec)){
     cat("\n")
-    cat("Date:", x$date, "\n")
-    cat("Dependent var.:", x$aux$y.name, "\n")
-    cat("Method: Ordinary Least Squares (OLS)\n")
-    cat("Variance-Covariance:", switch(x$aux$vcov.type,
-                                       ordinary = "Ordinary", white = "White (1980)",
-                                       "newey-west" = "Newey and West (1987)"), "\n")
-    
-    ##header - sample info:
-    cat("No. of observations (mean eq.):", x$aux$y.n, "\n")
-    tmp <- zoo(x$aux$y, order.by=x$aux$y.index)
-    
-    indexTrimmed <- index(na.trim(tmp))
-    isRegular <- is.regular(tmp, strict=TRUE)
-    isCyclical <- frequency(tmp) > 1
-    if(isRegular && isCyclical){
-      cycleTrimmed <- cycle(na.trim(tmp))
-      startYear <- floor(as.numeric(indexTrimmed[1]))
-      startAsChar <- paste(startYear,
-                           "(", cycleTrimmed[1], ")", sep="")
-      endYear <- floor(as.numeric(indexTrimmed[length(indexTrimmed)]))
-      endAsChar <- paste(endYear,
-                         "(", cycleTrimmed[length(indexTrimmed)], ")", sep="")
-    }else{
-      startAsChar <- as.character(indexTrimmed[1])
-      endAsChar <- as.character(indexTrimmed[length(indexTrimmed)])
+    cat("SPECIFIC mean equation:\n")
+    cat("\n")
+    if(!is.null(x$mean.results)){
+      #print(x$mean.results)
+      # NEW (from Moritz, July 2020) as this more simple command works as expected: 
+      printCoefmat(x$mean.results,signif.stars = signif.stars)
+      
+      #OLD: DOES NOT WORK IN A PREDICTABLE WAY!
+      #      printCoefmat(x$mean.results, signif.stars=FALSE,
+      #        P.values=FALSE, has.Pvalues=FALSE)
     }
-    cat("Sample:", startAsChar, "to", endAsChar, "\n")
+    if(x$specific.spec[1]==0){
+      cat("empty\n")
+    }
+    ##in the future: use estimate.specific=FALSE more directly?
+    if(x$specific.spec[1]!=0 && is.null(x$mean.results)){
+      cat("Not estimated\n")
+    }
+  }
+  
+  # Information regarding include.gum argument
+  indicator.coefs <- x$mean.results[row.names(x$mean.results) %in% x$ISnames, ]
+  incl.gum.arg <- if(is.null(x$aux$args$include.gum)){TRUE} else {x$aux$args$include.gum}
+  if(incl.gum.arg & any(indicator.coefs$`p-value` > x$aux$args$t.pval)){
+    cat("\nNOTE: Result includes indicators that exceed the target p-value 't.pval'.\n")
+    cat("This could be caused by 'include.gum = TRUE'. Setting this to FALSE might avoid this.\n")
+  }
+  
+  ##diagnostics and fit:
+  if(!is.null(x$diagnostics)){
     
-    ####### START the part commented out 17 July 2019 by G-man:  
-    #
-    #  ##gum:
-    #  if(specType=="mean"){
-    #    cat("\n")
-    #    cat("GUM mean equation:\n")
-    #    cat("\n")
-    #    printCoefmat(x$gum.mean, dig.tst=0, tst.ind=c(1,2),
-    #                 signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
-    #  }
-    #  if(!is.null(x$gum.variance)){
-    #    cat("\n")
-    #    cat("GUM log-variance equation:\n")
-    #    cat("\n")
-    #    printCoefmat(x$gum.variance, signif.stars=FALSE)
-    #  }
-    #  cat("\n")
-    #  cat("Diagnostics and fit:\n")
-    #  cat("\n")
-    #  printCoefmat(x$gum.diagnostics, dig.tst=0, tst.ind=2,
-    #               signif.stars=FALSE, P.values=FALSE, has.Pvalue=FALSE)
-    #  
-    #
-    #  ##paths:
-    #  cat("\n")
-    #  cat("Paths searched: \n")
-    #  cat("\n")
-    #  if(is.null(x$paths)){
-    #    print(NULL)
-    #  }else{
-    #    for(i in 1:length(x$paths)){
-    #      cat("path",i,":",x$paths[[i]],"\n")
-    #    }
-    #  } #end if(is.null(x$paths))
-    #  
-    #  ##terminal models and results:
-    #  if(!is.null(x$terminals)){
-    #    cat("\n")
-    #    cat("Terminal models: \n")
-    #    cat("\n")
-    #    for(i in 1:length(x$terminals)){
-    #      cat("spec",i,":",x$terminals[[i]],"\n")
-    #    }
-    #  }
-    #  if(!is.null(x$terminals.results)){
-    #    cat("\n")
-    #    printCoefmat(x$terminals.results, dig.tst=0, tst.ind=c(3,4),
-    #                 signif.stars=FALSE)
-    #  }
-    #
-    ####### END the part commented out 17 July 2019 by G-man  
+    #fit-measures:
+    mGOF <- matrix(NA, 3, 1)
+    rownames(mGOF) <- c("SE of regression", "R-squared",
+                        paste0("Log-lik.(n=", x$n, ")"))
+    colnames(mGOF) <- ""
+    mGOF[1,1] <- sigma.isat(x) #OLD: sqrt(x$sigma2)
+    mGOF[2,1] <- rsquared(x) #OLD: x$specific.diagnostics[4,1]
+    mGOF[3,1] <- as.numeric(logLik.isat(x)) #OLD: x$logl
+    #mGOF[4,1] <- outliertest(x)$#x$logl #OLD: as.numeric(logLik.arx(x))
     
-    ##specific model:
-    if(!is.null(x$specific.spec)){
+    cat("\n")
+    cat("Diagnostics and fit:\n")
+    cat("\n")
+    printCoefmat(x$diagnostics, tst.ind=2,signif.stars=signif.stars, has.Pvalue = TRUE)
+    
+    
+    if(!is.null(x$outlier.distortion.test)){
+      #cat("\nJiao-Pretis-Schwarz Outlier Distortion Test")
+      mOutl_d <- matrix(NA, 1, 3)
+      colnames(mOutl_d) <- c("Chi-sq","df", "p-value")
+      rownames(mOutl_d) <- c("Jiao-Pretis-Schwarz Outlier Distortion")
+      mOutl_d[1,] <- c(x$outlier.distortion.test$statistic,x$outlier.distortion.test$df,x$outlier.distortion.test$p.value)
       cat("\n")
-      cat("SPECIFIC mean equation:\n")
-      cat("\n")
-      if(!is.null(x$mean.results)){
-        #print(x$mean.results)
-        # NEW (from Moritz, July 2020) as this more simple command works as expected: 
-        printCoefmat(x$mean.results,signif.stars = signif.stars)
-        
-        #OLD: DOES NOT WORK IN A PREDICTABLE WAY!
-        #      printCoefmat(x$mean.results, signif.stars=FALSE,
-        #        P.values=FALSE, has.Pvalues=FALSE)
-      }
-      if(x$specific.spec[1]==0){
-        cat("empty\n")
-      }
-      ##in the future: use estimate.specific=FALSE more directly?
-      if(x$specific.spec[1]!=0 && is.null(x$mean.results)){
-        cat("Not estimated\n")
-      }
+      printCoefmat(mOutl_d, digits=6, signif.stars = TRUE,P.values = TRUE, has.Pvalue = TRUE, signif.legend = FALSE)
     }
     
-    ##diagnostics and fit:
-    if(!is.null(x$diagnostics)){
-      
-      #fit-measures:
-      mGOF <- matrix(NA, 3, 1)
-      rownames(mGOF) <- c("SE of regression", "R-squared",
-                          paste0("Log-lik.(n=", x$n, ")"))
-      colnames(mGOF) <- ""
-      mGOF[1,1] <- sigma.isat(x) #OLD: sqrt(x$sigma2)
-      mGOF[2,1] <- rsquared(x) #OLD: x$specific.diagnostics[4,1]
-      mGOF[3,1] <- as.numeric(logLik.isat(x)) #OLD: x$logl
-      #mGOF[4,1] <- outliertest(x)$#x$logl #OLD: as.numeric(logLik.arx(x))
-      
+    if(!is.null(x$outlier.proportion.test)){
+      #cat("\nJiao-Pretis Outlier Proportion Test")
+      mOutl_p <- matrix(NA, 2, 2)
+      colnames(mOutl_p) <- c("Stat.", "p-value")
+      rownames(mOutl_p) <- c("Jiao-Pretis Outlier Proportion", "Jiao-Pretis Outlier Count")
+      mOutl_p[1,] <- c(x$outlier.proportion.test$prop$statistic, x$outlier.proportion.test$prop$p.value)
+      mOutl_p[2,] <- c(x$outlier.proportion.test$count$statistic, x$outlier.proportion.test$count$p.value)
       cat("\n")
-      cat("Diagnostics and fit:\n")
-      cat("\n")
-      printCoefmat(x$diagnostics, tst.ind=2,signif.stars=signif.stars, has.Pvalue = TRUE)
-      
-      
-      if(!is.null(x$outlier.distortion.test)){
-        #cat("\nJiao-Pretis-Schwarz Outlier Distortion Test")
-        mOutl_d <- matrix(NA, 1, 3)
-        colnames(mOutl_d) <- c("Chi-sq","df", "p-value")
-        rownames(mOutl_d) <- c("Jiao-Pretis-Schwarz Outlier Distortion")
-        mOutl_d[1,] <- c(x$outlier.distortion.test$statistic,x$outlier.distortion.test$df,x$outlier.distortion.test$p.value)
-        cat("\n")
-        printCoefmat(mOutl_d, digits=6, signif.stars = TRUE,P.values = TRUE, has.Pvalue = TRUE, signif.legend = FALSE)
-      }
-      
-      if(!is.null(x$outlier.proportion.test)){
-        #cat("\nJiao-Pretis Outlier Proportion Test")
-        mOutl_p <- matrix(NA, 2, 2)
-        colnames(mOutl_p) <- c("Stat.", "p-value")
-        rownames(mOutl_p) <- c("Jiao-Pretis Outlier Proportion", "Jiao-Pretis Outlier Count")
-        mOutl_p[1,] <- c(x$outlier.proportion.test$prop$statistic, x$outlier.proportion.test$prop$p.value)
-        mOutl_p[2,] <- c(x$outlier.proportion.test$count$statistic, x$outlier.proportion.test$count$p.value)
-        cat("\n")
-        printCoefmat(mOutl_p, digits=6, signif.stars = TRUE,P.values = TRUE, has.Pvalue = TRUE, signif.legend = FALSE) 
-      }
-      
-      printCoefmat(mGOF, digits=6, signif.stars=signif.stars)
-      
+      printCoefmat(mOutl_p, digits=6, signif.stars = TRUE,P.values = TRUE, has.Pvalue = TRUE, signif.legend = FALSE) 
     }
     
+    printCoefmat(mGOF, digits=6, signif.stars=signif.stars)
+    
+  }
+  
 }
 
 #OLD:
@@ -1360,25 +1479,25 @@ vcov.isat <- function(object, ...)
 ## needs orthogonal variables, can be applied directly to the coefficient path though in an isat only model
 ### purposefully not entirely usefriendly - needs many arguments, but it should be an expert user function
 biascorr <- function(b, b.se, p.alpha, T){
-
+  
   c_alpha <- abs(qt((1-(1-p.alpha))/2, T))
   bt <- b/b.se
-
+  
   dr <- (dnorm(c_alpha-bt)-dnorm(-c_alpha-bt))/ (1-pnorm(c_alpha-bt) + pnorm(-c_alpha-bt))
   dtbar <- bt - dr
   drbar <- (dnorm(c_alpha-dtbar)-dnorm(-c_alpha-dtbar))/ (1-pnorm(c_alpha-dtbar) + pnorm(-c_alpha-dtbar))
-
+  
   #only correct if significant
-
+  
   b_1step <- b
   b_1step[abs(bt)>c_alpha] <- b[abs(bt)>c_alpha]*(1-(dr/bt))[abs(bt)>c_alpha]
-
+  
   b_2step <- b
   b_2step[abs(bt)>c_alpha] <- b[abs(bt)>c_alpha]*(1-(drbar/bt))[abs(bt)>c_alpha]
-
+  
   b_corr <- cbind(b, b_1step, b_2step)
   colnames(b_corr) <- c("beta", "beta.1step", "beta.2step")
-
+  
   return(b_corr)
 }
 
@@ -1393,8 +1512,8 @@ biascorr <- function(b, b.se, p.alpha, T){
 
 
 isattest <- function(x, hnull=0, lr=FALSE, ci.pval = 0.99,
-  plot=NULL, plot.turn = FALSE, conscorr=FALSE, effcorr=FALSE,
-  mcor = 1, biascorr=FALSE, mxfull = NULL, mxbreak=NULL)
+                     plot=NULL, plot.turn = FALSE, conscorr=FALSE, effcorr=FALSE,
+                     mcor = 1, biascorr=FALSE, mxfull = NULL, mxbreak=NULL)
 {
   trend.incl <- FALSE
   if(!is.null(as.list(x$call)$tis)){
@@ -1403,129 +1522,129 @@ isattest <- function(x, hnull=0, lr=FALSE, ci.pval = 0.99,
       trend.incl <- TRUE
     }
   }
-
+  
   arcall <- as.list(x$call)$ar
   x.var <- isatvar(x,lr=lr, conscorr=conscorr, effcorr=effcorr, mcor = mcor, mxfull = mxfull, mxbreak=mxbreak)
-
+  
   #misy1.var
-
-
+  
+  
   if (biascorr==TRUE){
-
+    
     if (!is.null(as.list(x$call)$mxreg) | !is.null(arcall) | trend.incl){
-
+      
       biascorr <- FALSE
       message("Bias Correction not applicable in isat regression with additional non-step covariates. Has been set to FALSE.")
     }
   }
-
-
+  
+  
   T <- dim(x$aux$mX)[1]
   N <- dim(x$aux$mX)[2]
-
+  
   crit <- abs(qt((1-ci.pval)/2, T-N))
   bias.low <- matrix(0, T, 1)
   bias.high <- matrix(0, T, 1)
-
+  
   ci.low <- matrix(0, T, 1)
   ci.high <- matrix(0, T, 1)
   x.mean <- matrix(0, T, 1)
-
+  
   if (lr == TRUE & !is.null(arcall))
   {
     x.is.lr <- x.var$lr.path
     x.is.const <- x.var$const.path
-
+    
   } else {
-
+    
     x.is.lr <- NA
-
+    
     if (biascorr){
-
+      
       xbias <-biascorr(b=x.var$const.path, b.se=x.var$const.se, p.alpha = x$aux$t.pval, T=length(x.var$const.path))
       x.is.const <- xbias$beta.2step
-
+      
     } else {
       x.is.const <- x.var$const.path
-
+      
     }
-
-
+    
+    
   }
-
-
+  
+  
   if (lr == TRUE & !is.null(arcall))
   {
-
+    
     ci.low <- x.var$lr.path-crit*x.var$lr.se
     ci.high <- x.var$lr.path+crit*x.var$lr.se
-
+    
     bias.low[which((ci.low) > hnull)] <- 1
     bias.high[which((ci.high) < hnull)] <- 1
-
+    
     bias.low <- bias.low*(x.var$lr.path-hnull)
     bias.high <- bias.high*(x.var$lr.path-hnull)
-
+    
     x.mean <- x.var$lr.path
-
+    
   } else {
-
+    
     ci.low <- x.is.const-crit*x.var$const.se
     ci.high <- x.is.const+crit*x.var$const.se
-
+    
     bias.low[which((ci.low) > hnull)] <- 1
     bias.high[which((ci.high) < hnull)] <- 1
-
-
+    
+    
     bias.low <- bias.low*(x.is.const-hnull)
     bias.high <- bias.high*(x.is.const-hnull)
-
+    
     x.mean <- x.is.const
-
+    
   }
-
+  
   ###determining the turning points
   time <- x$aux$y.index
   bias.sum.ar <- bias.low+bias.high
   lr.path.d <- diff(bias.sum.ar)
-
-
+  
+  
   if(all(lr.path.d==0)){
     plot.turn <- FALSE
     turn.ar <- NULL
   } else {
     turn.ar <- time[which(lr.path.d != 0)]+1
   }
-
+  
   turn.ar.y <- bias.sum.ar[which(lr.path.d != 0)]
-
+  
   turn.x.lab <- turn.ar
   turn.x <- turn.ar
-
+  
   fitted <- x$mean.fit
   actual <- zoo(x$aux$y, order.by=x$aux$y.index)
-
+  
   ylabel_a <- "Coefficient"
   ylabel_b <- "Bias"
-
-
-
+  
+  
+  
   Ylim_main <- c(min(actual, na.rm=TRUE)*1.2,max(actual, na.rm=TRUE)*1.2)
   Ylim_bias <- c(min(bias.high, na.rm=TRUE)*1.2,max(bias.low, na.rm=TRUE)*1.2)
-
+  
   ##plot argument:
   if( is.null(plot) ){
     plot <- getOption("plot")
     if( is.null(plot) ){ plot <- FALSE }
   }
-
+  
   if (plot){
     par(mfrow=c(2,1), mar = c(2, 4,1,3))
     plot(time, x.mean, ylim=Ylim_main, col="red", main=NULL, xlab=NA, ylab=ylabel_a, sub=NA, type="l")
-
+    
     lines(ci.low, col="red", lty=2)
     lines(ci.high, col="red", lty=2)
-
+    
     if (is.null(mxbreak))
     {
       lines(actual, col="blue")
@@ -1533,28 +1652,28 @@ isattest <- function(x, hnull=0, lr=FALSE, ci.pval = 0.99,
     abline(a =hnull, b=0, col="black", lty=3, lwd=2)
     plot(time, bias.low, type="h", col="red", ylim=Ylim_bias, main=NULL, xlab=NA, ylab=ylabel_b, sub=NA)
     lines(bias.high, type="h", col="red")
-
+    
     if ( plot.turn ){
       text(turn.x.lab, y=turn.ar.y, x=turn.x, pos=4, offset=-0.5, cex=0.8)
     }
   }
-
-
+  
+  
   if (lr==TRUE & !is.null(arcall))
   {
     mean.var <- cbind(ci.low, ci.high, bias.low,  bias.high)
     colnames(mean.var) <- c("ci.low", "ci.high", "bias.high",  "bias.low")
-
-
+    
+    
   } else {
     mean.var <- cbind( ci.low, ci.high, bias.low,  bias.high)
     colnames(mean.var) <- c("ci.low", "ci.high", "bias.high",  "bias.low")
-
+    
   }
-
-
+  
+  
   return(mean.var)
-
+  
 } #isattest function closed
 
 
@@ -1574,56 +1693,56 @@ isattest <- function(x, hnull=0, lr=FALSE, ci.pval = 0.99,
 
 isatvar <- function(x, lr=FALSE, conscorr=FALSE, effcorr=FALSE, mcor = 1,  mxfull = NULL, mxbreak=NULL)
 {
-
-
-
+  
+  
+  
   if (lr == TRUE && !is.null(mxfull)){
     message("Warning: LR currently not defined with user-specified break variables. LR set to FALSE")
     lr <- FALSE
   }
-
-
-
+  
+  
+  
   if(!is.null(as.list(x$call)$uis) && is.null(mxfull)){
-
+    
     if (!is.null(as.list(x$call)$iis) || !is.null(as.list(x$call)$sis) ){
       message("Warning: uis specified but no mxfull variable given. Using mconst instead.")
       mxfull <- "mconst"
     } else {
       stop("uis specified but no mxfull variable given")
     }
-
-
+    
+    
   }
-
-
+  
+  
   if (is.null(mxfull)){   ##if no full variable is specified, then the constant is used
     mxfull <- "mconst"
   }
-
-
+  
+  
   if (!is.null(x$mean.fit)){
-
+    
     if (!is.null(mxbreak))
     {
-
+      
       ISnames <- x$ISnames[grep(mxbreak, x$ISnames)]
       ####################################
     } else {
-
+      
       mxbreak_iis <- "iis"
       mxbreak_sis <- "sis"
-
+      
       ISnames <- c(x$ISnames[grep(mxbreak_iis, x$ISnames)], x$ISnames[grep(mxbreak_sis, x$ISnames)])
     }
-
-
+    
+    
     if (!is.null(ISnames)){
-
-
+      
+      
       var.rel <- c( which(substr(x$aux$mXnames,1,6) %in% mxfull), which(x$aux$mXnames %in% ISnames))
-
-
+      
+      
       if (conscorr==TRUE){
         x$vcov.mean <- x$vcov.mean*as.numeric(isvarcor(x$aux$t.pval,1)[2]^2)
       }
@@ -1639,133 +1758,133 @@ isatvar <- function(x, lr=FALSE, conscorr=FALSE, effcorr=FALSE, mcor = 1,  mxful
                                                                                                1, mcor)[2]^2)
         }
       }
-
+      
       #coefficient path function
       is.x <- cbind(x$aux$mX[, x$aux$mXnames %in% ISnames])
       is.coef.ests <- coef.isat(x)[ISnames]
-
+      
       if(is.null(mxfull)){
         coef.path <- zoo(is.x %*% is.coef.ests, order.by = x$aux$y.index)
       } else {
         is.x[is.x!=0] <- 1 #the break variable is not necessarily an indicator variable
         coef.path <- zoo(is.x %*% is.coef.ests, order.by = x$aux$y.index)
       }
-
-
-
-
+      
+      
+      
+      
       colnames(coef.path) <- "coef.path"
-
+      
       const <- coef.isat(x)[mxfull]
       const.path <- coef.path + const
       colnames(const.path) <- "const.path"
-
+      
     } else {
       var.rel <- which(substr(x$aux$mXnames,1,6) %in% mxfull)
-
+      
       #coefficient path function
       const <- coef.isat(x)[mxfull]
-
+      
       coef.path <- zoo(0, order.by = x$aux$y.index)
-
+      
       const.path <- coef.path + const
-
+      
     }
-
+    
     vcov.rel <- x$vcov.mean[var.rel,var.rel]
-
-
+    
+    
     dim.var <- NCOL(vcov.rel)
     const.var <- matrix(NA, dim.var, 1 )
-
+    
     #construct a matrix to multiply by the variances
     dim.in <- NCOL(x$aux$mX[,var.rel])
-
+    
     const.mat <- matrix(NA, NROW(x$aux$mX[,var.rel]), dim.in)
-
+    
     if(is.null(mxfull)){
       indic.mat <- x$aux$mX[,var.rel]
-
+      
     } else {
       indic.mat <- x$aux$mX[,var.rel]
       indic.mat[indic.mat!=0] <- 1
-
+      
     }
-
-
-
+    
+    
+    
     if (dim.var > 1) #if there are indicators retained
     {
-
+      
       #order the breaks in correct order so the covariance matrix and relevance order is correct
-
+      
       if(is.null(mxfull)){
         order.mat <- apply(indic.mat[,], 2, function(x) min(which(x==1)))  #find where each indicator is first one, for sorting
-
+        
       } else { #if using a custom break variable
         order.mat <- apply(indic.mat[,], 2, function(x) min(which(x!=0)))
       }
-
-
-
-
+      
+      
+      
+      
       indic.mat <- indic.mat[,order(order.mat)]  #order the indicators
       vcov.rel <- vcov.rel[order(order.mat),order(order.mat)] #order the covariance matrix
-
+      
       for (i in 1:dim.var)
       {
         const.var[i] <- sum(vcov.rel[1:i,1:i])   #sum over the expanding variance covariance matrix to get the variance of the sums of coefficients
       }
-
+      
       const.mat <- indic.mat
-
+      
       for (j in 2:(dim.in))
       {
-
+        
         const.mat[which(rowSums(as.matrix(const.mat[,(j):(dim.in)]))>0),j-1] <- 0     #puts zeros in the appropriate places to make sure the correct s.e. is applied for each point in time
-
+        
       }
-
+      
       ind.var.mat <- const.mat %*% const.var   #the variance as it applies to each subsection
-
+      
     } else { #just the constant remains
-
+      
       const.var <- vcov.rel
       const.mat <- indic.mat
       ind.var.mat <- const.mat * const.var
-
+      
     }
-
+    
     ind.se.mat <- sqrt(ind.var.mat)   #the standard errors of the coefficient as it changes with the SIS breaks
-
+    
     ####the coefficient path of the LR mean
-
+    
     if(lr){
       if (!is.null(as.list(x$call)$ar)){
-
+        
         if (!is.null(x$mean.fit)){
-
+          
           vcov.rel.tot <- x$vcov.mean
-
-
-
+          
+          
+          
           coef.rel <- coef.isat(x)
-
+          
           ###coefficient path of LR mean
-
+          
           arcall <- as.list(x$call)$ar
           arnames <- paste("ar",eval(as.expression(arcall)), sep="")
-
+          
           ar.coefs <- coef.isat(x)[arnames]
           ar.sum <- sum(ar.coefs)
           lr.path <- const.path/(1-ar.sum)
-
+          
           ###variance of the coefficient path
-
+          
           ar.var <- vcov.rel.tot[arnames,arnames] #variance of ar() terms
           armu.cov <- vcov.rel.tot[c(mxfull, ISnames), arnames] #covariance of ar(1) and const + sis
-
-
+          
+          
           if (!is.null(ISnames)) {
             var.rel <- c(which(substr(x$aux$mXnames, 1, 6) %in%
                                  mxfull), which(x$aux$mXnames %in% ISnames))
@@ -1773,7 +1892,7 @@ isatvar <- function(x, lr=FALSE, conscorr=FALSE, effcorr=FALSE, mcor = 1,  mxful
             var.rel <- which(substr(x$aux$mXnames, 1, 6) %in%
                                mxfull)
           }
-
+          
           vcov.rel <- x$vcov.mean[var.rel, var.rel]
           dim.var <- NCOL(vcov.rel)
           const.var <- matrix(NA, dim.var, 1)
@@ -1781,25 +1900,25 @@ isatvar <- function(x, lr=FALSE, conscorr=FALSE, effcorr=FALSE, mcor = 1,  mxful
           indic.mat <- x$aux$mX[, var.rel]
           const.mat <- matrix(NA, NROW(x$aux$mX[, var.rel]), dim.in)
           armu.cov.sum <- matrix(NA, dim.var, 1)
-
+          
           dim.ar <- NCOL(ar.var)
-
+          
           if (dim.var > 1) {
             order.mat <- apply(indic.mat[, ], 2, function(x) min(which(x ==
                                                                          1)))
             indic.mat <- indic.mat[, order(order.mat)]
             vcov.rel <- vcov.rel[order(order.mat), order(order.mat)]   #ordering the variables for cumulative summing for covariances of sis
-
+            
             #do the same for the autoregressive terms
-
+            
             if (dim.ar > 1) #if more than one ar term
             {
               armu.cov <- armu.cov[order(order.mat), ]
-
+              
             } else {
               armu.cov <- armu.cov[order(order.mat)]
             }
-
+            
             for (i in 1:dim.var) {
               const.var[i] <- sum(vcov.rel[1:i, 1:i])
               if (dim.ar > 1) #if more than one ar term
@@ -1809,52 +1928,52 @@ isatvar <- function(x, lr=FALSE, conscorr=FALSE, effcorr=FALSE, mcor = 1,  mxful
                 armu.cov.sum[i] <- sum(armu.cov[1:i])
               }
             }
-
+            
             const.mat <- indic.mat
             for (j in 2:(dim.in)) {
               const.mat[which(rowSums(as.matrix(const.mat[,
                                                           (j):(dim.in)])) > 0), j - 1] <- 0
             }
-
+            
             #variance of ar
             ar.var.sum <- sum(ar.var)
             ar.var.part <- ((const.path^2)/((1-ar.sum)^4))*ar.var.sum
-
+            
             #covariance and variance part of sis
             ind.var.mat <- const.mat %*% const.var # this one should be ok
             covar.is.part <- (1/(1-ar.sum)^2)*ind.var.mat
-
+            
             #covariance part of ar and sis
             ind.ar.covar.mat <- const.mat %*% armu.cov.sum
             covar.aris.part <- 2*((const.path)/(1-ar.sum)^2)*(1/(1-ar.sum))*ind.ar.covar.mat
-
+            
             lr.mean.var <- ar.var.part + covar.is.part + covar.aris.part
             lr.mean.se <- sqrt(lr.mean.var)
-
+            
           } else { #if no steps retained
-
+            
             ar.var.sum <- sum(ar.var)
             ar.var.part <- ((const.path^2)/((1-ar.sum)^4))*ar.var.sum
-
+            
             ind.var.mat <-  vcov.rel
             covar.is.part <- (1/(1-ar.sum)^2)*ind.var.mat
-
+            
             #covariance part of ar and sis
-
+            
             armu.cov.sum <- sum(armu.cov)
             ind.ar.covar.mat <- armu.cov.sum
             covar.aris.part <- 2*((const.path)/(1-ar.sum)^2)*(1/(1-ar.sum))*ind.ar.covar.mat
-
+            
             lr.mean.var <- ar.var.part + covar.is.part + covar.aris.part
             lr.mean.se <- sqrt(lr.mean.var)
-
+            
           }
-
+          
         } #if isnullxmean closed
-
+        
         if(!is.null(as.list(x$call)$tis)){
           if (as.list(x$call)$tis) { #if TIS
-
+            
             ind.var.mat <- NA
             ind.se.mat <- NA
             lr.path <- NA
@@ -1864,9 +1983,9 @@ isatvar <- function(x, lr=FALSE, conscorr=FALSE, effcorr=FALSE, mcor = 1,  mxful
         }
         const.varse <- cbind(coef.path, const.path, ind.var.mat, ind.se.mat, lr.path, lr.mean.var, lr.mean.se)
         colnames(const.varse) <- c("coef.path", "const.path", "const.var", "const.se", "lr.path", "lr.var", "lr.se")
-
+        
       }  else { #if there are no ar
-
+        
         if(!is.null(as.list(x$call)$tis)){
           if (as.list(x$call)$tis) { #if TIS
             ind.var.mat <- NA
@@ -1875,10 +1994,10 @@ isatvar <- function(x, lr=FALSE, conscorr=FALSE, effcorr=FALSE, mcor = 1,  mxful
         }
         const.varse <- cbind(coef.path, const.path, ind.var.mat, ind.se.mat)
         colnames(const.varse) <- c("coef.path", "const.path", "const.var", "const.se")
-
+        
       }  #if no ar closed
     } else {   #if no lr
-
+      
       if(!is.null(as.list(x$call)$tis)){
         if (as.list(x$call)$tis) {
           ind.var.mat <- NA
@@ -1887,16 +2006,16 @@ isatvar <- function(x, lr=FALSE, conscorr=FALSE, effcorr=FALSE, mcor = 1,  mxful
       }
       const.varse <- cbind(coef.path, const.path, ind.var.mat, ind.se.mat)
       colnames(const.varse) <- c("coef.path", "const.path", "const.var", "const.se")
-
-
-
+      
+      
+      
     }#if lr closed
-
+    
     const.varse <- zoo(const.varse , order.by=x$aux$y.index)
     return(const.varse)
-
+    
   } ##if (is null) closed
-
+  
 } #end isatvar
 
 
@@ -1905,22 +2024,22 @@ isatvar <- function(x, lr=FALSE, conscorr=FALSE, effcorr=FALSE, mcor = 1,  mxful
 #Equations (9) and (15) in Johansen and Nielsen (2016)
 
 isvarcor <- function(t.pval, sigma) {
-
+  
   alpha <- t.pval
   sigmals <- sigma
-
+  
   c <- abs(qnorm(alpha/2))
-
+  
   psi <- pnorm(c) - pnorm(-c)
   tau <- psi - 2*c*dnorm(c)
-
+  
   xi_sq <- tau/psi
-
+  
   xi <- sqrt(xi_sq)
   corrxi <- 1/xi
-
+  
   sigmacorr <- sigmals * corrxi
-
+  
   object <-  data.frame(cbind(sigmacorr, corrxi))
   names(object) <- c("sigma.cor", "corxi")
   return(object)
@@ -1932,19 +2051,19 @@ isvarcor <- function(t.pval, sigma) {
 ### Equation (37) in Johansen and Nielsen (2016)
 
 isvareffcor <- function(t.pval, se, m=1) {
-
+  
   alpha <- t.pval
-
+  
   c <- abs(qnorm(alpha/2))
-
+  
   psi <- pnorm(c) - pnorm(-c)
   tau <- psi - 2*c*dnorm(c)
-
+  
   rhobeta <- 2*c*dnorm(c)/psi
   etam <- (((1-rhobeta^m)/((1-rhobeta)*psi))^2 + 2 * (1-rhobeta^m)/((1-rhobeta)*psi)*rhobeta^m)*tau+rhobeta^(2*m)
-
+  
   se_cor <- se*sqrt(etam)
-
+  
   output <-  data.frame(cbind(se_cor, sqrt(etam) ))
   names(output) <- c("se.cor", "eta.m")
   return(output)
@@ -2383,7 +2502,7 @@ iim <- function(x, which.ones=NULL)
     mIIS <- matrix(0,n,n)
     diag(mIIS) <- 1
     colnames(mIIS) <- paste("iis", 1:n, sep="")
-    if(!is.null(which.ones)){ mIIS <- mIIS[,which.ones] }
+    if(!is.null(which.ones)){ mIIS <- mIIS[,which.ones, drop = FALSE] }
     mIIS <- as.zoo(mIIS)
   }else{
     n <- NROW(x)
@@ -2401,7 +2520,7 @@ iim <- function(x, which.ones=NULL)
       xIndexAsChar <- as.character(x.index)
     }
     colnames(mIIS) <- paste("iis",
-      xIndexAsChar, sep="")
+                            xIndexAsChar, sep="")
     mIIS <- zoo(mIIS, order.by=x.index)
     if(xIsRegular){ mIIS <- as.zooreg(mIIS) }
     if(!is.null(which.ones)){
@@ -2451,7 +2570,7 @@ sim <- function(x, which.ones=NULL)
       if(length(where.indicators)==0) stop("'which.ones' not in index")
     } #end if(is.null(which.ones))
   } #end if(NROW(x)==1)else(..)
-
+  
   n.where.indicators <- length(where.indicators)
   loop.indx <- 1:n.where.indicators
   mSIS <-matrix(0,n,n.where.indicators)
@@ -2462,10 +2581,10 @@ sim <- function(x, which.ones=NULL)
     mSIS <- as.zoo(mSIS)
   }else{
     colnames(mSIS) <- paste("sis",
-      xIndexAsChar[where.indicators], sep="")
+                            xIndexAsChar[where.indicators], sep="")
     if(xIsRegular && frequency(x)>1 ){
       mSIS <- zooreg(mSIS, frequency=xFrequency,
-        start=c(xIndexObs[1],xCycle[1]))
+                     start=c(xIndexObs[1],xCycle[1]))
     }else{
       mSIS <- zoo(mSIS, order.by=x.index)
     }
@@ -2521,7 +2640,7 @@ tim <- function(x, which.ones=NULL, log.trend=FALSE)
     mTIS <- as.zoo(mTIS)
   }else{
     colnames(mTIS) <- paste("tis",
-      xIndexAsChar[where.indicators], sep="")
+                            xIndexAsChar[where.indicators], sep="")
     mTIS <- zoo(mTIS, order.by=x.index)
     if(xIsRegular){ mTIS <- as.zooreg(mTIS) }
   }
@@ -2706,66 +2825,66 @@ vargaugeiis <- function(t.pval, T, infty=FALSE, m=1){
 
 
 outliertest <- function(x=NULL, noutl=NULL, t.pval=NULL, T=NULL,  m=1, infty=FALSE, alternative="two.sided"){
+  
+  # noutl=x$obs.gauge$obs.num[i]
+  # t.pval=x$obs.gauge$t.pval[i]
+  # T=x$n
+  # 
+  if (!is.null(x)){
     
-    # noutl=x$obs.gauge$obs.num[i]
-    # t.pval=x$obs.gauge$t.pval[i]
-    # T=x$n
-    # 
-    if (!is.null(x)){
+    classx <- class(x)
+    if (classx=="isat"){
       
-      classx <- class(x)
-      if (classx=="isat"){
-        
-        # if (any(x$call$sis, x$call$tis)==TRUE ){
-        #   stop("Test only valid for iis")
-        # } else {
-        if (  x$aux$args$iis == TRUE){
-          ISnames <- c(x$ISnames[grep("iis", x$ISnames)])
-          noutl= length(ISnames) 
-          t.pval <- x$aux$t.pval
-          T <- x$n
-        } else {
-          stop("iis must be TRUE")
-        }
-        #}
-        
-        
+      # if (any(x$call$sis, x$call$tis)==TRUE ){
+      #   stop("Test only valid for iis")
+      # } else {
+      if (  x$aux$args$iis == TRUE){
+        ISnames <- c(x$ISnames[grep("iis", x$ISnames)])
+        noutl= length(ISnames) 
+        t.pval <- x$aux$t.pval
+        T <- x$n
       } else {
-        stop("x must be an isat object")
+        stop("iis must be TRUE")
       }
-    } #x null closed
-    
-    gauge.null <- t.pval
-    gauge <- noutl/T
-    
-    #### Standard Normal Test
-    gauge.sd <- vargaugeiis(t.pval=gauge.null, T=T, infty=infty, m=m)$sd_iisgauge 
-    gaugetestval <- (gauge - gauge.null)/gauge.sd
-    
-    if (alternative=="two.sided"){
-      pval <- 2*(pnorm(-abs(gaugetestval)))
+      #}
+      
+      
+    } else {
+      stop("x must be an isat object")
     }
-    if (alternative=="less"){
-      pval <- pnorm(gaugetestval)  
-    }
-    if (alternative=="greater"){
-      pval <- 1-  pnorm(gaugetestval) 
-    }
-    
-    ### Poisson Test
-    gauge_n <- noutl
-    gauge_null_n <- gauge.null*T
-    poistestval <- poisson.test(gauge_n, r=gauge_null_n, alternative=alternative)
-    
-    rval_norm <- list(statistic = gaugetestval, p.value = pval, estimate=gauge, null.value = gauge.null, alternative = alternative, method="Jiao-Pretis Outlier Proportion Test", data.name="Proportion of detected outliers")
-    attr(rval_norm, "class") <- "htest"
-    rval_pois <- list(statistic = gauge_n, p.value = poistestval$p.value, estimate=gauge_n, null.value = gauge_null_n, alternative = alternative, method="Jiao-Pretis Outlier Count Test", data.name="Number of detected outliers")
-    attr(rval_pois, "class") <- "htest"
-    out <- list(rval_norm, rval_pois)
-    names(out) <- c("proportion", "count")
-    
-    return(out)
+  } #x null closed
+  
+  gauge.null <- t.pval
+  gauge <- noutl/T
+  
+  #### Standard Normal Test
+  gauge.sd <- vargaugeiis(t.pval=gauge.null, T=T, infty=infty, m=m)$sd_iisgauge 
+  gaugetestval <- (gauge - gauge.null)/gauge.sd
+  
+  if (alternative=="two.sided"){
+    pval <- 2*(pnorm(-abs(gaugetestval)))
   }
+  if (alternative=="less"){
+    pval <- pnorm(gaugetestval)  
+  }
+  if (alternative=="greater"){
+    pval <- 1-  pnorm(gaugetestval) 
+  }
+  
+  ### Poisson Test
+  gauge_n <- noutl
+  gauge_null_n <- gauge.null*T
+  poistestval <- poisson.test(gauge_n, r=gauge_null_n, alternative=alternative)
+  
+  rval_norm <- list(statistic = gaugetestval, p.value = pval, estimate=gauge, null.value = gauge.null, alternative = alternative, method="Jiao-Pretis Outlier Proportion Test", data.name="Proportion of detected outliers")
+  attr(rval_norm, "class") <- "htest"
+  rval_pois <- list(statistic = gauge_n, p.value = poistestval$p.value, estimate=gauge_n, null.value = gauge_null_n, alternative = alternative, method="Jiao-Pretis Outlier Count Test", data.name="Number of detected outliers")
+  attr(rval_pois, "class") <- "htest"
+  out <- list(rval_norm, rval_pois)
+  names(out) <- c("proportion", "count")
+  
+  return(out)
+}
 
 #######################
 ###mvrnormsim: reproduced from MASS
@@ -2928,7 +3047,7 @@ outlierscaletest <- function(x, nsim = 10000){
   pvalsample[Limitsample > scalesup.stat] <- 1
   scalesup.pval <- mean(pvalsample)
   
-
+  
   ##################################
   ##### Output of Sum and Sup Tests
   
@@ -2961,11 +3080,7 @@ ISblocksFun <- function(j, i, ISmatrices, ISblocks, mX,
                         arLjungB, archLjungB, normality.JarqueB, user.diagnostics,
                         gofFunArg, gof.method, mxkeep, include.gum, include.1cut,
                         include.empty, max.paths, turbo, tol, LAPACK, max.regs,
-                        print.searchinfo,
-                        
-                        y.n,
-                        estimations.counter,
-                        getsFun.counter){
+                        print.searchinfo, y.n){
   
   ##check if block contains 1 regressor:
   if( length(ISblocks[[i]][[j]])==1 ){
@@ -2979,7 +3094,7 @@ ISblocksFun <- function(j, i, ISmatrices, ISblocks, mX,
   
   ##apply dropvar:
   if(ncol(mXis)>=y.n){
-    stop("Too many x-variables and indicators for the sample size. No sensible model estimateable. Set a smaller max.block.size (e.g. max.block.size = 2 or max.block.size = 10) or remove x-variables in mxreg or consider removing x-variables from the specification in mxreg.")
+    stop("Too many x-variables and indicators for the sample size. No sensible model estimable. Set a smaller max.block.size (e.g. max.block.size = 2 or max.block.size = 10) or consider removing x-variables from the specification in mxreg.")
   }
   
   mXis.names <- colnames(mXis)
@@ -3012,12 +3127,6 @@ ISblocksFun <- function(j, i, ISmatrices, ISblocks, mX,
                     max.regs=max.regs, print.searchinfo=print.searchinfo,
                     alarm=FALSE)
   
-  
-  #estimations.counter counts the number of estimations for a single type of indicators
-  estimations.counter <<- estimations.counter + getsis$no.of.estimations
-  getsFun.counter <<- getsFun.counter + 1
-  
-  
   if(is.null(getsis$specific.spec)){
     ISspecific.models <- NULL
   }else{
@@ -3029,7 +3138,11 @@ ISblocksFun <- function(j, i, ISmatrices, ISblocks, mX,
   }
   
   ##return
-  return(ISspecific.models)
+  out <- list()
+  out$ISspecific.models <- ISspecific.models
+  out$no.estimations <- getsis$no.of.estimations
+  out$getsFun.counter <- 1
+  return(out)
   
 } #close ISblocksFun
 
@@ -3143,7 +3256,7 @@ create.ISmatrices <- function(iis,
   
   
   return(ISmatrices)
-
+  
 }
 
 
@@ -3165,8 +3278,6 @@ ISadditionalblocksearch <- function(mXis,
                                     mxkeep,
                                     ISmatrixname,
                                     indicator.set, 
-                                    estimations.counter,
-                                    getsFun.counter,
                                     print.searchinfo,
                                     tol, 
                                     LAPACK,
@@ -3187,11 +3298,12 @@ ISadditionalblocksearch <- function(mXis,
                                     do.pet, 
                                     ratio.threshold, 
                                     max.block.size,
-                                    wald.pval){
-   # TODO implement if someone does supply the blocks argument
+                                    wald.pval,
+                                    additional.block.search){
+  # TODO implement if someone does supply the blocks argument
   mXis.intermed.models <- list()
   mXis.ncol.adj <- length(isNames)
-
+  
   # Option 1: Simple Leave one out
   mXis.no.of.blocks = 2
   mX.df <- NCOL(mX)
@@ -3213,12 +3325,23 @@ ISadditionalblocksearch <- function(mXis,
     tmp[[j]] <- seq(j,mXis.ncol.adj, mXis.no.of.blocks)
   }
   
-  if(print.searchinfo){
-    message("\n", appendLF=FALSE)
-    message(paste0("Too many inital indicators returned for ",ISmatrixname,", carrying out additional block search with ",mXis.no.of.blocks," blocks using a Leave-one-Out Method."),appendLF=TRUE)
+  if(!additional.block.search){
+    stop(paste0("\nToo many initial indicators returned for ",ISmatrixname," to estimate a sensible model.\n",
+                "Try setting 'additional.block.search = TRUE' in 'isat()' to attempt  an additional block search to reduce the number of indicators (experimental feature).\n\n",
+                "Additionally/Alternatively consider setting a tighter (smaller) t.pval argument, setting a smaller 'max.block.size', turning off/relaxing diagnostic testing or improving the model specification.\n"))
+  } else {
+    if(print.searchinfo){
+      message("\n", appendLF=FALSE)
+      message(paste0("\nToo many initial indicators returned for ",ISmatrixname," to estimate a sensible model.\n",
+                     "Because 'additional.block.search = TRUE', isat() is carrying out an additional block search.\nUsing ",
+                     mXis.no.of.blocks," blocks with a Leave-one-Out Method.\n"),
+              appendLF=TRUE)
+    }
   }
   
   mXis.blocks <- tmp
+  estimations.counter <- 0
+  getsFun.counter <- 0
   
   for(mxisblocks in 1:length(mXis.blocks)){
     
@@ -3270,7 +3393,7 @@ ISadditionalblocksearch <- function(mXis,
   
   # if problem persists, give warning              
   if(NCOL(mXis) >= y.n){
-    stop(paste0("\n'isat' retains too many indicators for ",ISmatrixname," even despite additional block search. Consider setting a tighter (smaller) t.pval argument, setting a smaller 'max.block.size', turning off/relaxing diagnostic testing or improving the model specification."))
+    stop(paste0("\n'isat()' retains too many indicators for ",ISmatrixname," even despite additional block search.\nConsider setting a tighter (smaller) t.pval argument, setting a smaller 'max.block.size', turning off/relaxing diagnostic testing or improving the model specification."))
   }
   
   result <- list()
@@ -3325,7 +3448,8 @@ ISMatricesLoop <- function(blocks.is.list,
                            clusterVarlist,
                            blocks,
                            max.block.size,
-                           mXnames){
+                           mXnames,
+                           additional.block.search){
   
   ##blocks:
   if(!blocks.is.list){
@@ -3381,25 +3505,31 @@ ISMatricesLoop <- function(blocks.is.list,
     #   include.empty, max.paths, turbo, tol, LAPACK, max.regs,
     #   print.searchinfo)
     
-    ISspecific.models <- lapply(1:length(ISblocks[[i]]), FUN = ISblocksFun,
-                                i = i, ISmatrices = ISmatrices, ISblocks = ISblocks, mX = mX,
-                                parallel.options = parallel.options, y = y, userEstArg = userEstArg,
-                                t.pval = t.pval, wald.pval = wald.pval, do.pet = do.pet,
-                                arLjungB = arLjungB, archLjungB = archLjungB, normality.JarqueB = normality.JarqueB,
-                                user.diagnostics = user.diagnostics, gofFunArg = gofFunArg,
-                                gof.method = gof.method, mxkeep = mxkeep, include.gum = include.gum,
-                                include.1cut = include.1cut, include.empty = include.empty, max.paths = max.paths,
-                                turbo = turbo, tol = tol, LAPACK = LAPACK,
-                                max.regs = max.regs, print.searchinfo = print.searchinfo,
-                                
-                                y.n = y.n,
-                                estimations.counter = estimations.counter,
-                                getsFun.counter = getsFun.counter
+    ISspecific.models.list <- lapply(1:length(ISblocks[[i]]), FUN = ISblocksFun,
+                                     i = i, ISmatrices = ISmatrices, ISblocks = ISblocks, mX = mX,
+                                     parallel.options = parallel.options, y = y, userEstArg = userEstArg,
+                                     t.pval = t.pval, wald.pval = wald.pval, do.pet = do.pet,
+                                     arLjungB = arLjungB, archLjungB = archLjungB, normality.JarqueB = normality.JarqueB,
+                                     user.diagnostics = user.diagnostics, gofFunArg = gofFunArg,
+                                     gof.method = gof.method, mxkeep = mxkeep, include.gum = include.gum,
+                                     include.1cut = include.1cut, include.empty = include.empty, max.paths = max.paths,
+                                     turbo = turbo, tol = tol, LAPACK = LAPACK,
+                                     max.regs = max.regs, print.searchinfo = print.searchinfo,
+                                     
+                                     y.n = y.n
     )
+    
+    estimations.counter <- sum(vapply(X = ISspecific.models.list, FUN = function(x){x$no.estimations}, FUN.VALUE = double(1)),na.rm = TRUE)
+    getsFun.counter <- sum(vapply(X = ISspecific.models.list, FUN = function(x){x$getsFun.counter}, FUN.VALUE = double(1)),na.rm = TRUE)
+    ISspecific.models <- lapply(X = ISspecific.models.list, FUN = function(x){x$ISspecific.models})
+    rm(ISspecific.models.list)
   }
   
   ##do gets on each block: with parallel computing
   if(!is.null(parallel.options)){
+    
+    # check if parallel.options is numeric
+    if(!is.numeric(parallel.options)){stop("parallel.options must be NULL or a numeric value indicating the number of CPU cores to be used for parallel computing.")}
     
     ##print info:
     if(print.searchinfo){
@@ -3421,21 +3551,25 @@ ISMatricesLoop <- function(blocks.is.list,
     #        c("dropvar", "getsFun", "ols", "infocrit", "diagnostics"),
     #        envir=.GlobalEnv)
     
-    ISspecific.models <- parLapply(cl = blocksClust,X = 1:length(ISblocks[[i]]), fun = ISblocksFun,
-                                   i = i, ISmatrices = ISmatrices, ISblocks = ISblocks, mX = mX,
-                                   parallel.options = parallel.options, y = y, userEstArg = userEstArg,
-                                   t.pval = t.pval, wald.pval = wald.pval, do.pet = do.pet,
-                                   arLjungB = arLjungB, archLjungB = archLjungB, normality.JarqueB = normality.JarqueB,
-                                   user.diagnostics = user.diagnostics, gofFunArg = gofFunArg,
-                                   gof.method = gof.method, mxkeep = mxkeep, include.gum = include.gum,
-                                   include.1cut = include.1cut, include.empty = include.empty, max.paths = max.paths,
-                                   turbo = turbo, tol = tol, LAPACK = LAPACK,
-                                   max.regs = max.regs, print.searchinfo = print.searchinfo,
-                                   
-                                   y.n = y.n,
-                                   estimations.counter = estimations.counter,
-                                   getsFun.counter = getsFun.counter
+    ISspecific.models.list <- parLapply(cl = blocksClust,X = 1:length(ISblocks[[i]]), fun = ISblocksFun,
+                                        i = i, ISmatrices = ISmatrices, ISblocks = ISblocks, mX = mX,
+                                        parallel.options = parallel.options, y = y, userEstArg = userEstArg,
+                                        t.pval = t.pval, wald.pval = wald.pval, do.pet = do.pet,
+                                        arLjungB = arLjungB, archLjungB = archLjungB, normality.JarqueB = normality.JarqueB,
+                                        user.diagnostics = user.diagnostics, gofFunArg = gofFunArg,
+                                        gof.method = gof.method, mxkeep = mxkeep, include.gum = include.gum,
+                                        include.1cut = include.1cut, include.empty = include.empty, max.paths = max.paths,
+                                        turbo = turbo, tol = tol, LAPACK = LAPACK,
+                                        max.regs = max.regs, print.searchinfo = print.searchinfo,
+                                        
+                                        y.n = y.n
     )
+    
+    estimations.counter <- sum(vapply(X = ISspecific.models.list, FUN = function(x){x$no.estimations}, FUN.VALUE = double(1)),na.rm = TRUE)
+    getsFun.counter <- sum(vapply(X = ISspecific.models.list, FUN = function(x){x$getsFun.counter}, FUN.VALUE = double(1)),na.rm = TRUE)
+    ISspecific.models <- lapply(X = ISspecific.models.list, FUN = function(x){x$ISspecific.models})
+    rm(ISspecific.models.list)
+    
     stopCluster(blocksClust)
     
   } #end if..
@@ -3489,8 +3623,6 @@ ISMatricesLoop <- function(blocks.is.list,
           mxkeep = mxkeep,
           ISmatrixname = names(ISmatrices)[i],
           indicator.set = ISmatrices[[i]],
-          estimations.counter = estimations.counter,
-          getsFun.counter = getsFun.counter,
           print.searchinfo = print.searchinfo,
           tol = tol,
           LAPACK = LAPACK,
@@ -3511,7 +3643,8 @@ ISMatricesLoop <- function(blocks.is.list,
           turbo = turbo, 
           do.pet = do.pet, 
           ratio.threshold = ratio.threshold, 
-          max.block.size = max.block.size)
+          max.block.size = max.block.size,
+          additional.block.search = additional.block.search)
         
         mXis <- result_additional_blocksearch$mXis
         estimations.counter <- result_additional_blocksearch$estimations.counter
@@ -3559,5 +3692,240 @@ ISMatricesLoop <- function(blocks.is.list,
     
     
   } #end if(length(ISspecific.models > 0)
-
+  
 } #end for(i) loop (on ISmatrices)
+
+
+## S3 method: convert 'isat' object to 'arx' object:
+# as.arx.isat <- function(object, ...)
+# { 
+#   ##'isat' object?:
+#   if( !is(object,"isat") ){
+#     objectName <- deparse(substitute(object))
+#     stop(paste0("'", objectName, "' not of class 'isat'"))
+#   }
+#   
+#   ##make y:
+#   #y <- object$aux$y
+#   yName <- object$aux$y.name
+#   #names(y) <- if(is.numeric(object$aux$y.index)){as.double(object$aux$y.index)}else{object$aux$y.index}
+#   y <- zoo::zoo(x = object$aux$y, order.by = object$aux$y.index)
+#   
+#   ##make x, intercept?:
+#   coefs <- coef(object)
+#   if( length(coefs)==0 ){
+#     x <- NULL
+#     mc <- FALSE
+#   }else{
+#     x <- object$aux$mX
+#     colnames(x) <- object$aux$mXnames
+#     mc <- object$aux$args$mc
+#     x <- x[, !colnames(x) %in% "mconst", drop=FALSE]
+#     x <- as.zoo(x, order.by = object$aux$y.index)
+#   }
+#   
+#   ##estimate arx-model:
+#   result <- arx(y,mxreg=x, mc = mc, ...)
+#   result$aux$y.name <- yName
+#   return(result)
+#   
+# } #close as.arx.isat()  
+as.arx.isat <- function(object, ...){
+  ## check class
+  if (!is(object, "isat")) {
+    objectName <- deparse(substitute(object))
+    stop(paste0("'", objectName, "' not of class 'isat'"))
+  }
+  
+  dots <- list(...)
+  isat.args <- object$aux[["args"]]
+  
+  get_arg <- function(name, default = NULL) {
+    if (name %in% names(dots)) {return(dots[[name]])}
+    if (!is.null(isat.args) && name %in% names(isat.args)) {
+      return(isat.args[[name]])
+    }
+    default
+  }
+  
+  vcov.type <- get_arg("vcov.type", object$aux[["vcov.type"]])
+  user.diagnostics <- get_arg("user.diagnostics", object$aux[["user.diagnostics"]])
+  tol <- get_arg("tol", object$aux[["tol"]])
+  normality.JarqueB <- get_arg("normality.JarqueB", FALSE)
+  if (is.null(normality.JarqueB)) normality.JarqueB <- FALSE
+  ar <- get_arg("ar", NULL)
+  
+  arch.LjungB <- get_arg("arch.LjungB", NULL)
+  ar.LjungB <- get_arg("ar.LjungB", NULL)
+  user.estimator <- get_arg("user.estimator", object$aux[["user.estimator"]])
+  LAPACK <- get_arg("LAPACK", object$aux[["LAPACK"]])
+  
+  consumed <- c(
+    "vcov.type",
+    "user.diagnostics",
+    "tol",
+    "normality.JarqueB",
+    "arch.LjungB",
+    "ar.LjungB",
+    "user.estimator",
+    "LAPACK",
+    "ar"
+  )
+  
+  dots_for_arx <- dots[setdiff(names(dots), consumed)]
+  
+  ## Reconstruct y with original index
+  yName <- object$aux[["y.name"]]
+  y <- zoo::zoo(x = object$aux[["y"]], order.by = object$aux[["y.index"]])
+  
+  ## Reconstruct mxreg with original index
+  mxreg <- object$aux[["mX"]]
+  if (!is.null(mxreg)) {colnames(mxreg) <- object$aux[["mXnames"]]}
+  
+  ## Constant handling
+  has_mconst <- !is.null(mxreg) && "mconst" %in% colnames(mxreg)
+  if (has_mconst) {mxreg <- mxreg[, colnames(mxreg) != "mconst", drop = FALSE]}
+  mc <- has_mconst
+  
+  # ar handling
+  ar_original <- ar
+  ar_for_arx <- NULL
+  # if (!is.null(ar) && length(ar) > 0 && !is.null(mxreg)) {
+  #   ar_names <- paste0("ar", ar)
+  #   mxreg <- mxreg[,!colnames(mxreg) %in% ar_names,drop = FALSE]
+  # }
+  
+  if (!is.null(mxreg) && NCOL(mxreg) == 0) {mxreg <- NULL}
+  if (!is.null(mxreg)) {mxreg <- zoo::zoo(x = mxreg, order.by = object$aux[["y.index"]])}
+  
+  ## Estimate arx object
+  arx_args <- c(
+    list(
+      y = y,
+      mxreg = mxreg,
+      mc = mc,
+      ewma = NULL,
+      ar = ar_for_arx,
+      log.ewma = NULL,
+      vc = FALSE,
+      arch = NULL,
+      asym = NULL,
+      vxreg = NULL,
+      zero.adj = 0.1,
+      vc.adj = TRUE,
+      qstat.options = NULL,
+      vcov.type = vcov.type,
+      normality.JarqueB = normality.JarqueB,
+      #arch.LjungB = arch.LjungB,
+      #ar.LjungB = ar.LjungB,
+      user.estimator = user.estimator,
+      user.diagnostics = user.diagnostics,
+      tol = tol,
+      LAPACK = LAPACK,
+      singular.ok = TRUE,
+      plot = NULL
+    ),
+    dots_for_arx
+  )
+  
+  result <- do.call(arx, arx_args)
+  
+  ## Patch metadata / evaluated call values
+  result$aux$y.name <- yName
+  result$call$mc <- mc
+  result$call$vcov.type <- vcov.type
+  result$call$normality.JarqueB <- normality.JarqueB
+  result$call$user.estimator <- user.estimator
+  result$call$user.diagnostics <- user.diagnostics
+  result$call$tol <- tol
+  result$call$LAPACK <- LAPACK
+  
+  result$call$ar <- ar
+  if(!is.null(ar)){
+    #row.names(result$diagnostics) <- gsub("AR\\(1\\)",paste0("AR(",max(ar),")"),row.names(result$diagnostics))
+    result$diagnostics <- diagnostics(result, ar.LjungB = c(max(ar)+1,0))
+  }
+  
+  return(result)
+}
+
+
+
+##convert to model of class 'isat':
+as.isat <- function(object, indicator_regex = list(iis = "^iis", sis = "^sis", tis = "^tis", uis = "^uis"), ...){
+  
+  ##what kind of class?:
+  objectClass <- class(object)
+  classOK <- ifelse(objectClass %in% c("arx","gets"), TRUE, FALSE)
+  
+  ##class not OK:
+  if(!classOK){ 
+    stop("'object' must be of class 'arx' or 'gets'")
+  }
+  
+  # check indicator_regex
+  if(!is.list(indicator_regex) || !all(c("iis", "sis", "tis", "uis") %in% names(indicator_regex))){
+    stop("'indicator_regex' must be a list with named elements 'iis', 'sis', 'tis', and 'uis'")
+  }
+  
+  # stop if iis, sis, tis, or uis are supplied
+  if(!is.null(list(...)$iis) || !is.null(list(...)$sis) || !is.null(list(...)$tis) || !is.null(list(...)$uis)){
+    stop("Please use 'indicator_regex' argument to specify indicator patterns instead of 'iis', 'sis', 'tis', or 'uis'.\nIf you actually want to run indicator saturation use isat().")
+  }
+  
+  ##make y:
+  yName <- object$aux$y.name
+  y <- zoo::zoo(x = object$aux$y, order.by = object$aux$y.index)
+  
+  ##make x, intercept?:
+  coefs <- coef(object)
+  if( length(coefs)==0 ){
+    x <- NULL
+    mc <- FALSE
+  }else{
+    
+    x <- object$aux$mX
+    colnames(x) <- object$aux$mXnames
+    mc <- ifelse("mconst" %in% colnames(x), TRUE, FALSE)
+    x <- x[, !colnames(x) %in% "mconst", drop=FALSE]
+  }
+  
+  # deal with the ar terms if present
+  ar <- eval(object$call$ar)
+  if (!is.null(ar) && length(ar) > 0 && !is.null(x)) {
+    ar_names <- paste0("ar", ar)
+    x <- x[, !colnames(x) %in% ar_names, drop = FALSE]
+  }
+  if(ncol(x) == 0) {x <- NULL}
+  
+  ##estimate isat-model:
+  result <- isat(y, mxreg=x, mc = mc, ar = ar, iis = FALSE, sis = FALSE, tis = FALSE, ...)
+  result$aux$y.name <- yName
+  
+  
+  # identify the indicators in the model based on the provided regex patterns
+  indicator_names <- list()
+  for (indicator_type in names(indicator_regex)) {
+    pattern <- indicator_regex[[indicator_type]]
+    indicator_names[[indicator_type]] <- colnames(x)[grepl(pattern, colnames(x))]
+  }  
+  
+  indics <- unlist(indicator_names)
+  names(indics) <- NULL
+  result$ISnames <- indics
+  result$paths <- list()
+  result$ISfinalmodels <- list(result$aux$mXnames)
+  
+  if(any(grepl("^tis",indicator_names))) {
+    result$aux$args$tis <- TRUE
+  }
+  if(any(grepl("^sis",indicator_names))) {
+    result$aux$args$sis <- TRUE
+  }
+  if(any(grepl("^iis",indicator_names))) {
+    result$aux$args$iis <- TRUE
+  }
+  
+  return(result)
+  
+} #close as.isat()

@@ -296,6 +296,7 @@ isat.lm <- function(y, ar=NULL, ewma=NULL,
                     user.diagnostics=NULL, user.estimator=NULL, gof.function=NULL, 
                     gof.method=c("min","max"), include.gum=TRUE,
                     include.1cut=FALSE, include.empty=FALSE, max.paths=NULL,
+                    additional.block.search = FALSE,
                     parallel.options=NULL, turbo=FALSE, tol=1e-07, LAPACK=FALSE,
                     max.regs=NULL, print.searchinfo=TRUE, plot=NULL, alarm=FALSE, ...){
 
@@ -313,16 +314,18 @@ isat.lm <- function(y, ar=NULL, ewma=NULL,
   mxreg <- mxreg[,!colnames(mxreg) == "(Intercept)"] # remove the intercept
 
   out <- isat(y = dep_var, mxreg = mxreg, mc = mc,
-              ar, ewma, iis, sis, tis, uis, blocks,
-              ratio.threshold, max.block.size, t.pval,
-              wald.pval, vcov.type,
-              do.pet, ar.LjungB, arch.LjungB,
-              normality.JarqueB, info.method,
-              user.diagnostics, user.estimator, gof.function,
-              gof.method, include.gum,
-              include.1cut, include.empty, max.paths,
-              parallel.options, turbo, tol, LAPACK,
-              max.regs, print.searchinfo, plot, alarm)
+              ar = ar, ewma = ewma, 
+              iis = iis, sis = sis, tis = tis, uis = uis, blocks = blocks,
+              ratio.threshold = ratio.threshold, max.block.size = max.block.size, t.pval = t.pval,
+              wald.pval = wald.pval, vcov.type = vcov.type,
+              do.pet = do.pet, ar.LjungB = ar.LjungB, arch.LjungB = arch.LjungB,
+              normality.JarqueB = normality.JarqueB, info.method = info.method,
+              user.diagnostics = user.diagnostics, user.estimator = user.estimator, gof.function = gof.function,
+              gof.method = gof.method, include.gum = include.gum,
+              include.1cut = include.1cut, include.empty = include.empty, max.paths = max.paths,
+              parallel.options = parallel.options, turbo = turbo, tol = tol, LAPACK = LAPACK,
+              max.regs = max.regs, print.searchinfo = print.searchinfo, plot = plot, alarm = alarm,
+              additional.block.search = additional.block.search, ...)
   return(out)
   
 } #close isat.lm() function
