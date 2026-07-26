@@ -1076,7 +1076,7 @@ predict.isat <- function(object, n.ahead=12, newmxreg=NULL,
             }
           }
           
-          supplied_indicator_cols <- unique(na.omit(indicator_positions))
+          supplied_indicator_cols <- unique(stats::na.omit(indicator_positions))
           
           if (length(supplied_indicator_cols) > 0L) {newmxreg <- newmxreg[, -supplied_indicator_cols,drop = FALSE]}
           newmxreg <- cbind(newmxreg, ordered_indicators)
