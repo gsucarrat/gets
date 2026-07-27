@@ -55,7 +55,7 @@ getsv(object, t.pval=0.05, wald.pval=t.pval,
 
 For an overview, see Pretis, Reade and Sucarrat (2018): \doi{10.18637/jss.v086.i03}.\cr
 
-The arguments \code{user.diagnostics} and \code{gof.function} enable the specification of user-defined diagnostics and a user-defined goodness-of-fit function. For the former, see the documentation of \code{\link{diagnostics}}. For the latter, the principles of the same arguments in \code{\link{getsFun}} are followed, see its documentation under "Details", and Sucarrat (2020): \url{https://journal.r-project.org/archive/2021/RJ-2021-024/}.
+The arguments \code{user.diagnostics} and \code{gof.function} enable the specification of user-defined diagnostics and a user-defined goodness-of-fit function. For the former, see the documentation of \code{\link{diagnostics}}. For the latter, the principles of the same arguments in \code{\link{getsFun}} are followed, see its documentation under "Details", and Sucarrat (2021): \url{https://journal.r-project.org/articles/RJ-2021-024/}.
 
 }
 
@@ -69,11 +69,11 @@ G. Ljung and G. Box (1979): 'On a Measure of Lack of Fit in Time Series Models'.
 
 Felix Pretis, James Reade and Genaro Sucarrat (2018): 'Automated General-to-Specific (GETS) Regression Modeling and Indicator Saturation for Outliers and Structural Breaks'. Journal of Statistical Software 86, Number 3, pp. 1-44. \doi{10.18637/jss.v086.i03}
 
-Genaro Sucarrat (2020): 'User-Specified General-to-Specific and Indicator Saturation Methods'. The R Journal 12:2, pages 388-401. \url{https://journal.r-project.org/archive/2021/RJ-2021-024/}
+Genaro Sucarrat (2021): 'User-Specified General-to-Specific and Indicator Saturation Methods'. The R Journal 12:2, pages 388-401. \url{https://journal.r-project.org/articles/RJ-2021-024/}
 
 }
 
-\author{Genaro Sucarrat, \url{http://www.sucarrat.net/} }
+\author{Genaro Sucarrat, \url{https://www.sucarrat.net/} }
 
 \seealso{
 Extraction functions: \code{\link{coef.gets}}, \code{\link{fitted.gets}}, \code{\link{paths}}, \code{\link{plot.gets}}, \code{\link{print.gets}},\cr

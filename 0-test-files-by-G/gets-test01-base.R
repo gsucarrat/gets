@@ -82,7 +82,7 @@ test_that("Log-Likelihoods now differ with variance.spec argument",{
   expect_false(tmp$logl == sum(dnorm(tmp$residuals, sd=sqrt(tmp$sigma2), log=TRUE)))
 })
 
-##check that length(y)!=NROW(vxreg) fails:
+##check that length(y)!=NROW(vxreg) returns error:
 test_that("check that length(y)!=NROW(vxreg) fails",{
   expect_error(ols(vY, mX, method=3, variance.spec=list(vxreg=vX[-1,])))
 })
@@ -143,18 +143,19 @@ microbenchmark(
   lm(y~x-1)
 )
 
+#27 July 2026:
 #Unit: microseconds
-#                  expr   min     lq    mean median     uq    max neval
-# ols(y, x, method = 1)   6.3   7.35   9.395   8.20  10.05   32.4   100
-# ols(y, x, method = 2)  11.9  14.00  18.306  15.95  20.60   45.2   100
-# ols(y, x, method = 3)  22.5  26.40  32.892  29.45  36.25  105.5   100
-# ols(y, x, method = 4)  26.1  29.75  37.473  34.35  40.20  123.1   100
-# ols(y, x, method = 5)  42.9  51.30  64.130  58.85  71.85  136.2   100
-#         .lm.fit(x, y)   4.0   4.80   5.672   5.25   5.95   17.4   100
-#          lm.fit(x, y)  26.8  34.40  43.198  39.65  44.20  192.0   100
-#           lsfit(x, y)  53.4  66.95  87.418  86.45  96.95  241.0   100
-#         lm(y ~ x - 1) 514.8 582.00 643.713 625.60 669.85 1094.6   100
- 
+#                  expr   min     lq    mean median     uq   max neval
+# ols(y, x, method = 1)   5.3   6.20   7.887   7.10   8.40  36.4   100
+# ols(y, x, method = 2)  10.1  11.30  13.815  12.40  14.10  75.1   100
+# ols(y, x, method = 3)  19.2  21.45  25.390  23.50  27.95  55.7   100
+# ols(y, x, method = 4)  22.9  25.25  31.104  27.85  33.95  70.2   100
+# ols(y, x, method = 5)  36.1  41.95  50.913  50.60  55.85  85.7   100
+#         .lm.fit(x, y)   3.2   3.80   4.604   4.30   4.90  12.5   100
+#          lm.fit(x, y)  22.5  27.40  32.610  33.10  36.55  53.6   100
+#           lsfit(x, y)  45.0  53.60  68.808  65.00  74.75 453.3   100
+#         lm(y ~ x - 1) 443.7 488.20 525.103 512.60 540.25 806.0   100
+  
 
 ##1000 observations, many variables:
 ##----------------------------------
@@ -175,18 +176,19 @@ microbenchmark(
   lm(y~x-1)
 )
 
+#27 July 2026:
 #Unit: microseconds
-#                  expr     min       lq      mean   median       uq     max neval
-# ols(y, x, method = 1)   680.2   799.60   830.654   813.50   859.30  1046.9   100
-# ols(y, x, method = 2)   731.1   861.80   896.764   874.45   911.15  1258.6   100
-# ols(y, x, method = 3)   753.5   880.90   913.519   899.40   943.55  1175.4   100
-# ols(y, x, method = 4)  1519.1  1766.60  1873.454  1782.50  1865.70  6087.7   100
-# ols(y, x, method = 5) 10225.5 12081.45 12728.346 12252.75 13050.15 16923.0   100
-#         .lm.fit(x, y)   674.8   795.65   818.282   801.95   834.60  1047.1   100
-#          lm.fit(x, y)   726.7   852.40   892.543   870.05   921.55  1212.5   100
-#           lsfit(x, y)  1030.3  1172.20  1225.480  1210.30  1265.30  1675.7   100
-#         lm(y ~ x - 1)  1517.4  1810.05  2138.811  1919.30  2192.60  5937.4   100
-         
+#                  expr    min      lq     mean  median       uq     max neval
+# ols(y, x, method = 1)  453.3  476.80  579.979  507.90   692.40  1324.4   100
+# ols(y, x, method = 2)  487.9  516.95  654.910  544.40   748.30  3734.0   100
+# ols(y, x, method = 3)  495.1  538.50  659.986  569.95   782.60  1062.4   100
+# ols(y, x, method = 4)  998.0 1011.35 1296.023 1096.45  1525.65  4437.9   100
+# ols(y, x, method = 5) 6796.2 7050.65 8894.850 7696.60 10461.30 13839.5   100
+#         .lm.fit(x, y)  451.0  463.35  572.073  506.20   685.85   888.8   100
+#          lm.fit(x, y)  481.0  504.20  640.696  539.75   749.15  2850.0   100
+#           lsfit(x, y)  596.1  645.35  809.099  687.85   945.75  3113.1   100
+#         lm(y ~ x - 1) 1008.8 1135.10 1521.453 1246.85  1774.35  5672.3   100
+                  
 
 ##################################################
 ##3 TEST gmm()
@@ -213,7 +215,7 @@ gmm(y,x,z, weighting.matrix="identity", vcov.type="ordinary")
 gmm(y,x,z, weighting.matrix="identity", vcov.type="robust")
 
 
-##in this experiment NCOL(x) < NCOL(z), so there
+##in this experiment NCOL(x) < NCOL(z), i.e. there
 ##are more instruments than regressors; the aim is
 ##to check whether 2sls and efficient gmm work.
 ##------------------------------------------------
@@ -433,7 +435,7 @@ test_that("check whether variance.spec works (creates NAs in std.residuals)",{
   expect_silent(diagnostics(x))
 })
 
-##check no. 1 of "is.rejection.bad" entry:
+##check no. 1 of "is.reject.bad" entry:
 SWtest <- function(x, ...){
   tmp <- shapiro.test(x$residuals)
   result <- c(tmp$statistic, NA, tmp$p.value)
@@ -469,10 +471,9 @@ diagnostics(x, user.fun=list(name="SWtest", pval=0.025))
 diagnostics(x,
   user.fun=list(name="SWtest", pval=0.025),
   verbose=FALSE) #should return FALSE
-##SHOULD THIS ONE RETURN FALSE??:
 diagnostics(x,
   user.fun=list(name="SWtest", pval=0.85, is.reject.bad=c(TRUE,FALSE)),
-  verbose=FALSE) #should return TRUE
+  verbose=FALSE) #should return FALSE, I think...
 
 
 ##################################################

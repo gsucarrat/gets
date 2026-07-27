@@ -10,7 +10,7 @@
 \usepackage{graphicx} %needed for [scale..] argument in figures
 %\usepackage[formats]{listings} %enable centred tilde ~ in verbatim environments
 
-\usepackage{hyperref} %see http://en.wikibooks.org/wiki/LaTeX/Hyperlinks and http://www.tug.org/applications/hyperref/manual.html#x1-120003.8
+\usepackage{hyperref} %see https://en.wikibooks.org/wiki/LaTeX/Hyperlinks and https://www.tug.org/applications/hyperref/manual.html#x1-120003.8
 \hypersetup{
 	%    bookmarks=true,         % show bookmarks bar?
 	%    unicode=false,          % non-Latin characters in Acrobat's bookmarks
@@ -63,11 +63,11 @@
 \begin{center}
 	{\bf\Large User-Specified General-to-Specific (GETS) and Indicator Saturation (ISAT) Methods}%
 	\footnote{
-	This vignette is a revised and updated version of the article ``User-Specified General-to-Specific and Indicator Saturation Methods'', which was published in \href{https://journal.r-project.org}{The R Journal} (2020) 12:2, pages 388-401: \url{https://journal.r-project.org/archive/2021/RJ-2021-024/}. I am grateful to the Editor Catherine Hurley, an anonymous reviewer, Damian Clarke, {\'E}ric Dubois, Jonas Kurle, Felix Pretis, James Reade, Moritz Schwarz, Gareth Thomas, participants at the UseR! 2019 conference (Toulouse, July), the Statistics Norway seminar (May, 2018) and the Norges Bank seminar (April, 2018) for helpful comments, suggestions and questions.		
+	This vignette is a revised and updated version of the article ``User-Specified General-to-Specific and Indicator Saturation Methods'', which was published in \href{https://journal.r-project.org}{The R Journal} (2021) 12:2, pages 388-401: \url{https://journal.r-project.org/articles/RJ-2021-024/}. I am grateful to the Editor Catherine Hurley, an anonymous reviewer, Damian Clarke, {\'E}ric Dubois, Jonas Kurle, Felix Pretis, James Reade, Moritz Schwarz, Gareth Thomas, participants at the UseR! 2019 conference (Toulouse, July), the Statistics Norway seminar (May, 2018) and the Norges Bank seminar (April, 2018) for helpful comments, suggestions and questions.		
 	}
 	
 	\medskip
-	Genaro Sucarrat\footnote{Department of Economics, BI Norwegian Business School, Nydalsveien 37, 0484 Oslo, Norway. Webpage: \url{http://www.sucarrat.net/}.} \\
+	Genaro Sucarrat\footnote{Department of Economics, BI Norwegian Business School, Nydalsveien 37, 0484 Oslo, Norway. Webpage: \url{https://www.sucarrat.net/}.} \\
 	
 	\smallskip
 	{\small This version: \selectlanguage{british}\today}\\
@@ -830,7 +830,7 @@ Castle, J., J.~Doornik, D.~F. Hendry, and F.~Pretis (2015).
 \newblock {D}etecting {L}ocation {S}hifts {D}uring {M}odel {S}election by
 {S}tep-{I}ndicator {S}aturation.
 \newblock {\em Econometrics\/}~{\em 3}, 240--264.
-\newblock DOI: https://doi.org/10.3390/econometrics3020240.
+\newblock \url{https://doi.org/10.3390/econometrics3020240}
 
 \bibitem[\protect\citeauthoryear{Clarke}{Clarke}{2014}]{Clarke2014}
 Clarke, D. (2014).
@@ -848,7 +848,7 @@ Doornik, J.~A. and D.~F. Hendry (2018).
 	Michaux}{2019}]{DuboisMichaux2019}
 Dubois, {\'E}. and E.~Michaux (2019).
 \newblock Grocer 1.8: an econometric toolbox for {S}cilab.
-\newblock \url{http://dubois.ensae.net/grocer.html}.
+\newblock \url{http://grocer.toolbox.free.fr/grocer.html}.
 
 \bibitem[\protect\citeauthoryear{Hendry, Johansen, and Santos}{Hendry
 	et~al.}{2008}]{HendryJohansenSantos2008}
@@ -863,8 +863,8 @@ Hoover, K.~D. and S.~J. Perez (1999).
 \newblock Data {M}ining {R}econsidered: {E}ncompassing and the
 {G}eneral-to-{S}pecific {A}pproach to {S}pecification {S}earch.
 \newblock {\em Econometrics Journal\/}~{\em 2}, 167--191.
-\newblock Dataset and code:
-\url{http://www.csus.edu/indiv/p/perezs/Data/data.htm}.
+\newblock Data and code:
+\url{https://www.feweb.vu.nl/econometriclinks/journal/volume2/HooverKD_PerezSJ/data_and_code/}
 
 \bibitem[\protect\citeauthoryear{{IHS Markit}}{{IHS Markit}}{2020}]{EViews2020}
 {IHS Markit} (2020).

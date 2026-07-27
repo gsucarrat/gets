@@ -2,7 +2,7 @@ Package: gets
 Type: Package
 Title: General-to-Specific (GETS) Modelling and Indicator Saturation Methods
 Version: 0.40
-Date: 2026-07-23
+Date: 2026-07-27
 Authors@R: c(person(given = "Genaro", family = "Sucarrat", role = c("aut", "cre"), email = "genaro.sucarrat@bi.no", comment = c(ORCID = "0000-0002-8433-837X")),
 	person(given = "Felix", family = "Pretis", role = "aut"),
         person(given = "James", family = "Reade", role = "aut"),

@@ -67,7 +67,7 @@ The algorithm of \code{blocksFun} is similar to that of \code{\link{isat}}, but 
 \references{
 F. Pretis, J. Reade and G. Sucarrat (2018): 'Automated General-to-Specific (GETS) Regression Modeling and Indicator Saturation for Outliers and Structural Breaks'. Journal of Statistical Software 86, Number 3, pp. 1-44
 
-G. sucarrat (2020): 'User-Specified General-to-Specific and Indicator Saturation Methods'.  The R Journal 12 issue 2, pp. 388-401, \url{https://journal.r-project.org/archive/2021/RJ-2021-024/}
+G. sucarrat (2020): 'User-Specified General-to-Specific and Indicator Saturation Methods'.  The R Journal 12 issue 2, pp. 388-401, \url{https://journal.r-project.org/articles/RJ-2021-024/}
 }
 
 \author{

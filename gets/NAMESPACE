@@ -48,7 +48,7 @@ export(
   "isvarcor", "isvareffcor", "iim", "sim", "tim", "isatdates",
   "isatloop", "isatvarcorrect", "mvrnormsim", "outlierscaletest",
   "outliertest", "vargaugeiis", "gets.isat", "isat.lm", "isat.arx",
-  "as.arx.isat", 
+  "as.arx.isat",
   "as.isat",
   # isat helper functions (not exported in NAMESPACE)
   #"create.ISmatrices", "ISMatricesLoop", "ISadditionalblocksearch", "ISblocksFun",

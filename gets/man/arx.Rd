@@ -47,7 +47,7 @@ arx(y, mc=TRUE, ar=NULL, ewma=NULL, mxreg=NULL, vc=FALSE,
 
 For an overview of the AR-X model with log-ARCH-X errors, see Pretis, Reade and Sucarrat (2018): \doi{10.18637/jss.v086.i03}.\cr
 
-The arguments \code{user.estimator} and \code{user.diagnostics} enables the specification of user-defined estimators and user-defined diagnostics. To this end, the principles of the same arguments in \code{\link{getsFun}} are followed, see its documentation under "Details", and Sucarrat (2020): \url{https://journal.r-project.org/archive/2021/RJ-2021-024/}.
+The arguments \code{user.estimator} and \code{user.diagnostics} enables the specification of user-defined estimators and user-defined diagnostics. To this end, the principles of the same arguments in \code{\link{getsFun}} are followed, see its documentation under "Details", and Sucarrat (2021): \url{https://journal.r-project.org/articles/RJ-2021-024/}.
 
 }
 
@@ -59,7 +59,7 @@ C. Jarque and A. Bera (1980): 'Efficient Tests for Normality, Homoscedasticity a
 
 Felix Pretis, James Reade and Genaro Sucarrat (2018): 'Automated General-to-Specific (GETS) Regression Modeling and Indicator Saturation for Outliers and Structural Breaks'. Journal of Statistical Software 86, Number 3, pp. 1-44. \doi{10.18637/jss.v086.i03}
 
-Genaro Sucarrat (2020): 'User-Specified General-to-Specific and Indicator Saturation Methods'. The R Journal 12:2, pages 388-401. \url{https://journal.r-project.org/archive/2021/RJ-2021-024/}
+Genaro Sucarrat (2021): 'User-Specified General-to-Specific and Indicator Saturation Methods'. The R Journal 12:2, pages 388-401. \url{https://journal.r-project.org/articles/RJ-2021-024/}
 
 Halbert White (1980): 'A Heteroskedasticity-Consistent Covariance Matrix Estimator and a Direct Test for Heteroskedasticity', Econometrica 48, pp. 817-838.
 

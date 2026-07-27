@@ -35,22 +35,17 @@ The data have been used for comparison and illustration of GETS model selection 
 }
 
 \source{
-Retrieved 14 October 2014 from:
-\url{https://www.csus.edu/indiv/p/perezs/data/data.htm}
+Retrieved 14 October 2014 from website that does not exist anymore: https://www.csus.edu/indiv/p/perezs/data/data.htm
 }
 
 \references{
-David F. Hendry and Hans-Martin Krolzig (1999): 'Improving on 'Data
-  mining reconsidered' by K.D. Hoover and S.J Perez', Econometrics
-  Journal, Vol. 2, pp. 202-219.
+Jurgen Doornik (2009): 'Autometrics', in Jennifer L. Castle and Neil Shephard (eds), 'The Methodology and Practice of Econometrics: A Festschrift in Honour of David F. Hendry', Oxford University Press, Oxford, pp. 88-121.
 
-David F. Hendry and Hans-Martin Krolzig (2005): 'The properties of
-  automatic Gets modelling', Economic Journal 115, C32-C61.
+David F. Hendry and Hans-Martin Krolzig (1999): 'Improving on 'Data mining reconsidered' by K.D. Hoover and S.J Perez', Econometrics Journal, Vol. 2, pp. 202-219.
 
-Jurgen Doornik (2009): 'Autometrics', in Jennifer L. Castle and Neil
-  Shephard (eds), 'The Methodology and Practice of Econometrics: A
-  Festschrift in Honour of David F. Hendry', Oxford University Press,
-  Oxford, pp. 88-121.
+David F. Hendry and Hans-Martin Krolzig (2005): 'The properties of automatic Gets modelling', Economic Journal 115, C32-C61.
+
+Kevin D. Hoover and Stephen J. Perez (1999): 'Data mining reconsidered: encompassing and the general-to-specific approach to specification search', Econometrics Journal, Vol. 2, pp. 167-191, \doi{10.1111/1368-423X.00025}
 
 Pretis, Felix, Reade, James and Sucarrat, Genaro (2018): 'Automated General-to-Specific (GETS) Regression Modeling and Indicator Saturation for Outliers and Structural Breaks'. Journal of Statistical Software 86, Number 3, pp. 1-44.
 }

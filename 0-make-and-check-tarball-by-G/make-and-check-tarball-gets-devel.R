@@ -1,3 +1,9 @@
+## TO DO!!!:
+## https://cran.r-project.org/web/packages/policies.html
+## Explain any change in the maintainer’s email address and if possible send
+## confirmation from the previous address (by a separate email to
+## CRAN-submissions@R-project.org) or explain why it is not possible. 
+##
 ####################################################
 ## This file makes and checks the tarball of the 
 ## gets package, and installs it
@@ -118,7 +124,8 @@ if( doDelete ){
 
 ##non-automatic approach no. 1:
 #library(tools)
-##reduce size:
+#
+##reduce size of 'introduction.pdf':
 #compactPDF( paste0(getwd(), "/vignettes-tex/intro/introduction.pdf"))
 ##reduce size ("printer" = 300dpi):
 #compactPDF( paste0(getwd(), "/vignettes-tex/intro/introduction.pdf"), gs_quality = "printer")
@@ -126,6 +133,10 @@ if( doDelete ){
 #compactPDF( paste0(getwd(), "/vignettes-tex/intro/introduction.pdf"), gs_quality = "ebook")
 ##reduce size ("screen" = 72dpi):
 #compactPDF( paste0(getwd(), "/vignettes-tex/intro/introduction.pdf"), gs_quality = "screen")
+#
+##reduce size of 'user-defined-gets-and-isat.pdf':
+##reduce size ("ebook" = 150dpi):
+#compactPDF( paste0(getwd(), "/vignettes-tex/user-defined-gets/user-defined-gets-and-isat.pdf"), gs_quality = "ebook")
 
 ##non-automatic approach no. 2:
 ## - compress introduction.pdf, e.g. with the commands in no. 1

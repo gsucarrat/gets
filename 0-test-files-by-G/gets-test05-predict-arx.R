@@ -347,8 +347,7 @@ predict(mymodel) #benchmark
 predict(mymodel, plot.options=list(keep=1))
 predict(mymodel, plot.options=list(line.at.origin=TRUE))
 predict(mymodel, plot.options=list(start.at.origin=FALSE))
-predict(mymodel,
-  plot.options=list(start.at.origin=FALSE, fitted=TRUE))
+predict(mymodel, plot.options=list(start.at.origin=FALSE, fitted=TRUE))
 predict(mymodel, plot.options=list(dot.at.origin=FALSE))
 predict(mymodel, plot.options=list(hlines=c(-2,-1,0,1,2)))
 predict(mymodel, plot.options=list(col=c("darkred","green")))
@@ -443,9 +442,10 @@ predict(arxmod, n.ahead=1, newmxreg=matrix(0,1,5),
   plot.options=list(start.at.origin=FALSE,
   line.at.origin=TRUE, fitted=TRUE))
 
-##used to produce graphical error in the plot; since version 0.25
-##the following message is returned to the user: "'newindex' not
-##entirely out-of-sample, so no plot produced"
+##used to produce graphical error in the plot;
+##since version 0.25 the following message is
+##returned to the user: "'newindex' not entirely
+##out-of-sample, so no plot produced"
 set.seed(123)
 y <- rnorm(20)
 arxmod <- arx(y, mc=TRUE, ar=1)

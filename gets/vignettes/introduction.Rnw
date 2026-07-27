@@ -62,7 +62,7 @@
 	
 	\bigskip
 	Felix Pretis\footnote{University of Victoria, Department of Economics
-		\& INET at the Oxford Martin School, University of Oxford. URL: \url{http://www.felixpretis.org/}}, %
+		\& INET at the Oxford Martin School, University of Oxford. URL: \url{https://felixpretis.climateeconometrics.org/}}, %
 	J. James Reade\footnote{Programme for Economic Modelling at the Oxford Martin School \& Department of Economics, University of Reading. URL: \url{https://sites.google.com/site/jjamesreade/}}%
 	and %
 	Genaro Sucarrat\footnote{Department of Economics, BI Norwegian Business School. URL: \url{https://www.sucarrat.net/}} \\
@@ -122,7 +122,7 @@ of \cite{Hooveretal99}, purpose-specific but limited \proglang{MATLAB}
 	code is limited in that it allows for a maximum of 10 paths to be
 	searched, and because there is no user manual nor help-system
 	available. The data and \proglang{MATLAB} code is available from
-	\url{http://www.feweb.vu.nl/econometriclinks/journal/volume2/HooverKD_PerezSJ/data_and_code/}.}
+	\url{https://www.feweb.vu.nl/econometriclinks/journal/volume2/HooverKD_PerezSJ/data_and_code/}.}
 Subsequently, further improvements were achieved in the commercial
 software packages \pkg{PcGets} \citep{Hendryetal01} and in its
 successor \pkg{Autometrics} \citep{DoornikHendry2007}. In particular,
@@ -679,7 +679,7 @@ shortfall and value-at-risk, respectively.
 
 When \cite{Engle82} proposed the ARCH-class of models, his empirical application was the uncertainty of UK-inflation. However, the ARCH(4) specification he used to model the conditional variance was severely restricted in order to ensure the positivity of the variance estimates, see \citet[][p.~1002]{Engle82}. Arguably, this is why (non-exponential) ARCH specifications never became popular in macroeconomics. The log-ARCH class of models, by contrast, does not suffer from the positivity problem, since the conditional variance is specified in logs. To illustrate we fit an AR(4)-X-log-ARCH(4)-X model to a quarterly inflation series, and show that the conditional variance specification provides a substantial improvement in terms of fit and diagnostics.
 
-The following code imports the data\footnote{The source of the data is Statistics Norway (\url{http://www.ssb.no/}). The original untransformed data, a monthly consumer price index (CPI), was retrieved 14 February 2016 via \url{http://www.ssb.no/tabell/08183/}.} and assigns it quarterly time-series attributes:
+The following code imports the data\footnote{The source of the data is Statistics Norway (\url{https://www.ssb.no/}). The original untransformed data, a monthly consumer price index (CPI), was retrieved 14 February 2016 from table 08183.} and assigns it quarterly time-series attributes:
 %
 \begin{verbatim}
   data("infldata", package = "gets")
@@ -1754,10 +1754,7 @@ change model where all coefficients change, \code{isat} in \pkg{gets}
 is a partial model where the coefficients on variables included
 through \code{mxreg} are not allowed to break, and only breaks in the
 mean (or specified coefficients through inclusion in \code{uis}) are
-permitted -- making it possible to pre-specify constancy. A partial
-structural change model using the Bai and Perron least-squares
-approach can be estimated using available \proglang{MATLAB}
-code.\footnote{Available online at \url{http://people.bu.edu/perron/code.html}.}
+permitted -- making it possible to pre-specify constancy. %A partial structural change model using the Bai and Perron least-squares approach can be estimated using available \proglang{MATLAB} code.\footnote{Available online at \url{https://people.bu.edu/perron/code.html}.}
 
 Relative to \pkg{changepoint}, \code{isat} in \pkg{gets} is focused on
 regression modeling and structural breaks in the intercept of
@@ -1989,7 +1986,7 @@ The \proglang{R} package \pkg{gets} provides a toolkit for general-to-specific m
 	{IHS Markit} (2017).
 	\newblock \emph{\proglang{EViews} Version 9.5}.
 	\newblock IHS Markit, Irvine, CA.
-	\newblock \url{http://www.eviews.com/}.
+	\newblock \url{https://www.eviews.com/}.
 	
 	\bibitem[{Jarque and Bera(1980)}]{JarqueBera1980}
 	Jarque C, Bera A (1980).
@@ -2122,7 +2119,7 @@ The \proglang{R} package \pkg{gets} provides a toolkit for general-to-specific m
 	{StataCorp} (2017).
 	\newblock \emph{\proglang{STATA} Statistical Software: Release~15}.
 	\newblock StataCorp LLC, College Station, TX.
-	\newblock \url{http://www.stata.com/}.
+	\newblock \url{https://www.stata.com/}.
 	
 	\bibitem[{Sucarrat(2010)}]{Sucarrat2010}
 	Sucarrat G (2010).
@@ -2171,7 +2168,7 @@ The \proglang{R} package \pkg{gets} provides a toolkit for general-to-specific m
 	\newblock \emph{\proglang{MATLAB} -- The Language of Technical Computing,
 		Version R2017b.}
 	\newblock Natick, Massachusetts.
-	\newblock \url{http://www.mathworks.com/products/matlab/}.
+	\newblock \url{https://www.mathworks.com/products/matlab/}.
 	
 	\bibitem[{Tibshirani(1996)}]{tibshirani1996regression}
 	Tibshirani R (1996).

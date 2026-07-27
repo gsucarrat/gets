@@ -1,23 +1,5 @@
-Version 0.40 (23 July 2026):
-=================================
-
-* changes to isat() and related functions:
- - algorithm to deal with small sample challenges (introduced in Version 0.39) is controlled by the argument 'additional.block.search' and disabled by default with a clear error message
- - isat() now allows the case of no selected indicator saturation method (will just run arx() in the end but return an isat() object)
- - print.isat(): Now includes a printed note when include.gum = TRUE and indicators with a p.value > t.pval are retained
- - predict.isat(): indicator predictions are now created automatically based on the detected indicators in the isat object. If they are still supplied, the supplied ones will be used (with a message) to ensure backward compatability.
- - as.arx.isat(): new function to convert an isat() object to an arx() object
- - as.isat(): new function to convert gets or arx objects to an isat() object
- - gets.isat(): use the new as.arx.isat() function within gets.isat()
-
-* bug fix in isat() related to the estimation.counter
-
-* expanded test files and documentation
-
-
-
-Version 0.39 (12 September 2025):
-=================================
+Version 0.40 (27 July 2026):
+============================
 
 * stylistic changes to DESCRIPTION file
 
@@ -31,12 +13,21 @@ Version 0.39 (12 September 2025):
  - new argument 'arch.prefix'
  - new argument 'log.regressand'
 
-* changes to isat() and related:
+* changes to isat() and related functions:
  - new functions create.ISmatrices(), ISMatricesLoop(), ISadditionalblocksearch() and ISblocksFun() to improve isat() structure
  - include.gum() argument is now active again (small change in coef.isat() and isat.lm() to reflect that as well)
  - improved algorithm to deal with small sample challenges
  - improved error messaging within isat()
  - small changes to isat.arx() and iim() to standardise behaviour of column naming
+ - algorithm to deal with small sample challenges is controlled by the argument 'additional.block.search' and disabled by default with a clear error message
+ - isat() now allows the case of no selected indicator saturation method (will just run arx() in the end but return an isat() object)
+ - print.isat(): Now includes a printed note when include.gum = TRUE and indicators with a p.value > t.pval are retained
+ - predict.isat(): indicator predictions are now created automatically based on the detected indicators in the isat object. If they are still supplied, the supplied ones will be used (with a message) to ensure backward compatability.
+ - as.arx.isat(): new function to convert an isat() object to an arx() object
+ - as.isat(): new function to convert gets or arx objects to an isat() object
+ - gets.isat(): use the new as.arx.isat() function within gets.isat()
+ - expanded test files and documentation
+ - bug fix in isat() related to the estimation.counter
 
 
 Version 0.38 (11 July 2024):
