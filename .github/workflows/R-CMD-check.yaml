@@ -38,8 +38,29 @@ jobs:
         with:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
-          
+
       - uses: r-lib/actions/setup-tinytex@v2
+
+      - name: Install LaTeX packages for vignettes
+        run: |
+          tlmgr install \
+            babel \
+            babel-english \
+            babel-greek \
+            greek-fontenc \
+            hyphen-greek \
+            cbfonts-fd \
+            mathpazo \
+            psnfss \
+            urw-base35 \
+            amsmath \
+            amsfonts \
+            natbib \
+            hyperref \
+            epstopdf-pkg \
+            fancyvrb \
+            ec
+        shell: bash
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
@@ -51,6 +72,6 @@ jobs:
         with:
           upload-snapshots: true
           working-directory: gets
-          build_args: 'c("--no-manual", "--no-build-vignettes")'
-          args: 'c("--no-manual", "--no-build-vignettes", "--as-cran")'
+          build_args: 'c("--no-manual", "--compact-vignettes=gs+qpdf")'
+          args: 'c("--no-manual", "--as-cran")'
           error-on: '"error"'
