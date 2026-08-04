@@ -41,10 +41,12 @@ jobs:
 
       - uses: r-lib/actions/setup-tinytex@v2
 
-      - name: Install LaTeX packages for vignettes
+      - name: Install and verify LaTeX packages
+        shell: bash
         run: |
+          set -euo pipefail
+
           tlmgr install \
-            babel \
             babel-english \
             babel-greek \
             greek-fontenc \
@@ -52,15 +54,14 @@ jobs:
             cbfonts-fd \
             mathpazo \
             psnfss \
-            urw-base35 \
-            amsmath \
-            amsfonts \
-            natbib \
-            hyperref \
-            epstopdf-pkg \
-            fancyvrb \
-            ec
-        shell: bash
+            palatino \
+            fpl
+
+          test -n "$(kpsewhich lgrcmr.fd)"
+          test -n "$(kpsewhich pplr8t.tfm)"
+          test -n "$(kpsewhich pplb8t.tfm)"
+          test -n "$(kpsewhich zplmr7m.tfm)"
+          test -n "$(kpsewhich mathpazo.sty)"
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
