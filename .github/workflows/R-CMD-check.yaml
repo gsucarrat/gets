@@ -41,27 +41,10 @@ jobs:
 
       - uses: r-lib/actions/setup-tinytex@v2
 
-      - name: Install and verify LaTeX packages
-        shell: bash
+      - name: Install LaTeX packages for vignettes
         run: |
-          set -euo pipefail
-
-          tlmgr install \
-            babel-english \
-            babel-greek \
-            greek-fontenc \
-            hyphen-greek \
-            cbfonts-fd \
-            mathpazo \
-            psnfss \
-            palatino \
-            fpl
-
-          test -n "$(kpsewhich lgrcmr.fd)"
-          test -n "$(kpsewhich pplr8t.tfm)"
-          test -n "$(kpsewhich pplb8t.tfm)"
-          test -n "$(kpsewhich zplmr7m.tfm)"
-          test -n "$(kpsewhich mathpazo.sty)"
+          tlmgr update --self
+          tlmgr install babel-english babel-greek greek-fontenc hyphen-greek cbfonts-fd mathpazo psnfss palatino fpl grfext
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
