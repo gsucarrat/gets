@@ -58,4 +58,4 @@ jobs:
           working-directory: gets
           build_args: 'c("--no-manual", "--compact-vignettes=gs+qpdf")'
           args: 'c("--no-manual", "--as-cran")'
-          error-on: '"error"'
+          #error-on: '"error"'
